@@ -63,7 +63,6 @@ export type View =
   | { page: 'visual-search' }
   | { page: 'furniture-from-photo' }
   | { page: 'ai-designer' }
-  | { page: 'virtual-showroom' }
   | { page: 'content-tools' };
 
 

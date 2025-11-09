@@ -24,7 +24,6 @@ const FooterComponent: React.FC<FooterProps> = ({ onNavigate }) => {
             <ul className="space-y-2">
               <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'catalog' })} className="text-brand-charcoal/80 hover:text-brand-brown">Каталог</a></li>
               <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'ai-designer' })} className="text-brand-charcoal/80 hover:text-brand-brown">Интерьеры</a></li>
-              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'virtual-showroom' })} className="text-brand-charcoal/80 hover:text-brand-brown">Виртуальный шоурум</a></li>
               <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'blog-list' })} className="text-brand-charcoal/80 hover:text-brand-brown">Блог</a></li>
               <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'about' })} className="text-brand-charcoal/80 hover:text-brand-brown">О нас</a></li>
               <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'contacts' })} className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</a></li>

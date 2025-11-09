@@ -36,7 +36,6 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onNavigate, onStyleFinderClick
   const navLinks = [
     { label: 'Каталог', view: { page: 'catalog' } as View },
     { label: 'Интерьеры', view: { page: 'ai-designer' } as View },
-    { label: 'Шоурум', view: { page: 'virtual-showroom' } as View },
     { label: 'Блог', view: { page: 'blog-list' } as View },
     { label: 'О нас', view: { page: 'about' } as View },
     { label: 'Контакты', view: { page: 'contacts' } as View },
@@ -48,7 +47,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onNavigate, onStyleFinderClick
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate({ page: 'home' }); }} className="text-4xl font-serif text-brand-brown">
+            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate({ page: 'home' }); }} className="text-4xl font-serif text-brand-brown tracking-wider">
               Aura
             </a>
 
@@ -105,7 +104,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onNavigate, onStyleFinderClick
           <div className="relative h-full w-full max-w-xs bg-brand-cream shadow-xl flex flex-col animate-slide-in-left">
             <div className="px-6 py-4 flex-grow flex flex-col">
               <div className="flex justify-between items-center mb-6">
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate({ page: 'home' }); setIsMobileMenuOpen(false); }} className="text-3xl font-serif text-brand-brown">
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate({ page: 'home' }); setIsMobileMenuOpen(false); }} className="text-3xl font-serif text-brand-brown tracking-wider">
                   Aura
                 </a>
                 <button

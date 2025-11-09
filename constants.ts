@@ -1,3 +1,4 @@
+
 import type { Product, BlogPost } from './types';
 
 export const productsData: Product[] = [

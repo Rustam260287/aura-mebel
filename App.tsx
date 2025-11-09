@@ -21,7 +21,7 @@ import { CartSidebar } from './components/CartSidebar';
 import { FloatingChatButton } from './components/FloatingChatButton';
 import { Skeleton } from './components/Skeleton';
 
-// Lazily loaded components are defined outside the App component
+// Lazily loaded components
 const ProductDetail = lazy(() => import('./components/ProductDetail').then(module => ({ default: module.ProductDetail })));
 const About = lazy(() => import('./components/About').then(module => ({ default: module.About })));
 const Contacts = lazy(() => import('./components/Contacts').then(module => ({ default: module.Contacts })));
@@ -33,7 +33,6 @@ const BlogPostPage = lazy(() => import('./components/BlogPostPage').then(module 
 const VisualSearchPage = lazy(() => import('./components/VisualSearchPage').then(module => ({ default: module.VisualSearchPage })));
 const FurnitureFromPhotoPage = lazy(() => import('./components/FurnitureFromPhotoPage').then(module => ({ default: module.FurnitureFromPhotoPage })));
 const AiDesignerPage = lazy(() => import('./components/AiDesignerPage').then(module => ({ default: module.AiDesignerPage })));
-const VirtualShowroomPage = lazy(() => import('./components/VirtualShowroomPage').then(module => ({ default: module.VirtualShowroomPage })));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
 const AiChatbot = lazy(() => import('./components/AiChatbot').then(module => ({ default: module.AiChatbot })));
@@ -103,13 +102,14 @@ const App: React.FC = () => {
 
     const handleChatSessionEnd = useCallback((sessionMessages: ChatMessage[]) => {
         setChatLogs(prev => [...prev, sessionMessages]);
+        console.log('Chat session logged:', sessionMessages);
     }, []);
 
 
     const handleNavigate = useCallback((newView: View) => {
         if (view.page === 'product') {
-            const newId = (view as { page: 'product', productId: string }).productId;
             setRecentlyViewed(prev => {
+                const newId = (view as { page: 'product', productId: string }).productId;
                 const updatedList = [newId, ...prev.filter(id => id !== newId)];
                 return updatedList.slice(0, 5);
             });
@@ -171,9 +171,7 @@ const App: React.FC = () => {
             case 'furniture-from-photo':
                 return <FurnitureFromPhotoPage />;
             case 'ai-designer':
-                return <AiDesignerPage allProducts={allProducts} onNavigate={handleNavigate} />;
-            case 'virtual-showroom':
-                return <VirtualShowroomPage allProducts={allProducts} />;
+                return <AiDesignerPage onNavigate={handleNavigate} />;
             case 'checkout':
             case 'order-success':
                  return <CheckoutPage view={view} onNavigate={handleNavigate} />;
@@ -212,7 +210,7 @@ const App: React.FC = () => {
                             {!isAdminPage && <Footer onNavigate={handleNavigate} />}
                             {!isAdminPage && <CartSidebar onNavigate={handleNavigate} />}
                             
-                            <Suspense fallback={null}>
+                            <Suspense>
                                 {!isAdminPage && <AiChatbot />}
                             </Suspense>
                             
@@ -220,19 +218,11 @@ const App: React.FC = () => {
                         </div>
                         <ToastContainer />
 
-                        <Suspense fallback={null}>
+                        <Suspense>
                             {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => { setQuickViewProduct(null); handleNavigate({ page: 'product', productId: id }); }} />}
-                        </Suspense>
-                        <Suspense fallback={null}>
                             {styleFinderOpen && <StyleFinderModal allProducts={allProducts} onClose={() => setStyleFinderOpen(null)} onNavigate={(v) => { setStyleFinderOpen(null); handleNavigate(v); }} />}
-                        </Suspense>
-                        <Suspense fallback={null}>
                             {virtualStageProduct && <VirtualStagingModal product={virtualStageProduct} onClose={() => setVirtualStageProduct(null)} />}
-                        </Suspense>
-                        <Suspense fallback={null}>
                             {configureProduct && <ConfiguratorModal product={configureProduct} onClose={() => setConfigureProduct(null)} />}
-                        </Suspense>
-                        <Suspense fallback={null}>
                             {upholsteryProduct && <UpholsteryChangerModal product={upholsteryProduct} onClose={() => setUpholsteryProduct(null)} />}
                         </Suspense>
 

@@ -1,7 +1,7 @@
-import React, { useState, useCallback, DragEvent, memo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, DragEvent, memo } from 'react';
 import type { Product, View } from '../types';
 import { Button } from './Button';
-import { PhotoIcon, SparklesIcon, LoadingIcon, ArrowDownTrayIcon } from './Icons';
+import { PhotoIcon, SparklesIcon, LoadingIcon } from './Icons';
 import { fileToBase64 } from '../utils';
 import { generateRoomMakeover } from '../services/geminiService';
 import { ProductCard } from './ProductCard';
@@ -13,18 +13,7 @@ interface AiRoomMakeoverPageProps {
   onNavigate: (view: View) => void;
 }
 
-// Expanded list of styles, including office styles
-const designStyles = [
-    { name: 'Скандинавский', imageSeed: 'scandinavian-interior-design' },
-    { name: 'Лофт', imageSeed: 'loft-interior-design' },
-    { name: 'Мид-сенчури', imageSeed: 'mid-century-modern-interior' },
-    { name: 'Минимализм', imageSeed: 'minimalist-interior-design' },
-    { name: 'Бохо', imageSeed: 'boho-interior-design' },
-    { name: 'Современный', imageSeed: 'contemporary-interior-design' },
-    { name: 'Офис в стиле лофт', imageSeed: 'loft-office-design' },
-    { name: 'Эко-офис', imageSeed: 'eco-office-design' },
-    { name: 'Биофильный офис', imageSeed: 'biophilic-office-design' },
-];
+const designStyles = ['Скандинавский', 'Лофт', 'Мид-сенчури', 'Минимализм', 'Бохо', 'Современный', 'Современный офис', 'Эко-офис', 'Офис в стиле лофт', 'Индустриальный офис', 'Биофильный офис', 'Классический офис'];
 
 export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ allProducts, onNavigate }) => {
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -34,15 +23,8 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
-    const [selectedStyle, setSelectedStyle] = useState(designStyles[0].name);
+    const [selectedStyle, setSelectedStyle] = useState(designStyles[0]);
     const { addToast } = useToast();
-    const resultsRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (generatedImage) {
-            resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, [generatedImage]);
 
     const handleFile = useCallback((file: File | null) => {
         if (file && file.type.startsWith('image/')) {
@@ -91,16 +73,6 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
     const handleProductSelect = useCallback((productId: string) => {
         onNavigate({ page: 'product', productId });
     }, [onNavigate]);
-    
-    const handleDownloadImage = () => {
-        if (!generatedImage) return;
-        const link = document.createElement('a');
-        link.href = generatedImage;
-        link.download = `aura_makeover_${selectedStyle.toLowerCase().replace(' ', '_')}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
     return (
         <div className="container mx-auto px-6 py-12">
@@ -113,22 +85,27 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 {/* Controls */}
-                <div className="bg-white p-8 rounded-lg shadow-lg space-y-6 lg:sticky lg:top-24">
+                <div className="bg-white p-8 rounded-lg shadow-lg space-y-6">
                     <div>
                         <h3 className="text-xl font-semibold text-brand-charcoal mb-3">1. Загрузите фото вашей комнаты</h3>
-                        <UploadBox onFile={handleFile} isDragOver={isDragOver} setIsDragOver={setIsDragOver} imagePreview={imagePreview} />
+                        <UploadBox onFile={handleFile} isDragOver={isDragOver} setIsDragOver={setIsDragOver} />
                     </div>
                     <div>
                         <h3 className="text-xl font-semibold text-brand-charcoal mb-3">2. Выберите стиль</h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="flex flex-wrap gap-3">
                             {designStyles.map(style => (
-                                <StyleCard 
-                                    key={style.name} 
-                                    style={style} 
-                                    isSelected={selectedStyle === style.name} 
-                                    onClick={() => setSelectedStyle(style.name)} 
+                                <button
+                                    key={style}
+                                    onClick={() => setSelectedStyle(style)}
                                     disabled={isLoading}
-                                />
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all duration-200 text-sm ${
+                                        selectedStyle === style
+                                            ? 'bg-brand-brown text-white shadow-md'
+                                            : 'bg-brand-cream-dark text-brand-charcoal hover:bg-brand-cream-dark/80 disabled:opacity-50'
+                                    }`}
+                                >
+                                    {style}
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -151,18 +128,13 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
                 </div>
 
                 {/* Results */}
-                <div ref={resultsRef} className="bg-white p-8 rounded-lg shadow-lg min-h-[600px] flex flex-col items-center justify-center">
+                <div className="bg-white p-8 rounded-lg shadow-lg min-h-[400px] flex flex-col items-center justify-center">
                     {isLoading ? (
                         <LoadingState />
                     ) : generatedImage && imagePreview ? (
-                        <div className="w-full animate-subtle-fade-in">
-                            <h3 className="text-2xl font-serif text-brand-charcoal mb-4 text-center">Ваш новый интерьер</h3>
-                            <BeforeAfterSlider beforeImage={imagePreview} afterImage={generatedImage} />
-                            <Button variant="outline" onClick={handleDownloadImage} className="w-full mt-4">
-                                <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
-                                Скачать результат
-                            </Button>
-                        </div>
+                        <BeforeAfterSlider beforeImage={imagePreview} afterImage={generatedImage} />
+                    ) : imagePreview ? (
+                         <img src={imagePreview} alt="Предпросмотр комнаты" className="rounded-lg shadow-md w-full max-w-full object-contain" />
                     ) : (
                         <div className="text-center text-gray-500">
                             <SparklesIcon className="w-24 h-24 mx-auto text-gray-300" />
@@ -190,43 +162,26 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
     );
 });
 
-const UploadBox: React.FC<{onFile: (file: File) => void; isDragOver: boolean; setIsDragOver: (isOver: boolean) => void; imagePreview: string | null;}> = ({ onFile, isDragOver, setIsDragOver, imagePreview }) => (
+const UploadBox: React.FC<{onFile: (file: File) => void; isDragOver: boolean; setIsDragOver: (isOver: boolean) => void;}> = ({ onFile, isDragOver, setIsDragOver }) => (
     <label
         onDragOver={(e: DragEvent) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={(e: DragEvent) => { e.preventDefault(); setIsDragOver(false); }}
         onDrop={(e: DragEvent) => { e.preventDefault(); setIsDragOver(false); onFile(e.dataTransfer.files[0]); }}
-        className={`relative flex justify-center items-center w-full h-48 border-2 ${isDragOver ? 'border-brand-brown' : 'border-gray-300'} border-dashed rounded-md cursor-pointer transition-colors bg-brand-cream/30 hover:bg-brand-cream/60 overflow-hidden`}
+        className={`flex justify-center w-full h-48 px-6 py-5 border-2 ${isDragOver ? 'border-brand-brown' : 'border-gray-300'} border-dashed rounded-md cursor-pointer transition-colors bg-brand-cream/30 hover:bg-brand-cream/60`}
     >
-        {imagePreview ? (
-            <img src={imagePreview} alt="Предпросмотр комнаты" className="w-full h-full object-cover" />
-        ) : (
-            <div className="space-y-1 text-center">
-                <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
-                    <span className="relative font-medium text-brand-brown hover:text-brand-brown-dark">
-                        <span>Загрузите файл</span>
-                        <input type="file" className="sr-only" onChange={(e) => e.target.files && onFile(e.target.files[0])} accept="image/png, image/jpeg, image/webp" />
-                    </span>
-                    <p className="pl-1">или перетащите</p>
-                </div>
+        <div className="space-y-1 text-center self-center">
+            <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <div className="flex text-sm text-gray-600">
+                <span className="relative font-medium text-brand-brown hover:text-brand-brown-dark">
+                    <span>Загрузите файл</span>
+                    <input type="file" className="sr-only" onChange={(e) => e.target.files && onFile(e.target.files[0])} accept="image/png, image/jpeg, image/webp" />
+                </span>
+                <p className="pl-1">или перетащите его сюда</p>
             </div>
-        )}
+            <p className="text-xs text-gray-500">PNG, JPG, WEBP до 10MB</p>
+        </div>
     </label>
 );
-
-const StyleCard: React.FC<{style: {name: string, imageSeed: string}, isSelected: boolean, onClick: () => void, disabled: boolean}> = ({style, isSelected, onClick, disabled}) => (
-    <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`relative rounded-lg overflow-hidden group border-2 transition-all duration-200 ${isSelected ? 'border-brand-brown ring-2 ring-brand-brown ring-offset-2' : 'border-transparent hover:border-brand-brown/50'} disabled:opacity-60 disabled:cursor-not-allowed`}
-    >
-        <img src={`https://picsum.photos/seed/${style.imageSeed}/200/200`} alt={style.name} className="w-full h-24 object-cover" />
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-        <span className="absolute bottom-1 left-0 right-0 text-white text-xs sm:text-sm font-semibold text-center drop-shadow-md p-1 bg-black/30">{style.name}</span>
-        {isSelected && <div className="absolute inset-0 animate-pulse border-2 border-white/80 rounded-lg"></div>}
-    </button>
-);
-
 
 const LoadingState: React.FC = () => (
     <div className="text-center text-brand-charcoal p-8">

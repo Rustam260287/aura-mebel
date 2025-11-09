@@ -87,7 +87,6 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = memo(({ product
         imageUrls: imageUrlsString.split(',').map(url => url.trim()).filter(Boolean),
     };
     await onSave(finalData);
-    addToast(`Товар "${finalData.name}" успешно сохранен!`, 'success');
   };
 
   const isEditMode = product !== null;
@@ -105,7 +104,7 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = memo(({ product
           </Button>
         </header>
 
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
+        <form id="product-edit-form" onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Название</label>
             <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown" />
@@ -150,4 +149,25 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = memo(({ product
             <h3 className="text-lg font-medium text-gray-800 border-b pb-2 mb-3">Характеристики</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <div>
-                    <label htmlFor="material" className="block text-sm font-medium text-
+                    <label htmlFor="material" className="block text-sm font-medium text-gray-700">Материал</label>
+                    <input type="text" name="material" id="material" value={formData.details.material} onChange={handleDetailsChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown" />
+                </div>
+                <div>
+                    <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700">Размеры</label>
+                    <input type="text" name="dimensions" id="dimensions" value={formData.details.dimensions} onChange={handleDetailsChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown" />
+                </div>
+                <div>
+                    <label htmlFor="care" className="block text-sm font-medium text-gray-700">Уход</label>
+                    <input type="text" name="care" id="care" value={formData.details.care} onChange={handleDetailsChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown" />
+                </div>
+            </div>
+          </div>
+        </form>
+        <footer className="p-6 border-t bg-gray-50 flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>Отмена</Button>
+          <Button type="submit" form="product-edit-form">Сохранить</Button>
+        </footer>
+      </div>
+    </div>
+  );
+});
