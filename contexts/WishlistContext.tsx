@@ -1,41 +1,59 @@
-
-
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-// Fix: Corrected import path for Product type
-import type { Product } from '../types';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 
 interface WishlistContextType {
-  wishlistItems: number[];
-  addToWishlist: (productId: number) => void;
-  removeFromWishlist: (productId: number) => void;
-  isInWishlist: (productId: number) => boolean;
+  wishlistItems: string[];
+  addToWishlist: (id: string) => void;
+  removeFromWishlist: (id: string) => void;
+  isInWishlist: (id: string) => boolean;
   wishlistCount: number;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [wishlistItems, setWishlistItems] = useState<number[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<string[]>(() => {
+    try {
+      const item = window.localStorage.getItem('aura_wishlist');
+      return item ? JSON.parse(item) : [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  });
 
-  const addToWishlist = useCallback((productId: number) => {
-    setWishlistItems(prev => {
-        if (prev.includes(productId)) return prev;
-        return [...prev, productId];
-    });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('aura_wishlist', JSON.stringify(wishlistItems));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [wishlistItems]);
+
+
+  const addToWishlist = useCallback((id: string) => {
+    setWishlistItems(prev => [...new Set([...prev, id])]);
   }, []);
 
-  const removeFromWishlist = useCallback((productId: number) => {
-    setWishlistItems(prev => prev.filter(id => id !== productId));
+  const removeFromWishlist = useCallback((id: string) => {
+    setWishlistItems(prev => prev.filter(itemId => itemId !== id));
   }, []);
 
-  const isInWishlist = useCallback((productId: number) => {
-    return wishlistItems.includes(productId);
+  const isInWishlist = useCallback((id: string) => {
+    return wishlistItems.includes(id);
   }, [wishlistItems]);
 
   const wishlistCount = wishlistItems.length;
 
+  const contextValue = useMemo(() => ({
+    wishlistItems,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    wishlistCount
+  }), [wishlistItems, addToWishlist, removeFromWishlist, isInWishlist, wishlistCount]);
+
   return (
-    <WishlistContext.Provider value={{ wishlistItems, addToWishlist, removeFromWishlist, isInWishlist, wishlistCount }}>
+    <WishlistContext.Provider value={contextValue}>
       {children}
     </WishlistContext.Provider>
   );

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Skeleton } from './Skeleton';
 
-export const ProductCardSkeleton: React.FC = () => {
+export const ProductCardSkeleton: React.FC = memo(() => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-subtle-fade-in">
       <Skeleton className="w-full h-64" />
@@ -15,4 +15,4 @@ export const ProductCardSkeleton: React.FC = () => {
       </div>
     </div>
   );
-};
+});

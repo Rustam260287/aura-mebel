@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StarIcon } from './Icons';
 
 interface StarRatingProps {
@@ -6,9 +6,9 @@ interface StarRatingProps {
   maxRating?: number;
 }
 
-export const StarRating: React.FC<StarRatingProps> = ({ rating, maxRating = 5 }) => {
+export const StarRating: React.FC<StarRatingProps> = memo(({ rating, maxRating = 5 }) => {
   const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 !== 0; // This logic can be expanded for half stars if needed
+  const hasHalfStar = rating % 1 !== 0; 
   const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
 
   return (
@@ -16,10 +16,9 @@ export const StarRating: React.FC<StarRatingProps> = ({ rating, maxRating = 5 })
       {[...Array(fullStars)].map((_, i) => (
         <StarIcon key={`full-${i}`} className="w-5 h-5 text-brand-gold fill-current" />
       ))}
-      {/* Logic for half star can be added here if needed */}
       {[...Array(emptyStars)].map((_, i) => (
         <StarIcon key={`empty-${i}`} className="w-5 h-5 text-gray-300" />
       ))}
     </div>
   );
-};
+});

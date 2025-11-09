@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import type { BlogPost, Product, View } from '../types';
 import { ProductCard } from './ProductCard';
 import { Button } from './Button';
@@ -10,10 +10,10 @@ interface BlogPostPageProps {
   onNavigate: (view: View) => void;
 }
 
-export const BlogPostPage: React.FC<BlogPostPageProps> = ({ post, allProducts, onNavigate }) => {
+const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts, onNavigate }) => {
   const relatedProducts = allProducts.filter(p => post.relatedProducts.includes(p.id));
 
-  const handleProductSelect = (productId: number) => {
+  const handleProductSelect = (productId: string) => {
     onNavigate({ page: 'product', productId });
   };
   
@@ -58,3 +58,5 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = ({ post, allProducts, o
     </div>
   );
 };
+
+export const BlogPostPage = memo(BlogPostPageComponent);

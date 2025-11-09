@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from './Button';
 import { XMarkIcon } from './Icons';
 
@@ -9,6 +9,7 @@ interface FilterSidebarProps {
   selectedCategories: string[];
   onCategoryChange: (categories: string[]) => void;
   priceRange: [number, number];
+  maxPrice: number;
   onPriceChange: (range: [number, number]) => void;
   sortOption: SortOption;
   onSortChange: (option: SortOption) => void;
@@ -17,11 +18,12 @@ interface FilterSidebarProps {
   onClose: () => void;
 }
 
-export const FilterSidebar: React.FC<FilterSidebarProps> = ({
+export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
   allCategories,
   selectedCategories,
   onCategoryChange,
   priceRange,
+  maxPrice,
   onPriceChange,
   sortOption,
   onSortChange,
@@ -61,16 +63,16 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {/* Price Filter */}
       <div>
-        <h4 className="font-semibold text-brand-charcoal mb-3">Цена</h4>
+        <h4 className="font-semibold text-brand-charcoal mb-3">Цена до</h4>
         <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>{priceRange[0].toLocaleString()} ₽</span>
-            <span>{priceRange[1].toLocaleString()} ₽</span>
+            <span className="font-medium">{priceRange[1].toLocaleString()} ₽</span>
         </div>
         <input 
             type="range"
             min="0"
-            max="10000000"
-            step="50000"
+            max={maxPrice}
+            step="1000"
             value={priceRange[1]}
             onChange={e => onPriceChange([priceRange[0], Number(e.target.value)])}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-brown"
@@ -136,4 +138,4 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </div>
     </>
   );
-};
+});

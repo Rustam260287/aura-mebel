@@ -1,29 +1,28 @@
-
 export interface Review {
   author: string;
   rating: number;
   comment: string;
-  date: string;
+  date: string; // ISO date string
 }
 
-export interface ProductDetails {
-  dimensions: string;
-  material: string;
-  care: string;
-}
-
-export interface ConfigurationChoice {
+export interface ConfigurationOptionChoice {
     name: string;
 }
 
 export interface ConfigurationOption {
-    id: string;
-    name: string;
-    choices: ConfigurationChoice[];
+  id: string;
+  name: string;
+  choices: ConfigurationOptionChoice[];
+}
+
+export interface ProductDetails {
+    dimensions: string;
+    material: string;
+    care: string;
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
@@ -38,25 +37,44 @@ export interface Product {
   configurationOptions?: ConfigurationOption[];
 }
 
-export type View =
-  | { page: 'home' }
-  | { page: 'catalog'; category?: string; searchTerm?: string }
-  | { page: 'product'; productId: number }
-  | { page: 'wishlist' }
-  | { page: 'about' }
-  | { page: 'contacts' }
-  | { page: 'lookbook' }
-  | { page: 'visual-search' }
-  | { page: 'blog-list' }
-  | { page: 'blog-post'; postId: number }
-  | { page: 'admin' };
-
 export interface BlogPost {
-  id: number;
+  id: string;
   title: string;
   excerpt: string;
-  content: string;
-  relatedProducts: number[];
+  content: string; // HTML content
+  relatedProducts: string[]; // array of product IDs
   imagePrompt: string;
   imageUrl: string;
+}
+
+export type View =
+  | { page: 'home' }
+  | { page: 'catalog', category?: string, searchTerm?: string }
+  | { page: 'product', productId: string }
+  | { page: 'wishlist' }
+  | { page: 'ai-room-makeover' }
+  | { page: 'blog-list' }
+  | { page: 'blog-post', postId: string }
+  | { page: 'about' }
+  | { page: 'contacts' }
+  | { page: 'checkout' }
+  | { page: 'order-success', orderId: string }
+  | { page: 'admin' }
+  | { page: 'visual-search' }
+  | { page: 'furniture-from-photo' }
+  | { page: 'ai-designer' }
+  | { page: 'virtual-showroom' }
+  | { page: 'content-tools' };
+
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
+export interface ChatAnalysisResult {
+    actionableInsights: string[];
+    themes: string[];
+    mentionedProducts: string[];
+    commonQuestions: string[];
 }

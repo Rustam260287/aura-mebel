@@ -1,4 +1,4 @@
-import React, { useState, useCallback, DragEvent } from 'react';
+import React, { useState, useCallback, DragEvent, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { PhotoIcon, XMarkIcon } from './Icons';
@@ -8,10 +8,10 @@ import { ProductCard } from './ProductCard';
 
 interface VisualSearchPageProps {
   allProducts: Product[];
-  onProductSelect: (productId: number) => void;
+  onProductSelect: (productId: string) => void;
 }
 
-export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts, onProductSelect }) => {
+export const VisualSearchPage: React.FC<VisualSearchPageProps> = memo(({ allProducts, onProductSelect }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -54,13 +54,13 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
     handleFile(e.dataTransfer.files?.[0] || null);
   };
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = useCallback(() => {
     setImageFile(null);
     setImagePreview(null);
     setRecommendedProducts([]);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!imageFile) return;
 
     setIsLoading(true);
@@ -83,7 +83,7 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [imageFile, allProducts]);
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -151,4 +151,4 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
       )}
     </div>
   );
-};
+});

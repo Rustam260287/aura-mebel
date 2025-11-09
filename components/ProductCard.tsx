@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
@@ -8,12 +8,12 @@ import { useToast } from '../contexts/ToastContext';
 
 interface ProductCardProps {
   product: Product;
-  onProductSelect: (productId: number) => void;
+  onProductSelect: (productId: string) => void;
   onQuickView?: (product: Product) => void;
   onVirtualStage?: (product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSelect, onQuickView, onVirtualStage }) => {
+export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProductSelect, onQuickView, onVirtualStage }) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToast } = useToast();
   const [isAnimatingHeart, setIsAnimatingHeart] = useState(false);
@@ -21,7 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
 
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (isWished) {
       removeFromWishlist(product.id);
@@ -30,21 +30,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
       addToWishlist(product.id);
       addToast(`${product.name} добавлен в избранное`, 'success');
       setIsAnimatingHeart(true);
-      setTimeout(() => setIsAnimatingHeart(false), 400); // Reset animation state
+      setTimeout(() => setIsAnimatingHeart(false), 400);
     }
-  };
+  }, [isWished, product.id, product.name, removeFromWishlist, addToWishlist, addToast]);
 
-  const handleQuickViewClick = (e: React.MouseEvent) => {
+  const handleQuickViewClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onQuickView?.(product);
-  }
+  }, [onQuickView, product]);
   
-  const handleVirtualStageClick = (e: React.MouseEvent) => {
+  const handleVirtualStageClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onVirtualStage?.(product);
-  };
+  }, [onVirtualStage, product]);
 
-  const handleShareClick = async (e: React.MouseEvent) => {
+  const handleShareClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     const shareData = {
         title: product.name,
@@ -66,7 +66,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
             addToast('Не удалось скопировать ссылку.', 'error');
         }
     }
-  };
+  }, [product.name, addToast]);
 
 
   return (
@@ -82,7 +82,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
       <div className="absolute top-3 right-3 z-10 flex flex-col sm:flex-row gap-2">
         <button
           onClick={handleShareClick}
-          className="p-2 bg-white/70 rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
+          className="p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
           title="Поделиться"
           aria-label="Поделиться товаром"
         >
@@ -91,7 +91,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
         {onVirtualStage && (
           <button
             onClick={handleVirtualStageClick}
-            className="p-2 bg-white/70 rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
+            className="p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
             style={{ transitionDelay: '50ms' }}
             title="Примерить в интерьере"
             aria-label="Примерить в интерьере"
@@ -101,11 +101,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
         )}
         <button
           onClick={handleWishlistToggle}
-          className={`p-2 bg-white/70 rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0 ${isAnimatingHeart ? 'animate-heart-pop' : ''}`}
+          className={`p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0 ${isAnimatingHeart ? 'animate-heart-pop' : ''}`}
           style={{ transitionDelay: '100ms' }}
           aria-label={isWished ? 'Удалить из избранного' : 'Добавить в избранное'}
         >
-          <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-red-500 fill-current' : 'text-gray-500 hover:text-red-500'}`} />
+          <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
         </button>
       </div>
       <div className="relative overflow-hidden">
@@ -116,10 +116,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
           loading="lazy"
         />
         {onQuickView && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+           <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button 
               variant="primary" 
-              className="w-full" 
+              className="bg-white/90 !text-brand-brown hover:bg-white backdrop-blur-sm shadow-lg" 
               onClick={handleQuickViewClick}
             >
               Быстрый просмотр
@@ -145,4 +145,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onProductSele
       </div>
     </div>
   );
-};
+});

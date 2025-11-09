@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -28,8 +28,10 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setTimeout(() => removeToast(id), 4000); // Auto-dismiss after 4 seconds
   }, [removeToast]);
 
+  const contextValue = useMemo(() => ({ addToast, toasts }), [addToast, toasts]);
+
   return (
-    <ToastContext.Provider value={{ addToast, toasts }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
     </ToastContext.Provider>
   );

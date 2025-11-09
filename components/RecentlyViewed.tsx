@@ -1,19 +1,14 @@
-
-
-import React from 'react';
-// Fix: Corrected import path for ProductCard component
+import React, { memo } from 'react';
 import { ProductCard } from './ProductCard';
-// Fix: Corrected import path for Product type
 import type { Product } from '../types';
 
 interface RecentlyViewedProps {
   products: Product[];
-  onProductSelect: (productId: number) => void;
+  onProductSelect: (productId: string) => void;
   onVirtualStage: (product: Product) => void;
 }
 
-export const RecentlyViewed: React.FC<RecentlyViewedProps> = ({ products, onProductSelect, onVirtualStage }) => {
-  // Не отображаем компонент, если нет просмотренных товаров или есть только один (текущий, который уже отфильтрован)
+const RecentlyViewedComponent: React.FC<RecentlyViewedProps> = ({ products, onProductSelect, onVirtualStage }) => {
   if (products.length === 0) {
     return null;
   }
@@ -34,3 +29,5 @@ export const RecentlyViewed: React.FC<RecentlyViewedProps> = ({ products, onProd
     </div>
   );
 };
+
+export const RecentlyViewed = memo(RecentlyViewedComponent);

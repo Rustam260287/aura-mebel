@@ -10,11 +10,13 @@ import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 interface AdminBlogProps {
   posts: BlogPost[];
-  setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
   allProducts: Product[];
+  onAddPost: (postData: Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }) => Promise<void>;
+  onEditPost: (post: BlogPost) => void;
+  onDeletePost: (postId: string) => Promise<void>;
 }
 
-export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, setPosts, allProducts }) => {
+export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, allProducts, onAddPost, onEditPost, onDeletePost }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
@@ -24,13 +26,8 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, setPosts, allProduc
         setIsLoading(true);
         try {
             const newPostData = await generateBlogPost(allProducts);
-            const newPost: BlogPost = {
-                ...newPostData,
-                id: Date.now(),
-                imageUrl: `https://picsum.photos/seed/${encodeURIComponent(newPostData.imagePrompt)}/800/600`,
-            };
-            setPosts(prevPosts => [newPost, ...prevPosts]);
-            addToast('Новая статья успешно сгенерирована!', 'success');
+            await onAddPost(newPostData);
+            addToast('Новая статья успешно сгенерирована и сохранена!', 'success');
         } catch (error) {
             addToast(error instanceof Error ? error.message : 'Не удалось создать статью', 'error');
         } finally {
@@ -38,16 +35,19 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, setPosts, allProduc
         }
     };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
       if (postToDelete) {
         setIsDeleting(true);
-        // Simulate API call
-        setTimeout(() => {
-          setPosts(prevPosts => prevPosts.filter(p => p.id !== postToDelete.id));
+        try {
+          await onDeletePost(postToDelete.id);
           addToast(`Статья "${postToDelete.title}" была удалена.`, 'success');
+        } catch (error) {
+           addToast(`Не удалось удалить статью.`, 'error');
+           console.error(error);
+        } finally {
           setPostToDelete(null);
           setIsDeleting(false);
-        }, 500);
+        }
       }
     };
 
@@ -82,7 +82,7 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, setPosts, allProduc
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center justify-center gap-2">
-                                            <Button variant="outline" size="sm" disabled>
+                                            <Button variant="outline" size="sm" onClick={() => onEditPost(post)}>
                                                 <PencilSquareIcon className="w-4 h-4" />
                                             </Button>
                                             <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={() => setPostToDelete(post)}>

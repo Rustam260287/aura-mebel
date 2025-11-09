@@ -1,13 +1,20 @@
-
-
-
-import React from 'react';
+import React, { memo } from 'react';
 import { useCart, CartItem } from '../contexts/CartContext';
+import type { View } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from './Icons';
 
-export const CartSidebar: React.FC = () => {
+interface CartSidebarProps {
+  onNavigate: (view: View) => void;
+}
+
+const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
     const { isCartOpen, toggleCart, cartItems, removeFromCart, updateQuantity, cartCount, totalPrice } = useCart();
+
+    const handleCheckout = () => {
+        toggleCart();
+        onNavigate({ page: 'checkout' });
+    };
 
     if (!isCartOpen) return null;
 
@@ -44,7 +51,7 @@ export const CartSidebar: React.FC = () => {
                             <span className="font-semibold text-brand-charcoal">Итого:</span>
                             <span className="font-serif text-brand-brown">{totalPrice.toLocaleString('ru-RU')} ₽</span>
                         </div>
-                        <Button size="lg" className="w-full">
+                        <Button size="lg" className="w-full" onClick={handleCheckout}>
                             Оформить заказ
                         </Button>
                     </footer>
@@ -71,7 +78,7 @@ const CartSidebarItem: React.FC<CartSidebarItemProps> = ({ item, onRemove, onUpd
                         <div className="text-xs text-gray-600 mt-1 space-y-0.5">
                             {Object.entries(item.configuration).map(([key, value]) => (
                                 <div key={key}>
-                                    <span className="font-medium">{item.configurationOptions?.find(opt => opt.id === key)?.name}:</span> {value}
+                                    <span className="font-medium">{(item.configurationOptions?.find(opt => opt.id === key)?.name || key)}:</span> {value}
                                 </div>
                             ))}
                         </div>
@@ -92,3 +99,5 @@ const CartSidebarItem: React.FC<CartSidebarItemProps> = ({ item, onRemove, onUpd
         </div>
     );
 }
+
+export const CartSidebar = memo(CartSidebarComponent);

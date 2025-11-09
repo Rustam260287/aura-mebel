@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, SparklesIcon } from './Icons';
 import { changeProductUpholstery } from '../services/geminiService';
 import { imageUrlToBase64 } from '../utils';
-import { Skeleton } from './Skeleton';
 
 interface UpholsteryChangerModalProps {
   product: Product;
   onClose: () => void;
 }
 
-export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = ({ product, onClose }) => {
+export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = memo(({ product, onClose }) => {
   const [prompt, setPrompt] = useState('');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +83,7 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = ({ 
                 {isLoading && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center bg-brand-cream/80 rounded-lg">
                         <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-brand-brown"></div>
-                        <p className="mt-4 font-semibold text-brand-charcoal">Магия в процессе...</p>
+                        <p className="mt-4 font-semibold text-brand-charcoal">Идет работа...</p>
                     </div>
                 )}
                 
@@ -101,4 +100,4 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = ({ 
       </div>
     </div>
   );
-};
+});

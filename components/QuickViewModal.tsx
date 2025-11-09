@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
@@ -9,10 +8,10 @@ import { useCart } from '../contexts/CartContext';
 interface QuickViewModalProps {
   product: Product;
   onClose: () => void;
-  onViewDetails: (productId: number) => void;
+  onViewDetails: (productId: string) => void;
 }
 
-export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose, onViewDetails }) => {
+export const QuickViewModal: React.FC<QuickViewModalProps> = memo(({ product, onClose, onViewDetails }) => {
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
@@ -55,4 +54,4 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
       </div>
     </div>
   );
-};
+});

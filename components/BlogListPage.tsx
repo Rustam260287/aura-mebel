@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
-import type { BlogPost, Product, View } from '../types';
-import { Button } from './Button';
-import { SparklesIcon } from './Icons';
-import { generateBlogPost } from '../services/geminiService';
-import { useToast } from '../contexts/ToastContext';
-import { Skeleton } from './Skeleton';
+import React, { useState, memo } from 'react';
+import type { BlogPost, View } from '../types';
+import { Pagination } from './Pagination';
 
 interface BlogListPageProps {
   posts: BlogPost[];
-  setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
-  allProducts: Product[];
   onNavigate: (view: View) => void;
 }
+
+const POSTS_PER_PAGE = 9;
 
 const BlogPostCard: React.FC<{ post: BlogPost; onClick: () => void }> = ({ post, onClick }) => (
     <div 
@@ -36,74 +32,57 @@ const BlogPostCard: React.FC<{ post: BlogPost; onClick: () => void }> = ({ post,
     </div>
 );
 
-const BlogCardSkeleton: React.FC = () => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <Skeleton className="h-64 w-full" />
-        <div className="p-6">
-            <Skeleton className="h-8 w-3/4 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-2/3 mb-4" />
-            <Skeleton className="h-6 w-1/3" />
-        </div>
-    </div>
-);
+const BlogListPageComponent: React.FC<BlogListPageProps> = ({ posts, onNavigate }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    
+    const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
 
-export const BlogListPage: React.FC<BlogListPageProps> = ({ posts, setPosts, allProducts, onNavigate }) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const { addToast } = useToast();
+    const currentPosts = posts.slice(
+        (currentPage - 1) * POSTS_PER_PAGE,
+        currentPage * POSTS_PER_PAGE
+    );
 
-    const handleGeneratePost = async () => {
-        setIsLoading(true);
-        try {
-            const newPostData = await generateBlogPost(allProducts);
-            const newPost: BlogPost = {
-                ...newPostData,
-                id: Date.now(),
-                // Use picsum for a dynamic placeholder image based on the generated prompt
-                imageUrl: `https://picsum.photos/seed/${encodeURIComponent(newPostData.imagePrompt)}/800/600`,
-            };
-            setPosts(prevPosts => [newPost, ...prevPosts]);
-            addToast('Новая статья успешно сгенерирована!', 'success');
-        } catch (error) {
-            console.error(error);
-            addToast(error instanceof Error ? error.message : 'Не удалось создать статью', 'error');
-        } finally {
-            setIsLoading(false);
-        }
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
         <div className="container mx-auto px-6 py-12">
-            <div className="text-center mb-8">
+            <div className="text-center mb-12">
                 <h1 className="text-5xl font-serif text-brand-brown mb-3">Наш Блог</h1>
                 <p className="text-lg text-brand-charcoal max-w-2xl mx-auto">Идеи, советы и вдохновение для вашего идеального дома от нашего ИИ-дизайнера.</p>
             </div>
 
-            <div className="flex justify-center mb-12">
-                <Button size="lg" onClick={handleGeneratePost} disabled={isLoading}>
-                    <SparklesIcon className={`w-6 h-6 mr-3 ${isLoading ? 'animate-spin' : ''}`} />
-                    {isLoading ? 'Создаем статью...' : 'Сгенерировать новую статью'}
-                </Button>
-            </div>
-
-            {posts.length === 0 && !isLoading && (
+            {posts.length === 0 ? (
                  <div className="text-center py-16 text-brand-charcoal">
                     <p className="text-xl">В блоге пока нет статей.</p>
-                    <p>Нажмите кнопку выше, чтобы наш ИИ написал первую!</p>
+                    <p>Загляните позже, чтобы увидеть новые публикации!</p>
                 </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {currentPosts.map(post => (
+                            <BlogPostCard 
+                                key={post.id} 
+                                post={post}
+                                onClick={() => onNavigate({ page: 'blog-post', postId: post.id })}
+                            />
+                        ))}
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="mt-16">
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
+                    )}
+                </>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {isLoading && <BlogCardSkeleton />}
-                {posts.map(post => (
-                    <BlogPostCard 
-                        key={post.id} 
-                        post={post}
-                        onClick={() => onNavigate({ page: 'blog-post', postId: post.id })}
-                    />
-                ))}
-            </div>
         </div>
     );
 };
+
+export const BlogListPage = memo(BlogListPageComponent);

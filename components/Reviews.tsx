@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import type { Review } from '../types';
 import { StarRating } from './StarRating';
 import { StarIcon } from './Icons';
@@ -79,7 +79,7 @@ const AddReviewForm: React.FC<{ onAddReview: (review: Omit<Review, 'date'>) => v
 };
 
 
-export const Reviews: React.FC<ReviewsProps> = ({ reviews, onAddReview }) => {
+export const Reviews: React.FC<ReviewsProps> = memo(({ reviews, onAddReview }) => {
   return (
     <div className="mt-12">
       <h3 className="text-2xl font-serif text-brand-brown mb-6">Отзывы покупателей</h3>
@@ -106,4 +106,4 @@ export const Reviews: React.FC<ReviewsProps> = ({ reviews, onAddReview }) => {
       )}
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useWishlist } from '../contexts/WishlistContext';
 import type { Product, View } from '../types';
 import { ProductCard } from './ProductCard';
@@ -12,13 +12,13 @@ interface WishlistPageProps {
   onVirtualStage: (product: Product) => void;
 }
 
-export const WishlistPage: React.FC<WishlistPageProps> = ({ allProducts, onNavigate, onQuickView, onVirtualStage }) => {
+const WishlistPageComponent: React.FC<WishlistPageProps> = ({ allProducts, onNavigate, onQuickView, onVirtualStage }) => {
   const { wishlistItems } = useWishlist();
   const swipeHandlers = useSwipe({ onSwipeRight: () => onNavigate({ page: 'catalog' }) });
 
 
   const wishedProducts = allProducts.filter(p => wishlistItems.includes(p.id));
-  const handleProductSelect = (productId: number) => {
+  const handleProductSelect = (productId: string) => {
     onNavigate({ page: 'product', productId });
   };
 
@@ -51,3 +51,5 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({ allProducts, onNavig
     </div>
   );
 };
+
+export const WishlistPage = memo(WishlistPageComponent);

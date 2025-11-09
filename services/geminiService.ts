@@ -1,360 +1,444 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-// Fix: Corrected import path for Product type
-import type { Product, BlogPost } from '../types';
+import type { Product, BlogPost, ChatMessage, ChatAnalysisResult } from '../types';
+import { imageUrlToBase64 } from "../utils";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+const API_KEY = process.env.API_KEY;
+
+if (!API_KEY) {
+  // A console error is better than throwing, as it may prevent the app from rendering.
+  // The AI features will fail gracefully with a missing key.
+  console.error("API_KEY environment variable not set. AI features will not work.");
+}
+
+// FIX: Initialize GoogleGenAI with a named apiKey object.
+const ai = new GoogleGenAI({ apiKey: API_KEY || "MISSING_API_KEY" });
+
+const textModel = 'gemini-2.5-flash';
+const proModel = 'gemini-2.5-pro';
+const imageModel = 'gemini-2.5-flash-image';
+
+// Helper to safely parse JSON
+const safeJsonParse = <T>(jsonString: string): T | null => {
+    try {
+        // Attempt to parse the string. If it's already an object (which can happen), just return it.
+        if (typeof jsonString === 'object') return jsonString as T;
+        return JSON.parse(jsonString) as T;
+    } catch (e) {
+        console.error("Failed to parse JSON:", e, "String was:", jsonString);
+        return null;
+    }
+};
+
 
 export const getStyleRecommendations = async (prompt: string, products: Product[]): Promise<string[]> => {
-  if (!prompt.trim()) {
-    return [];
-  }
+    const productNames = products.map(p => p.name);
 
-  const productNames = products.map(p => p.name).join(', ');
-
-  const fullPrompt = `Вы — эксперт-помощник по дизайну интерьеров для магазина 'Aura Мебель'. 
-Клиент хочет оформить свою комнату в следующем стиле: "${prompt}".
-Вот список доступных товаров: ${productNames}.
-Основываясь на пожеланиях клиента, порекомендуйте до 3 товаров, которые идеально подойдут.
-Верните ответ в виде JSON-массива строк, где каждая строка — это точное 'name' рекомендованного товара из предоставленного списка.
-Например: ["Название товара 1", "Название товара 2"].
-Верните только JSON-массив.`;
-
-  try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: fullPrompt,
+        model: textModel,
+        contents: `Пользователь ищет мебель для своего интерьера. Вот его описание: "${prompt}". А вот список доступных товаров: ${productNames.join(', ')}. Пожалуйста, верни JSON-массив с названиями самых подходящих товаров из списка. Не включай ничего, чего нет в списке. Верни только JSON.`,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+            }
+        }
+    });
+    
+    const result = safeJsonParse<string[]>(response.text);
+    return result || [];
+};
+
+export const getVisualRecommendations = async (base64Image: string, mimeType: string, products: Product[]): Promise<string[]> => {
+    const productList = products.map(p => `- ${p.name} (${p.category})`).join('\n');
+
+    const imagePart = {
+        inlineData: { data: base64Image, mimeType },
+    };
+    const textPart = {
+        text: `Проанализируй стиль интерьера на этом фото. Вот список доступных товаров:\n${productList}\n\nПожалуйста, порекомендуй 3-5 самых подходящих товаров из списка. Верни JSON-массив только с их названиями.`,
+    };
+
+    const response = await ai.models.generateContent({
+        model: textModel,
+        contents: { parts: [imagePart, textPart] },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+            }
+        }
+    });
+
+    const result = safeJsonParse<string[]>(response.text);
+    return result || [];
+};
+
+export const generateRoomMakeover = async (base64Image: string, mimeType: string, style: string, products: Product[]): Promise<{ generatedImage: string; recommendedProductNames: string[] }> => {
+    // Step 1: Generate the redesigned room image.
+    const imageGenResponse = await ai.models.generateContent({
+        model: imageModel,
+        contents: {
+            parts: [
+                { inlineData: { data: base64Image, mimeType } },
+                { text: `Полностью переделай интерьер этой комнаты в стиле "${style}". Замени существующую мебель новой, подходящей по стилю. Сделай изображение фотореалистичным. Сохрани архитектуру комнаты (окна, двери, стены).` }
+            ]
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        }
+    });
+    
+    const imagePart = imageGenResponse.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    
+    // Improved error handling for image generation
+    if (!imagePart || !imagePart.inlineData) {
+        const finishReason = imageGenResponse.candidates?.[0]?.finishReason;
+        if (finishReason === 'SAFETY') {
+             throw new Error("Не удалось создать изображение из-за ограничений безопасности. Пожалуйста, попробуйте другое фото или выберите другой стиль.");
+        }
+        throw new Error("AI не смог сгенерировать изображение комнаты. Пожалуйста, попробуйте еще раз.");
+    }
+    const generatedImage = imagePart.inlineData.data;
+
+    // Step 2: Analyze the generated image to find matching products.
+    // Wrap this in a try/catch to allow partial success (image generated, but products not found)
+    try {
+        const productList = products.map(p => `- ${p.name} (Категория: ${p.category})`).join('\n');
+
+        const productRecResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash', // Use the faster model for stability
+            contents: {
+                parts: [
+                    { inlineData: { data: generatedImage, mimeType: 'image/png' } },
+                    { text: `Это сгенерированный ИИ-дизайн интерьера. Вот список доступной мебели:\n${productList}\n\nОпредели, какие 3-5 товаров из этого списка наиболее точно соответствуют мебели на сгенерированном изображении. Верни JSON-массив с точными названиями товаров из списка. Не выдумывай названия.` }
+                ]
+            },
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                }
+            }
+        });
+        
+        const recommendedProductNames = safeJsonParse<string[]>(productRecResponse.text) || [];
+        return { generatedImage, recommendedProductNames };
+
+    } catch (e) {
+        console.error("AI product recommendation failed after image generation:", e);
+        // Partial success: return the generated image but with empty recommendations.
+        // The UI can then show the image and a message about products.
+        return { generatedImage, recommendedProductNames: [] };
+    }
+};
+
+export const generateInteriorDesign = async (
+  roomType: string,
+  style: string,
+  colorPalette: string,
+  products: Product[]
+): Promise<{ generatedImage: string; recommendedProductNames: string[] }> => {
+  // Step 1: Generate the room image based on text prompts.
+  const imageGenPrompt = `Фотореалистичное изображение. Дизайн интерьера для комнаты типа "${roomType}" в стиле "${style}". Основная цветовая палитра: ${colorPalette}. В комнате должна быть соответствующая мебель, например, для гостиной - диван и столик, для спальни - кровать и комод. Изображение должно быть светлым, уютным и выглядеть как фотография из журнала по дизайну.`;
+
+  const imageGenResponse = await ai.models.generateContent({
+    model: imageModel,
+    contents: {
+      parts: [{ text: imageGenPrompt }]
+    },
+    config: {
+      responseModalities: [Modality.IMAGE],
+    }
+  });
+
+  const imagePart = imageGenResponse.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+  if (!imagePart || !imagePart.inlineData) {
+    const finishReason = imageGenResponse.candidates?.[0]?.finishReason;
+    if (finishReason === 'SAFETY') {
+      throw new Error("Не удалось создать изображение из-за ограничений безопасности. Пожалуйста, попробуйте другую комбинацию.");
+    }
+    throw new Error("AI не смог сгенерировать изображение комнаты. Пожалуйста, попробуйте еще раз.");
+  }
+  const generatedImage = imagePart.inlineData.data;
+
+  // Step 2: Analyze the generated image to find matching products.
+  try {
+    const productList = products.map(p => `- ${p.name} (Категория: ${p.category})`).join('\n');
+
+    const productRecResponse = await ai.models.generateContent({
+      model: textModel,
+      contents: {
+        parts: [
+          { inlineData: { data: generatedImage, mimeType: 'image/png' } },
+          { text: `Это сгенерированный ИИ-дизайн интерьера. Вот список доступной мебели:\n${productList}\n\nОпредели, какие 3-5 товаров из этого списка наиболее точно соответствуют мебели на сгенерированном изображении. Верни JSON-массив с точными названиями товаров из списка. Не выдумывай названия.` }
+        ]
+      },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.ARRAY,
-          items: {
-            type: Type.STRING
-          }
+          items: { type: Type.STRING }
         }
       }
     });
 
-    const jsonText = response.text.trim();
-    const recommendations = JSON.parse(jsonText);
-    
-    // Validate that the response is an array of strings
-    if (Array.isArray(recommendations) && recommendations.every(item => typeof item === 'string')) {
-      return recommendations;
-    } else {
-      console.error("Gemini API returned an invalid format:", recommendations);
-      return [];
-    }
+    const recommendedProductNames = safeJsonParse<string[]>(productRecResponse.text) || [];
+    return { generatedImage, recommendedProductNames };
 
-  } catch (error) {
-    console.error("Error fetching style recommendations:", error);
-    throw new Error("Не удалось получить рекомендации. Пожалуйста, попробуйте еще раз.");
+  } catch (e) {
+    console.error("AI product recommendation failed after image generation:", e);
+    return { generatedImage, recommendedProductNames: [] };
   }
 };
 
-export const getVisualRecommendations = async (
-  base64Image: string,
-  mimeType: string,
-  products: Product[]
-): Promise<string[]> => {
-  const productInfo = products.map(p => `'${p.name}' (Категория: ${p.category})`).join('; ');
-
-  const textPart = {
-    text: `Ты — ИИ-стилист для мебельного магазина 'Aura Мебель'. Проанализируй это изображение интерьера.
-    1. Определи основные предметы мебели на фото (например, диван, стол, кресло).
-    2. Для каждого найденного предмета подбери наиболее похожий товар из следующего списка: ${productInfo}.
-    3. Верни результат в виде JSON-массива строк, где каждая строка — это точное 'name' рекомендованного товара из списка. Порекомендуй до 3-х самых релевантных товаров.
-    Пример: ["Минималистичный дубовый каркас кровати", "Кофейный столик с мраморной столешницей"].
-    Верни только JSON-массив. Если на фото нет мебели или ничего не подходит, верни пустой массив.`,
-  };
-
-  const imagePart = {
-    inlineData: {
-      data: base64Image,
-      mimeType,
-    },
-  };
-
-  try {
+export const generateSeamlessTexture = async (prompt: string): Promise<string> => {
+    const fullPrompt = `Фотореалистичное изображение. Бесшовная, повторяющаяся текстура материала для 3D-модели: "${prompt}". Текстура должна идеально стыковаться по всем краям без видимых швов. Квадратное изображение.`;
+    
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: { parts: [imagePart, textPart] },
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.STRING,
-          },
+        model: imageModel,
+        contents: {
+            parts: [{ text: fullPrompt }]
         },
-      },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        }
     });
 
-    const jsonText = response.text.trim();
-    const recommendations = JSON.parse(jsonText);
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
 
-    if (Array.isArray(recommendations) && recommendations.every(item => typeof item === 'string')) {
-      return recommendations;
-    } else {
-      console.error("Gemini API returned an invalid format for visual search:", recommendations);
-      return [];
-    }
-  } catch (error) {
-    console.error("Error fetching visual recommendations:", error);
-    throw new Error("Не удалось обработать изображение. Пожалуйста, попробуйте другой файл.");
-  }
-};
-
-
-export const getAiConfigurationDescription = async (
-  productName: string,
-  configuration: Record<string, string>
-): Promise<string> => {
-  const configString = Object.entries(configuration)
-    .map(([optionName, choiceName]) => {
-        // A simple mapping from id to a more readable name for the prompt
-        const readableOptionNames: Record<string, string> = {
-            'fabric': 'Обивка',
-            'color': 'Цвет',
-            'legs': 'Ножки'
-        };
-        return `- ${readableOptionNames[optionName] || optionName}: ${choiceName}`;
-    })
-    .join('\n');
-
-  const fullPrompt = `Ты — креативный копирайтер и дизайнер интерьеров для мебельного магазина 'Aura Мебель'.
-Клиент сконфигурировал товар "${productName}" со следующими параметрами:
-${configString}
-
-Напиши яркое, вдохновляющее и привлекательное описание для этого уникального товара (2-3 предложения). Опиши, как он будет смотреться в интерьере, какие ощущения вызовет. Сделай текст живым и эмоциональным. Верни только текст описания, без лишних фраз вроде "Вот описание:".`;
-  
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: fullPrompt,
-    });
-    return response.text.trim();
-  } catch (error) {
-    console.error("Error fetching AI description:", error);
-    throw new Error("Не удалось сгенерировать описание. Пожалуйста, попробуйте еще раз.");
-  }
-};
-
-export const generateStagedImage = async (
-  product: Product,
-  roomImageBase64: string,
-  roomImageMimeType: string
-): Promise<string> => {
-  const prompt = `Это фотография комнаты пользователя. Твоя задача — реалистично вписать в эту сцену следующий предмет мебели: 
-  - Название: ${product.name}
-  - Описание: ${product.description}
-  - Размеры: ${product.details.dimensions}
-
-  Требования:
-  1.  Размести предмет мебели в подходящем месте комнаты. Если в комнате уже есть похожий предмет (например, старый диван), замени его на новый.
-  2.  Сохрани стиль, освещение, тени и перспективу оригинального изображения. 
-  3.  Итоговый результат должен быть максимально фотореалистичным.
-  4.  Верни только измененное изображение, без текста или других элементов.`;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: roomImageBase64,
-              mimeType: roomImageMimeType,
-            },
-          },
-          { text: prompt },
-        ],
-      },
-      config: {
-        responseModalities: [Modality.IMAGE],
-      },
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return part.inlineData.data;
-      }
+    if (!imagePart || !imagePart.inlineData) {
+        const finishReason = response.candidates?.[0]?.finishReason;
+        if (finishReason === 'SAFETY') {
+            throw new Error("Не удалось создать текстуру из-за ограничений безопасности. Попробуйте другой запрос.");
+        }
+        throw new Error("AI не смог сгенерировать текстуру.");
     }
     
-    throw new Error("API не вернуло изображение.");
-
-  } catch (error) {
-    console.error("Error generating staged image:", error);
-    throw new Error("Не удалось сгенерировать изображение. Попробуйте еще раз.");
-  }
+    return imagePart.inlineData.data;
 };
 
-export const changeProductUpholstery = async (
-  base64Image: string,
-  mimeType: string,
-  prompt: string
-): Promise<string> => {
-  const fullPrompt = `Твоя задача — изменить обивку мебели на этом изображении. 
-Новая обивка должна быть: "${prompt}".
-Важно: сохрани фон, форму мебели, тени и освещение без изменений. Измени только текстуру и цвет обивки.
-Верни только готовое изображение без какого-либо текста.`;
 
-  try {
+export const getAiConfigurationDescription = async (productName: string, options: Record<string, string>): Promise<string> => {
+    const optionsString = Object.entries(options).map(([key, value]) => `${key}: ${value}`).join(', ');
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: base64Image,
-              mimeType: mimeType,
-            },
-          },
-          { text: fullPrompt },
-        ],
-      },
-      config: {
-        responseModalities: [Modality.IMAGE],
-      },
+        model: textModel,
+        contents: `Напиши короткое, привлекательное и "вкусное" описание для товара "${productName}" с выбранными опциями: ${optionsString}. Описание должно быть в одно-два предложения.`,
+    });
+    return response.text;
+};
+
+export const generateConfiguredImage = async (base64Image: string, mimeType: string, productName: string, visualPrompt: string): Promise<string> => {
+    const response = await ai.models.generateContent({
+        model: imageModel,
+        contents: {
+            parts: [
+                { inlineData: { data: base64Image, mimeType } },
+                { text: `Измени этот предмет мебели (${productName}), применив следующие характеристики: ${visualPrompt}. Сохрани фон и общую форму.` }
+            ]
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        }
+    });
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imagePart || !imagePart.inlineData) {
+        throw new Error("AI не вернул изображение.");
+    }
+    return imagePart.inlineData.data;
+};
+
+export const generateStagedImage = async (product: Product, roomBase64: string, roomMimeType: string): Promise<string> => {
+    const { base64: productBase64, mimeType: productMimeType } = await imageUrlToBase64(product.imageUrls[0]);
+    
+    const response = await ai.models.generateContent({
+        model: imageModel,
+        contents: {
+            parts: [
+                { inlineData: { data: roomBase64, mimeType: roomMimeType }, },
+                { text: `Это фото комнаты. Пожалуйста, вставь в этот интерьер следующий предмет мебели: '${product.name}'. Вот его фото:` },
+                { inlineData: { data: productBase64, mimeType: productMimeType }, },
+                { text: "Постарайся сделать это максимально реалистично, сохранив освещение, тени и пропорции. Мебель должна выглядеть как часть комнаты."}
+            ]
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        }
     });
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return part.inlineData.data;
-      }
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imagePart || !imagePart.inlineData) {
+        throw new Error("AI не смог разместить мебель.");
     }
-    
-    throw new Error("API не вернуло изображение.");
+    return imagePart.inlineData.data;
+};
 
-  } catch (error) {
-    console.error("Error changing upholstery image:", error);
-    throw new Error("Не удалось изменить обивку. Попробуйте другой запрос.");
-  }
+export const changeProductUpholstery = async (base64Image: string, mimeType: string, prompt: string): Promise<string> => {
+    const response = await ai.models.generateContent({
+        model: imageModel,
+        contents: {
+            parts: [
+                { inlineData: { data: base64Image, mimeType } },
+                { text: `Измени обивку этого предмета мебели на: "${prompt}". Не меняй фон, форму и другие детали.` }
+            ]
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        }
+    });
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imagePart || !imagePart.inlineData) {
+        throw new Error("AI не смог изменить обивку.");
+    }
+    return imagePart.inlineData.data;
+};
+
+export const generateBlogPost = async (allProducts: Product[]): Promise<Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }> => {
+    const productSample = allProducts.slice(0, 15).map(p => ({ name: p.name, category: p.category, id: p.id }));
+    
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: `Ты — AI-копирайтер для мебельного магазина "Aura". Напиши интересную статью для блога на одну из тем: скандинавский стиль, лофт, мид-сенчури, как выбрать диван, организация хранения. Свяжи статью с некоторыми из этих товаров: ${JSON.stringify(productSample)}.
+        Ответ должен быть в формате JSON со следующими полями: "title" (яркий заголовок), "excerpt" (короткий анонс на 2-3 предложения), "content" (основной текст статьи в формате HTML, с параграфами <p>, списками <ul><li> и заголовками <h3>), "relatedProducts" (массив ID 2-3 подходящих товаров из списка), "imagePrompt" (промпт на английском для генерации изображения к статье, например: "a cozy scandinavian living room with a grey sofa").`,
+        config: { responseMimeType: 'application/json' }
+    });
+    
+    const blogData = safeJsonParse<Omit<BlogPost, 'id' | 'imageUrl'>>(response.text);
+    if (!blogData) throw new Error("AI не смог сгенерировать данные для статьи.");
+
+    const imageResponse = await ai.models.generateContent({
+        model: imageModel,
+        contents: { parts: [{ text: blogData.imagePrompt }] },
+        config: { responseModalities: [Modality.IMAGE] },
+    });
+    
+    const imagePart = imageResponse.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imagePart || !imagePart.inlineData) throw new Error("AI не смог сгенерировать изображение.");
+
+    return { ...blogData, imageBase64: imagePart.inlineData.data };
 };
 
 export const generateSeoProductDescription = async (product: Product): Promise<string> => {
-  const prompt = `Ты — профессиональный SEO-копирайтер для мебельного магазина "Aura Мебель". Твоя задача — написать уникальное и привлекательное SEO-описание для товара.
-
-**Данные о товаре:**
-- Название: ${product.name}
-- Категория: ${product.category}
-- Базовое описание: ${product.description}
-- Материал: ${product.details.material}
-- Размеры: ${product.details.dimensions}
-
-**Требования к тексту:**
-1.  **Объем:** 800-1200 символов.
-2.  **Стиль:** Вдохновляющий, но информативный. Подчеркни натуральность материалов, качество и преимущества дизайна.
-3.  **SEO-ключи:** Органично впиши в текст ключевые слова, релевантные товару. Например: "купить ${product.name.toLowerCase()}", "мебель для ${product.category.toLowerCase()} Альметьевск", "кровать из массива", "дизайнерская мебель". Используй синонимы и связанные понятия.
-4.  **Структура:** Начни с привлекающего внимание абзаца, затем опиши детали и преимущества, и закончи призывом к действию.
-5.  **Уникальность:** Текст должен быть на 100% уникальным.
-6.  **Выходной формат:** Только готовый текст, без заголовков вроде "Вот описание:".`;
-
-  try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+        model: textModel,
+        contents: `Напиши SEO-оптимизированное описание для товара. Оно должно быть уникальным, содержать ключевые слова и призывать к покупке.
+        Название: ${product.name}
+        Категория: ${product.category}
+        Материалы: ${product.details.material}
+        Описание: ${product.description}
+        Магазин: Aura Мебель`,
     });
-    return response.text.trim();
-  } catch (error) {
-    console.error("Error generating SEO description:", error);
-    throw new Error("Не удалось сгенерировать SEO-описание.");
-  }
+    return response.text;
 };
 
-export const generateSeoCategoryDescription = async (categoryName: string, products: Product[]): Promise<string> => {
-  const productExamples = products.slice(0, 5).map(p => p.name).join(', ');
-
-  const prompt = `Ты — профессиональный SEO-копирайтер для мебельного магазина "Aura Мебель". Твоя задача — написать уникальное и привлекательное SEO-описание для страницы категории товаров.
-
-**Данные о категории:**
-- Название категории: ${categoryName}
-- Примеры товаров в категории: ${productExamples}
-
-**Требования к тексту:**
-1.  **Объем:** 500-800 символов.
-2.  **Стиль:** Вдохновляющий и гостеприимный. Расскажи, какую атмосферу можно создать с помощью мебели из этой категории.
-3.  **SEO-ключи:** Органично впиши в текст ключевые слова: "купить мебель для ${categoryName.toLowerCase()} в Альметьевске", "мебель для ${categoryName.toLowerCase()} недорого", "стильная мебель для ${categoryName.toLowerCase()}". Упомяни название магазина "Aura Мебель".
-4.  **Содержание:** Кратко опиши стиль представленной мебели. Можно упомянуть 1-2 примера товаров, чтобы сделать текст более живым.
-5.  **Уникальность:** Текст должен быть на 100% уникальным.
-6.  **Выходной формат:** Только готовый текст, без заголовков вроде "Вот описание:".`;
-
-  try {
+export const generateSeoBlogContent = async (post: BlogPost): Promise<{ title: string; excerpt: string }> => {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+        model: textModel,
+        contents: `Оптимизируй заголовок и анонс для этой статьи в блоге для SEO и большей привлекательности.
+        Текущий заголовок: "${post.title}"
+        Текущий анонс: "${post.excerpt}"
+        Верни результат в формате JSON с полями "title" и "excerpt".`,
+        config: { responseMimeType: "application/json" }
     });
-    return response.text.trim();
-  } catch (error) {
-    console.error("Error generating SEO category description:", error);
-    throw new Error("Не удалось сгенерировать описание для категории.");
-  }
+    const result = safeJsonParse<{ title: string; excerpt: string }>(response.text);
+    if (!result) throw new Error("AI не смог сгенерировать SEO-контент.");
+    return result;
 };
 
-export const generateBlogPost = async (products: Product[]): Promise<Omit<BlogPost, 'id' | 'imageUrl'>> => {
-      const productExamples = products.map(p => ({ name: p.name, description: p.description })).slice(0, 10);
 
-      const prompt = `Ты — эксперт по дизайну интерьеров и контент-маркетолог для мебельного магазина "Aura Мебель". Твоя задача — написать интересную и полезную статью для блога.
+export interface FurnitureBlueprint {
+  furnitureName: string;
+  blueprint: {
+    estimatedDimensions: string[];
+    materials: string[];
+  };
+  priceEstimate: {
+    materialsCost: number;
+    laborCost: number;
+    totalPrice: number;
+  };
+}
 
-      **Требования:**
-      1.  **Придумай тему:** Выбери привлекательную тему, связанную с мебелью, декором или созданием уюта в доме (например, "5 шагов к идеальной гостиной", "Как выбрать диван: гид для новичков", "Тренды в дизайне спальни 2024").
-      2.  **Напиши статью:**
-          *   **Заголовок (title):** Яркий и цепляющий.
-          *   **Содержание (content):** Текст статьи объемом 1500-2000 символов. Структурируй текст: введение, несколько абзацев по теме, заключение. Для форматирования используй перенос строки (\n) для разделения абзацев.
-          *   **Интеграция товаров:** В процессе написания, органично и ненавязчиво упомяни 1 или 2 товара из списка ниже. Упоминай только их точные названия.
-          *   **Краткий анонс (excerpt):** Короткое описание статьи (2-3 предложения) для превью в списке блога.
-      3.  **Придумай промпт для изображения (imagePrompt):** Создай краткий, но детальный промпт на английском языке для AI-генератора изображений (например, DALL-E или Midjourney), который бы создал красивую тематическую иллюстрацию для статьи. Промпт должен быть в стиле "photorealistic interior design, scandinavian living room with a cozy gray sofa, warm blankets, large window with natural light, minimalist decor, calm and serene atmosphere".
-      4.  **Верни результат** в виде JSON-объекта.
+export const generateFurnitureFromPhoto = async (base64Image: string, mimeType: string, dimensions: { width: string; height: string; depth: string }): Promise<FurnitureBlueprint> => {
+    const imagePart = { inlineData: { data: base64Image, mimeType } };
+    const textPart = {
+        text: `Проанализируй изображение этой мебели. Создай план для её производства и рассчитай примерную стоимость. Желаемые габариты: Ширина ~${dimensions.width}см, Высота ~${dimensions.height}см, Глубина ~${dimensions.depth}см.
+        Верни ответ в формате JSON со следующей структурой:
+        {
+          "furnitureName": "Название мебели (например, 'Светло-серый диван в скандинавском стиле')",
+          "blueprint": {
+            "estimatedDimensions": ["- Основная рама: 180x80x70 см", "- Подушки сиденья (2 шт): 90x80x15 см"],
+            "materials": ["- Каркас: массив сосны", "- Обивка: серая рогожка, 15 метров", "- Наполнитель: ППУ высокой плотности"]
+          },
+          "priceEstimate": {
+            "materialsCost": 25000, // в рублях
+            "laborCost": 15000, // в рублях
+            "totalPrice": 40000 // в рублях
+          }
+        }`,
+    };
 
-      **Список доступных товаров для упоминания:**
-      ${JSON.stringify(productExamples)}
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: { parts: [imagePart, textPart] },
+        config: { responseMimeType: 'application/json' }
+    });
 
-      **Требуемый формат ответа (строго JSON):**
-      {
-        "title": "Заголовок статьи",
-        "excerpt": "Краткий анонс статьи...",
-        "content": "Полный текст статьи с абзацами...",
-        "relatedProducts": ["Название упомянутого товара 1", "Название упомянутого товара 2"],
-        "imagePrompt": "Промпт для генерации изображения на английском"
-      }`;
+    const result = safeJsonParse<FurnitureBlueprint>(response.text);
+    if (!result) throw new Error("AI не смог обработать изображение и создать чертеж.");
+    return result;
+};
 
-      try {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
+export const analyzeChatLogs = async (chatLogs: ChatMessage[][]): Promise<ChatAnalysisResult> => {
+    // Take the last 20 conversations to keep the prompt size reasonable
+    const logsToAnalyze = chatLogs.slice(-20);
+    const prompt = `
+        Ты — бизнес-аналитик для мебельного магазина "Aura Мебель". Проанализируй следующие логи чатов между AI-помощником и клиентами. 
+        Твоя задача — извлечь ценные инсайты для владельца магазина.
+
+        Вот логи чатов:
+        ${JSON.stringify(logsToAnalyze)}
+
+        Проанализируй эти диалоги и верни результат в формате JSON со следующей структурой:
+        {
+          "actionableInsights": ["список из 2-3 конкретных предложений по улучшению бизнеса, основанных на диалогах"],
+          "themes": ["список из 4-5 основных тем, которые обсуждают клиенты"],
+          "mentionedProducts": ["список названий товаров, которые упоминались в чатах"],
+          "commonQuestions": ["список из 3-4 самых частых вопросов от клиентов"]
+        }
+        
+        Примеры:
+        - actionableInsights: "Клиенты часто спрашивают о доставке в другие города. Рекомендуется добавить раздел 'Доставка' на сайт."
+        - themes: "Доставка", "Материалы обивки", "Скидки", "Наличие товара"
+        - mentionedProducts: "Скандинавский диван 'Хюгге'", "Дубовый стол 'Лес'"
+        - commonQuestions: "Какие есть варианты цвета?", "Сколько стоит доставка?", "Из какого материала сделана мебель?"
+
+        Убедись, что ответ — это валидный JSON, без лишнего текста до или после него.
+    `;
+    
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: prompt,
+        config: {
             responseMimeType: 'application/json',
             responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                excerpt: { type: Type.STRING },
-                content: { type: Type.STRING },
-                relatedProducts: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING }
-                },
-                imagePrompt: { type: Type.STRING }
-              },
-              required: ["title", "excerpt", "content", "relatedProducts", "imagePrompt"],
+                type: Type.OBJECT,
+                properties: {
+                    actionableInsights: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    themes: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    mentionedProducts: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    commonQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                }
             }
-          }
-        });
+        }
+    });
 
-        const jsonResult = JSON.parse(response.text.trim());
-        
-        const relatedProductIds = jsonResult.relatedProducts
-            .map((name: string) => products.find(p => p.name === name)?.id)
-            .filter((id: number | undefined): id is number => id !== undefined);
-
-        return {
-          title: jsonResult.title,
-          excerpt: jsonResult.excerpt,
-          content: jsonResult.content.replace(/\n/g, '<br /><br />'),
-          relatedProducts: relatedProductIds,
-          imagePrompt: jsonResult.imagePrompt,
-        };
-      } catch (error) {
-        console.error("Error generating blog post:", error);
-        throw new Error("Не удалось сгенерировать статью для блога.");
-      }
-    };
+    const result = safeJsonParse<ChatAnalysisResult>(response.text);
+    if (!result) {
+        throw new Error("Не удалось проанализировать чаты. ИИ вернул некорректный формат данных.");
+    }
+    return result;
+};

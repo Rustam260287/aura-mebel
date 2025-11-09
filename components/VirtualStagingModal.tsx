@@ -1,4 +1,4 @@
-import React, { useState, useCallback, DragEvent } from 'react';
+import React, { useState, useCallback, DragEvent, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { PhotoIcon, XMarkIcon, SparklesIcon } from './Icons';
@@ -10,7 +10,7 @@ interface VirtualStagingModalProps {
   onClose: () => void;
 }
 
-export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = ({ product, onClose }) => {
+export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = memo(({ product, onClose }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = ({ produc
             {imagePreview && (
               <div className="flex flex-col gap-4">
                 <Button size="lg" className="w-full" onClick={handleSubmit} disabled={!imageFile || isLoading}>
-                  {isLoading ? 'Магия в процессе...' : 'Сгенерировать'}
+                  {isLoading ? 'Создание...' : 'Сгенерировать'}
                 </Button>
                 <Button variant="outline" size="sm" onClick={resetState}>Загрузить другое фото</Button>
               </div>
@@ -162,4 +162,4 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = ({ produc
       </div>
     </div>
   );
-};
+});

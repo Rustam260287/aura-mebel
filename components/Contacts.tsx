@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export const Contacts: React.FC = () => {
+export const Contacts: React.FC = memo(() => {
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-lg">
@@ -47,4 +47,4 @@ export const Contacts: React.FC = () => {
       </div>
     </div>
   );
-};
+});

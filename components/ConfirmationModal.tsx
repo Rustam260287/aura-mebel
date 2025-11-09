@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from './Button';
 import { XMarkIcon, ArrowPathIcon } from './Icons';
 
@@ -13,7 +13,7 @@ interface ConfirmationModalProps {
   isLoading?: boolean;
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = memo(({
   isOpen,
   onClose,
   onConfirm,
@@ -69,4 +69,4 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       </div>
     </div>
   );
-};
+});

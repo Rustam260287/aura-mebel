@@ -1,7 +1,16 @@
+import React, { memo } from 'react';
+import type { View } from '../types';
 
-import React from 'react';
+interface FooterProps {
+  onNavigate: (view: View) => void;
+}
 
-export const Footer: React.FC = () => {
+const FooterComponent: React.FC<FooterProps> = ({ onNavigate }) => {
+  const handleNavClick = (e: React.MouseEvent, view: View) => {
+    e.preventDefault();
+    onNavigate(view);
+  };
+
   return (
     <footer className="bg-brand-cream-dark mt-auto">
       <div className="container mx-auto px-6 py-12">
@@ -13,10 +22,13 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Навигация</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-brand-charcoal/80 hover:text-brand-brown">Каталог</a></li>
-              <li><a href="#" className="text-brand-charcoal/80 hover:text-brand-brown">Блог</a></li>
-              <li><a href="#" className="text-brand-charcoal/80 hover:text-brand-brown">О нас</a></li>
-              <li><a href="#" className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'catalog' })} className="text-brand-charcoal/80 hover:text-brand-brown">Каталог</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'ai-designer' })} className="text-brand-charcoal/80 hover:text-brand-brown">Интерьеры</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'virtual-showroom' })} className="text-brand-charcoal/80 hover:text-brand-brown">Виртуальный шоурум</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'blog-list' })} className="text-brand-charcoal/80 hover:text-brand-brown">Блог</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'about' })} className="text-brand-charcoal/80 hover:text-brand-brown">О нас</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'contacts' })} className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</a></li>
+              <li><a href="#" onClick={(e) => handleNavClick(e, { page: 'admin' })} className="text-brand-charcoal/80 hover:text-brand-brown">Админ-панель</a></li>
             </ul>
           </div>
           <div>
@@ -41,3 +53,5 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+
+export const Footer = memo(FooterComponent);

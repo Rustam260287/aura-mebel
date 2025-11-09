@@ -1,5 +1,5 @@
 {
-  "name": "copy-of-aura-мебель",
+  "name": "aura-мебель",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "react": "^19.2.0",
-    "@google/genai": "^1.28.0",
     "react-dom": "^19.2.0",
-    "firebase": "^12.5.0"
+    "three": "0.165.0",
+    "@react-three/fiber": "8.16.8",
+    "@react-three/drei": "9.108.3",
+    "@google/genai": "1.28.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

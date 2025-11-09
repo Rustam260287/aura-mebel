@@ -1,4 +1,4 @@
-import { useState, TouchEvent } from 'react';
+import { useState, TouchEvent, useCallback, useMemo } from 'react';
 
 interface SwipeInput {
   onSwipeRight?: () => void;
@@ -19,19 +19,19 @@ export const useSwipe = ({ onSwipeRight, onSwipeLeft }: SwipeInput): SwipeOutput
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [touchEndY, setTouchEndY] = useState<number | null>(null);
 
-  const onTouchStart = (e: TouchEvent<HTMLElement>) => {
+  const onTouchStart = useCallback((e: TouchEvent<HTMLElement>) => {
     setTouchEndX(null);
     setTouchEndY(null);
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
-  };
+  }, []);
 
-  const onTouchMove = (e: TouchEvent<HTMLElement>) => {
+  const onTouchMove = useCallback((e: TouchEvent<HTMLElement>) => {
     setTouchEndX(e.targetTouches[0].clientX);
     setTouchEndY(e.targetTouches[0].clientY);
-  };
+  }, []);
 
-  const onTouchEnd = () => {
+  const onTouchEnd = useCallback(() => {
     if (!touchStartX || !touchEndX || !touchStartY || !touchEndY) return;
 
     const distanceX = touchEndX - touchStartX;
@@ -39,7 +39,6 @@ export const useSwipe = ({ onSwipeRight, onSwipeLeft }: SwipeInput): SwipeOutput
     const isRightSwipe = distanceX > MIN_SWIPE_DISTANCE;
     const isLeftSwipe = distanceX < -MIN_SWIPE_DISTANCE;
 
-    // Убеждаемся, что это горизонтальный свайп, а не вертикальная прокрутка
     if (Math.abs(distanceX) > Math.abs(distanceY)) {
         if (isRightSwipe && onSwipeRight) {
             onSwipeRight();
@@ -54,11 +53,11 @@ export const useSwipe = ({ onSwipeRight, onSwipeLeft }: SwipeInput): SwipeOutput
     setTouchEndX(null);
     setTouchStartY(null);
     setTouchEndY(null);
-  };
+  }, [touchStartX, touchEndX, touchStartY, touchEndY, onSwipeRight, onSwipeLeft]);
 
-  return {
+  return useMemo(() => ({
     onTouchStart,
     onTouchMove,
     onTouchEnd,
-  };
+  }), [onTouchStart, onTouchMove, onTouchEnd]);
 };

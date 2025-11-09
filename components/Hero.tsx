@@ -1,21 +1,32 @@
-import React from 'react';
-// Fix: Corrected import path for Button component
+import React, { useRef, memo } from 'react';
 import { Button } from './Button';
 import type { View } from '../types';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 
 interface HeroProps {
     onNavigate: (view: View) => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+const HeroComponent: React.FC<HeroProps> = ({ onNavigate }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const isVisible = useIntersectionObserver(ref, { threshold: 0.1 });
+
   return (
-    <div className="bg-brand-cream">
+    <div className="bg-brand-cream" ref={ref}>
       <div className="container mx-auto px-6 py-20 text-center">
-        <h1 className="text-5xl md:text-7xl font-serif text-brand-brown mb-4 animate-subtle-fade-in">Создайте дом своей мечты</h1>
-        <p className="text-lg md:text-xl text-brand-charcoal max-w-3xl mx-auto mb-10 animate-subtle-fade-in leading-relaxed" style={{ animationDelay: '0.2s' }}>
+        <h1 className={`text-5xl md:text-7xl font-serif text-brand-brown mb-4 ${isVisible ? 'animate-subtle-fade-in' : 'opacity-0'}`}>
+          Создайте дом своей мечты
+        </h1>
+        <p 
+          className={`text-lg md:text-xl text-brand-charcoal max-w-3xl mx-auto mb-10 leading-relaxed ${isVisible ? 'animate-subtle-fade-in' : 'opacity-0'}`}
+          style={{ animationDelay: isVisible ? '0.2s' : '0s' }}
+        >
           Откройте для себя коллекцию стильной и качественной мебели, созданной для комфорта и вдохновения.
         </p>
-        <div className="animate-subtle-fade-in" style={{ animationDelay: '0.4s' }}>
+        <div 
+          className={`${isVisible ? 'animate-subtle-fade-in' : 'opacity-0'}`}
+          style={{ animationDelay: isVisible ? '0.4s' : '0s' }}
+        >
           <Button size="lg" onClick={() => onNavigate({ page: 'catalog' })}>
             Перейти в каталог
           </Button>
@@ -24,3 +35,5 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     </div>
   );
 };
+
+export const Hero = memo(HeroComponent);

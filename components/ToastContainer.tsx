@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useToast } from '../contexts/ToastContext';
 import { CheckCircleIcon, XMarkIcon } from './Icons';
 
-export const ToastContainer: React.FC = () => {
+export const ToastContainer: React.FC = memo(() => {
   const { toasts } = useToast();
 
   if (toasts.length === 0) {
@@ -12,7 +12,7 @@ export const ToastContainer: React.FC = () => {
   const iconMap = {
     success: <CheckCircleIcon className="w-6 h-6 text-green-500" />,
     error: <XMarkIcon className="w-6 h-6 text-red-500" />,
-    info: <CheckCircleIcon className="w-6 h-6 text-blue-500" />, // Using check for info for simplicity
+    info: <CheckCircleIcon className="w-6 h-6 text-blue-500" />,
   };
 
   return (
@@ -31,4 +31,4 @@ export const ToastContainer: React.FC = () => {
       ))}
     </div>
   );
-};
+});
