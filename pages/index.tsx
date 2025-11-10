@@ -20,32 +20,22 @@ const VirtualStagingModal = dynamic(() => import('../components/VirtualStagingMo
 
 interface HomePageProps {
   allProducts: Product[];
+  error?: string;
 }
 
-export default function HomePage({ allProducts }: HomePageProps) {
+export default function HomePage({ allProducts, error }: HomePageProps) {
   const router = useRouter();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [virtualStageProduct, setVirtualStageProduct] = useState<Product | null>(null);
 
-  const handleNavigate = (view: View) => {
-    switch (view.page) {
-      case 'product':
-        router.push(`/products/${view.productId}`);
-        break;
-      case 'blog-list':
-        router.push('/blog');
-        break;
-      case 'visual-search':
-        router.push('/visual-search');
-        break;
-      case 'ai-room-makeover':
-        router.push('/ai-room-makeover');
-        break;
-      default:
-        console.log('Navigating to:', view);
-    }
-  };
+  if (error) {
+    return <div style={{ color: 'red', padding: '2rem' }}>Error loading data: {error}</div>;
+  }
 
+  const handleNavigate = (view: View) => {
+    // ...
+  };
+  
   const popularProducts = useMemo(() => {
     if (!allProducts || allProducts.length === 0) return [];
     return [...allProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
@@ -53,24 +43,22 @@ export default function HomePage({ allProducts }: HomePageProps) {
 
   return (
     <>
-      <Header onNavigate={handleNavigate} onStyleFinderClick={() => {}} />
+      <Header onStyleFinderClick={() => {}} />
       <main className="flex-grow">
         <Hero onNavigate={handleNavigate} />
         <CategoryShowcase onNavigate={handleNavigate} />
         <Catalog
           allProducts={popularProducts}
-          onProductSelect={(id) => handleNavigate({ page: 'product', productId: id })}
+          onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
           onVirtualStage={setVirtualStageProduct}
           isHomePage
         />
       </main>
-      <Footer onNavigate={handleNavigate} />
-      
-      <CartSidebar onNavigate={handleNavigate} />
+      <Footer />
+      <CartSidebar onNavigate={(view) => router.push(`/${view.page}`)} />
       <AiChatbot />
       <FloatingChatButton />
-
       {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
       {virtualStageProduct && <VirtualStagingModal product={virtualStageProduct} onClose={() => setVirtualStageProduct(null)} />}
     </>
@@ -79,18 +67,17 @@ export default function HomePage({ allProducts }: HomePageProps) {
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const dbAdmin = getAdminDb();
-  if (!dbAdmin) { return { props: { allProducts: [] } }; }
-
+  if (!dbAdmin) {
+    return { props: { allProducts: [], error: "Firebase Admin SDK initialization failed." } };
+  }
   try {
     const productsSnapshot = await dbAdmin.collection('products').get();
     const allProducts = productsSnapshot.docs.map(doc => doc.data());
     return {
-      props: {
-        allProducts: JSON.parse(JSON.stringify(allProducts)),
-      },
+      props: { allProducts: JSON.parse(JSON.stringify(allProducts)) },
     };
   } catch (error) {
     console.error("Error fetching data:", error);
-    return { props: { allProducts: [] } };
+    return { props: { allProducts: [], error: error.message } };
   }
 };

@@ -843,6 +843,8 @@ __turbopack_async_result__();
 return __turbopack_context__.a(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
 
 __turbopack_context__.s([
+    "generateBlogPost",
+    ()=>generateBlogPost,
     "generateRoomMakeover",
     ()=>generateRoomMakeover,
     "getVisualRecommendations",
@@ -854,15 +856,18 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 ]);
 [__TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__] = __turbopack_async_dependencies__.then ? (await __turbopack_async_dependencies__)() : __turbopack_async_dependencies__;
 ;
-const API_KEY = ("TURBOPACK compile-time value", "AIzaSyAh_q6YupVLUAfGUm83Tep93O8Si9_G6lA");
-if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-;
-const ai = new __TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__["GoogleGenAI"]({
-    apiKey: API_KEY || "MISSING_API_KEY"
-});
-// --- ИСПРАВЛЕНИЕ: Разделяем модели для разных задач для большей надежности ---
-const textModel = 'gemini-1.5-pro-latest'; // для текста и JSON
-const imageModel = 'gemini-1.5-flash-latest'; // быстрая модель для генерации изображений
+let ai = null;
+function getAiInstance() {
+    if (!ai) {
+        const API_KEY = ("TURBOPACK compile-time value", "AIzaSyAh_q6YupVLUAfGUm83Tep93O8Si9_G6lA");
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        ai = new __TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__["GoogleGenAI"](API_KEY);
+    }
+    return ai;
+}
+const textModel = 'gemini-1.5-pro-latest';
+const imageModel = 'gemini-1.5-flash-latest';
 const safeJsonParse = (jsonString)=>{
     const cleanedString = jsonString.trim().replace(/^```json/, '').replace(/```$/, '').trim();
     try {
@@ -874,9 +879,11 @@ const safeJsonParse = (jsonString)=>{
     }
 };
 const getVisualRecommendations = async (base64Image, mimeType, products)=>{
+    const ai = getAiInstance();
+    if (!ai) return [];
     const model = ai.getGenerativeModel({
         model: textModel
-    }); // Используем текстовую модель для анализа
+    });
     const productList = products.map((p, index)=>`${index}: ${p.name}`).join('\n');
     const imagePart = {
         inlineData: {
@@ -900,10 +907,11 @@ const getVisualRecommendations = async (base64Image, mimeType, products)=>{
     return safeJsonParse(result.response.text()) || [];
 };
 const generateRoomMakeover = async (base64Image, mimeType, style, products)=>{
-    console.log(`Generating room makeover in style: ${style}`);
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
     const model = ai.getGenerativeModel({
         model: imageModel
-    }); // Используем модель для изображений
+    });
     const imageGenResult = await model.generateContent({
         contents: [
             {
@@ -915,24 +923,21 @@ const generateRoomMakeover = async (base64Image, mimeType, style, products)=>{
                         }
                     },
                     {
-                        text: `Полностью переделай интерьер этой комнаты в стиле "${style}". Замени существующую мебель новой. Сделай изображение фотореалистичным.`
+                        text: `Переделай комнату в стиле "${style}".`
                     }
                 ]
             }
         ]
     });
     const imagePart = imageGenResult.response.candidates?.[0]?.content?.parts?.find((p)=>p.inlineData);
-    if (!imagePart?.inlineData) {
-        console.error("AI failed to generate image. Response:", imageGenResult.response);
-        throw new Error("AI не смог сгенерировать изображение.");
-    }
+    if (!imagePart?.inlineData) throw new Error("AI не смог сгенерировать изображение.");
     const generatedImage = imagePart.inlineData.data;
     const textModelInstance = ai.getGenerativeModel({
         model: textModel
     });
     const productList = products.map((p)=>`- ${p.name}`).join('\n');
     const textPart = {
-        text: `Это сгенерированный дизайн. Вот список мебели:\n${productList}\n\nОпредели 3-5 товаров, которые соответствуют мебели на изображении. Верни ТОЛЬКО JSON-массив с их точными названиями.`
+        text: `Это дизайн. Вот список мебели:\n${productList}\n\nОпредели 3-5 товаров. Верни JSON-массив с названиями.`
     };
     const productRecResult = await textModelInstance.generateContent({
         contents: [
@@ -954,7 +959,32 @@ const generateRoomMakeover = async (base64Image, mimeType, style, products)=>{
         generatedImage,
         recommendedProductNames
     };
-}; // ... и так далее для остальных функций
+};
+const generateBlogPost = async (allProducts)=>{
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
+    const model = ai.getGenerativeModel({
+        model: textModel
+    });
+    const productSample = allProducts.slice(0, 15).map((p)=>({
+            name: p.name,
+            id: p.id
+        }));
+    const blogPrompt = `Ты — AI-копирайтер... (промпт без изменений)`;
+    const blogResult = await model.generateContent(blogPrompt);
+    const blogData = safeJsonParse(blogResult.response.text());
+    if (!blogData?.imagePrompt) throw new Error("AI не смог сгенерировать данные статьи.");
+    const imageModelInstance = ai.getGenerativeModel({
+        model: imageModel
+    });
+    const imageResult = await imageModelInstance.generateContent(blogData.imagePrompt);
+    const imagePart = imageResult.response.candidates?.[0]?.content?.parts?.find((p)=>p.inlineData);
+    if (!imagePart?.inlineData) throw new Error("AI не смог сгенерировать изображение.");
+    return {
+        ...blogData,
+        imageBase64: imagePart.inlineData.data
+    };
+}; // ... и так далее для всех функций
 __turbopack_async_result__();
 } catch(e) { __turbopack_async_result__(e); } }, false);}),
 "[project]/components/StarRating.tsx [ssr] (ecmascript)", ((__turbopack_context__) => {
@@ -2029,13 +2059,12 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react/jsx-dev-runtime [external] (react/jsx-dev-runtime, cjs)");
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react [external] (react, cjs)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/link.js [ssr] (ecmascript)");
 ;
 ;
-const FooterComponent = ({ onNavigate })=>{
-    const handleNavClick = (e, view)=>{
-        e.preventDefault();
-        onNavigate(view);
-    };
+;
+// onNavigate больше не нужен
+const FooterComponent = ()=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("footer", {
         className: "bg-brand-cream-dark mt-auto",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -2051,7 +2080,7 @@ const FooterComponent = ({ onNavigate })=>{
                                     children: "Aura"
                                 }, void 0, false, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 19,
+                                    lineNumber: 11,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("p", {
@@ -2059,13 +2088,13 @@ const FooterComponent = ({ onNavigate })=>{
                                     children: "Мебель, вдохновленная уютом и людьми."
                                 }, void 0, false, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 20,
+                                    lineNumber: 12,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/Footer.tsx",
-                            lineNumber: 18,
+                            lineNumber: 10,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -2075,229 +2104,118 @@ const FooterComponent = ({ onNavigate })=>{
                                     children: "Навигация"
                                 }, void 0, false, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 23,
+                                    lineNumber: 15,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("ul", {
                                     className: "space-y-2",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'catalog'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/catalog",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
                                                 children: "Каталог"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 25,
+                                                lineNumber: 17,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 25,
+                                            lineNumber: 17,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'ai-designer'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/ai-room-makeover",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
-                                                children: "Интерьеры"
+                                                children: "AI-редизайн"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 26,
+                                                lineNumber: 18,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 26,
+                                            lineNumber: 18,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'blog-list'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/blog",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
                                                 children: "Блог"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 27,
+                                                lineNumber: 19,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 27,
+                                            lineNumber: 19,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'about'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/about",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
                                                 children: "О нас"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 28,
+                                                lineNumber: 20,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 28,
+                                            lineNumber: 20,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'contacts'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/contacts",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
                                                 children: "Контакты"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 29,
+                                                lineNumber: 21,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 29,
+                                            lineNumber: 21,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                onClick: (e)=>handleNavClick(e, {
-                                                        page: 'admin'
-                                                    }),
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$link$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                href: "/admin",
                                                 className: "text-brand-charcoal/80 hover:text-brand-brown",
                                                 children: "Админ-панель"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 30,
+                                                lineNumber: 22,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 30,
+                                            lineNumber: 22,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 24,
+                                    lineNumber: 16,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/Footer.tsx",
-                            lineNumber: 22,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("h4", {
-                                    className: "font-semibold text-brand-charcoal mb-4",
-                                    children: "Поддержка"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 34,
-                                    columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("ul", {
-                                    className: "space-y-2",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                className: "text-brand-charcoal/80 hover:text-brand-brown",
-                                                children: "Доставка и оплата"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 36,
-                                                columnNumber: 19
-                                            }, ("TURBOPACK compile-time value", void 0))
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 36,
-                                            columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                className: "text-brand-charcoal/80 hover:text-brand-brown",
-                                                children: "Возврат"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 37,
-                                                columnNumber: 19
-                                            }, ("TURBOPACK compile-time value", void 0))
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 37,
-                                            columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("li", {
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("a", {
-                                                href: "#",
-                                                className: "text-brand-charcoal/80 hover:text-brand-brown",
-                                                children: "FAQ"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/Footer.tsx",
-                                                lineNumber: 38,
-                                                columnNumber: 19
-                                            }, ("TURBOPACK compile-time value", void 0))
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Footer.tsx",
-                                            lineNumber: 38,
-                                            columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 35,
-                                    columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/components/Footer.tsx",
-                            lineNumber: 33,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("h4", {
-                                    className: "font-semibold text-brand-charcoal mb-4",
-                                    children: "Подпишитесь на нас"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 42,
-                                    columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
-                                    className: "flex space-x-4"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 43,
-                                    columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/components/Footer.tsx",
-                            lineNumber: 41,
+                            lineNumber: 14,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/Footer.tsx",
-                    lineNumber: 17,
+                    lineNumber: 9,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -2309,18 +2227,18 @@ const FooterComponent = ({ onNavigate })=>{
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/Footer.tsx",
-                    lineNumber: 48,
+                    lineNumber: 27,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/components/Footer.tsx",
-            lineNumber: 16,
+            lineNumber: 8,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/components/Footer.tsx",
-        lineNumber: 15,
+        lineNumber: 7,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

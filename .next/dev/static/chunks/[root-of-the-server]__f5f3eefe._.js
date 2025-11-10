@@ -472,87 +472,41 @@ __turbopack_context__.s([
     "default",
     ()=>HomePage
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dynamic.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/router.js [client] (ecmascript)");
 ;
+var _s = __turbopack_context__.k.signature();
 ;
-;
-;
-;
-;
-;
-const Header = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c = ()=>__turbopack_context__.A("[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.Header), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c1 = Header;
-const CartSidebar = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c2 = ()=>__turbopack_context__.A("[project]/components/CartSidebar.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.CartSidebar), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/CartSidebar.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c3 = CartSidebar;
-const AiChatbot = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c4 = ()=>__turbopack_context__.A("[project]/components/AiChatbot.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.AiChatbot), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/AiChatbot.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c5 = AiChatbot;
-const FloatingChatButton = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c6 = ()=>__turbopack_context__.A("[project]/components/FloatingChatButton.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.FloatingChatButton), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/FloatingChatButton.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c7 = FloatingChatButton;
-const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c8 = ()=>__turbopack_context__.A("[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry, async loader)"), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c9 = QuickViewModal;
-const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(_c10 = ()=>__turbopack_context__.A("[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry, async loader)"), {
-    loadableGenerated: {
-        modules: [
-            "[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry)"
-        ]
-    },
-    ssr: false
-});
-_c11 = VirtualStagingModal;
 var __N_SSP = true;
 function HomePage({ allProducts, error }) {
-// ... ваш JSX ...
+    _s();
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    // ... (ваш JSX остается без изменений, но теперь он может отобразить ошибку)
+    if (error) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            style: {
+                color: 'red'
+            },
+            children: [
+                "Error: ",
+                error
+            ]
+        }, void 0, true, {
+            fileName: "[project]/pages/index.tsx",
+            lineNumber: 25,
+            columnNumber: 12
+        }, this);
+    }
+// ...
 }
-_c12 = HomePage;
-var _c, _c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c10, _c11, _c12;
-__turbopack_context__.k.register(_c, "Header$dynamic");
-__turbopack_context__.k.register(_c1, "Header");
-__turbopack_context__.k.register(_c2, "CartSidebar$dynamic");
-__turbopack_context__.k.register(_c3, "CartSidebar");
-__turbopack_context__.k.register(_c4, "AiChatbot$dynamic");
-__turbopack_context__.k.register(_c5, "AiChatbot");
-__turbopack_context__.k.register(_c6, "FloatingChatButton$dynamic");
-__turbopack_context__.k.register(_c7, "FloatingChatButton");
-__turbopack_context__.k.register(_c8, "QuickViewModal$dynamic");
-__turbopack_context__.k.register(_c9, "QuickViewModal");
-__turbopack_context__.k.register(_c10, "VirtualStagingModal$dynamic");
-__turbopack_context__.k.register(_c11, "VirtualStagingModal");
-__turbopack_context__.k.register(_c12, "HomePage");
+_s(HomePage, "fN7XvhJ+p5oE6+Xlo0NJmXpxjC8=", false, function() {
+    return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"]
+    ];
+});
+_c = HomePage;
+var _c;
+__turbopack_context__.k.register(_c, "HomePage");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

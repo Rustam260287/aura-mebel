@@ -8,9 +8,6 @@ self.__BUILD_MANIFEST = {
   "/ai-room-makeover": [
     "static/chunks/pages/ai-room-makeover.js"
   ],
-  "/visual-search": [
-    "static/chunks/pages/visual-search.js"
-  ],
   "__rewrites": {
     "afterFiles": [],
     "beforeFiles": [],
@@ -29,6 +26,7 @@ self.__BUILD_MANIFEST = {
     "/admin/AdminProducts",
     "/admin/AdminSidebar",
     "/ai-room-makeover",
+    "/api/blog/generate",
     "/blog",
     "/blog/[id]",
     "/products/[id]",

@@ -1,7 +1,7 @@
 var R=require("../chunks/ssr/[turbopack]_runtime.js")("server/pages/ai-room-makeover.js")
 R.c("server/chunks/ssr/components_Header_tsx_2d3c57fd._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__84ea004c._.js")
-R.c("server/chunks/ssr/node_modules_next_e9479bde._.js")
+R.c("server/chunks/ssr/node_modules_next_b1e8ab04._.js")
 R.c("server/chunks/ssr/node_modules_6530e14a._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__894f3286._.js")
 R.c("server/chunks/ssr/components_ClientProviders_tsx_efabbef3._.js")

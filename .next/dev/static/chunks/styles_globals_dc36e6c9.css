@@ -599,13 +599,6 @@ img, video {
   margin-top: auto;
 }
 
-.line-clamp-2 {
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-  overflow: hidden;
-}
-
 .line-clamp-3 {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -650,10 +643,6 @@ img, video {
 
 .aspect-video {
   aspect-ratio: 16 / 9;
-}
-
-.\!h-auto {
-  height: auto !important;
 }
 
 .h-10 {
@@ -776,16 +765,8 @@ img, video {
   min-height: 100vh;
 }
 
-.\!w-auto {
-  width: auto !important;
-}
-
 .w-1 {
   width: .25rem;
-}
-
-.w-1\/2 {
-  width: 50%;
 }
 
 .w-1\/3 {
@@ -1039,20 +1020,6 @@ img, video {
 
 .animate-shimmer {
   animation: 1.5s linear infinite shimmer;
-}
-
-@keyframes slide-in-left {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.animate-slide-in-left {
-  animation: .4s ease-out forwards slide-in-left;
 }
 
 @keyframes spin {
