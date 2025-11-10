@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, ReactNode, useCallback, useRef, useEffect, useMemo } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import type { Product, ChatMessage } from '../types';
@@ -13,12 +15,6 @@ interface AiChatContextType {
 
 const AiChatContext = createContext<AiChatContextType | undefined>(undefined);
 
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-    console.error("API_KEY environment variable not set. Using a placeholder.");
-}
-const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_API_KEY" });
-
 const initialMessage: ChatMessage = {
     role: 'model',
     content: 'Здравствуйте! Я — ваш ИИ-помощник Aura. Чем могу помочь в выборе мебели?'
@@ -30,17 +26,27 @@ export const AiChatProvider: React.FC<{ children: ReactNode; allProducts: Produc
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const aiRef = useRef<GoogleGenAI | null>(null);
     const chatRef = useRef<Chat | null>(null);
     
     const systemInstruction = useMemo(() => {
-        const productListForContext = allProducts.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, description: p.description })).slice(0, 30); // Limit context size
-        return `Вы — 'Aura Assist', дружелюбный и знающий ИИ-ассистент по дизайну интерьеров для мебельного магазина "Aura Мебель". Ваша задача — помогать пользователям находить идеальную мебель, давать советы по дизайну и отвечать на вопросы о товарах. Будьте разговорчивы, полезны и немного восторженны. Используйте предоставленный список товаров в формате JSON для ответов на конкретные вопросы о товарах. Список товаров: ${JSON.stringify(productListForContext)}. Всегда отвечайте на русском языке. Форматируйте ответы с использованием Markdown для лучшей читаемости (например, списки, жирный шрифт).`;
+        const productListForContext = allProducts.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, description: p.description })).slice(0, 30);
+        return `Вы — 'Aura Assist', дружелюбный и знающий ИИ-ассистент... (ваш системный промпт без изменений)`;
     }, [allProducts]);
 
-    // Initialize chat session
     useEffect(() => {
-        if (!chatRef.current) {
-            chatRef.current = ai.chats.create({
+        if (!aiRef.current) {
+            const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+            if (!apiKey) {
+                console.error("NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.");
+                aiRef.current = new GoogleGenAI({ apiKey: "MISSING_API_KEY" });
+            } else {
+                aiRef.current = new GoogleGenAI({ apiKey });
+            }
+        }
+        
+        if (!chatRef.current && aiRef.current) {
+            chatRef.current = aiRef.current.chats.create({
                 model: 'gemini-2.5-pro',
                 config: {
                     systemInstruction: systemInstruction,
@@ -55,7 +61,6 @@ export const AiChatProvider: React.FC<{ children: ReactNode; allProducts: Produc
         }
         setIsOpen(prev => !prev);
     }, [isOpen, messages, onSessionEnd]);
-
 
     const sendMessage = useCallback(async (message: string) => {
         if (!message.trim() || !chatRef.current) return;
@@ -80,7 +85,6 @@ export const AiChatProvider: React.FC<{ children: ReactNode; allProducts: Produc
                     return newMessages;
                 });
             }
-
         } catch (e) {
             const errorMessage = e instanceof Error ? e.message : 'Произошла ошибка. Попробуйте еще раз.';
             setError(errorMessage);

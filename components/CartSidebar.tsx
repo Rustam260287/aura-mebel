@@ -1,9 +1,12 @@
+"use client";
+
 import React, { memo } from 'react';
 import { useCart, CartItem } from '../contexts/CartContext';
 import type { View } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from './Icons';
 
+// ... (остальная часть файла без изменений)
 interface CartSidebarProps {
   onNavigate: (view: View) => void;
 }

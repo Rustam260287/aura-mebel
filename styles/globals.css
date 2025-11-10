@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FBF9F4; /* brand-cream */
+}
+::-webkit-scrollbar-thumb {
+  background: #D1C4E9; /* A muted brown, consider replacing with a brand color */
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5D4037; /* brand-brown */
+}
+
+body {
+    /* Subtle background texture */
+    background-color: #FBF9F4;
+    background-image: radial-gradient(circle at 1px 1px, rgba(93, 64, 55, 0.05) 1px, transparent 0);
+    background-size: 20px 20px;
+}
+
+/* Airy headings */
+h1, h2, h3, .font-serif {
+    letter-spacing: -0.01em;
+}
+
+.prose h3 {
+   letter-spacing: normal;
+}

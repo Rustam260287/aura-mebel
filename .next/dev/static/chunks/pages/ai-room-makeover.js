@@ -1,0 +1,14 @@
+__turbopack_load_page_chunks__("/ai-room-makeover", [
+  "static/chunks/components_Header_tsx_e5bd1245._.js",
+  "static/chunks/[root-of-the-server]__286b6aad._.js",
+  "static/chunks/node_modules_next_dist_compiled_c629999b._.js",
+  "static/chunks/node_modules_next_dist_shared_lib_7dd99361._.js",
+  "static/chunks/node_modules_next_dist_client_d0aa886c._.js",
+  "static/chunks/node_modules_next_dist_6024eba3._.js",
+  "static/chunks/node_modules_next_9ba42757._.js",
+  "static/chunks/node_modules_react-dom_4411d9bd._.js",
+  "static/chunks/node_modules_@google_genai_dist_web_index_mjs_aa8368b0._.js",
+  "static/chunks/node_modules_f1be3ba2._.js",
+  "static/chunks/pages_ai-room-makeover_2da965e7._.js",
+  "static/chunks/turbopack-pages_ai-room-makeover_dc711df8._.js"
+])

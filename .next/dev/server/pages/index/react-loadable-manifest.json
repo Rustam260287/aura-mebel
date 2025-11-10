@@ -1,0 +1,47 @@
+{
+  "[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_@google_genai_dist_web_index_mjs_aa8368b0._.js",
+      "static/chunks/_e29d0150._.js",
+      "static/chunks/components_VirtualStagingModal_tsx_1373b78c._.js"
+    ]
+  },
+  "[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/_f42492e2._.js",
+      "static/chunks/components_QuickViewModal_tsx_1373b78c._.js"
+    ]
+  },
+  "[project]/components/FloatingChatButton.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/FloatingChatButton.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_@google_genai_dist_web_index_mjs_aa8368b0._.js",
+      "static/chunks/_4a1f4f51._.js",
+      "static/chunks/components_FloatingChatButton_tsx_1373b78c._.js"
+    ]
+  },
+  "[project]/components/AiChatbot.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/AiChatbot.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_@google_genai_dist_web_index_mjs_aa8368b0._.js",
+      "static/chunks/_6d7a4e9a._.js",
+      "static/chunks/components_AiChatbot_tsx_1373b78c._.js"
+    ]
+  },
+  "[project]/components/CartSidebar.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/CartSidebar.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/_e4dcd71a._.js",
+      "static/chunks/components_CartSidebar_tsx_1373b78c._.js"
+    ]
+  },
+  "[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/_5792ff66._.js",
+      "static/chunks/components_Header_tsx_1373b78c._.js"
+    ]
+  }
+}

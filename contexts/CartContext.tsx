@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import type { Product } from '../types';
 

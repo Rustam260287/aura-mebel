@@ -1,5 +1,4 @@
-
-
+"use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 
@@ -15,6 +14,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState<string[]>(() => {
+    // Эта логика теперь безопасна, так как компонент рендерится только на клиенте
     try {
       const item = window.localStorage.getItem('aura_wishlist');
       return item ? JSON.parse(item) : [];

@@ -1,0 +1,8 @@
+{
+  "/": "pages/index.js",
+  "/_app": "pages/_app.js",
+  "/_document": "pages/_document.js",
+  "/_error": "pages/_error.js",
+  "/ai-room-makeover": "pages/ai-room-makeover.js",
+  "/visual-search": "pages/visual-search.js"
+}
