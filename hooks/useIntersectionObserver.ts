@@ -1,11 +1,13 @@
+
 import { useState, useEffect, RefObject } from 'react';
 
 interface IntersectionObserverOptions extends IntersectionObserverInit {
   triggerOnce?: boolean;
 }
 
+// Исправляем тип, чтобы он принимал HTMLDivElement и мог быть null
 export const useIntersectionObserver = (
-  elementRef: RefObject<Element>,
+  elementRef: RefObject<HTMLDivElement | null>,
   {
     threshold = 0.1,
     root = null,
