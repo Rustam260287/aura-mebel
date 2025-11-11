@@ -30,6 +30,31 @@ const safeJsonParse = <T>(jsonString: string): T | null => {
     }
 };
 
+export const generateStagedImage = async (product: Product, roomImageBase64: string, roomImageMimeType: string): Promise<string> => {
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
+    const model = ai.getGenerativeModel({ model: imageModel });
+
+    // 1. Get the product image as base64
+    const { base64: productImageBase64, mimeType: productImageMimeType } = await imageUrlToBase64(product.imageUrl);
+
+    // 2. Prepare the prompt with both images
+    const roomImagePart = { inlineData: { data: roomImageBase64, mimeType: roomImageMimeType } };
+    const productImagePart = { inlineData: { data: productImageBase64, mimeType: productImageMimeType } };
+    const textPart = { text: `Вставь этот предмет мебели (${product.name}) в изображение комнаты. Сохраняй стиль и освещение комнаты. Мебель должна выглядеть естественно вписанной в интерьер.` };
+
+    // 3. Call the model
+    const result = await model.generateContent({ contents: [{ parts: [textPart, productImagePart, roomImagePart] }] });
+
+    // 4. Extract and return the generated image data
+    const imagePart = result.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imagePart?.inlineData?.data) {
+        throw new Error("Не удалось сгенерировать изображение. Попробуйте другое фото.");
+    }
+
+    return imagePart.inlineData.data;
+};
+
 export const getVisualRecommendations = async (base64Image: string, mimeType: string, products: Product[]): Promise<number[]> => {
   const ai = getAiInstance();
   if (!ai) return [];

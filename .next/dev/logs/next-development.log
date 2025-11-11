@@ -1,1 +1,6 @@
-[00:00:01.584] Server  LOG      ✓ Ready in 1050ms
+[00:00:04.954] Server  LOG      ✓ Ready in 4.3s
+[00:00:25.628] Server  LOG      ○ Compiling / ...
+[00:00:33.271] Server  ERROR   [ADMIN SDK] CRITICAL: Lazy initialization failed: Error: Failed to parse private key: Error: Invalid PEM formatted message.
+[00:00:33.425] Server  ERROR   [ADMIN SDK] CRITICAL: Lazy initialization failed: Error: Failed to parse private key: Error: Invalid PEM formatted message.
+[00:00:40.253] Server  WARN     ⚠ Cross origin request detected from 3002-firebase-aura-mebelgit-1762793063058.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins

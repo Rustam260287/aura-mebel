@@ -59,7 +59,7 @@ const AiChatProvider = ({ children, allProducts, onSessionEnd })=>{
     ]);
     (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useEffect"])(()=>{
         if (!aiRef.current) {
-            const apiKey = ("TURBOPACK compile-time value", "AIzaSyAh_q6YupVLUAfGUm83Tep93O8Si9_G6lA");
+            const apiKey = ("TURBOPACK compile-time value", "YOUR_GEMINI_API_KEY_HERE");
             if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
             ;
             else {

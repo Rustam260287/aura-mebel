@@ -35,36 +35,47 @@ module.exports = mod;
 // lib/firebaseAdmin.ts
 __turbopack_context__.s([
     "getAdminDb",
-    ()=>getAdminDb
+    ()=>getAdminDb,
+    "getAdminStorage",
+    ()=>getAdminStorage
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/firebase-admin [external] (firebase-admin, cjs)");
 ;
-function getAdminDb() {
-    // Если приложение уже инициализировано, просто возвращаем инстанс БД.
+function initializeAdminApp() {
     if (__TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["apps"].length > 0) {
-        return __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["firestore"]();
+        return __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["app"]();
     }
-    // Если нет - проводим инициализацию.
     try {
         const privateKeyBase64 = process.env.FIREBASE_PRIVATE_KEY_BASE64;
         if (!privateKeyBase64) {
             throw new Error('FIREBASE_PRIVATE_KEY_BASE64 is not defined.');
         }
         const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('ascii');
-        __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["initializeApp"]({
+        const BUCKET_NAME = ("TURBOPACK compile-time value", "aura-mebelgit-79401846-16a52.appspot.com");
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        const app = __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["initializeApp"]({
             credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["credential"].cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
                 clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
                 privateKey: privateKey
-            })
+            }),
+            storageBucket: BUCKET_NAME
         });
         console.log('[ADMIN SDK] Lazy initialization successful.');
-        return __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["firestore"]();
+        return app;
     } catch (error) {
         console.error('[ADMIN SDK] CRITICAL: Lazy initialization failed:', error);
-        // Возвращаем null в случае критической ошибки.
         return null;
     }
+}
+function getAdminDb() {
+    const app = initializeAdminApp();
+    return app ? app.firestore() : null;
+}
+function getAdminStorage() {
+    const app = initializeAdminApp();
+    return app ? app.storage() : null;
 }
 }),
 "[project]/components/Button.tsx [ssr] (ecmascript)", ((__turbopack_context__) => {
@@ -2773,7 +2784,8 @@ function HomePage({ allProducts, error }) {
 }
 const getServerSideProps = async ()=>{
     const dbAdmin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminDb"])();
-    if (!dbAdmin) {
+    const storageAdmin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminStorage"])();
+    if (!dbAdmin || !storageAdmin) {
         return {
             props: {
                 allProducts: [],
@@ -2783,7 +2795,33 @@ const getServerSideProps = async ()=>{
     }
     try {
         const productsSnapshot = await dbAdmin.collection('products').get();
-        const allProducts = productsSnapshot.docs.map((doc)=>doc.data());
+        const productsData = productsSnapshot.docs.map((doc)=>({
+                id: doc.id,
+                ...doc.data()
+            }));
+        const bucket = storageAdmin.bucket();
+        const allProducts = await Promise.all(productsData.map(async (product)=>{
+            const imageUrls = await Promise.all(product.imageUrls.map(async (url)=>{
+                if (url.startsWith('gs://')) {
+                    const path = url.substring(url.indexOf('/', 5) + 1);
+                    try {
+                        const [signedUrl] = await bucket.file(path).getSignedUrl({
+                            action: 'read',
+                            expires: '03-09-2491'
+                        });
+                        return signedUrl;
+                    } catch (e) {
+                        console.error(`Error getting signed URL for ${path}:`, e.message);
+                        return '/placeholder.svg';
+                    }
+                }
+                return url;
+            }));
+            return {
+                ...product,
+                imageUrls
+            };
+        }));
         return {
             props: {
                 allProducts: JSON.parse(JSON.stringify(allProducts))

@@ -68,26 +68,28 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 __turbopack_context__.s([
     "generateBlogPost",
     ()=>generateBlogPost,
-    "generateConfiguredImage",
-    ()=>generateConfiguredImage,
     "generateRoomMakeover",
     ()=>generateRoomMakeover,
     "generateStagedImage",
     ()=>generateStagedImage,
-    "getAiConfigurationDescription",
-    ()=>getAiConfigurationDescription,
     "getVisualRecommendations",
     ()=>getVisualRecommendations
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@google/genai/dist/web/index.mjs [client] (ecmascript)"); // <-- ИСПРАВЛЕНА ОПЕЧАТКА
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@google/genai/dist/web/index.mjs [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$utils$2e$ts__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/utils.ts [client] (ecmascript)");
 ;
 ;
-const API_KEY = ("TURBOPACK compile-time value", "AIzaSyAh_q6YupVLUAfGUm83Tep93O8Si9_G6lA");
-if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-;
-const ai = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["GoogleGenAI"](API_KEY || "MISSING_API_KEY"); // <-- ИСПРАВЛЕНА ОПЕЧАТКА
+let ai = null;
+function getAiInstance() {
+    if (!ai) {
+        const API_KEY = ("TURBOPACK compile-time value", "YOUR_GEMINI_API_KEY_HERE");
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        ai = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["GoogleGenAI"](API_KEY);
+    }
+    return ai;
+}
 const textModel = 'gemini-1.5-pro-latest';
 const imageModel = 'gemini-1.5-flash-latest';
 const safeJsonParse = (jsonString)=>{
@@ -100,7 +102,52 @@ const safeJsonParse = (jsonString)=>{
         return null;
     }
 };
+const generateStagedImage = async (product, roomImageBase64, roomImageMimeType)=>{
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
+    const model = ai.getGenerativeModel({
+        model: imageModel
+    });
+    // 1. Get the product image as base64
+    const { base64: productImageBase64, mimeType: productImageMimeType } = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$utils$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["imageUrlToBase64"])(product.imageUrl);
+    // 2. Prepare the prompt with both images
+    const roomImagePart = {
+        inlineData: {
+            data: roomImageBase64,
+            mimeType: roomImageMimeType
+        }
+    };
+    const productImagePart = {
+        inlineData: {
+            data: productImageBase64,
+            mimeType: productImageMimeType
+        }
+    };
+    const textPart = {
+        text: `Вставь этот предмет мебели (${product.name}) в изображение комнаты. Сохраняй стиль и освещение комнаты. Мебель должна выглядеть естественно вписанной в интерьер.`
+    };
+    // 3. Call the model
+    const result = await model.generateContent({
+        contents: [
+            {
+                parts: [
+                    textPart,
+                    productImagePart,
+                    roomImagePart
+                ]
+            }
+        ]
+    });
+    // 4. Extract and return the generated image data
+    const imagePart = result.response.candidates?.[0]?.content?.parts?.find((p)=>p.inlineData);
+    if (!imagePart?.inlineData?.data) {
+        throw new Error("Не удалось сгенерировать изображение. Попробуйте другое фото.");
+    }
+    return imagePart.inlineData.data;
+};
 const getVisualRecommendations = async (base64Image, mimeType, products)=>{
+    const ai = getAiInstance();
+    if (!ai) return [];
     const model = ai.getGenerativeModel({
         model: textModel
     });
@@ -112,7 +159,7 @@ const getVisualRecommendations = async (base64Image, mimeType, products)=>{
         }
     };
     const textPart = {
-        text: `Проанализируй фото...`
+        text: `Проанализируй фото. Вот нумерованный список товаров:\n${productList}\n\nВыбери 3-5 подходящих. Верни ТОЛЬКО JSON-массив с числами (индексами).`
     };
     const result = await model.generateContent({
         contents: [
@@ -127,6 +174,8 @@ const getVisualRecommendations = async (base64Image, mimeType, products)=>{
     return safeJsonParse(result.response.text()) || [];
 };
 const generateRoomMakeover = async (base64Image, mimeType, style, products)=>{
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
     const model = ai.getGenerativeModel({
         model: imageModel
     });
@@ -179,6 +228,8 @@ const generateRoomMakeover = async (base64Image, mimeType, style, products)=>{
     };
 };
 const generateBlogPost = async (allProducts)=>{
+    const ai = getAiInstance();
+    if (!ai) throw new Error("AI Service not initialized.");
     const model = ai.getGenerativeModel({
         model: textModel
     });
@@ -200,75 +251,7 @@ const generateBlogPost = async (allProducts)=>{
         ...blogData,
         imageBase64: imagePart.inlineData.data
     };
-};
-const generateStagedImage = async (product, roomBase64, roomMimeType)=>{
-    const model = ai.getGenerativeModel({
-        model: imageModel
-    });
-    const { base64: productBase64, mimeType: productMimeType } = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$utils$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["imageUrlToBase64"])(product.imageUrls[0]);
-    const result = await model.generateContent({
-        contents: [
-            {
-                parts: [
-                    {
-                        inlineData: {
-                            data: roomBase64,
-                            mimeType: roomMimeType
-                        }
-                    },
-                    {
-                        text: `Вставь в этот интерьер '${product.name}'. Вот его фото:`
-                    },
-                    {
-                        inlineData: {
-                            data: productBase64,
-                            mimeType: productMimeType
-                        }
-                    },
-                    {
-                        text: "Сделай это реалистично."
-                    }
-                ]
-            }
-        ]
-    });
-    const imagePart = result.response.candidates?.[0]?.content?.parts?.find((p)=>p.inlineData);
-    if (!imagePart?.inlineData) throw new Error("AI не смог разместить мебель.");
-    return imagePart.inlineData.data;
-};
-const getAiConfigurationDescription = async (productName, options)=>{
-    const model = ai.getGenerativeModel({
-        model: textModel
-    });
-    const optionsString = Object.entries(options).map(([key, value])=>`${key}: ${value}`).join(', ');
-    const result = await model.generateContent(`Напиши короткое, привлекательное описание для товара "${productName}" с опциями: ${optionsString}.`);
-    return result.response.text();
-};
-const generateConfiguredImage = async (base64Image, mimeType, productName, visualPrompt)=>{
-    const model = ai.getGenerativeModel({
-        model: imageModel
-    });
-    const result = await model.generateContent({
-        contents: [
-            {
-                parts: [
-                    {
-                        inlineData: {
-                            data: base64Image,
-                            mimeType
-                        }
-                    },
-                    {
-                        text: `Измени этот предмет (${productName}), применив: ${visualPrompt}. Сохрани фон.`
-                    }
-                ]
-            }
-        ]
-    });
-    const imagePart = result.response.candidates?.[0]?.content?.parts?.find((p)=>p.inlineData);
-    if (!imagePart?.inlineData) throw new Error("AI не вернул изображение.");
-    return imagePart.inlineData.data;
-};
+}; // ... и так далее для всех функций
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
