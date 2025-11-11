@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, memo } from 'react';
 import type { BlogPost } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, SparklesIcon, ArrowPathIcon } from './Icons';
 import { useToast } from '../contexts/ToastContext';
-import { generateSeoBlogContent } from '../services/geminiService';
+// import { generateSeoBlogContent } from '../services/geminiService'; // Закомментировано
 
 interface BlogEditModalProps {
   post: BlogPost;
@@ -28,21 +29,21 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
   };
 
   const handleGenerateSeo = async () => {
-    setIsGeneratingSeo(true);
-    try {
-        const seoResult = await generateSeoBlogContent(formData);
-        setFormData(prev => ({
-            ...prev,
-            title: seoResult.title,
-            excerpt: seoResult.excerpt,
-        }));
-        addToast('Заголовок и анонс оптимизированы!', 'success');
-    } catch (error) {
-        addToast('Ошибка SEO-оптимизации', 'error');
-        console.error("SEO generation failed:", error);
-    } finally {
-        setIsGeneratingSeo(false);
-    }
+    // setIsGeneratingSeo(true);
+    // try {
+    //     const seoResult = await generateSeoBlogContent(formData); // Закомментировано
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         title: seoResult.title,
+    //         excerpt: seoResult.excerpt,
+    //     }));
+    //     addToast('Заголовок и анонс оптимизированы!', 'success');
+    // } catch (error) {
+    //     addToast('Ошибка SEO-оптимизации', 'error');
+    //     console.error("SEO generation failed:", error);
+    // } finally {
+    //     setIsGeneratingSeo(false);
+    // }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,10 +73,10 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
           <div>
             <div className="flex justify-between items-center mb-1">
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">Заголовок</label>
-                <Button type="button" size="sm" variant="ghost" className="text-sm text-brand-terracotta hover:text-brand-terracotta-dark" onClick={handleGenerateSeo} disabled={isGeneratingSeo}>
+                {/* <Button type="button" size="sm" variant="ghost" className="text-sm text-brand-terracotta hover:text-brand-terracotta-dark" onClick={handleGenerateSeo} disabled={isGeneratingSeo}>
                     {isGeneratingSeo ? <ArrowPathIcon className="w-4 h-4 animate-spin mr-2"/> : <SparklesIcon className="w-4 h-4 mr-2"/>}
                     <span>Оптимизировать с ИИ</span>
-                </Button>
+                </Button> */}
             </div>
             <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown" />
           </div>
