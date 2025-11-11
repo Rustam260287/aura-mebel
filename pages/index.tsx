@@ -1,9 +1,10 @@
+
 // pages/index.tsx
 import React, { useMemo, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin';
+import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin'; // Обновленный импорт
 import type { Product, View } from '../types';
 
 import { Hero } from '../components/Hero';
@@ -66,21 +67,26 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const dbAdmin = getAdminDb();
-  const storageAdmin = getAdminStorage();
+  const adminDb = getAdminDb(); // Вызываем функцию
+  const adminStorage = getAdminStorage(); // Вызываем функцию
 
-  if (!dbAdmin || !storageAdmin) {
+  if (!adminDb || !adminStorage) {
     return { props: { allProducts: [], error: "Firebase Admin SDK initialization failed." } };
   }
   try {
-    const productsSnapshot = await dbAdmin.collection('products').get();
+    const productsSnapshot = await adminDb.collection('products').get();
     const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
-    const bucket = storageAdmin.bucket();
+    const bucket = adminStorage.bucket();
     
     const allProducts = await Promise.all(productsData.map(async (product) => {
+        if (!Array.isArray(product.imageUrls)) {
+            console.warn(`Product with id ${product.id} has invalid imageUrls`);
+            return { ...product, imageUrls: ['/placeholder.svg'] };
+        }
+
         const imageUrls = await Promise.all(product.imageUrls.map(async (url) => {
-            if (url.startsWith('gs://')) {
+            if (url && url.startsWith('gs://')) { // Добавлена проверка на существование url
                 const path = url.substring(url.indexOf('/', 5) + 1);
                 try {
                     const [signedUrl] = await bucket.file(path).getSignedUrl({
@@ -93,9 +99,11 @@ export const getServerSideProps: GetServerSideProps = async () => {
                     return '/placeholder.svg';
                 }
             }
-            return url;
+            return url || '/placeholder.svg'; // Возвращаем плейсхолдер, если url пустой
         }));
-        return { ...product, imageUrls };
+        
+        const { imageUrl, ...rest } = product;
+        return { ...rest, imageUrls };
     }));
     
     return {
@@ -103,6 +111,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     };
   } catch (error) {
     console.error("Error fetching data:", error);
-    return { props: { allProducts: [], error: error.message } };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { props: { allProducts: [], error: errorMessage } };
   }
 };

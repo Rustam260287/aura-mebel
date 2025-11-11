@@ -83,7 +83,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$utils$2e$ts__$5b$client$5d$_
 let ai = null;
 function getAiInstance() {
     if (!ai) {
-        const API_KEY = ("TURBOPACK compile-time value", "YOUR_GEMINI_API_KEY_HERE");
+        const API_KEY = ("TURBOPACK compile-time value", "ВАШ_КЛЮЧ_GEMINI_API");
         if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
         ;
         ai = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["GoogleGenAI"](API_KEY);

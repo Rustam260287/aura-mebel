@@ -1,47 +1,46 @@
+
 // lib/firebaseAdmin.ts
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
+import { Firestore } from 'firebase-admin/firestore';
+import { Storage } from 'firebase-admin/storage';
 
-function initializeAdminApp() {
-    if (admin.apps.length > 0) {
-        return admin.app();
-    }
-
+// Эта функция будет нашим единственным способом получить доступ к admin SDK
+const ensureFirebaseAdminInitialized = () => {
+  if (!admin.apps.length) {
     try {
-        const privateKeyBase64 = process.env.FIREBASE_PRIVATE_KEY_BASE64;
-        if (!privateKeyBase64) {
-            throw new Error('FIREBASE_PRIVATE_KEY_BASE64 is not defined.');
-        }
-        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('ascii');
-        
-        const BUCKET_NAME = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-        if (!BUCKET_NAME) {
-            throw new Error('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set.');
-        }
+      console.log('Lazy initializing Firebase Admin SDK...');
+      const serviceAccount = {
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
+        privateKey: (process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+      };
 
-        const app = admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: privateKey,
-            }),
-            storageBucket: BUCKET_NAME,
-        });
+      if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+        throw new Error('Firebase Admin SDK credentials are not set in .env.local');
+      }
 
-        console.log('[ADMIN SDK] Lazy initialization successful.');
-        return app;
-
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      });
+       console.log('Lazy initialization of Firebase Admin SDK successful.');
     } catch (error) {
-        console.error('[ADMIN SDK] CRITICAL: Lazy initialization failed:', error);
-        return null;
+      console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+      // Если инициализация не удалась, мы не можем продолжить.
+      // Возвращаем null или выбрасываем ошибку, чтобы вызывающий код мог это обработать.
+      return null;
     }
-}
+  }
+  return admin;
+};
 
-export function getAdminDb() {
-    const app = initializeAdminApp();
-    return app ? app.firestore() : null;
-}
+// Функции-геттеры, которые будут использоваться в getServerSideProps
+export const getAdminDb = (): Firestore | null => {
+  const adminInstance = ensureFirebaseAdminInitialized();
+  return adminInstance ? adminInstance.firestore() : null;
+};
 
-export function getAdminStorage() {
-    const app = initializeAdminApp();
-    return app ? app.storage() : null;
-}
+export const getAdminStorage = (): Storage | null => {
+  const adminInstance = ensureFirebaseAdminInitialized();
+  return adminInstance ? adminInstance.storage() : null;
+};

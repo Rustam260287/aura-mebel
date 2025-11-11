@@ -3403,7 +3403,7 @@ function HomePage({ allProducts, error }) {
             ]
         }, void 0, true, {
             fileName: "[project]/pages/index.tsx",
-            lineNumber: 32,
+            lineNumber: 33,
             columnNumber: 12
         }, this);
     }
@@ -3428,7 +3428,7 @@ function HomePage({ allProducts, error }) {
                 onStyleFinderClick: ()=>{}
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 46,
+                lineNumber: 47,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -3438,14 +3438,14 @@ function HomePage({ allProducts, error }) {
                         onNavigate: handleNavigate
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 48,
+                        lineNumber: 49,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$CategoryShowcase$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["CategoryShowcase"], {
                         onNavigate: handleNavigate
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 49,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Catalog$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Catalog"], {
@@ -3456,35 +3456,35 @@ function HomePage({ allProducts, error }) {
                         isHomePage: true
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 50,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 47,
+                lineNumber: 48,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Footer"], {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 58,
+                lineNumber: 59,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(CartSidebar, {
                 onNavigate: (view)=>router.push(`/${view.page}`)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 59,
+                lineNumber: 60,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AiChatbot, {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 60,
+                lineNumber: 61,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FloatingChatButton, {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 61,
+                lineNumber: 62,
                 columnNumber: 7
             }, this),
             quickViewProduct && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(QuickViewModal, {
@@ -3493,7 +3493,7 @@ function HomePage({ allProducts, error }) {
                 onViewDetails: (id)=>router.push(`/products/${id}`)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 62,
+                lineNumber: 63,
                 columnNumber: 28
             }, this),
             virtualStageProduct && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(VirtualStagingModal, {
@@ -3501,7 +3501,7 @@ function HomePage({ allProducts, error }) {
                 onClose: ()=>setVirtualStageProduct(null)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 63,
+                lineNumber: 64,
                 columnNumber: 31
             }, this)
         ]

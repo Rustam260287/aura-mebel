@@ -1,3 +1,4 @@
+
 import React, { memo } from 'react';
 import type { BlogPost, Product, View } from '../types';
 import { ProductCard } from './ProductCard';
@@ -5,13 +6,33 @@ import { Button } from './Button';
 import { ArrowLeftIcon } from './Icons';
 
 interface BlogPostPageProps {
-  post: BlogPost;
+  post: BlogPost | null; // Разрешаем post быть null
   allProducts: Product[];
   onNavigate: (view: View) => void;
 }
 
 const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts, onNavigate }) => {
-  const relatedProducts = allProducts.filter(p => post.relatedProducts.includes(p.id));
+  
+  // --- ГЛАВНОЕ ИСПРАВЛЕНИЕ ---
+  // Если пост не существует (равен null), мы немедленно выводим сообщение
+  // и прекращаем выполнение компонента, чтобы избежать ошибок.
+  if (!post) {
+    return (
+      <div className="bg-white">
+        <div className="container mx-auto px-6 py-24 text-center">
+            <h1 className="text-4xl font-serif text-brand-brown mb-4">Пост не найден</h1>
+            <p className="text-lg text-brand-charcoal/80 mb-8">К сожалению, мы не смогли найти запрошенную вами статью.</p>
+            <Button variant="primary" onClick={() => onNavigate({ page: 'blog-list' })}>
+                <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                Вернуться ко всем статьям
+            </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Этот код будет выполняться только если 'post' не равен null.
+  const relatedProducts = allProducts.filter(p => post.relatedProducts?.includes(p.id));
 
   const handleProductSelect = (productId: string) => {
     onNavigate({ page: 'product', productId });
@@ -28,11 +49,13 @@ const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts,
 
                 <article>
                     <h1 className="text-4xl md:text-5xl font-serif text-brand-brown mb-4 leading-tight">{post.title}</h1>
-                    <img 
-                        src={post.imageUrl} 
-                        alt={post.title}
-                        className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-lg my-8"
-                    />
+                    {post.imageUrl && (
+                      <img 
+                          src={post.imageUrl} 
+                          alt={post.title}
+                          className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-lg my-8"
+                      />
+                    )}
                     <div 
                         className="prose prose-lg lg:prose-xl max-w-none text-brand-charcoal/90 leading-relaxed space-y-6"
                         dangerouslySetInnerHTML={{ __html: post.content }}

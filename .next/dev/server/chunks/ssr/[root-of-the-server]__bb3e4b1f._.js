@@ -41,42 +41,41 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/firebase-admin [external] (firebase-admin, cjs)");
 ;
-function initializeAdminApp() {
-    if (__TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["apps"].length > 0) {
-        return __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["app"]();
-    }
-    try {
-        const privateKeyBase64 = process.env.FIREBASE_PRIVATE_KEY_BASE64;
-        if (!privateKeyBase64) {
-            throw new Error('FIREBASE_PRIVATE_KEY_BASE64 is not defined.');
+// Эта функция будет нашим единственным способом получить доступ к admin SDK
+const ensureFirebaseAdminInitialized = ()=>{
+    if (!__TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].apps.length) {
+        try {
+            console.log('Lazy initializing Firebase Admin SDK...');
+            const serviceAccount = {
+                projectId: ("TURBOPACK compile-time value", "aura-mebel-7ec96"),
+                clientEmail: ("TURBOPACK compile-time value", "firebase-adminsdk-fbsvc@aura-mebel-7ec96.iam.gserviceaccount.com"),
+                privateKey: (("TURBOPACK compile-time value", "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCb3nS5zZf98FrY\nlEIFBedcrL1bAbdTz3qM/gul+BRusL5YA1YrVJtB7Z5bmJ/TNhyIZYHhPXyPbX3p\nh++RjqygPHhaNG3fDuxMOzJUv/6+R1Y0aondk0kdCxZA8/se3/NNrwDm7MqOFH9Y\nsS3tjr32kGu08Z2qz3RtcCH/gHcwy1Xfvgf5xSKOp2FsOsB94oEamU8afBqpi1XP\nEC/GqJSBuzJWs8/hrBpNQ/Ajhr3GZtJ6r30GGxpLyKrYlgk9XNf+CKdStjz8Zvqd\nsGZLTZPP0fRr1qjPTQxlQ1blSaQCDuLGeXJJNbZKbrOywgeraIsauieNsmLEaJne\ng3R9Z/NFAgMBAAECggEAFEhOSB9It/Ke36/rJ1wtTxHrUfxXLsDA4bftLBusDPtS\nyYElpV3NFjcldCXYJlPUQqtyyyyFGOTWjZzyv64hKHi18IcCBRScCw9o7T5Ol9QQ\nk6GJbxvLV8wpiSo2cz4RGvq601HcycBBEfl8UH1SmtMQMOt/6Mo2DEebJPRCjkaz\nR1kYzVq0nxcizU9m97Zg471gOa1egpzIOpFmMPPVk/QOTeqB9mcXAN/yzEYON7Ys\n65YhciKSebKgoa0QNGpnL5pZcUn1uZfgqmSCgPmtkiFRGybaiizY9JzIT2pEAyxV\naoW6PdVWPwo76U9mmZt9T4cNnq0GiGRDSfha5PvnwQKBgQDSYl0/25QgpyJM9U2Y\nIU5U7Wvfqr9oHTRea5ohSb65AQkbihP7CSEDWnT/A/QamVLaKTsrO7WN8C0LX92Z\nrRcLGlj3wZcXoeclZKIcTt+dZv7qKcBVkYx5JxneWes01RiOzuJW6rY7DHqRJmdZ\nd/5ZWfsbco5S03PurVWP2pQOPwKBgQC9qiefGUh7m0eLcg6md44mluVFcEoj5kwT\nBnllWgfrmWHPp9tkbaUajUGflfDxDT8O1uLgrARjpPDOaWuIA7ThuOS6Q7DyVcSw\nK+6urzdAgGR5UEHck4EU4Uq0Nz0w0ED/On9t37Yc+MaochQUO/9cKz3uor8K+cHi\n9cC4DEolewKBgDnQokOcOhbHF1wCxXIbJQWdwVlT+QnJjMyt0Ut4kpsQt8oDpf4E\nwjfDsgcqtPhiTix5zDLTU89Pw3EuxR0oPf7lHLHpV3Y9HeJex1X0Lut4lHERTDO3\nrdzVa/x4xXRdY0RLglPUaIPNqBkfbqNdoF45phIi5w3H4kIjDDJeJPXNAoGAGkNc\nlzBWFB+taYbStoRpn7hXaSUibxQtxpin6LvtytcDb1DMFX0FVsbmpmWJ5qcx6ykg\nY4IOXYnyenKonD3/Jx6GNbC36OathMOgmnnSydC9mPrfE98tCaokwQ3BIGhGB9Ge\n4aUPv7VHNP4O/7pLIwUt30ST9b4d9gKXvCSfg88CgYEAo1nDiYX0Fcc9f1pyXE5T\nE+3Rnkj6UvxDmbbRiy1tw55TXQC6Jki1A7aIZL631ksLNyZ8/D1nOOoOsx6MS8Tj\n0HocVV+gFPYwue6VA2Ben/koD5hHNlobQjjDRR8E/K1F+O26SoSANZw1TaJb0b3A\nszP+qYYCqpDYHOWZXbsnz30=\n-----END PRIVATE KEY-----\n") || '').replace(/\\n/g, '\n')
+            };
+            if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+                throw new Error('Firebase Admin SDK credentials are not set in .env.local');
+            }
+            __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].initializeApp({
+                credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].credential.cert(serviceAccount),
+                storageBucket: ("TURBOPACK compile-time value", "aura-mebel-7ec96.firebasestorage.app")
+            });
+            console.log('Lazy initialization of Firebase Admin SDK successful.');
+        } catch (error) {
+            console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+            // Если инициализация не удалась, мы не можем продолжить.
+            // Возвращаем null или выбрасываем ошибку, чтобы вызывающий код мог это обработать.
+            return null;
         }
-        const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('ascii');
-        const BUCKET_NAME = ("TURBOPACK compile-time value", "aura-mebelgit-79401846-16a52.appspot.com");
-        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-        ;
-        const app = __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["initializeApp"]({
-            credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["credential"].cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: privateKey
-            }),
-            storageBucket: BUCKET_NAME
-        });
-        console.log('[ADMIN SDK] Lazy initialization successful.');
-        return app;
-    } catch (error) {
-        console.error('[ADMIN SDK] CRITICAL: Lazy initialization failed:', error);
-        return null;
     }
-}
-function getAdminDb() {
-    const app = initializeAdminApp();
-    return app ? app.firestore() : null;
-}
-function getAdminStorage() {
-    const app = initializeAdminApp();
-    return app ? app.storage() : null;
-}
+    return __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"];
+};
+const getAdminDb = ()=>{
+    const adminInstance = ensureFirebaseAdminInitialized();
+    return adminInstance ? adminInstance.firestore() : null;
+};
+const getAdminStorage = ()=>{
+    const adminInstance = ensureFirebaseAdminInitialized();
+    return adminInstance ? adminInstance.storage() : null;
+};
 }),
 "[project]/components/Button.tsx [ssr] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -2598,7 +2597,7 @@ var __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$run
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react [external] (react, cjs)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dynamic.js [ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/router.js [ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/firebaseAdmin.ts [ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/firebaseAdmin.ts [ssr] (ecmascript)"); // Обновленный импорт
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Hero$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Hero.tsx [ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$CategoryShowcase$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/CategoryShowcase.tsx [ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Catalog$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Catalog.tsx [ssr] (ecmascript)");
@@ -2682,7 +2681,7 @@ function HomePage({ allProducts, error }) {
             ]
         }, void 0, true, {
             fileName: "[project]/pages/index.tsx",
-            lineNumber: 32,
+            lineNumber: 33,
             columnNumber: 12
         }, this);
     }
@@ -2703,7 +2702,7 @@ function HomePage({ allProducts, error }) {
                 onStyleFinderClick: ()=>{}
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 46,
+                lineNumber: 47,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("main", {
@@ -2713,14 +2712,14 @@ function HomePage({ allProducts, error }) {
                         onNavigate: handleNavigate
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 48,
+                        lineNumber: 49,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$CategoryShowcase$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["CategoryShowcase"], {
                         onNavigate: handleNavigate
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 49,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Catalog$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["Catalog"], {
@@ -2731,35 +2730,35 @@ function HomePage({ allProducts, error }) {
                         isHomePage: true
                     }, void 0, false, {
                         fileName: "[project]/pages/index.tsx",
-                        lineNumber: 50,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 47,
+                lineNumber: 48,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["Footer"], {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 58,
+                lineNumber: 59,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(CartSidebar, {
                 onNavigate: (view)=>router.push(`/${view.page}`)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 59,
+                lineNumber: 60,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(AiChatbot, {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 60,
+                lineNumber: 61,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(FloatingChatButton, {}, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 61,
+                lineNumber: 62,
                 columnNumber: 7
             }, this),
             quickViewProduct && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(QuickViewModal, {
@@ -2768,7 +2767,7 @@ function HomePage({ allProducts, error }) {
                 onViewDetails: (id)=>router.push(`/products/${id}`)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 62,
+                lineNumber: 63,
                 columnNumber: 28
             }, this),
             virtualStageProduct && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(VirtualStagingModal, {
@@ -2776,16 +2775,16 @@ function HomePage({ allProducts, error }) {
                 onClose: ()=>setVirtualStageProduct(null)
             }, void 0, false, {
                 fileName: "[project]/pages/index.tsx",
-                lineNumber: 63,
+                lineNumber: 64,
                 columnNumber: 31
             }, this)
         ]
     }, void 0, true);
 }
 const getServerSideProps = async ()=>{
-    const dbAdmin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminDb"])();
-    const storageAdmin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminStorage"])();
-    if (!dbAdmin || !storageAdmin) {
+    const adminDb = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminDb"])(); // Вызываем функцию
+    const adminStorage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminStorage"])(); // Вызываем функцию
+    if (!adminDb || !adminStorage) {
         return {
             props: {
                 allProducts: [],
@@ -2794,15 +2793,24 @@ const getServerSideProps = async ()=>{
         };
     }
     try {
-        const productsSnapshot = await dbAdmin.collection('products').get();
+        const productsSnapshot = await adminDb.collection('products').get();
         const productsData = productsSnapshot.docs.map((doc)=>({
                 id: doc.id,
                 ...doc.data()
             }));
-        const bucket = storageAdmin.bucket();
+        const bucket = adminStorage.bucket();
         const allProducts = await Promise.all(productsData.map(async (product)=>{
+            if (!Array.isArray(product.imageUrls)) {
+                console.warn(`Product with id ${product.id} has invalid imageUrls`);
+                return {
+                    ...product,
+                    imageUrls: [
+                        '/placeholder.svg'
+                    ]
+                };
+            }
             const imageUrls = await Promise.all(product.imageUrls.map(async (url)=>{
-                if (url.startsWith('gs://')) {
+                if (url && url.startsWith('gs://')) {
                     const path = url.substring(url.indexOf('/', 5) + 1);
                     try {
                         const [signedUrl] = await bucket.file(path).getSignedUrl({
@@ -2815,10 +2823,11 @@ const getServerSideProps = async ()=>{
                         return '/placeholder.svg';
                     }
                 }
-                return url;
+                return url || '/placeholder.svg'; // Возвращаем плейсхолдер, если url пустой
             }));
+            const { imageUrl, ...rest } = product;
             return {
-                ...product,
+                ...rest,
                 imageUrls
             };
         }));
@@ -2829,10 +2838,11 @@ const getServerSideProps = async ()=>{
         };
     } catch (error) {
         console.error("Error fetching data:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
         return {
             props: {
                 allProducts: [],
-                error: error.message
+                error: errorMessage
             }
         };
     }

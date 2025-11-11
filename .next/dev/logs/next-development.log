@@ -1,6 +1,52 @@
-[00:00:04.954] Server  LOG      ✓ Ready in 4.3s
-[00:00:25.628] Server  LOG      ○ Compiling / ...
-[00:00:33.271] Server  ERROR   [ADMIN SDK] CRITICAL: Lazy initialization failed: Error: Failed to parse private key: Error: Invalid PEM formatted message.
-[00:00:33.425] Server  ERROR   [ADMIN SDK] CRITICAL: Lazy initialization failed: Error: Failed to parse private key: Error: Invalid PEM formatted message.
-[00:00:40.253] Server  WARN     ⚠ Cross origin request detected from 3002-firebase-aura-mebelgit-1762793063058.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+[00:00:01.491] Server  LOG      ✓ Ready in 982ms
+[00:15:44.623] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:44.772] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:44.880] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:44.931] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:44.983] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:56.179] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:56.235] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:56.293] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:56.332] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:15:56.383] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:16:33.642] Server  LOG      ✓ Compiled in 22ms
+[00:16:56.758] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:16:56.822] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:16:57.005] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:16:57.071] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:16:57.124] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:17:37.423] Server  LOG      ✓ Compiled in 9ms
+[00:17:57.696] Server  LOG      ✓ Compiled in 77ms
+[00:20:57.813] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:20:57.904] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:20:57.987] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:20:58.041] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:20:58.208] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:07:19.687] Server  LOG        Reload env: .env.local
+[00:22:48.538] Server  LOG        Reload env: .env.local
+[00:22:48.604] Server  LOG      ✓ Compiled in 27ms
+[00:07:53.604] Server  LOG        Reload env: .env.local
+[00:23:22.445] Server  LOG        Reload env: .env.local
+[00:23:22.583] Server  LOG      ✓ Compiled in 86ms
+[00:23:31.664] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:23:31.733] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:23:31.921] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:23:31.975] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:23:32.026] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:29.406] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:29.494] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:29.568] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:29.628] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:29.686] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:39.140] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:39.198] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:39.371] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:39.435] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:24:39.499] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_app/build-manifest.json'
+[00:09:39.724] Server  LOG      ○ Compiling / ...
+[00:09:42.474] Server  LOG     Lazy initializing Firebase Admin SDK...
+[00:09:42.550] Server  LOG     Lazy initialization of Firebase Admin SDK successful.
+[00:09:45.896] Server  WARN     ⚠ Cross origin request detected from 3001-firebase-aura-mebelgit-1762793063058.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:52:53.268] Server  LOG      ✓ Compiled in 7.6s
+[00:54:17.736] Server  ERROR   PageNotFoundError: Cannot find module for page: /catalog
