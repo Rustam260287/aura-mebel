@@ -1,59 +1,6 @@
 globalThis.__BUILD_MANIFEST = {
   "pages": {
-    "/": [
-      "static/chunks/components_f54ed378._.js",
-      "static/chunks/[root-of-the-server]__5baee3c9._.js",
-      "static/chunks/node_modules_next_dist_compiled_c629999b._.js",
-      "static/chunks/node_modules_next_dist_shared_lib_32e1cc00._.js",
-      "static/chunks/node_modules_next_dist_client_3ede7da4._.js",
-      "static/chunks/node_modules_next_dist_6024eba3._.js",
-      "static/chunks/node_modules_next_0d858e1a._.js",
-      "static/chunks/node_modules_react-dom_4411d9bd._.js",
-      "static/chunks/node_modules_f1be3ba2._.js",
-      "static/chunks/pages_index_2da965e7._.js",
-      "static/chunks/turbopack-pages_index_c33dce0b._.js"
-    ],
-    "/_app": [
-      "static/chunks/components_ClientProviders_tsx_223ab40b._.js",
-      "static/chunks/node_modules_next_dist_compiled_c629999b._.js",
-      "static/chunks/node_modules_next_dist_shared_lib_9f660528._.js",
-      "static/chunks/node_modules_next_dist_client_d0aa886c._.js",
-      "static/chunks/node_modules_next_dist_6024eba3._.js",
-      "static/chunks/node_modules_next_5ba47e86._.js",
-      "static/chunks/node_modules_react-dom_4411d9bd._.js",
-      "static/chunks/node_modules_f1be3ba2._.js",
-      "static/chunks/[root-of-the-server]__47cbe7ba._.js",
-      "static/chunks/styles_globals_dc36e6c9.css",
-      "static/chunks/pages__app_2da965e7._.js",
-      "static/chunks/turbopack-pages__app_1a3f8dd1._.js"
-    ],
-    "/_error": [
-      "static/chunks/node_modules_next_dist_compiled_c629999b._.js",
-      "static/chunks/node_modules_next_dist_shared_lib_cf5b50a6._.js",
-      "static/chunks/node_modules_next_dist_client_d0aa886c._.js",
-      "static/chunks/node_modules_next_dist_19fd0646._.js",
-      "static/chunks/node_modules_next_error_1cfbb379.js",
-      "static/chunks/[next]_entry_page-loader_ts_43b523b5._.js",
-      "static/chunks/node_modules_react-dom_4411d9bd._.js",
-      "static/chunks/node_modules_7f09fef0._.js",
-      "static/chunks/[root-of-the-server]__092393de._.js",
-      "static/chunks/pages__error_2da965e7._.js",
-      "static/chunks/turbopack-pages__error_91f36f75._.js"
-    ],
-    "/ai-room-makeover": [
-      "static/chunks/components_Header_tsx_ff9c0874._.js",
-      "static/chunks/[root-of-the-server]__286b6aad._.js",
-      "static/chunks/node_modules_next_dist_compiled_c629999b._.js",
-      "static/chunks/node_modules_next_dist_shared_lib_32e1cc00._.js",
-      "static/chunks/node_modules_next_dist_client_3ede7da4._.js",
-      "static/chunks/node_modules_next_dist_6024eba3._.js",
-      "static/chunks/node_modules_next_3d8f77d5._.js",
-      "static/chunks/node_modules_react-dom_4411d9bd._.js",
-      "static/chunks/node_modules_@google_genai_dist_web_index_mjs_aa8368b0._.js",
-      "static/chunks/node_modules_f1be3ba2._.js",
-      "static/chunks/pages_ai-room-makeover_2da965e7._.js",
-      "static/chunks/turbopack-pages_ai-room-makeover_f79bffc7._.js"
-    ]
+    "/_app": []
   },
   "devFiles": [],
   "polyfillFiles": [],

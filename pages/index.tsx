@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { getAdminDb } from '../lib/firebaseAdmin';
+import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
 
 import { Hero } from '../components/Hero';
@@ -67,12 +67,37 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const dbAdmin = getAdminDb();
-  if (!dbAdmin) {
+  const storageAdmin = getAdminStorage();
+
+  if (!dbAdmin || !storageAdmin) {
     return { props: { allProducts: [], error: "Firebase Admin SDK initialization failed." } };
   }
   try {
     const productsSnapshot = await dbAdmin.collection('products').get();
-    const allProducts = productsSnapshot.docs.map(doc => doc.data());
+    const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+
+    const bucket = storageAdmin.bucket();
+    
+    const allProducts = await Promise.all(productsData.map(async (product) => {
+        const imageUrls = await Promise.all(product.imageUrls.map(async (url) => {
+            if (url.startsWith('gs://')) {
+                const path = url.substring(url.indexOf('/', 5) + 1);
+                try {
+                    const [signedUrl] = await bucket.file(path).getSignedUrl({
+                        action: 'read',
+                        expires: '03-09-2491'
+                    });
+                    return signedUrl;
+                } catch (e) {
+                    console.error(`Error getting signed URL for ${path}:`, e.message);
+                    return '/placeholder.svg';
+                }
+            }
+            return url;
+        }));
+        return { ...product, imageUrls };
+    }));
+    
     return {
       props: { allProducts: JSON.parse(JSON.stringify(allProducts)) },
     };
