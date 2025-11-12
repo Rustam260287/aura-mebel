@@ -17,7 +17,7 @@ const categories = [
 
 const CategoryCard: React.FC<{ name: string; imageSeed: string; onClick: () => void; index: number; }> = ({ name, imageSeed, onClick, index }) => {
   const imageUrl = `https://picsum.photos/seed/${imageSeed}/600/600`;
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLDivElement>(null!); // Исправляем тип здесь
   const isVisible = useIntersectionObserver(ref, { threshold: 0.2, rootMargin: '0px 0px -50px 0px' });
 
   return (
@@ -42,7 +42,7 @@ const CategoryCard: React.FC<{ name: string; imageSeed: string; onClick: () => v
 };
 
 export const CategoryShowcase: React.FC<CategoryShowcaseProps> = memo(({ onNavigate }) => {
-  const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null!); // И исправляем тип здесь
   const isTitleVisible = useIntersectionObserver(titleRef, { threshold: 0.5 });
 
   const handleCategoryClick = (categoryName: string) => {
