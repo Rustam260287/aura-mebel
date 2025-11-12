@@ -1,13 +1,17 @@
-
 import { useState, useEffect, RefObject } from 'react';
 
 interface IntersectionObserverOptions extends IntersectionObserverInit {
   triggerOnce?: boolean;
 }
 
-// Исправляем тип, чтобы он принимал HTMLDivElement и мог быть null
-export const useIntersectionObserver = (
-  elementRef: RefObject<HTMLDivElement | null>,
+/**
+ * Хук для отслеживания видимости элемента в области просмотра.
+ * @param elementRef Ref на отслеживаемый HTML-элемент.
+ * @param options Опции для IntersectionObserver.
+ * @returns `true`, если элемент виден, иначе `false`.
+ */
+export const useIntersectionObserver = <T extends Element>(
+  elementRef: RefObject<T>,
   {
     threshold = 0.1,
     root = null,
@@ -15,34 +19,40 @@ export const useIntersectionObserver = (
     triggerOnce = true,
   }: IntersectionObserverOptions = {}
 ): boolean => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [isIntersecting, setIntersecting] = useState(false);
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element) return;
+    
+    // Если элемента нет, ничего не делаем
+    if (!element) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsIntersecting(true);
-          if (triggerOnce) {
-            observer.unobserve(element);
-          }
-        } else {
-            if (!triggerOnce) {
-                setIsIntersecting(false);
-            }
+        // Если пересечение есть и нужно сработать один раз,
+        // обновляем состояние и отписываемся.
+        if (entry.isIntersecting && triggerOnce) {
+          setIntersecting(true);
+          observer.unobserve(element);
+        } 
+        // Если нужно отслеживать постоянно, просто обновляем состояние.
+        else if (!triggerOnce) {
+          setIntersecting(entry.isIntersecting);
         }
       },
-      { threshold, root, rootMargin }
+      { root, rootMargin, threshold }
     );
 
     observer.observe(element);
 
+    // Отключаем наблюдение при размонтировании компонента
     return () => {
       observer.disconnect();
     };
-  }, [elementRef, threshold, root, rootMargin, triggerOnce]);
+    // Перезапускаем эффект, только если сам элемент или опции изменились.
+  }, [elementRef, root, rootMargin, threshold, triggerOnce]);
 
   return isIntersecting;
 };
