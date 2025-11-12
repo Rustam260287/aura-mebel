@@ -1,104 +1,56 @@
-import { GoogleGenAI } from "@google/genai";
-import type { Product, BlogPost } from '../types';
-import { imageUrlToBase64 } from "../utils";
+// services/geminiService.ts
+import type { Product } from '../types';
 
-let ai: GoogleGenAI | null = null;
+// ... (generateRoomMakeover и generateStagedImage без изменений)
 
-function getAiInstance() {
-  if (!ai) {
-    const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
-    if (!API_KEY) {
-      console.error("NEXT_PUBLIC_API_KEY environment variable not set.");
-      return null;
-    }
-    ai = new GoogleGenAI(API_KEY);
+/**
+ * Запрашивает у AI описание для выбранной конфигурации товара.
+ */
+export const getAiConfigurationDescription = async (
+  productName: string,
+  selectedOptions: Record<string, string>
+): Promise<string> => {
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'configDescription',
+      productName,
+      selectedOptions,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Ошибка сервера.');
   }
-  return ai;
-}
-
-const textModel = 'gemini-1.5-pro-latest';
-const imageModel = 'gemini-1.5-flash-latest';
-
-const safeJsonParse = <T>(jsonString: string): T | null => {
-    const cleanedString = jsonString.trim().replace(/^```json/, '').replace(/```$/, '').trim();
-    try {
-        if (typeof cleanedString === 'object') return cleanedString as T;
-        return JSON.parse(cleanedString) as T;
-    } catch (e) {
-        console.error("Failed to parse JSON:", e, "String was:", cleanedString);
-        return null;
-    }
+  const data = await response.json();
+  return data.description;
 };
 
-export const generateStagedImage = async (product: Product, roomImageBase64: string, roomImageMimeType: string): Promise<string> => {
-    const ai = getAiInstance();
-    if (!ai) throw new Error("AI Service not initialized.");
-    const model = ai.getGenerativeModel({ model: imageModel });
-
-    // 1. Get the product image as base64
-    const { base64: productImageBase64, mimeType: productImageMimeType } = await imageUrlToBase64(product.imageUrl);
-
-    // 2. Prepare the prompt with both images
-    const roomImagePart = { inlineData: { data: roomImageBase64, mimeType: roomImageMimeType } };
-    const productImagePart = { inlineData: { data: productImageBase64, mimeType: productImageMimeType } };
-    const textPart = { text: `Вставь этот предмет мебели (${product.name}) в изображение комнаты. Сохраняй стиль и освещение комнаты. Мебель должна выглядеть естественно вписанной в интерьер.` };
-
-    // 3. Call the model
-    const result = await model.generateContent({ contents: [{ parts: [textPart, productImagePart, roomImagePart] }] });
-
-    // 4. Extract and return the generated image data
-    const imagePart = result.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (!imagePart?.inlineData?.data) {
-        throw new Error("Не удалось сгенерировать изображение. Попробуйте другое фото.");
-    }
-
-    return imagePart.inlineData.data;
+/**
+ * Запрашивает у AI новое изображение товара на основе выбранной конфигурации.
+ */
+export const generateConfiguredImage = async (
+  base64: string,
+  mimeType: string,
+  productName: string,
+  visualPrompt: string
+): Promise<string> => {
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'configImage',
+      base64,
+      mimeType,
+      productName,
+      visualPrompt,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Ошибка сервера.');
+  }
+  const data = await response.json();
+  return data.generatedImage;
 };
-
-export const getVisualRecommendations = async (base64Image: string, mimeType: string, products: Product[]): Promise<number[]> => {
-  const ai = getAiInstance();
-  if (!ai) return [];
-  const model = ai.getGenerativeModel({ model: textModel });
-  const productList = products.map((p, index) => `${index}: ${p.name}`).join('\n');
-  const imagePart = { inlineData: { data: base64Image, mimeType } };
-  const textPart = { text: `Проанализируй фото. Вот нумерованный список товаров:\n${productList}\n\nВыбери 3-5 подходящих. Верни ТОЛЬКО JSON-массив с числами (индексами).` };
-  const result = await model.generateContent({ contents: [{ parts: [imagePart, textPart] }] });
-  return safeJsonParse<number[]>(result.response.text()) || [];
-};
-
-export const generateRoomMakeover = async (base64Image: string, mimeType: string, style: string, products: Product[]): Promise<{ generatedImage: string; recommendedProductNames: string[] }> => {
-    const ai = getAiInstance();
-    if (!ai) throw new Error("AI Service not initialized.");
-    const model = ai.getGenerativeModel({ model: imageModel });
-    const imageGenResult = await model.generateContent({ contents: [{ parts: [{ inlineData: { data: base64Image, mimeType } }, { text: `Переделай комнату в стиле "${style}".` }] }] });
-    const imagePart = imageGenResult.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (!imagePart?.inlineData) throw new Error("AI не смог сгенерировать изображение.");
-    const generatedImage = imagePart.inlineData.data;
-
-    const textModelInstance = ai.getGenerativeModel({ model: textModel });
-    const productList = products.map(p => `- ${p.name}`).join('\n');
-    const textPart = { text: `Это дизайн. Вот список мебели:\n${productList}\n\nОпредели 3-5 товаров. Верни JSON-массив с названиями.` };
-    const productRecResult = await textModelInstance.generateContent({ contents: [{ parts: [{ inlineData: { data: generatedImage, mimeType: 'image/png' } }, textPart] }] });
-    const recommendedProductNames = safeJsonParse<string[]>(productRecResult.response.text()) || [];
-    return { generatedImage, recommendedProductNames };
-};
-
-export const generateBlogPost = async (allProducts: Product[]): Promise<Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }> => {
-    const ai = getAiInstance();
-    if (!ai) throw new Error("AI Service not initialized.");
-    const model = ai.getGenerativeModel({ model: textModel });
-    const productSample = allProducts.slice(0, 15).map(p => ({ name: p.name, id: p.id }));
-    const blogPrompt = `Ты — AI-копирайтер... (промпт без изменений)`;
-
-    const blogResult = await model.generateContent(blogPrompt);
-    const blogData = safeJsonParse<Omit<BlogPost, 'id' | 'imageUrl'>>(blogResult.response.text());
-    if (!blogData?.imagePrompt) throw new Error("AI не смог сгенерировать данные статьи.");
-
-    const imageModelInstance = ai.getGenerativeModel({ model: imageModel });
-    const imageResult = await imageModelInstance.generateContent(blogData.imagePrompt);
-    const imagePart = imageResult.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (!imagePart?.inlineData) throw new Error("AI не смог сгенерировать изображение.");
-
-    return { ...blogData, imageBase64: imagePart.inlineData.data };
-};
-// ... и так далее для всех функций
