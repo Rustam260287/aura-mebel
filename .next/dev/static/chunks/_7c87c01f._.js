@@ -333,10 +333,13 @@ const AiChatProvider = ({ children, allProducts, onSessionEnd })=>{
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AiChatProvider.useEffect": ()=>{
             if (!aiRef.current) {
-                const apiKey = ("TURBOPACK compile-time value", "ВАШ_КЛЮЧ_GEMINI_API");
-                if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-                ;
-                else {
+                const apiKey = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"].env.NEXT_PUBLIC_API_KEY;
+                if (!apiKey) {
+                    console.error("NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.");
+                    aiRef.current = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["GoogleGenAI"]({
+                        apiKey: "MISSING_API_KEY"
+                    });
+                } else {
                     aiRef.current = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2f$genai$2f$dist$2f$web$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["GoogleGenAI"]({
                         apiKey
                     });

@@ -721,6 +721,10 @@ img, video {
   height: 100%;
 }
 
+.h-screen {
+  height: 100vh;
+}
+
 .max-h-32 {
   max-height: 8rem;
 }

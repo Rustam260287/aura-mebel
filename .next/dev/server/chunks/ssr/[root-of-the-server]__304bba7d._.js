@@ -59,10 +59,13 @@ const AiChatProvider = ({ children, allProducts, onSessionEnd })=>{
     ]);
     (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useEffect"])(()=>{
         if (!aiRef.current) {
-            const apiKey = ("TURBOPACK compile-time value", "ВАШ_КЛЮЧ_GEMINI_API");
-            if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-            ;
-            else {
+            const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+            if (!apiKey) {
+                console.error("NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.");
+                aiRef.current = new __TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__["GoogleGenAI"]({
+                    apiKey: "MISSING_API_KEY"
+                });
+            } else {
                 aiRef.current = new __TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__["GoogleGenAI"]({
                     apiKey
                 });

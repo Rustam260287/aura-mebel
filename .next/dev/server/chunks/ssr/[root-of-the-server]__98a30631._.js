@@ -95,9 +95,11 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 let ai = null;
 function getAiInstance() {
     if (!ai) {
-        const API_KEY = ("TURBOPACK compile-time value", "ВАШ_КЛЮЧ_GEMINI_API");
-        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-        ;
+        const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
+        if (!API_KEY) {
+            console.error("NEXT_PUBLIC_API_KEY environment variable not set.");
+            return null;
+        }
         ai = new __TURBOPACK__imported__module__$5b$externals$5d2f40$google$2f$genai__$5b$external$5d$__$2840$google$2f$genai$2c$__esm_import$29$__["GoogleGenAI"](API_KEY);
     }
     return ai;

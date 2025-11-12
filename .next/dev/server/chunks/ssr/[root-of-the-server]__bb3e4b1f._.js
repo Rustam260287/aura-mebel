@@ -47,16 +47,16 @@ const ensureFirebaseAdminInitialized = ()=>{
         try {
             console.log('Lazy initializing Firebase Admin SDK...');
             const serviceAccount = {
-                projectId: ("TURBOPACK compile-time value", "aura-mebel-7ec96"),
-                clientEmail: ("TURBOPACK compile-time value", "firebase-adminsdk-fbsvc@aura-mebel-7ec96.iam.gserviceaccount.com"),
-                privateKey: (("TURBOPACK compile-time value", "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCb3nS5zZf98FrY\nlEIFBedcrL1bAbdTz3qM/gul+BRusL5YA1YrVJtB7Z5bmJ/TNhyIZYHhPXyPbX3p\nh++RjqygPHhaNG3fDuxMOzJUv/6+R1Y0aondk0kdCxZA8/se3/NNrwDm7MqOFH9Y\nsS3tjr32kGu08Z2qz3RtcCH/gHcwy1Xfvgf5xSKOp2FsOsB94oEamU8afBqpi1XP\nEC/GqJSBuzJWs8/hrBpNQ/Ajhr3GZtJ6r30GGxpLyKrYlgk9XNf+CKdStjz8Zvqd\nsGZLTZPP0fRr1qjPTQxlQ1blSaQCDuLGeXJJNbZKbrOywgeraIsauieNsmLEaJne\ng3R9Z/NFAgMBAAECggEAFEhOSB9It/Ke36/rJ1wtTxHrUfxXLsDA4bftLBusDPtS\nyYElpV3NFjcldCXYJlPUQqtyyyyFGOTWjZzyv64hKHi18IcCBRScCw9o7T5Ol9QQ\nk6GJbxvLV8wpiSo2cz4RGvq601HcycBBEfl8UH1SmtMQMOt/6Mo2DEebJPRCjkaz\nR1kYzVq0nxcizU9m97Zg471gOa1egpzIOpFmMPPVk/QOTeqB9mcXAN/yzEYON7Ys\n65YhciKSebKgoa0QNGpnL5pZcUn1uZfgqmSCgPmtkiFRGybaiizY9JzIT2pEAyxV\naoW6PdVWPwo76U9mmZt9T4cNnq0GiGRDSfha5PvnwQKBgQDSYl0/25QgpyJM9U2Y\nIU5U7Wvfqr9oHTRea5ohSb65AQkbihP7CSEDWnT/A/QamVLaKTsrO7WN8C0LX92Z\nrRcLGlj3wZcXoeclZKIcTt+dZv7qKcBVkYx5JxneWes01RiOzuJW6rY7DHqRJmdZ\nd/5ZWfsbco5S03PurVWP2pQOPwKBgQC9qiefGUh7m0eLcg6md44mluVFcEoj5kwT\nBnllWgfrmWHPp9tkbaUajUGflfDxDT8O1uLgrARjpPDOaWuIA7ThuOS6Q7DyVcSw\nK+6urzdAgGR5UEHck4EU4Uq0Nz0w0ED/On9t37Yc+MaochQUO/9cKz3uor8K+cHi\n9cC4DEolewKBgDnQokOcOhbHF1wCxXIbJQWdwVlT+QnJjMyt0Ut4kpsQt8oDpf4E\nwjfDsgcqtPhiTix5zDLTU89Pw3EuxR0oPf7lHLHpV3Y9HeJex1X0Lut4lHERTDO3\nrdzVa/x4xXRdY0RLglPUaIPNqBkfbqNdoF45phIi5w3H4kIjDDJeJPXNAoGAGkNc\nlzBWFB+taYbStoRpn7hXaSUibxQtxpin6LvtytcDb1DMFX0FVsbmpmWJ5qcx6ykg\nY4IOXYnyenKonD3/Jx6GNbC36OathMOgmnnSydC9mPrfE98tCaokwQ3BIGhGB9Ge\n4aUPv7VHNP4O/7pLIwUt30ST9b4d9gKXvCSfg88CgYEAo1nDiYX0Fcc9f1pyXE5T\nE+3Rnkj6UvxDmbbRiy1tw55TXQC6Jki1A7aIZL631ksLNyZ8/D1nOOoOsx6MS8Tj\n0HocVV+gFPYwue6VA2Ben/koD5hHNlobQjjDRR8E/K1F+O26SoSANZw1TaJb0b3A\nszP+qYYCqpDYHOWZXbsnz30=\n-----END PRIVATE KEY-----\n") || '').replace(/\\n/g, '\n')
+                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+                clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
+                privateKey: (process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
             };
             if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
                 throw new Error('Firebase Admin SDK credentials are not set in .env.local');
             }
             __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].initializeApp({
                 credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].credential.cert(serviceAccount),
-                storageBucket: ("TURBOPACK compile-time value", "aura-mebel-7ec96.firebasestorage.app")
+                storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
             });
             console.log('Lazy initialization of Firebase Admin SDK successful.');
         } catch (error) {

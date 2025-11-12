@@ -20,6 +20,14 @@ interface PostPageProps {
 export default function PostPage({ post, allProducts, error }: PostPageProps) {
   const router = useRouter();
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl text-red-500">Error loading data: {error}</h1>
+      </div>
+    );
+  }
+
   const handleNavigate = (view: View) => {
     if (view.page === 'product') {
       router.push(`/products/${view.productId}`);

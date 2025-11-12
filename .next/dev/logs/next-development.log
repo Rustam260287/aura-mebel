@@ -1,10 +1,17 @@
-[00:00:02.044] Server  LOG      ✓ Ready in 1425ms
-[00:00:09.119] Server  LOG      ○ Compiling / ...
-[00:00:13.827] Server  LOG     Lazy initializing Firebase Admin SDK...
-[00:00:13.895] Server  LOG     Lazy initialization of Firebase Admin SDK successful.
-[01:09:35.155] Server  ERROR   PageNotFoundError: Cannot find module for page: /contacts
-[01:09:35.613] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_error/client-build-manifest.json'
-[01:09:35.804] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_error/client-build-manifest.json'
-[01:09:35.860] Server  ERROR    ⨯ Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_error/client-build-manifest.json'
-[01:09:35.918] Server  ERROR   Error: ENOENT: no such file or directory, open '/home/user/aura-mebel/.next/dev/server/pages/_error/client-build-manifest.json'
-[01:09:59.229] Browser LOG     Chat session ended: [{"content":"Здравствуйте! Я — ваш ИИ-помощник Aura. Чем могу помочь в выборе мебели?","role":"model"},{"content":"как","role":"user"},{"content":"К сожалению, произошла ошибка: Failed to execute 'append' on 'Headers': String contains non ISO-8859-1 code point.","role":"model"}]
+[00:00:01.334] Server  LOG      ✓ Ready in 861ms
+[00:00:01.338] Server  WARN     ⚠ Cross origin request detected from 3000-firebase-aura-mebelgit-1762793063058.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:00:04.533] Server  LOG      ○ Compiling / ...
+[00:00:08.550] Server  LOG     Lazy initializing Firebase Admin SDK...
+[00:00:08.551] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
+[00:00:08.551] Server  LOG     Lazy initializing Firebase Admin SDK...
+[00:00:08.552] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
+[00:00:08.752] Server  LOG     Lazy initializing Firebase Admin SDK...
+[00:00:08.752] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
+[00:00:08.753] Server  LOG     Lazy initializing Firebase Admin SDK...
+[00:00:08.753] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
+[00:00:10.350] Browser ERROR   NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.
+[00:01:10.006] Browser ERROR   NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.
+[00:01:36.415] Server  LOG      ✓ Compiled in 742ms
+[00:02:30.121] Server  LOG        Reload env: .env
+[00:05:51.048] Server  LOG        Reload env: .env
