@@ -24,9 +24,8 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
   const handleFile = useCallback((file: File | null) => {
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+      // Используем URL.createObjectURL для более надежного превью
+      setImagePreview(URL.createObjectURL(file));
       setError(null);
       setRecommendedProducts([]);
     } else {
@@ -34,6 +33,7 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
     }
   }, []);
 
+  // ... (остальные обработчики без изменений)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFile(e.target.files?.[0] || null);
   const handleDragOver = (e: DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragOver(true); };
   const handleDragLeave = (e: DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragOver(false); };
@@ -43,10 +43,13 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
     handleFile(e.dataTransfer.files?.[0] || null);
   };
   const handleRemoveImage = useCallback(() => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImageFile(null);
     setImagePreview(null);
     setRecommendedProducts([]);
-  }, []);
+  }, [imagePreview]);
 
   const handleSubmit = useCallback(async () => {
     if (!imageFile) return;
@@ -74,6 +77,7 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
 
   return (
     <div className="container mx-auto px-6 py-12">
+      {/* ... (остальной JSX без изменений) */}
       <div className="max-w-4xl mx-auto text-center">
         <h1 className="text-4xl md:text-5xl font-serif text-brand-brown mb-4">Визуальный поиск</h1>
         <p className="text-lg text-brand-charcoal mb-8">Загрузите фото интерьера, и наш ИИ-стилист подберет похожую мебель.</p>
@@ -108,7 +112,7 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
       {recommendedProducts.length > 0 && (
         <div className="mt-16">
           <h2 className="text-3xl font-serif text-brand-charcoal mb-8 text-center">Мы нашли для вас:</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {recommendedProducts.map(product => (
               <ProductCard key={product.id} product={product} onProductSelect={onProductSelect} />
             ))}
