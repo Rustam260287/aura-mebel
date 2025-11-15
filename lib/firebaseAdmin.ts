@@ -25,7 +25,11 @@ const ensureFirebaseAdminInitialized = () => {
       });
        console.log('Lazy initialization of Firebase Admin SDK successful.');
     } catch (error) {
-      console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+      if (error instanceof Error) {
+        console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+      } else {
+        console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed with an unknown error.');
+      }
       // Если инициализация не удалась, мы не можем продолжить.
       // Возвращаем null или выбрасываем ошибку, чтобы вызывающий код мог это обработать.
       return null;

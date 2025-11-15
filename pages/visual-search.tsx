@@ -1,5 +1,5 @@
 // pages/visual-search.tsx
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
 import { useRouter } from 'next/router';
@@ -27,16 +27,16 @@ export default function VisualSearch({ allProducts }: VisualSearchProps) {
 
   return (
     <>
-      <Header onNavigate={handleNavigate} onStyleFinderClick={() => {}} />
+      <Header onStyleFinderClick={() => {}} />
       <main>
         <VisualSearchPage allProducts={allProducts} onProductSelect={(id) => router.push(`/products/${id}`)} />
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer />
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
     return { props: { allProducts: [] } };

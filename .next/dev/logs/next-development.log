@@ -1,17 +1,29 @@
-[00:00:01.334] Server  LOG      ✓ Ready in 861ms
-[00:00:01.338] Server  WARN     ⚠ Cross origin request detected from 3000-firebase-aura-mebelgit-1762793063058.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+[00:00:02.333] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:00:02.334] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:00:02.746] Server  LOG      ✓ Ready in 1832ms
+[00:00:02.749] Server  WARN     ⚠ Cross origin request detected from 3000-firebase-aura-mebelgit-1763209593259.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
-[00:00:04.533] Server  LOG      ○ Compiling / ...
-[00:00:08.550] Server  LOG     Lazy initializing Firebase Admin SDK...
-[00:00:08.551] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
-[00:00:08.551] Server  LOG     Lazy initializing Firebase Admin SDK...
-[00:00:08.552] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
-[00:00:08.752] Server  LOG     Lazy initializing Firebase Admin SDK...
-[00:00:08.752] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
-[00:00:08.753] Server  LOG     Lazy initializing Firebase Admin SDK...
-[00:00:08.753] Server  ERROR   CRITICAL: Lazy initialization of Firebase Admin SDK failed: "Firebase Admin SDK credentials are not set in .env.local"
-[00:00:10.350] Browser ERROR   NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.
-[00:01:10.006] Browser ERROR   NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.
-[00:01:36.415] Server  LOG      ✓ Compiled in 742ms
-[00:02:30.121] Server  LOG        Reload env: .env
-[00:05:51.048] Server  LOG        Reload env: .env
+[00:00:06.199] Server  LOG      ○ Compiling / ...
+[00:00:16.864] Server  ERROR    ⨯ Error: getServerSideProps cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:00:17.085] Server  ERROR    ⨯ Error: getServerSideProps cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:00:19.278] Browser ERROR   uncaughtError: Error: getServerSideProps cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:24.055] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:24.056] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:41.225] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:41.226] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:41.259] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:41.260] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:53.131] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:01:53.133] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:03.672] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:03.677] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:03.705] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:03.705] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:22.846] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:22.847] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:23.523] Server  LOG      ✓ Compiled in 627ms
+[00:02:34.153] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:34.154] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:45.097] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:02:45.098] Server  ERROR    ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+[00:06:29.555] Server  LOG      ✓ Compiled in 8ms

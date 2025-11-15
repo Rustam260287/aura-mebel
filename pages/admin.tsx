@@ -1,12 +1,12 @@
 // pages/admin.tsx
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, BlogPost, View } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
 
-const AdminPage = dynamic(() => import('../pages/AdminPage').then(mod => mod.AdminPage), { ssr: false });
+const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mod.AdminPage), { ssr: false });
 
 interface AdminProps {
   initialProducts: Product[];
@@ -28,24 +28,25 @@ export default function AdminContainer({ initialProducts, initialBlogPosts }: Ad
   const handleDeleteProduct = useCallback(async (productId: string) => {}, []);
   const handleUpdateBlogPost = useCallback(async (postData: any) => {}, []);
   const handleDeleteBlogPost = useCallback(async (postId: string) => {}, []);
+  const handleAddBlogPost = useCallback(async (postData: any) => {}, []);
 
   return (
     <AdminPage 
         allProducts={products}
         blogPosts={blogPosts}
-        setBlogPosts={setBlogPosts} // Передаем сеттер
         chatLogs={[]}
         onNavigate={handleNavigate}
         onUpdateProduct={handleUpdateProduct}
         onAddProduct={handleAddProduct}
         onDeleteProduct={handleDeleteProduct}
+        onAddBlogPost={handleAddBlogPost}
         onUpdateBlogPost={handleUpdateBlogPost}
         onDeleteBlogPost={handleDeleteBlogPost}
     />
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
     return { props: { initialProducts: [], initialBlogPosts: [] } };

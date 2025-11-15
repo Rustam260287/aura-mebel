@@ -1,5 +1,5 @@
 // pages/blog/index.tsx
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import { getAdminDb } from '../../lib/firebaseAdmin';
 import type { BlogPost, View } from '../../types';
 import { useRouter } from 'next/router';
@@ -27,16 +27,16 @@ export default function BlogIndexPage({ posts }: BlogProps) {
 
   return (
     <>
-      <Header onNavigate={handleNavigate} onStyleFinderClick={() => {}} />
+      <Header onStyleFinderClick={() => {}} />
       <main>
         <BlogListPage posts={posts} onNavigate={handleNavigate} />
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer />
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
     return { props: { posts: [] } };

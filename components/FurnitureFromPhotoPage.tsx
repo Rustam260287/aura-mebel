@@ -1,7 +1,8 @@
 import React, { useState, useCallback, DragEvent, memo } from 'react';
 import { Button } from './Button';
 import { PhotoIcon, XMarkIcon, SparklesIcon, ArrowPathIcon } from './Icons';
-import { generateFurnitureFromPhoto, FurnitureBlueprint } from '../services/geminiService';
+import { generateFurnitureFromPhoto } from '../services/geminiService';
+import { FurnitureBlueprint } from '../types';
 import { fileToBase64 } from '../utils';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../contexts/ToastContext';

@@ -47,20 +47,24 @@ const ensureFirebaseAdminInitialized = ()=>{
         try {
             console.log('Lazy initializing Firebase Admin SDK...');
             const serviceAccount = {
-                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-                clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
-                privateKey: (process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
+                projectId: ("TURBOPACK compile-time value", "aura-mebel-7ec96"),
+                clientEmail: ("TURBOPACK compile-time value", "firebase-adminsdk-fbsvc@aura-mebel-7ec96.iam.gserviceaccount.com"),
+                privateKey: (("TURBOPACK compile-time value", "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC80uB4i4IuNou8\n0m4/aIc6XgjqgoKLUA2X+an7qX+KmZHWCgqns8dwOogSnm9gJuhkdvrUo0Qz3Yne\nOjkxYYT6xaUX24C7glFoye/32QAJnesRfKsSUwZVwNbAv0LO0OGcElBXH+0m3sn0\nwTp3phb+8PVTUaxjTk49qM4ILAi6iLcWu6L5rg2qAYJIHMmVDmzqe5hSo8WYaxUc\nh4sdX5yM9ZEWBbWzkiXtYopUxSuGung8+AxSe0auJwU79Df8cEs9KlW8nC6k/B31\noqxg/ussZM1L/E6vKQk0Q1O5tnERiOv18eTv8cPWsreAmT8zbHIrV71xiZV+L37d\nTmGhq9OpAgMBAAECggEANJuABLXBoER8LDBonOvveRiH3WZdHplAIE5jyITRzvi4\nQ+zqSQzyjNcR4DYaC6zrZEot2h5euyCG785C7vofhYqZU4tJU3ScX9ibLe9cblF8\nE5QrSWCuTCf87RiccWiK4uPLVGrFtOWvWKyZMIqqr37Mqtj/cW94pv8n3+j8yZMg\nv5iWIzHuOJ33khDQHnleXgEtx85Th4dtuWY6c0mKoSuzLtDFBom8EFPVP1FbmfK6\nKFOAgg1W3/RLWXAzOK+Nntn6oK8f1+CzYZEF9s3bUP7/uEKdqlyauWqOc+/qHH+j\nHHNhQG+vAktruQAul/fdaGMD3cyPYxXUd6oJH32IjQKBgQDq8vVzcu4ACPNm9ail\nKIvIaYaicI5+mwjDcGt9yCyWJS9sh5mKIgU+53nCjmP/HVcokQhmN51usqdC4yIV\naFCT0d6f9hdK9GAAZCXH6+s1VaEQHT18HZHABeJS3ChwmxgSUD6jJ7gtu1Kb80oI\n776ZaehDq+WLfwBKBnqHCTflIwKBgQDNvfBOkh6vh6zmbB6ru0VDXVZSXMn0Xn2S\nQMiP7SdG6uq+zW5m1C3ZYVoysWkVCQVCpVZWUhTVQiHC97UPtWljy5gSqnez6HW1\ns2lpF/ECBz42Pu8xud422ynVqVLAJRj2FF776BgrV1zwUiiI/0RH/ZdnB30viNzM\n3s/qyCQuwwKBgQCLA9CZS8JowOML44SynEgA//dKe+DEJoVL5mOjm+JNwJjL1XvS\nkIicDKgtpsSh+UFN3mqi2HtNOWXgHLZZBkzO+dmIujpT/j4jXR5BqWSVPSI8f6CW\npIRNou2j62H+JrZad6JoNSMz4+dgINaIbRpQeaqVB8uc+zs3kZfD+H9bEwKBgEY4\nbaxjctW2GO0MOeujHyC+2peB0+vz1Cf2tH1rE9zAkR5OP0AZawymjYJ/yr3DNmho\nxe7wVOv0hlFk+gdCg5XsBxtX00M0M/iwI2obIcbvcexRzpHKPm26n6ys/fFWuA5F\nJaYUsSsZxj6/y9X2SffINcSUacWvkKzb31ritHbBAoGBAKU5Ldf0m0cwqWpJwMKl\nzaRQqsQRQNSrZ3UeCt9RB4QAsAKYxpu0SdMEZdwF6r0KoGq7o9JChmnQyy/xWNWo\nJZSlFfZ+0w+jSf2MG+wrHtVochEWtlXNJvHct7HEX/4vUlE5U96zJ4a4yKjmqQLV\nbye0fP4121ejTCh7iADfkEIb\n-----END PRIVATE KEY-----\n") || '').replace(/\\n/g, '\n')
             };
             if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
                 throw new Error('Firebase Admin SDK credentials are not set in .env.local');
             }
             __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].initializeApp({
                 credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].credential.cert(serviceAccount),
-                storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+                storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_Bucket
             });
             console.log('Lazy initialization of Firebase Admin SDK successful.');
         } catch (error) {
-            console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+            if (error instanceof Error) {
+                console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+            } else {
+                console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed with an unknown error.');
+            }
             // Если инициализация не удалась, мы не можем продолжить.
             // Возвращаем null или выбрасываем ошибку, чтобы вызывающий код мог это обработать.
             return null;
@@ -128,35 +132,38 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react [external] (react, cjs)");
 ;
 const useIntersectionObserver = (elementRef, { threshold = 0.1, root = null, rootMargin = '0%', triggerOnce = true } = {})=>{
-    const [isIntersecting, setIsIntersecting] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
+    const [isIntersecting, setIntersecting] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useEffect"])(()=>{
         const element = elementRef.current;
-        if (!element) return;
+        // Если элемента нет, ничего не делаем
+        if (!element) {
+            return;
+        }
         const observer = new IntersectionObserver(([entry])=>{
-            if (entry.isIntersecting) {
-                setIsIntersecting(true);
-                if (triggerOnce) {
-                    observer.unobserve(element);
-                }
-            } else {
-                if (!triggerOnce) {
-                    setIsIntersecting(false);
-                }
+            // Если пересечение есть и нужно сработать один раз,
+            // обновляем состояние и отписываемся.
+            if (entry.isIntersecting && triggerOnce) {
+                setIntersecting(true);
+                observer.unobserve(element);
+            } else if (!triggerOnce) {
+                setIntersecting(entry.isIntersecting);
             }
         }, {
-            threshold,
             root,
-            rootMargin
+            rootMargin,
+            threshold
         });
         observer.observe(element);
+        // Отключаем наблюдение при размонтировании компонента
         return ()=>{
             observer.disconnect();
         };
+    // Перезапускаем эффект, только если сам элемент или опции изменились.
     }, [
         elementRef,
-        threshold,
         root,
         rootMargin,
+        threshold,
         triggerOnce
     ]);
     return isIntersecting;
@@ -283,7 +290,7 @@ const categories = [
 ];
 const CategoryCard = ({ name, imageSeed, onClick, index })=>{
     const imageUrl = `https://picsum.photos/seed/${imageSeed}/600/600`;
-    const ref = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])(null);
+    const ref = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])(null); // Исправляем тип здесь
     const isVisible = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$useIntersectionObserver$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["useIntersectionObserver"])(ref, {
         threshold: 0.2,
         rootMargin: '0px 0px -50px 0px'
@@ -336,7 +343,7 @@ const CategoryCard = ({ name, imageSeed, onClick, index })=>{
     }, ("TURBOPACK compile-time value", void 0));
 };
 const CategoryShowcase = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["memo"])(({ onNavigate })=>{
-    const titleRef = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])(null);
+    const titleRef = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])(null); // И исправляем тип здесь
     const isTitleVisible = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$useIntersectionObserver$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["useIntersectionObserver"])(titleRef, {
         threshold: 0.5
     });
@@ -2649,7 +2656,7 @@ const FloatingChatButton = (0, __TURBOPACK__imported__module__$5b$project$5d2f$n
     },
     ssr: false
 });
-const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/QuickViewModal.tsx [ssr] (ecmascript, next/dynamic entry, async loader)"), {
+const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/QuickViewModal.tsx [ssr] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.QuickViewModal), {
     loadableGenerated: {
         modules: [
             "[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry)"
@@ -2657,7 +2664,7 @@ const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_
     },
     ssr: false
 });
-const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/VirtualStagingModal.tsx [ssr] (ecmascript, next/dynamic entry, async loader)"), {
+const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$ssr$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/VirtualStagingModal.tsx [ssr] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.VirtualStagingModal), {
     loadableGenerated: {
         modules: [
             "[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry)"
@@ -2819,15 +2826,18 @@ const getServerSideProps = async ()=>{
                         });
                         return signedUrl;
                     } catch (e) {
-                        console.error(`Error getting signed URL for ${path}:`, e.message);
+                        if (e instanceof Error) {
+                            console.error(`Error getting signed URL for ${path}:`, e.message);
+                        } else {
+                            console.error(`An unknown error occurred while getting signed URL for ${path}`);
+                        }
                         return '/placeholder.svg';
                     }
                 }
                 return url || '/placeholder.svg'; // Возвращаем плейсхолдер, если url пустой
             }));
-            const { imageUrl, ...rest } = product;
             return {
-                ...rest,
+                ...product,
                 imageUrls
             };
         }));

@@ -40,6 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error("Error generating blog post:", error);
-    res.status(500).json({ message: 'Failed to generate blog post', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).json({ message: 'Failed to generate blog post', error: error.message });
+    } else {
+      res.status(500).json({ message: 'Failed to generate blog post', error: 'An unknown error occurred' });
+    }
   }
 }

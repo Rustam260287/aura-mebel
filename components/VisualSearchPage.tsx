@@ -4,7 +4,7 @@ import React, { useState, useCallback, DragEvent } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { PhotoIcon, XMarkIcon } from './Icons';
-import { getVisualRecommendations } from '../services/geminiService';
+import { getStyleRecommendations } from '../services/geminiService';
 import { fileToBase64 } from '../utils';
 import { ProductCard } from './ProductCard';
 
@@ -58,14 +58,12 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
     setRecommendedProducts([]);
     try {
       const base64Image = await fileToBase64(imageFile);
-      const recommendedIndices = await getVisualRecommendations(base64Image, imageFile.type, allProducts);
+      const recommendedNames = await getStyleRecommendations(base64Image, allProducts);
       
-      if (recommendedIndices.length === 0) {
+      if (recommendedNames.length === 0) {
         setError('Не смогли найти подходящую мебель.');
       } else {
-        const foundProducts = recommendedIndices
-          .map(index => allProducts[index])
-          .filter(Boolean);
+        const foundProducts = allProducts.filter(p => recommendedNames.includes(p.name));
         setRecommendedProducts(foundProducts);
       }
     } catch (err) {

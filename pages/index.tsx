@@ -1,7 +1,7 @@
 
 // pages/index.tsx
 import React, { useMemo, useState } from 'react';
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin'; // Обновленный импорт
@@ -16,8 +16,8 @@ const Header = dynamic(() => import('../components/Header').then(mod => mod.Head
 const CartSidebar = dynamic(() => import('../components/CartSidebar').then(mod => mod.CartSidebar), { ssr: false });
 const AiChatbot = dynamic(() => import('../components/AiChatbot').then(mod => mod.AiChatbot), { ssr: false });
 const FloatingChatButton = dynamic(() => import('../components/FloatingChatButton').then(mod => mod.FloatingChatButton), { ssr: false });
-const QuickViewModal = dynamic(() => import('../components/QuickViewModal'), { ssr: false });
-const VirtualStagingModal = dynamic(() => import('../components/VirtualStagingModal'), { ssr: false });
+const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
+const VirtualStagingModal = dynamic(() => import('../components/VirtualStagingModal').then(mod => mod.VirtualStagingModal), { ssr: false });
 
 interface HomePageProps {
   allProducts: Product[];
@@ -66,7 +66,7 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const adminDb = getAdminDb(); // Вызываем функцию
   const adminStorage = getAdminStorage(); // Вызываем функцию
 
@@ -95,15 +95,18 @@ export const getServerSideProps: GetServerSideProps = async () => {
                     });
                     return signedUrl;
                 } catch (e) {
-                    console.error(`Error getting signed URL for ${path}:`, e.message);
+                    if (e instanceof Error) {
+                        console.error(`Error getting signed URL for ${path}:`, e.message);
+                    } else {
+                        console.error(`An unknown error occurred while getting signed URL for ${path}`);
+                    }
                     return '/placeholder.svg';
                 }
             }
             return url || '/placeholder.svg'; // Возвращаем плейсхолдер, если url пустой
         }));
         
-        const { imageUrl, ...rest } = product;
-        return { ...rest, imageUrls };
+        return { ...product, imageUrls };
     }));
     
     return {

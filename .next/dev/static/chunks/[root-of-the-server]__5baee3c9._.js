@@ -523,46 +523,49 @@ var _s = __turbopack_context__.k.signature();
 ;
 const useIntersectionObserver = (elementRef, { threshold = 0.1, root = null, rootMargin = '0%', triggerOnce = true } = {})=>{
     _s();
-    const [isIntersecting, setIsIntersecting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isIntersecting, setIntersecting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "useIntersectionObserver.useEffect": ()=>{
             const element = elementRef.current;
-            if (!element) return;
+            // Если элемента нет, ничего не делаем
+            if (!element) {
+                return;
+            }
             const observer = new IntersectionObserver({
                 "useIntersectionObserver.useEffect": ([entry])=>{
-                    if (entry.isIntersecting) {
-                        setIsIntersecting(true);
-                        if (triggerOnce) {
-                            observer.unobserve(element);
-                        }
-                    } else {
-                        if (!triggerOnce) {
-                            setIsIntersecting(false);
-                        }
+                    // Если пересечение есть и нужно сработать один раз,
+                    // обновляем состояние и отписываемся.
+                    if (entry.isIntersecting && triggerOnce) {
+                        setIntersecting(true);
+                        observer.unobserve(element);
+                    } else if (!triggerOnce) {
+                        setIntersecting(entry.isIntersecting);
                     }
                 }
             }["useIntersectionObserver.useEffect"], {
-                threshold,
                 root,
-                rootMargin
+                rootMargin,
+                threshold
             });
             observer.observe(element);
+            // Отключаем наблюдение при размонтировании компонента
             return ({
                 "useIntersectionObserver.useEffect": ()=>{
                     observer.disconnect();
                 }
             })["useIntersectionObserver.useEffect"];
+        // Перезапускаем эффект, только если сам элемент или опции изменились.
         }
     }["useIntersectionObserver.useEffect"], [
         elementRef,
-        threshold,
         root,
         rootMargin,
+        threshold,
         triggerOnce
     ]);
     return isIntersecting;
 };
-_s(useIntersectionObserver, "AlYpBYKL+Qmn8I+76+SVWywhgtA=");
+_s(useIntersectionObserver, "+TWZGT8mxcpNH+JS7IkSFv1hR0A=");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -705,7 +708,7 @@ const categories = [
 const CategoryCard = ({ name, imageSeed, onClick, index })=>{
     _s();
     const imageUrl = `https://picsum.photos/seed/${imageSeed}/600/600`;
-    const ref = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const ref = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRef"])(null); // Исправляем тип здесь
     const isVisible = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$useIntersectionObserver$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["useIntersectionObserver"])(ref, {
         threshold: 0.2,
         rootMargin: '0px 0px -50px 0px'
@@ -765,7 +768,7 @@ _s(CategoryCard, "HL0avWDCJwIOACRtCRHpnKv3rlg=", false, function() {
 _c = CategoryCard;
 const CategoryShowcase = /*#__PURE__*/ _s1((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["memo"])(_c1 = _s1(({ onNavigate })=>{
     _s1();
-    const titleRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const titleRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRef"])(null); // И исправляем тип здесь
     const isTitleVisible = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$useIntersectionObserver$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["useIntersectionObserver"])(titleRef, {
         threshold: 0.5
     });
@@ -3367,7 +3370,7 @@ const FloatingChatButton = (0, __TURBOPACK__imported__module__$5b$project$5d2f$n
     ssr: false
 });
 _c3 = FloatingChatButton;
-const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry, async loader)"), {
+const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.QuickViewModal), {
     loadableGenerated: {
         modules: [
             "[project]/components/QuickViewModal.tsx [client] (ecmascript, next/dynamic entry)"
@@ -3376,7 +3379,7 @@ const QuickViewModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_
     ssr: false
 });
 _c4 = QuickViewModal;
-const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry, async loader)"), {
+const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dynamic$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.VirtualStagingModal), {
     loadableGenerated: {
         modules: [
             "[project]/components/VirtualStagingModal.tsx [client] (ecmascript, next/dynamic entry)"

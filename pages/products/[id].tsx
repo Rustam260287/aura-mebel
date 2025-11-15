@@ -1,6 +1,6 @@
 
 // pages/products/[id].tsx
-import { GetServerSideProps } from 'next';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin'; // Обновленный импорт
 import type { Product } from '../../types';
 
@@ -42,17 +42,33 @@ export default function ProductPage({ product, error }: ProductPageProps) {
 
   return (
     <>
-      <Header onNavigate={handleNavigate} onStyleFinderClick={() => {}} />
+      <Header onStyleFinderClick={() => {}} />
       <main>
         <ProductDetail product={product} onBack={() => router.back()} />
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer />
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params;
+export const getStaticPaths: GetStaticPaths = async () => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+        return { paths: [], fallback: 'blocking' };
+    }
+    const productsSnapshot = await adminDb.collection('products').get();
+    const paths = productsSnapshot.docs.map(doc => ({
+        params: { id: doc.id },
+    }));
+    return { paths, fallback: 'blocking' };
+};
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { params } = context;
+  if (!params?.id) {
+    return { props: { error: "Product ID not found." } };
+  }
+  const { id } = params;
   const adminDb = getAdminDb(); // Вызываем функцию
   const adminStorage = getAdminStorage(); // Вызываем функцию
 
@@ -81,7 +97,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     });
                     return signedUrl;
                 } catch (e) {
-                    console.error(`Error getting signed URL for ${path}:`, e.message);
+                    if (e instanceof Error) {
+                        console.error(`Error getting signed URL for ${path}:`, e.message);
+                    } else {
+                        console.error(`An unknown error occurred while getting signed URL for ${path}`);
+                    }
                     return '/placeholder.svg';
                 }
             }

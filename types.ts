@@ -77,3 +77,16 @@ export interface ChatAnalysisResult {
     mentionedProducts: string[];
     commonQuestions: string[];
 }
+
+export interface FurnitureBlueprint {
+  furnitureName: string;
+  blueprint: {
+    estimatedDimensions: string[];
+    materials: string[];
+  };
+  priceEstimate: {
+    materialsCost: number;
+    laborCost: number;
+    totalPrice: number;
+  };
+}

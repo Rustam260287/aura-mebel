@@ -1,6 +1,6 @@
 
 // pages/blog/[id].tsx
-import { GetServerSideProps } from 'next';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin'; // Обновленный импорт
 import type { BlogPost, Product, View } from '../../types';
 import { useRouter } from 'next/router';
@@ -40,21 +40,37 @@ export default function PostPage({ post, allProducts, error }: PostPageProps) {
 
   return (
     <>
-      <Header onNavigate={handleNavigate} onStyleFinderClick={() => {}} />
+      <Header onStyleFinderClick={() => {}} />
       <main>
-        <BlogPostPage post={post} allProducts={allProducts} onNavigate={handleNavigate} />
+        <BlogPostPage post={post || null} allProducts={allProducts} onNavigate={handleNavigate} />
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer />
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params;
+export const getStaticPaths: GetStaticPaths = async () => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+        return { paths: [], fallback: 'blocking' };
+    }
+    const postsSnapshot = await adminDb.collection('blog').get();
+    const paths = postsSnapshot.docs.map(doc => ({
+        params: { id: doc.id },
+    }));
+    return { paths, fallback: 'blocking' };
+};
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { params } = context;
+  if (!params?.id) {
+    return { props: { post: null, allProducts: [], error: "Post ID not found." } };
+  }
+  const { id } = params;
   const adminDb = getAdminDb(); // Вызываем функцию
   const adminStorage = getAdminStorage(); // Вызываем функцию
 
-  if (!adminDb) {
+  if (!adminDb || !adminStorage) {
     // getAdminDb уже выведет ошибку в консоль, так что здесь просто возвращаем пропс
     return { props: { post: null, allProducts: [], error: "Firebase Admin SDK initialization failed." } };
   }
@@ -77,7 +93,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             const [signedUrl] = await bucket.file(path).getSignedUrl({ action: 'read', expires: '03-09-2491' });
             postData.imageUrl = signedUrl;
         } catch(e) {
-            console.error(`Error getting signed URL for post image ${path}:`, e.message);
+            if (e instanceof Error) {
+                console.error(`Error getting signed URL for post image ${path}:`, e.message);
+            } else {
+                console.error(`An unknown error occurred while getting signed URL for post image ${path}`);
+            }
             postData.imageUrl = '/placeholder.svg';
         }
     }
@@ -94,7 +114,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         const [signedUrl] = await bucket.file(path).getSignedUrl({ action: 'read', expires: '03-09-2491' });
                         return signedUrl;
                     } catch(e) {
-                        console.error(`Error getting signed URL for product image ${path}:`, e.message);
+                        if (e instanceof Error) {
+                            console.error(`Error getting signed URL for product image ${path}:`, e.message);
+                        } else {
+                            console.error(`An unknown error occurred while getting signed URL for product image ${path}`);
+                        }
                         return '/placeholder.svg';
                     }
                 }

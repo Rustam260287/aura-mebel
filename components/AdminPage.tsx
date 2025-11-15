@@ -1,13 +1,13 @@
 import React, { useState, memo } from 'react';
 import type { Product, BlogPost, View, ChatMessage } from '../types';
-import { AdminSidebar } from './admin/AdminSidebar';
-import { AdminDashboard } from './admin/AdminDashboard';
-import { AdminProducts } from './admin/AdminProducts';
-import { AdminBlog } from './admin/AdminBlog';
+import { AdminSidebar } from '../components/admin/AdminSidebar';
+import { AdminDashboard } from '../components/admin/AdminDashboard';
+import { AdminProducts } from '../components/admin/AdminProducts';
+import { AdminBlog } from '../components/admin/AdminBlog';
 import { ProductEditModal } from '../components/ProductEditModal';
 import { BlogEditModal } from '../components/BlogEditModal';
-import { AdminHeader } from './admin/AdminHeader';
-import { AdminChatAnalytics } from './admin/AdminChatAnalytics';
+import { AdminHeader } from '../components/admin/AdminHeader';
+import { AdminChatAnalytics } from '../components/admin/AdminChatAnalytics';
 
 interface AdminPageProps {
   allProducts: Product[];
@@ -41,11 +41,12 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   const [editingBlogPost, setEditingBlogPost] = useState<BlogPost | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentBlogPosts, setCurrentBlogPosts] = useState(blogPosts);
 
   const renderContent = () => {
     switch (adminView) {
       case 'dashboard':
-        return <AdminDashboard products={allProducts} posts={blogPosts} />;
+        return <AdminDashboard products={allProducts} posts={currentBlogPosts} />;
       case 'products':
         return <AdminProducts 
                   products={allProducts} 
@@ -55,9 +56,8 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
                 />;
       case 'blog':
         return <AdminBlog 
-                  posts={blogPosts}
-                  allProducts={allProducts}
-                  onAddPost={onAddBlogPost}
+                  posts={currentBlogPosts}
+                  setBlogPosts={setCurrentBlogPosts}
                   onEditPost={setEditingBlogPost}
                   onDeletePost={onDeleteBlogPost}
                 />;
@@ -115,6 +115,8 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
           onClose={() => setEditingBlogPost(null)}
           onSave={async (updatedPost) => {
             await onUpdateBlogPost(updatedPost);
+            const updatedPosts = currentBlogPosts.map(p => p.id === updatedPost.id ? updatedPost : p);
+            setCurrentBlogPosts(updatedPosts);
             setEditingBlogPost(null);
           }}
         />

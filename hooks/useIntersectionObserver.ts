@@ -11,7 +11,7 @@ interface IntersectionObserverOptions extends IntersectionObserverInit {
  * @returns `true`, если элемент виден, иначе `false`.
  */
 export const useIntersectionObserver = <T extends Element>(
-  elementRef: RefObject<T>,
+  elementRef: RefObject<T | null>,
   {
     threshold = 0.1,
     root = null,

@@ -2,7 +2,7 @@ import React, { useState, useCallback, DragEvent, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
 import { PhotoIcon, XMarkIcon, SparklesIcon } from './Icons';
-import { generateStagedImage } from '../services/geminiService';
+import { generateConfiguredImage } from '../services/geminiService';
 import { fileToBase64 } from '../utils';
 
 interface VirtualStagingModalProps {
@@ -69,7 +69,7 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = memo(({ p
 
     try {
       const base64Image = await fileToBase64(imageFile);
-      const resultBase64 = await generateStagedImage(product, base64Image, imageFile.type);
+      const resultBase64 = await generateConfiguredImage(base64Image, imageFile.type, product.name, product.name);
       setGeneratedImage(`data:image/png;base64,${resultBase64}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка.');
