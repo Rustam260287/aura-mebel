@@ -56,7 +56,7 @@ const ensureFirebaseAdminInitialized = ()=>{
             }
             __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].initializeApp({
                 credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].credential.cert(serviceAccount),
-                storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_Bucket
+                storageBucket: ("TURBOPACK compile-time value", "aura-mebel-7ec96.appspot.com")
             });
             console.log('Lazy initialization of Firebase Admin SDK successful.');
         } catch (error) {
@@ -2597,8 +2597,8 @@ const Footer = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d
 __turbopack_context__.s([
     "default",
     ()=>HomePage,
-    "getServerSideProps",
-    ()=>getServerSideProps
+    "getStaticProps",
+    ()=>getStaticProps
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react/jsx-dev-runtime [external] (react/jsx-dev-runtime, cjs)");
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react [external] (react, cjs)");
@@ -2788,7 +2788,7 @@ function HomePage({ allProducts, error }) {
         ]
     }, void 0, true);
 }
-const getServerSideProps = async ()=>{
+const getStaticProps = async ()=>{
     const adminDb = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminDb"])(); // Вызываем функцию
     const adminStorage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminStorage"])(); // Вызываем функцию
     if (!adminDb || !adminStorage) {

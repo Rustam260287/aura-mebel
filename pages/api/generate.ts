@@ -5,9 +5,9 @@ import type { Product, ChatMessage } from '../../types';
 import { imageUrlToBase64 } from '../../utils';
 
 const getAiInstance = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set");
   }
   return new GoogleGenerativeAI(apiKey);
 };

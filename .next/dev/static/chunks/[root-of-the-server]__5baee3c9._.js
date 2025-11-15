@@ -3306,8 +3306,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 // pages/index.tsx
 __turbopack_context__.s([
-    "__N_SSP",
-    ()=>__N_SSP,
+    "__N_SSG",
+    ()=>__N_SSG,
     "default",
     ()=>HomePage
 ]);
@@ -3388,7 +3388,7 @@ const VirtualStagingModal = (0, __TURBOPACK__imported__module__$5b$project$5d2f$
     ssr: false
 });
 _c5 = VirtualStagingModal;
-var __N_SSP = true;
+var __N_SSG = true;
 function HomePage({ allProducts, error }) {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"])();

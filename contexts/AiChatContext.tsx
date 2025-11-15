@@ -36,9 +36,9 @@ export const AiChatProvider: React.FC<{ children: ReactNode; allProducts: Produc
 
     useEffect(() => {
         if (!aiRef.current) {
-            const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
             if (!apiKey) {
-                console.error("NEXT_PUBLIC_API_KEY environment variable not set. Using a placeholder.");
+                console.error("NEXT_PUBLIC_GEMINI_API_KEY environment variable not set. Using a placeholder.");
                 aiRef.current = new GoogleGenAI({ apiKey: "MISSING_API_KEY" });
             } else {
                 aiRef.current = new GoogleGenAI({ apiKey });
