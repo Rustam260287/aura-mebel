@@ -1,7 +1,10 @@
+
 // pages/_app.tsx
+import '../firebaseConfig';
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
 import { ToastProvider } from '../contexts/ToastContext';
+import { AuthProvider } from '../contexts/AuthContext'; // Импортируем AuthProvider
 import '../styles/globals.css';
 import Head from 'next/head';
 
@@ -18,16 +21,18 @@ function MyApp({ Component, pageProps }: AppProps) {
   };
 
   return (
-    <ToastProvider>
-      <Head>
-        <title>Aura Мебель</title>
-      </Head>
-      <ClientProviders allProducts={allProducts} onSessionEnd={handleChatSessionEnd}>
-        <div className="flex flex-col min-h-screen font-sans bg-brand-cream text-brand-charcoal">
-          <Component {...pageProps} />
-        </div>
-      </ClientProviders>
-    </ToastProvider>
+    <AuthProvider> {/* Оборачиваем все в AuthProvider */}
+      <ToastProvider>
+        <Head>
+          <title>Aura Мебель</title>
+        </Head>
+        <ClientProviders allProducts={allProducts} onSessionEnd={handleChatSessionEnd}>
+          <div className="flex flex-col min-h-screen font-sans bg-brand-cream text-brand-charcoal">
+            <Component {...pageProps} />
+          </div>
+        </ClientProviders>
+      </ToastProvider>
+    </AuthProvider>
   );
 }
 

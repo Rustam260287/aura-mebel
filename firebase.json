@@ -8,6 +8,15 @@
     ],
     "frameworksBackend": {
       "region": "us-central1"
-    }
+    },
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "server"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

@@ -23,20 +23,24 @@ const ensureFirebaseAdminInitialized = ()=>{
         try {
             console.log('Lazy initializing Firebase Admin SDK...');
             const serviceAccount = {
-                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-                clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
-                privateKey: (process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
+                projectId: ("TURBOPACK compile-time value", "aura-mebel-7ec96"),
+                clientEmail: ("TURBOPACK compile-time value", "firebase-adminsdk-fbsvc@aura-mebel-7ec96.iam.gserviceaccount.com"),
+                privateKey: (("TURBOPACK compile-time value", "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC80uB4i4IuNou8\n0m4/aIc6XgjqgoKLUA2X+an7qX+KmZHWCgqns8dwOogSnm9gJuhkdvrUo0Qz3Yne\nOjkxYYT6xaUX24C7glFoye/32QAJnesRfKsSUwZVwNbAv0LO0OGcElBXH+0m3sn0\nwTp3phb+8PVTUaxjTk49qM4ILAi6iLcWu6L5rg2qAYJIHMmVDmzqe5hSo8WYaxUc\nh4sdX5yM9ZEWBbWzkiXtYopUxSuGung8+AxSe0auJwU79Df8cEs9KlW8nC6k/B31\noqxg/ussZM1L/E6vKQk0Q1O5tnERiOv18eTv8cPWsreAmT8zbHIrV71xiZV+L37d\nTmGhq9OpAgMBAAECggEANJuABLXBoER8LDBonOvveRiH3WZdHplAIE5jyITRzvi4\nQ+zqSQzyjNcR4DYaC6zrZEot2h5euyCG785C7vofhYqZU4tJU3ScX9ibLe9cblF8\nE5QrSWCuTCf87RiccWiK4uPLVGrFtOWvWKyZMIqqr37Mqtj/cW94pv8n3+j8yZMg\nv5iWIzHuOJ33khDQHnleXgEtx85Th4dtuWY6c0mKoSuzLtDFBom8EFPVP1FbmfK6\nKFOAgg1W3/RLWXAzOK+Nntn6oK8f1+CzYZEF9s3bUP7/uEKdqlyauWqOc+/qHH+j\nHHNhQG+vAktruQAul/fdaGMD3cyPYxXUd6oJH32IjQKBgQDq8vVzcu4ACPNm9ail\nKIvIaYaicI5+mwjDcGt9yCyWJS9sh5mKIgU+53nCjmP/HVcokQhmN51usqdC4yIV\naFCT0d6f9hdK9GAAZCXH6+s1VaEQHT18HZHABeJS3ChwmxgSUD6jJ7gtu1Kb80oI\n776ZaehDq+WLfwBKBnqHCTflIwKBgQDNvfBOkh6vh6zmbB6ru0VDXVZSXMn0Xn2S\nQMiP7SdG6uq+zW5m1C3ZYVoysWkVCQVCpVZWUhTVQiHC97UPtWljy5gSqnez6HW1\ns2lpF/ECBz42Pu8xud422ynVqVLAJRj2FF776BgrV1zwUiiI/0RH/ZdnB30viNzM\n3s/qyCQuwwKBgQCLA9CZS8JowOML44SynEgA//dKe+DEJoVL5mOjm+JNwJjL1XvS\nkIicDKgtpsSh+UFN3mqi2HtNOWXgHLZZBkzO+dmIujpT/j4jXR5BqWSVPSI8f6CW\npIRNou2j62H+JrZad6JoNSMz4+dgINaIbRpQeaqVB8uc+zs3kZfD+H9bEwKBgEY4\nbaxjctW2GO0MOeujHyC+2peB0+vz1Cf2tH1rE9zAkR5OP0AZawymjYJ/yr3DNmho\nxe7wVOv0hlFk+gdCg5XsBxtX00M0M/iwI2obIcbvcexRzpHKPm26n6ys/fFWuA5F\nJaYUsSsZxj6/y9X2SffINcSUacWvkKzb31ritHbBAoGBAKU5Ldf0m0cwqWpJwMKl\nzaRQqsQRQNSrZ3UeCt9RB4QAsAKYxpu0SdMEZdwF6r0KoGq7o9JChmnQyy/xWNWo\nJZSlFfZ+0w+jSf2MG+wrHtVochEWtlXNJvHct7HEX/4vUlE5U96zJ4a4yKjmqQLV\nbye0fP4121ejTCh7iADfkEIb\n-----END PRIVATE KEY-----\n") || '').replace(/\\n/g, '\n')
             };
             if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
                 throw new Error('Firebase Admin SDK credentials are not set in .env.local');
             }
             __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].initializeApp({
                 credential: __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin__$5b$external$5d$__$28$firebase$2d$admin$2c$__cjs$29$__["default"].credential.cert(serviceAccount),
-                storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+                storageBucket: ("TURBOPACK compile-time value", "aura-mebel-7ec96.appspot.com")
             });
             console.log('Lazy initialization of Firebase Admin SDK successful.');
         } catch (error) {
-            console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+            if (error instanceof Error) {
+                console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
+            } else {
+                console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed with an unknown error.');
+            }
             // Если инициализация не удалась, мы не можем продолжить.
             // Возвращаем null или выбрасываем ошибку, чтобы вызывающий код мог это обработать.
             return null;
@@ -1251,8 +1255,8 @@ const Footer = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d
 __turbopack_context__.s([
     "default",
     ()=>BlogIndexPage,
-    "getServerSideProps",
-    ()=>getServerSideProps
+    "getStaticProps",
+    ()=>getStaticProps
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/react/jsx-dev-runtime [external] (react/jsx-dev-runtime, cjs)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/firebaseAdmin.ts [ssr] (ecmascript)");
@@ -1287,7 +1291,6 @@ function BlogIndexPage({ posts }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(Header, {
-                onNavigate: handleNavigate,
                 onStyleFinderClick: ()=>{}
             }, void 0, false, {
                 fileName: "[project]/pages/blog/index.tsx",
@@ -1308,9 +1311,7 @@ function BlogIndexPage({ posts }) {
                 lineNumber: 31,
                 columnNumber: 7
             }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["Footer"], {
-                onNavigate: handleNavigate
-            }, void 0, false, {
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["Footer"], {}, void 0, false, {
                 fileName: "[project]/pages/blog/index.tsx",
                 lineNumber: 34,
                 columnNumber: 7
@@ -1318,7 +1319,7 @@ function BlogIndexPage({ posts }) {
         ]
     }, void 0, true);
 }
-const getServerSideProps = async ()=>{
+const getStaticProps = async ()=>{
     const dbAdmin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebaseAdmin$2e$ts__$5b$ssr$5d$__$28$ecmascript$29$__["getAdminDb"])();
     if (!dbAdmin) {
         return {

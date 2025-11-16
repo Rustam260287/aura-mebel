@@ -1292,11 +1292,45 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 // services/geminiService.ts
 __turbopack_context__.s([
+    "analyzeChatLogs",
+    ()=>analyzeChatLogs,
+    "changeProductUpholstery",
+    ()=>changeProductUpholstery,
+    "generateBlogPost",
+    ()=>generateBlogPost,
     "generateConfiguredImage",
     ()=>generateConfiguredImage,
+    "generateFurnitureFromPhoto",
+    ()=>generateFurnitureFromPhoto,
+    "generateRoomMakeover",
+    ()=>generateRoomMakeover,
+    "generateSeoProductDescription",
+    ()=>generateSeoProductDescription,
     "getAiConfigurationDescription",
-    ()=>getAiConfigurationDescription
+    ()=>getAiConfigurationDescription,
+    "getStyleRecommendations",
+    ()=>getStyleRecommendations
 ]);
+const generateRoomMakeover = async (base64, mimeType, style, allProducts)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'roomMakeover',
+            base64,
+            mimeType,
+            style,
+            allProducts
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    return await response.json();
+};
 const getAiConfigurationDescription = async (productName, selectedOptions)=>{
     const response = await fetch('/api/generate', {
         method: 'POST',
@@ -1336,6 +1370,116 @@ const generateConfiguredImage = async (base64, mimeType, productName, visualProm
     }
     const data = await response.json();
     return data.generatedImage;
+};
+const generateFurnitureFromPhoto = async (base64, mimeType, dimensions)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'furnitureFromPhoto',
+            base64,
+            mimeType,
+            dimensions
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    return await response.json();
+};
+const generateSeoProductDescription = async (product)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'seoProductDescription',
+            product
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    const data = await response.json();
+    return data.description;
+};
+const getStyleRecommendations = async (prompt, allProducts)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'styleRecommendations',
+            prompt,
+            allProducts
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    const data = await response.json();
+    return data.recommendedProductNames;
+};
+const changeProductUpholstery = async (base64, mimeType, prompt)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'changeUpholstery',
+            base64,
+            mimeType,
+            prompt
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    const data = await response.json();
+    return data.generatedImage;
+};
+const analyzeChatLogs = async (chatLogs)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'analyzeChatLogs',
+            chatLogs
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    return await response.json();
+};
+const generateBlogPost = async (allProducts)=>{
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'generateBlogPost',
+            allProducts
+        })
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка сервера.');
+    }
+    return await response.json();
 };
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
@@ -2809,8 +2953,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 // pages/ai-room-makeover.tsx
 __turbopack_context__.s([
-    "__N_SSP",
-    ()=>__N_SSP,
+    "__N_SSG",
+    ()=>__N_SSG,
     "default",
     ()=>AiRoomMakeover
 ]);
@@ -2836,7 +2980,7 @@ const Header = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$
     ssr: false
 });
 _c = Header;
-var __N_SSP = true;
+var __N_SSG = true;
 function AiRoomMakeover({ allProducts }) {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"])();
@@ -2850,7 +2994,6 @@ function AiRoomMakeover({ allProducts }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Header, {
-                onNavigate: handleNavigate,
                 onStyleFinderClick: ()=>{}
             }, void 0, false, {
                 fileName: "[project]/pages/ai-room-makeover.tsx",
@@ -2871,9 +3014,7 @@ function AiRoomMakeover({ allProducts }) {
                 lineNumber: 32,
                 columnNumber: 7
             }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Footer"], {
-                onNavigate: handleNavigate
-            }, void 0, false, {
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Footer$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Footer"], {}, void 0, false, {
                 fileName: "[project]/pages/ai-room-makeover.tsx",
                 lineNumber: 35,
                 columnNumber: 7

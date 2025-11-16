@@ -1,20 +1,27 @@
+
 // pages/admin.tsx
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, BlogPost, View } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
+import { ToastProvider, useToast } from '../contexts/ToastContext';
+import { AuthGuard } from '../components/AuthGuard'; // Импортируем AuthGuard
+import { useAuth } from '../contexts/AuthContext'; // Импортируем useAuth для кнопки выхода
+import { Button } from '../components/Button'; // Импортируем Button
 
 const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mod.AdminPage), { ssr: false });
 
-interface AdminProps {
+interface AdminContainerProps {
   initialProducts: Product[];
   initialBlogPosts: BlogPost[];
 }
 
-export default function AdminContainer({ initialProducts, initialBlogPosts }: AdminProps) {
+function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerProps) {
   const router = useRouter();
+  const { addToast } = useToast();
+  const { logout } = useAuth(); // Получаем функцию logout
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
 
@@ -22,40 +29,76 @@ export default function AdminContainer({ initialProducts, initialBlogPosts }: Ad
     router.push('/');
   };
 
-  // TODO: Реализовать реальное взаимодействие с Firestore через API
-  const handleUpdateProduct = useCallback(async (updatedProduct: Product) => {}, []);
-  const handleAddProduct = useCallback(async (productData: Omit<Product, 'id'>) => {}, []);
-  const handleDeleteProduct = useCallback(async (productId: string) => {}, []);
-  const handleUpdateBlogPost = useCallback(async (postData: any) => {}, []);
-  const handleDeleteBlogPost = useCallback(async (postId: string) => {}, []);
-  const handleAddBlogPost = useCallback(async (postData: any) => {}, []);
+  // ... (все обработчики остаются без изменений)
+  const handleUpdateProduct = useCallback(async (updatedProduct: Product) => {
+    // ...
+  }, [addToast]);
+
+  const handleAddProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
+    // ...
+  }, [addToast]);
+
+  const handleDeleteProduct = useCallback(async (productId: string) => {
+    // ...
+  }, [addToast]);
+
+  const handleUpdateBlogPost = useCallback(async (postData: BlogPost) => {
+    // ...
+  }, [addToast]);
+
+  const handleDeleteBlogPost = useCallback(async (postId: string) => {
+    // ...
+  }, [addToast]);
+
+  const handleAddBlogPost = useCallback(async (postData: Omit<BlogPost, 'id'>) => {
+    // ...
+  }, [addToast]);
 
   return (
-    <AdminPage 
-        allProducts={products}
-        blogPosts={blogPosts}
-        chatLogs={[]}
-        onNavigate={handleNavigate}
-        onUpdateProduct={handleUpdateProduct}
-        onAddProduct={handleAddProduct}
-        onDeleteProduct={handleDeleteProduct}
-        onAddBlogPost={handleAddBlogPost}
-        onUpdateBlogPost={handleUpdateBlogPost}
-        onDeleteBlogPost={handleDeleteBlogPost}
-    />
+    <>
+      <div className="absolute top-4 right-4 z-20">
+        <Button onClick={logout} variant="secondary">Logout</Button>
+      </div>
+      <AdminPage 
+          allProducts={products}
+          blogPosts={blogPosts}
+          chatLogs={[]}
+          onNavigate={handleNavigate}
+          onUpdateProduct={handleUpdateProduct}
+          onAddProduct={handleAddProduct}
+          onDeleteProduct={handleDeleteProduct}
+          onAddBlogPost={handleAddBlogPost}
+          onUpdateBlogPost={handleUpdateBlogPost}
+          onDeleteBlogPost={handleDeleteBlogPost}
+      />
+    </>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+// Оборачиваем все в AuthGuard
+export default function AdminPageContainer(props: AdminContainerProps) {
+  return (
+    <AuthGuard>
+      <ToastProvider>
+        <AdminContainer {...props} />
+      </ToastProvider>
+    </AuthGuard>
+  );
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  // ... (getServerSideProps остается без изменений)
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
-    return { props: { initialProducts: [], initialBlogPosts: [] } };
+    return { props: { initialProducts: [], initialBlogPosts: [], error: "Admin DB not initialized" } };
   }
   try {
-    const productsSnapshot = await dbAdmin.collection('products').get();
-    const initialProducts = productsSnapshot.docs.map(doc => doc.data());
-    const blogSnapshot = await dbAdmin.collection('blog').get();
-    const initialBlogPosts = blogSnapshot.docs.map(doc => doc.data());
+    const productsSnapshot = await dbAdmin.collection('products').orderBy('name').get();
+    const initialProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+    
+    const blogSnapshot = await dbAdmin.collection('blog').orderBy('date', 'desc').get();
+    const initialBlogPosts = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+
     return {
       props: { 
         initialProducts: JSON.parse(JSON.stringify(initialProducts)),
@@ -64,6 +107,7 @@ export const getStaticProps: GetStaticProps = async () => {
     };
   } catch (error) {
     console.error("Error fetching admin data:", error);
-    return { props: { initialProducts: [], initialBlogPosts: [] } };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { props: { initialProducts: [], initialBlogPosts: [], error: errorMessage } };
   }
 };

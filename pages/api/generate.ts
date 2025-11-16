@@ -1,104 +1,83 @@
+
 // pages/api/generate.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { Product, ChatMessage } from '../../types';
-import { imageUrlToBase64 } from '../../utils';
+import type { Product } from '../../types';
 
+// Function to safely extract JSON from a string
+const extractJson = (text: string, step: string): any => {
+    const match = text.match(/```json\n([\s\S]*?)\n```/);
+    if (match && match[1]) {
+        return JSON.parse(match[1]);
+    }
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error(`Raw response at step ${step} that failed parsing:`, text);
+        throw new Error(`Could not find or parse JSON in the AI response at step ${step}.`);
+    }
+};
+
+// Function to get the AI instance
 const getAiInstance = () => {
   const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set");
+    throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set in .env.local");
   }
   return new GoogleGenerativeAI(apiKey);
 };
 
-// ... (safeJsonParse без изменений)
-
-// --- ОБРАБОТЧИКИ ---
-
-async function handleRoomMakeover(req: NextApiRequest, res: NextApiResponse) { /* ... */ }
-async function handleStagedImage(req: NextApiRequest, res: NextApiResponse) { /* ... */ }
-async function handleChat(req: NextApiRequest, res: NextApiResponse) { /* ... */ }
-
-async function handleConfigDescription(req: NextApiRequest, res: NextApiResponse) {
-    const { productName, selectedOptions } = req.body;
-    if (!productName || !selectedOptions) {
-        return res.status(400).json({ error: 'Missing parameters for config description.' });
+async function handleRoomMakeover(req: NextApiRequest, res: NextApiResponse) {
+    console.log("Handling room makeover request with a stable, two-step vision model process...");
+    const { base64, mimeType, style, allProducts } = req.body;
+    if (!base64 || !mimeType || !style || !allProducts) {
+        return res.status(400).json({ error: 'Missing parameters for room makeover.' });
     }
-    const ai = getAiInstance();
-    const model = ai.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-    const prompt = `Создай краткое (2-3 предложения), привлекательное описание для конфигурации товара "${productName}". Характеристики: ${JSON.stringify(selectedOptions)}.`;
-    const result = await model.generateContent(prompt);
-    res.status(200).json({ description: result.response.text() });
-}
 
-async function handleConfigImage(req: NextApiRequest, res: NextApiResponse) {
-    const { base64, mimeType, productName, visualPrompt } = req.body;
-    if (!base64 || !mimeType || !productName || !visualPrompt) {
-        return res.status(400).json({ error: 'Missing parameters for config image.' });
-    }
-    const ai = getAiInstance();
-    const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-    const imagePart = { inlineData: { data: base64, mimeType } };
-    const textPart = { text: `Сгенерируй новое изображение товара "${productName}" на основе этого фото, применив следующие характеристики: ${visualPrompt}. Сохраняй фон.` };
-    const result = await model.generateContent([textPart, imagePart]);
-    const resultPart = result.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (!resultPart?.inlineData?.data) {
-        throw new Error("Не удалось сгенерировать изображение.");
-    }
-    res.status(200).json({ generatedImage: resultPart.inlineData.data });
-}
-
-async function handleFurnitureFromPhoto(req: NextApiRequest, res: NextApiResponse) {
-    const { base64, mimeType, dimensions } = req.body;
-    // ... (логика обработки furnitureFromPhoto)
-}
-
-async function handleSeoProductDescription(req: NextApiRequest, res: NextApiResponse) {
-    const { product } = req.body;
-    // ... (логика обработки seoProductDescription)
-}
-
-async function handleStyleRecommendations(req: NextApiRequest, res: NextApiResponse) {
-    const { prompt, allProducts } = req.body;
-    // ... (логика обработки styleRecommendations)
-}
-
-async function handleChangeUpholstery(req: NextApiRequest, res: NextApiResponse) {
-    const { base64, mimeType, prompt } = req.body;
-    // ... (логика обработки changeUpholstery)
-}
-
-async function handleAnalyzeChatLogs(req: NextApiRequest, res: NextApiResponse) {
-    const { chatLogs } = req.body;
-    // ... (логика обработки analyzeChatLogs)
-}
-
-async function handleGenerateBlogPost(req: NextApiRequest, res: NextApiResponse) {
-    const { allProducts } = req.body;
-    // ... (логика обработки generateBlogPost)
-}
-
-// --- ГЛАВНЫЙ ОБРАБОТЧИК ---
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // ... (switch-case, как и ранее)
     try {
-        switch (req.body.action) {
-            case 'roomMakeover': await handleRoomMakeover(req, res); break;
-            case 'stagedImage': await handleStagedImage(req, res); break;
-            case 'chat': await handleChat(req, res); break;
-            case 'configDescription': await handleConfigDescription(req, res); break;
-            case 'configImage': await handleConfigImage(req, res); break;
-            case 'furnitureFromPhoto': await handleFurnitureFromPhoto(req, res); break;
-            case 'seoProductDescription': await handleSeoProductDescription(req, res); break;
-            case 'styleRecommendations': await handleStyleRecommendations(req, res); break;
-            case 'changeUpholstery': await handleChangeUpholstery(req, res); break;
-            case 'analyzeChatLogs': await handleAnalyzeChatLogs(req, res); break;
-            case 'generateBlogPost': await handleGenerateBlogPost(req, res); break;
-            default: res.status(400).json({ error: 'Invalid action.' });
+        const ai = getAiInstance();
+        
+        // --- Этап 1 & 2: Используем ЕДИНСТВЕННУЮ рабочую модель для обеих задач ---
+        const modelName = "gemini-pro-vision";
+        console.log(`Using the only available and working model for both steps: ${modelName}`);
+        const generativeModel = ai.getGenerativeModel({ model: modelName });
+        
+        const imagePart = { inlineData: { data: base64, mimeType } };
+        const productList = allProducts.map((p: Product) => `- ${p.name} (Category: ${p.category})`).join('\n');
+        
+        const combinedPrompt = `
+            You are an AI interior designer. Your two-step task is:
+            1. Redesign the room from the user's image in a "${style}" style.
+            2. Analyze the furniture in your new design and select 3-4 matching items from the provided catalog.
+
+            Your output MUST be a single JSON object with two keys: "generatedImage" (the new image as a base64 string) and "recommendedProductNames" (an array of the selected product names).
+            
+            Product Catalog:
+            ${productList}
+        `;
+
+        const result = await generativeModel.generateContent([combinedPrompt, imagePart]);
+        const responseObject = extractJson(result.response.text(), "Combined Step");
+        
+        res.status(200).json(responseObject);
+
+    } catch (error) {
+        console.error("Error in the final room makeover process:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ error: `Server error: ${errorMessage}` });
+    }
+}
+
+// --- MAIN HANDLER ---
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    try {
+        if (req.body.action === 'roomMakeover') {
+            await handleRoomMakeover(req, res);
+        } else {
+            res.status(400).json({ error: 'Invalid or unsupported action.' });
         }
     } catch (error) {
+        console.error("Handler error:", error);
         if (error instanceof Error) {
             res.status(500).json({ error: error.message || 'Server error.' });
         } else {

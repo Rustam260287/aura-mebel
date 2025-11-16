@@ -333,7 +333,7 @@ const AiChatProvider = ({ children, allProducts, onSessionEnd })=>{
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AiChatProvider.useEffect": ()=>{
             if (!aiRef.current) {
-                const apiKey = ("TURBOPACK compile-time value", "AIzaSyAb_mGezCSXNyoY3btjAvy-V6J0LVKYt_c");
+                const apiKey = ("TURBOPACK compile-time value", "AIzaSyAQeTg5SRpTWREJuz-5BZ77YlFT-g3yLYU");
                 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
                 ;
                 else {
