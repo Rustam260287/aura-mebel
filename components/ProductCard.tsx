@@ -5,6 +5,7 @@ import { StarRating } from './StarRating';
 import { HeartIcon, CubeTransparentIcon, ArrowUpTrayIcon } from './Icons';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
+import Image from 'next/image';
 
 interface ProductCardProps {
   product: Product;
@@ -55,14 +56,14 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
     if (navigator.share) {
         try {
             await navigator.share(shareData);
-        } catch (err) {
-            console.log('Share was cancelled or failed', err);
+        } catch {
+            console.log('Share was cancelled or failed');
         }
     } else {
         try {
             await navigator.clipboard.writeText(shareData.url);
             addToast('Ссылка на товар скопирована!', 'info');
-        } catch (err) {
+        } catch {
             addToast('Не удалось скопировать ссылку.', 'error');
         }
     }
@@ -109,11 +110,12 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         </button>
       </div>
       <div className="relative overflow-hidden">
-        <img 
+        <Image 
           src={product.imageUrls[0]} 
           alt={product.name} 
           className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
+          width={500}
+          height={500}
         />
         {onQuickView && (
            <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -146,3 +148,5 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
     </div>
   );
 });
+
+ProductCard.displayName = 'ProductCard';

@@ -3,6 +3,7 @@ import type { View } from '../types';
 import { useCart } from '../contexts/CartContext';
 import { Button } from './Button';
 import { CheckCircleIcon } from './Icons';
+import Image from 'next/image';
 
 interface CheckoutPageProps {
   view: { page: 'checkout' } | { page: 'order-success', orderId: string };
@@ -103,7 +104,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
           <div className="space-y-4">
             {cartItems.map(item => (
               <div key={item.cartId} className="flex items-center gap-4 border-b pb-4">
-                <img src={item.imageUrls[0]} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
+                <Image src={item.imageUrls[0]} alt={item.name} className="w-20 h-20 object-cover rounded-md" width={80} height={80} />
                 <div className="flex-grow">
                   <h3 className="font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-500">
@@ -135,3 +136,5 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
     </div>
   );
 });
+
+CheckoutPage.displayName = 'CheckoutPage';

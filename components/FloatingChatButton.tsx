@@ -17,3 +17,5 @@ export const FloatingChatButton: React.FC = memo(() => {
         </button>
     );
 });
+
+FloatingChatButton.displayName = 'FloatingChatButton';

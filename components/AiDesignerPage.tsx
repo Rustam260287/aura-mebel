@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import type { View } from '../types';
-import { Button } from './Button';
 import { PhotoIcon, CubeTransparentIcon, SparklesIcon } from './Icons';
 
 interface AiDesignerPageProps {
@@ -63,3 +62,5 @@ export const AiDesignerPage: React.FC<AiDesignerPageProps> = memo(({ onNavigate 
     </div>
   );
 });
+
+AiDesignerPage.displayName = 'AiDesignerPage';

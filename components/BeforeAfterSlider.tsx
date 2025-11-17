@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import Image from 'next/image';
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -23,7 +24,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = memo(({ befor
     isDragging.current = true;
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = () => {
     isDragging.current = true;
   };
 
@@ -76,19 +77,23 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = memo(({ befor
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
-      <img
+      <Image
         src={afterImage}
         alt="After"
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        className="object-cover"
+        fill
+        sizes="100vw"
       />
       <div
         className="absolute top-0 left-0 w-full h-full object-cover overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <img
+        <Image
           src={beforeImage}
           alt="Before"
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className="object-cover"
+          fill
+          sizes="100vw"
         />
       </div>
        <div className="absolute top-0 left-0 bottom-0 flex items-center justify-center bg-brand-cream-dark/50 text-brand-charcoal text-sm font-semibold px-2 py-1 rounded-r-md">
@@ -110,3 +115,5 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = memo(({ befor
     </div>
   );
 });
+
+BeforeAfterSlider.displayName = 'BeforeAfterSlider';

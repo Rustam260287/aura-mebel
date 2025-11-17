@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react';
 import type { BlogPost, View } from '../types';
 import { Pagination } from './Pagination';
+import Image from 'next/image';
 
 interface BlogListPageProps {
   posts: BlogPost[];
@@ -15,11 +16,11 @@ const BlogPostCard: React.FC<{ post: BlogPost; onClick: () => void }> = ({ post,
         onClick={onClick}
     >
         <div className="relative overflow-hidden h-64">
-            <img 
+            <Image 
                 src={post.imageUrl} 
                 alt={post.title} 
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                fill
             />
         </div>
         <div className="p-6">

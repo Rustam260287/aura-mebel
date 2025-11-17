@@ -6,6 +6,7 @@ import { useCart } from '../contexts/CartContext';
 import { useToast } from '../contexts/ToastContext';
 import { getAiConfigurationDescription, generateConfiguredImage } from '../services/geminiService';
 import { imageUrlToBase64 } from '../utils';
+import Image from 'next/image';
 
 interface ConfiguratorModalProps {
   product: Product;
@@ -116,7 +117,7 @@ export const ConfiguratorModal: React.FC<ConfiguratorModalProps> = memo(({ produ
                 </header>
                 
                 <div className="md:w-1/2 relative bg-gray-100 rounded-t-lg md:rounded-l-lg md:rounded-t-none">
-                    <img src={currentImageUrl} alt={`Конфигурация для ${product.name}`} className="w-full h-full object-cover rounded-t-lg md:rounded-l-lg md:rounded-t-none" />
+                    <Image src={currentImageUrl} alt={`Конфигурация для ${product.name}`} className="object-cover rounded-t-lg md:rounded-l-lg md:rounded-t-none" fill />
                     {isGeneratingImage && (
                         <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white text-center p-4 rounded-t-lg md:rounded-l-lg md:rounded-t-none transition-opacity duration-300">
                             <ArrowPathIcon className="w-10 h-10 animate-spin" />
@@ -184,3 +185,5 @@ export const ConfiguratorModal: React.FC<ConfiguratorModalProps> = memo(({ produ
         </div>
     );
 });
+
+ConfiguratorModal.displayName = 'ConfiguratorModal';

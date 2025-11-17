@@ -146,3 +146,5 @@ export const AiChatbot: React.FC = memo(() => {
         </div>
     );
 });
+
+AiChatbot.displayName = 'AiChatbot';

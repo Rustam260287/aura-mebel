@@ -38,8 +38,6 @@ export default function ProductPage({ product, error }: ProductPageProps) {
     );
   }
 
-  const handleNavigate = (view: any) => router.push('/');
-
   return (
     <>
       <Header onStyleFinderClick={() => {}} />
@@ -111,7 +109,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         productData.imageUrls = ['/placeholder.svg'];
     }
     
-    delete (productData as any).imageUrl;
+    delete (productData as Partial<Product>).imageUrl;
 
     return {
       props: {

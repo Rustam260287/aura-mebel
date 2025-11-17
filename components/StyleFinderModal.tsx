@@ -69,7 +69,7 @@ export const StyleFinderModal: React.FC<StyleFinderModalProps> = memo(({ allProd
                 return (
                     <div className="animate-subtle-fade-in">
                         <h3 className="text-3xl font-serif text-brand-brown text-center mb-2">Ваша персональная подборка</h3>
-                        <p className="text-center text-brand-charcoal/80 mb-8">Основано на вашем запросе: "{prompt}"</p>
+                        <p className="text-center text-brand-charcoal/80 mb-8">Основано на вашем запросе: &quot;{prompt}&quot;</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {results.map(p => (
                                 <ProductCard 
@@ -130,3 +130,5 @@ export const StyleFinderModal: React.FC<StyleFinderModalProps> = memo(({ allProd
         </div>
     );
 });
+
+StyleFinderModal.displayName = 'StyleFinderModal';

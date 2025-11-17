@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 34, "column": 0}, "map": {"version":3,"sources":["file:///home/user/aura-mebel/pages/_document.tsx"],"sourcesContent":["// pages/_document.tsx\nimport { Html, Head, Main, NextScript } from 'next/document';\n\nexport default function Document() {\n  return (\n    <Html lang=\"ru\">\n      <Head>\n        <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n        <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossOrigin=\"anonymous\" />\n        <link\n          href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap\"\n          rel=\"stylesheet\"\n        />\n      </Head>\n      <body>\n        <Main />\n        <NextScript />\n      </body>\n    </Html>\n  );\n}\n"],"names":[],"mappings":"AAAA,sBAAsB;;;;;;AACtB;;;AAEe,SAAS;IACtB,qBACE,qKAAC,iIAAI;QAAC,MAAK;;0BACT,qKAAC,iIAAI;;kCACH,qKAAC;wBAAK,KAAI;wBAAa,MAAK;;;;;;kCAC5B,qKAAC;wBAAK,KAAI;wBAAa,MAAK;wBAA4B,aAAY;;;;;;kCACpE,qKAAC;wBACC,MAAK;wBACL,KAAI;;;;;;;;;;;;0BAGR,qKAAC;;kCACC,qKAAC,iIAAI;;;;;kCACL,qKAAC,uIAAU;;;;;;;;;;;;;;;;;AAInB"}}]
-}

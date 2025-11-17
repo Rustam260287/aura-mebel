@@ -23,3 +23,5 @@ export const About: React.FC = memo(() => {
     </div>
   );
 });
+
+About.displayName = 'About';

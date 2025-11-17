@@ -16,3 +16,5 @@ export const ProductCardSkeleton: React.FC = memo(() => {
     </div>
   );
 });
+
+ProductCardSkeleton.displayName = 'ProductCardSkeleton';

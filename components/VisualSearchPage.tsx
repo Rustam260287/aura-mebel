@@ -7,6 +7,7 @@ import { PhotoIcon, XMarkIcon } from './Icons';
 import { getStyleRecommendations } from '../services/geminiService';
 import { fileToBase64 } from '../utils';
 import { ProductCard } from './ProductCard';
+import Image from 'next/image';
 
 interface VisualSearchPageProps {
   allProducts: Product[];
@@ -96,7 +97,7 @@ export const VisualSearchPage: React.FC<VisualSearchPageProps> = ({ allProducts,
           </label>
         ) : (
           <div className="relative">
-            <img src={imagePreview} alt="Предпросмотр" className="w-full h-auto max-h-96 object-contain rounded-md" />
+            <Image src={imagePreview} alt="Предпросмотр" className="w-full h-auto max-h-96 object-contain rounded-md" width={500} height={500} />
             <Button variant="ghost" onClick={handleRemoveImage} className="absolute top-2 right-2 bg-white/70 p-2 rounded-full"><XMarkIcon className="w-6 h-6"/></Button>
           </div>
         )}

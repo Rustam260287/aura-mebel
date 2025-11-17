@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { XMarkIcon } from './Icons';
+import Image from 'next/image';
 
 interface ImageZoomModalProps {
   imageUrl: string;
@@ -23,12 +24,16 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ imageUrl, o
         className="relative max-w-full max-h-full animate-scale-in"
         onClick={e => e.stopPropagation()} 
       >
-        <img 
+        <Image 
           src={imageUrl} 
           alt="Увеличенное изображение товара" 
-          className="block max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl"
+          className="object-contain rounded-lg shadow-2xl"
+          fill
+          sizes="100vw"
         />
       </div>
     </div>
   );
 });
+
+ImageZoomModal.displayName = 'ImageZoomModal';

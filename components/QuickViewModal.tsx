@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { XMarkIcon } from './Icons';
 import { useCart } from '../contexts/CartContext';
+import Image from 'next/image';
 
 interface QuickViewModalProps {
   product: Product;
@@ -30,7 +31,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = memo(({ product, on
         </button>
         
         <div className="md:w-1/2">
-            <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover rounded-l-lg" />
+            <Image src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover rounded-l-lg" width={500} height={500} />
         </div>
         
         <div className="md:w-1/2 p-8 flex flex-col justify-center">
@@ -55,3 +56,5 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = memo(({ product, on
     </div>
   );
 });
+
+QuickViewModal.displayName = 'QuickViewModal';

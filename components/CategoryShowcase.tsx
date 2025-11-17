@@ -1,6 +1,7 @@
 import React, { useRef, memo } from 'react';
 import type { View } from '../types';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import Image from 'next/image';
 
 interface CategoryShowcaseProps {
   onNavigate: (view: View) => void;
@@ -27,11 +28,12 @@ const CategoryCard: React.FC<{ name: string; imageSeed: string; onClick: () => v
       className={`group relative rounded-lg overflow-hidden shadow-md cursor-pointer aspect-square ${isVisible ? 'animate-subtle-fade-in' : 'opacity-0'}`}
       style={{ animationDelay: isVisible ? `${index * 100}ms` : '0s' }}
     >
-      <img
+      <Image
         src={imageUrl}
         alt={name}
-        className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-        loading="lazy"
+        className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+        fill
+        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
       />
       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors"></div>
       <div className="absolute inset-0 flex items-center justify-center p-4">
@@ -70,3 +72,5 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = memo(({ onNavig
     </div>
   );
 });
+
+CategoryShowcase.displayName = 'CategoryShowcase';

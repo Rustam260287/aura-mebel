@@ -1,217 +1,66 @@
 // services/geminiService.ts
 import type { Product, FurnitureBlueprint, ChatMessage, ChatAnalysisResult, BlogPost } from '../types';
 
-/**
- * Запрашивает у AI новый дизайн комнаты и список рекомендуемых товаров.
- */
-export const generateRoomMakeover = async (
-  base64: string,
-  mimeType: string,
-  style: string,
-  allProducts: Product[]
-): Promise<{ generatedImage: string; recommendedProductNames: string[] }> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'roomMakeover',
-      base64,
-      mimeType,
-      style,
-      allProducts,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-  return await response.json();
-};
-
-
-/**
- * Запрашивает у AI описание для выбранной конфигурации товара.
- */
-export const getAiConfigurationDescription = async (
-  productName: string,
-  selectedOptions: Record<string, string>
-): Promise<string> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'configDescription',
-      productName,
-      selectedOptions,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-  const data = await response.json();
-  return data.description;
-};
-
-/**
- * Запрашивает у AI новое изображение товара на основе выбранной конфигурации.
- */
-export const generateConfiguredImage = async (
-  base64: string,
-  mimeType: string,
-  productName: string,
-  visualPrompt: string
-): Promise<string> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'configImage',
-      base64,
-      mimeType,
-      productName,
-      visualPrompt,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-  const data = await response.json();
-  return data.generatedImage;
-};
-
-/**
- * Запрашивает у AI чертеж и смету для мебели по фото.
- */
-export const generateFurnitureFromPhoto = async (
-    base64: string,
-    mimeType: string,
-    dimensions: { width: string; height: string; depth: string }
-): Promise<FurnitureBlueprint> => {
-    const response = await fetch('/api/generate', {
+// Helper function to handle API requests to our backend
+async function callApi(action: string, body: object) {
+    const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'furnitureFromPhoto',
-            base64,
-            mimeType,
-            dimensions,
-        }),
+        body: JSON.stringify({ action, ...body }),
     });
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Ошибка сервера.');
     }
-    return await response.json();
+    return response.json();
+}
+
+// 1. AI Stylist (Text)
+export const getStyleRecommendations = (prompt: string, products: Product[]): Promise<{ recommendedProductNames: string[] }> => {
+    const productNames = products.map(p => p.name);
+    return callApi('styleRecommendations', { prompt, productNames });
 };
 
-/**
- * Запрашивает у AI SEO-оптимизированное описание для товара.
- */
-export const generateSeoProductDescription = async (product: Product): Promise<string> => {
-    const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'seoProductDescription',
-            product,
-        }),
-    });
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка сервера.');
-    }
-    const data = await response.json();
-    return data.description;
+// 2. Visual Search
+export const getVisualRecommendations = (base64: string, mimeType: string, allProducts: Product[]): Promise<{ recommendedProductNames: string[] }> => {
+    return callApi('visualSearch', { base64, mimeType, allProducts });
 };
 
-/**
- * Запрашивает у AI рекомендации по стилю на основе текстового запроса.
- */
-export const getStyleRecommendations = async (
-  prompt: string,
-  allProducts: Product[]
-): Promise<string[]> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'styleRecommendations',
-      prompt,
-      allProducts,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-    const data = await response.json();
-    return data.recommendedProductNames;
+// 3. AI Room Makeover
+export const generateRoomMakeover = (base64: string, mimeType: string, style: string, allProducts: Product[]): Promise<{ generatedImage: string; recommendedProductNames: string[] }> => {
+    return callApi('roomMakeover', { base64, mimeType, style, allProducts });
 };
 
-/**
- * Запрашивает у AI новое изображение товара с измененной обивкой.
- */
-export const changeProductUpholstery = async (
-  base64: string,
-  mimeType: string,
-  prompt: string
-): Promise<string> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'changeUpholstery',
-      base64,
-      mimeType,
-      prompt,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-  const data = await response.json();
-  return data.generatedImage;
+// 4. AI Product Configurator
+export const generateConfiguredImage = (base64: string, mimeType: string, productName: string, visualPrompt: string): Promise<{ generatedImage: string }> => {
+    return callApi('generateConfiguredImage', { base64, mimeType, productName, visualPrompt });
+};
+export const getAiConfigurationDescription = (productName: string, selectedOptions: Record<string, string>): Promise<{ description: string }> => {
+    return callApi('configDescription', { productName, selectedOptions });
 };
 
-/**
- * Запрашивает у AI анализ логов чата.
- */
-export const analyzeChatLogs = async (chatLogs: ChatMessage[][]): Promise<ChatAnalysisResult> => {
-    const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'analyzeChatLogs',
-            chatLogs,
-        }),
-    });
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка сервера.');
-    }
-    return await response.json();
+// 5. Virtual Staging
+export const generateStagedImage = (roomBase64: string, roomMimeType: string, productBase64: string, productMimeType: string, productName: string): Promise<{ stagedImage: string }> => {
+    return callApi('stageFurniture', { roomBase64, roomMimeType, productBase64, productMimeType, productName });
 };
 
-/**
- * Запрашивает у AI генерацию поста в блоге.
- */
-export const generateBlogPost = async (
-  allProducts: Product[]
-): Promise<Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'generateBlogPost',
-      allProducts,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка сервера.');
-  }
-  return await response.json();
+// 6. Blog Post Generator
+export const generateBlogPost = (allProducts: Product[]): Promise<Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }> => {
+    return callApi('generateBlogPost', { allProducts });
+};
+
+// 7. Furniture from Photo
+export const generateFurnitureFromPhoto = (base64: string, mimeType: string, dimensions: { width: string; height: string; depth: string }): Promise<FurnitureBlueprint> => {
+    return callApi('furnitureFromPhoto', { base64, mimeType, dimensions });
+};
+
+// 8. Chat Log Analysis
+export const analyzeChatLogs = (chatLogs: ChatMessage[][]): Promise<ChatAnalysisResult> => {
+    return callApi('analyzeChatLogs', { chatLogs });
+};
+
+// 9. AI Assistant Chat
+export const sendChatMessage = async (messages: ChatMessage[], allProducts: Product[]): Promise<string> => {
+    const data = await callApi('chat', { messages, allProducts });
+    return data.reply;
 };

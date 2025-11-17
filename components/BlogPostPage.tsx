@@ -4,18 +4,16 @@ import type { BlogPost, Product, View } from '../types';
 import { ProductCard } from './ProductCard';
 import { Button } from './Button';
 import { ArrowLeftIcon } from './Icons';
+import Image from 'next/image';
 
 interface BlogPostPageProps {
-  post: BlogPost | null; // Разрешаем post быть null
+  post: BlogPost | null;
   allProducts: Product[];
   onNavigate: (view: View) => void;
 }
 
 const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts, onNavigate }) => {
   
-  // --- ГЛАВНОЕ ИСПРАВЛЕНИЕ ---
-  // Если пост не существует (равен null), мы немедленно выводим сообщение
-  // и прекращаем выполнение компонента, чтобы избежать ошибок.
   if (!post) {
     return (
       <div className="bg-white">
@@ -31,7 +29,6 @@ const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts,
     );
   }
 
-  // Этот код будет выполняться только если 'post' не равен null.
   const relatedProducts = allProducts.filter(p => post.relatedProducts?.includes(p.id));
 
   const handleProductSelect = (productId: string) => {
@@ -50,16 +47,17 @@ const BlogPostPageComponent: React.FC<BlogPostPageProps> = ({ post, allProducts,
                 <article>
                     <h1 className="text-4xl md:text-5xl font-serif text-brand-brown mb-4 leading-tight">{post.title}</h1>
                     {post.imageUrl && (
-                      <img 
+                      <Image 
                           src={post.imageUrl} 
                           alt={post.title}
                           className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-lg my-8"
+                          width={800}
+                          height={500}
                       />
                     )}
-                    <div 
-                        className="prose prose-lg lg:prose-xl max-w-none text-brand-charcoal/90 leading-relaxed space-y-6"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
+                    <div className="prose prose-lg lg:prose-xl max-w-none text-brand-charcoal/90 leading-relaxed space-y-6">
+                        {post.content}
+                    </div>
                 </article>
 
                 {relatedProducts.length > 0 && (

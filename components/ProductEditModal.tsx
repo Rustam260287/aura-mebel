@@ -72,7 +72,7 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = memo(({ product
         const newDescription = await generateSeoProductDescription(productForGeneration as Product);
         setFormData(prev => ({ ...prev, seoDescription: newDescription }));
         addToast('SEO-описание сгенерировано!', 'success');
-    } catch (error) {
+    } catch {
         addToast('Ошибка генерации описания', 'error');
     } finally {
         setIsGenerating(false);
@@ -171,3 +171,5 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = memo(({ product
     </div>
   );
 });
+
+ProductEditModal.displayName = 'ProductEditModal';

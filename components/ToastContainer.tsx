@@ -32,3 +32,5 @@ export const ToastContainer: React.FC = memo(() => {
     </div>
   );
 });
+
+ToastContainer.displayName = 'ToastContainer';

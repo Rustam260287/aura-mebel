@@ -2,11 +2,11 @@
 // pages/admin.tsx
 import { GetServerSideProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { Product, BlogPost, View } from '../types';
+import type { Product, BlogPost } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
-import { ToastProvider, useToast } from '../contexts/ToastContext';
+import { ToastProvider } from '../contexts/ToastContext';
 import { AuthGuard } from '../components/AuthGuard'; // Импортируем AuthGuard
 import { useAuth } from '../contexts/AuthContext'; // Импортируем useAuth для кнопки выхода
 import { Button } from '../components/Button'; // Импортируем Button
@@ -20,39 +20,38 @@ interface AdminContainerProps {
 
 function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerProps) {
   const router = useRouter();
-  const { addToast } = useToast();
   const { logout } = useAuth(); // Получаем функцию logout
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [products] = useState<Product[]>(initialProducts);
+  const [blogPosts] = useState<BlogPost[]>(initialBlogPosts);
 
-  const handleNavigate = (view: View) => {
+  const handleNavigate = () => {
     router.push('/');
   };
 
   // ... (все обработчики остаются без изменений)
-  const handleUpdateProduct = useCallback(async (updatedProduct: Product) => {
+  const handleUpdateProduct = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
-  const handleAddProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
+  const handleAddProduct = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
-  const handleDeleteProduct = useCallback(async (productId: string) => {
+  const handleDeleteProduct = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
-  const handleUpdateBlogPost = useCallback(async (postData: BlogPost) => {
+  const handleUpdateBlogPost = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
-  const handleDeleteBlogPost = useCallback(async (postId: string) => {
+  const handleDeleteBlogPost = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
-  const handleAddBlogPost = useCallback(async (postData: Omit<BlogPost, 'id'>) => {
+  const handleAddBlogPost = useCallback(async () => {
     // ...
-  }, [addToast]);
+  }, []);
 
   return (
     <>

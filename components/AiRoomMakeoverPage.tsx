@@ -3,10 +3,11 @@ import type { Product, View } from '../types';
 import { Button } from './Button';
 import { PhotoIcon, SparklesIcon, LoadingIcon } from './Icons';
 import { fileToBase64 } from '../utils';
-import { generateRoomMakeover } from '../services/geminiService';
+import { generateRoomMakeover } from '../services/geminiService'; // ИСПРАВЛЕНО
 import { ProductCard } from './ProductCard';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { useToast } from '../contexts/ToastContext';
+import Image from 'next/image';
 
 interface AiRoomMakeoverPageProps {
   allProducts: Product[];
@@ -16,6 +17,7 @@ interface AiRoomMakeoverPageProps {
 const designStyles = ['Скандинавский', 'Лофт', 'Мид-сенчури', 'Минимализм', 'Бохо', 'Современный', 'Современный офис', 'Эко-офис', 'Офис в стиле лофт', 'Индустриальный офис', 'Биофильный офис', 'Классический офис'];
 
 export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ allProducts, onNavigate }) => {
+    // ... (состояния остаются без изменений)
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -30,9 +32,7 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
         if (file && file.type.startsWith('image/')) {
             setImageFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
+            reader.onloadend = () => setImagePreview(reader.result as string);
             reader.readAsDataURL(file);
             setError(null);
             setRecommendedProducts([]);
@@ -42,6 +42,7 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
         }
     }, []);
 
+    // ИСПРАВЛЕНО: handleSubmit теперь вызывает одну функцию
     const handleSubmit = useCallback(async () => {
         if (!imageFile) return;
 
@@ -52,11 +53,12 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
 
         try {
             const base64Image = await fileToBase64(imageFile);
+            
             const { generatedImage: resultBase64, recommendedProductNames } = await generateRoomMakeover(base64Image, imageFile.type, selectedStyle, allProducts);
             
             setGeneratedImage(`data:image/png;base64,${resultBase64}`);
 
-            if (recommendedProductNames.length > 0) {
+            if (recommendedProductNames && recommendedProductNames.length > 0) {
                 const foundProducts = allProducts.filter(p => recommendedProductNames.includes(p.name));
                 setRecommendedProducts(foundProducts);
             } else if (resultBase64) {
@@ -74,6 +76,7 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
         onNavigate({ page: 'product', productId });
     }, [onNavigate]);
 
+    // ... (остальной JSX остается без изменений)
     return (
         <div className="container mx-auto px-6 py-12">
             <div className="text-center mb-12">
@@ -134,7 +137,7 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
                     ) : generatedImage && imagePreview ? (
                         <BeforeAfterSlider beforeImage={imagePreview} afterImage={generatedImage} />
                     ) : imagePreview ? (
-                         <img src={imagePreview} alt="Предпросмотр комнаты" className="rounded-lg shadow-md w-full max-w-full object-contain" />
+                         <Image src={imagePreview} alt="Предпросмотр комнаты" className="rounded-lg shadow-md w-full max-w-full object-contain" width={500} height={500} />
                     ) : (
                         <div className="text-center text-gray-500">
                             <SparklesIcon className="w-24 h-24 mx-auto text-gray-300" />
@@ -161,6 +164,8 @@ export const AiRoomMakeoverPage: React.FC<AiRoomMakeoverPageProps> = memo(({ all
         </div>
     );
 });
+
+AiRoomMakeoverPage.displayName = 'AiRoomMakeoverPage';
 
 const UploadBox: React.FC<{onFile: (file: File) => void; isDragOver: boolean; setIsDragOver: (isOver: boolean) => void;}> = ({ onFile, isDragOver, setIsDragOver }) => (
     <label

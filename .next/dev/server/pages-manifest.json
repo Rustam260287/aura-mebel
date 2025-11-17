@@ -1,7 +1,0 @@
-{
-  "/": "pages/index.js",
-  "/_app": "pages/_app.js",
-  "/_document": "pages/_document.js",
-  "/ai-room-makeover": "pages/ai-room-makeover.js",
-  "/api/generate": "pages/api/generate.js"
-}

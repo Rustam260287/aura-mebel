@@ -139,3 +139,5 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
     </>
   );
 });
+
+FilterSidebar.displayName = 'FilterSidebar';

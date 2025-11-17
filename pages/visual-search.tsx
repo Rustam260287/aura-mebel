@@ -1,7 +1,7 @@
 // pages/visual-search.tsx
 import { GetStaticProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { Product, View } from '../types';
+import type { Product } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
@@ -16,14 +16,6 @@ interface VisualSearchProps {
 
 export default function VisualSearch({ allProducts }: VisualSearchProps) {
   const router = useRouter();
-
-  const handleNavigate = (view: View) => {
-    if (view.page === 'product') {
-      router.push(`/products/${view.productId}`);
-    } else {
-      router.push('/'); // Возврат на главную
-    }
-  };
 
   return (
     <>

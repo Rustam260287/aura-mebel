@@ -1,11 +1,12 @@
 import React, { useState, useCallback, DragEvent, memo } from 'react';
 import { Button } from './Button';
-import { PhotoIcon, XMarkIcon, SparklesIcon, ArrowPathIcon } from './Icons';
+import { PhotoIcon, ArrowPathIcon } from './Icons';
 import { generateFurnitureFromPhoto } from '../services/geminiService';
 import { FurnitureBlueprint } from '../types';
 import { fileToBase64 } from '../utils';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../contexts/ToastContext';
+import Image from 'next/image';
 
 type Step = 'upload' | 'dimensions' | 'loading' | 'results';
 
@@ -115,6 +116,8 @@ export const FurnitureFromPhotoPage: React.FC = memo(() => {
     );
 });
 
+FurnitureFromPhotoPage.displayName = 'FurnitureFromPhotoPage';
+
 const UploadStep: React.FC<{onFile: (file: File) => void; isDragOver: boolean; setIsDragOver: (isOver: boolean) => void;}> = ({ onFile, isDragOver, setIsDragOver }) => (
     <label
         onDragOver={(e: DragEvent) => { e.preventDefault(); setIsDragOver(true); }}
@@ -144,7 +147,7 @@ const DimensionsStep: React.FC<{
     onBack: () => void;
 }> = ({ imagePreview, dimensions, setDimensions, onSubmit, onBack }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-subtle-fade-in">
-        <img src={imagePreview} alt="Предпросмотр" className="w-full h-auto max-h-96 object-contain rounded-md shadow-md" />
+        <Image src={imagePreview} alt="Предпросмотр" className="w-full h-auto max-h-96 object-contain rounded-md shadow-md" width={500} height={500} />
         <div className="space-y-4">
             <h3 className="text-2xl font-serif text-brand-brown">Укажите габариты (в см)</h3>
             <div>
@@ -170,7 +173,7 @@ const DimensionsStep: React.FC<{
 const LoadingStep: React.FC<{ imagePreview: string }> = ({ imagePreview }) => (
     <div className="flex flex-col items-center text-center animate-subtle-fade-in">
         <div className="relative">
-            <img src={imagePreview} alt="Анализ" className="rounded-lg shadow-md max-h-64 opacity-50" />
+            <Image src={imagePreview} alt="Анализ" className="rounded-lg shadow-md max-h-64 opacity-50" width={500} height={500} />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
         </div>
         <ArrowPathIcon className="w-12 h-12 text-brand-brown animate-spin my-6" />
@@ -184,7 +187,7 @@ const ResultsStep: React.FC<{ result: FurnitureBlueprint; imagePreview: string; 
         <h2 className="text-3xl font-serif text-brand-brown text-center mb-6">Ваше кастомное изделие готово!</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-                <img src={imagePreview} alt={result.furnitureName} className="rounded-lg shadow-md w-full" />
+                <Image src={imagePreview} alt={result.furnitureName} className="rounded-lg shadow-md w-full" width={500} height={500} />
                 <h3 className="text-xl font-semibold text-center mt-4">{result.furnitureName}</h3>
             </div>
             <div className="space-y-6">

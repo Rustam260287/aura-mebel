@@ -48,3 +48,5 @@ export const Contacts: React.FC = memo(() => {
     </div>
   );
 });
+
+Contacts.displayName = 'Contacts';

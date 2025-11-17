@@ -1,36 +1,53 @@
-{ pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-23.11"; # or "unstable"
-  # Use https://search.nixos.org/packages to find packages
+{ pkgs, ... }:
+
+{
+  # Pinned to a specific version for stability and reproducibility
+  channel = "stable-23.11";
+
+  # Add any nix packages you want to be available in your workspace
+  # Check https://search.nixos.org/packages to find packages
   packages = [
     pkgs.nodejs_20
+    pkgs.nodePackages.firebase-tools
   ];
-  # Sets environment variables in the workspace
-  env = {};
-  # Fast way to run sidecar containers in your workspace
   services.firebase.enable = true;
-  # Docker image to build your workspace in, it has to have nix in path
-  # Be careful, as you can easily create infinite loops here
+  # Enable this if you want to use the local Firebase emulator
+  # services.firebase.emulator.enable = true;
+
+
+  # Use "nix run" to start the dev server
+  scripts.dev.exec = "npm run dev";
+
+  # The following are some common Nix options that you might want to configure.
+  # For a full list of options, see https://nix-dev.Ld/reference/options.html
   #
-  # nixpkgs.overlays = [(final: prev: {
-  #   # For example, to override package 'some-package' with a consistent version:
-  #   some-package = prev.some-package.overrideAttrs (oldAttrs: rec {
-  #     src = final.fetchFromGitHub {
-  #       owner = "some-owner";
-  #       repo = "some-repo";
-  #       rev = "some-rev";
-  #       hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-  #     };
-  #   });
-  # })];
+  # Description of your environment, visible in the IDX dashboard
+  # description = "My new environment";
+
+  # This is the star of your environment. It's used to generate a temporary `.nix`
+  # file that can be shared with others to easily recreate your environment.
   #
-  # processes = {
-  #   # Example of a process that starts automatically
-  #   # web-server = {
-  #   #   command = ["python" "-m" "SimpleHTTPServer" "8080"];
-  #   #   env = {
-  #   #     PORT = "$PORT";
-  #   #   };
-  #   # };
-  # };
+  # # You can leave it as is, or set it to a path to a file in your project.
+  # # The file will be copied to the temporary `.nix` file.
+  # #
+  # # Or you can set it to a string directly. For example:
+  # #
+  # # startOnCreate = ''
+  # #   echo "Welcome to my new environment!"
+  # # '';
+  #
+  # startOnCreate = ./.idx/start.sh;
+  #
+  # # The name of the file that will be opened by default in the editor
+  # # openInEditor = [ "README.md" ];
+  #
+  # # The commands that will be run when the environment is created
+  # # onCreate = [
+  # #   "npm install"
+  # # ];
+  #
+  # # The commands that will be run when the environment is started
+  # # onStart = [
+  # #   "npm run dev"
+  # # ];
 }

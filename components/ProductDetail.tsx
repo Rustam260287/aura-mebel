@@ -9,6 +9,7 @@ import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSwipe } from '../hooks/useSwipe';
 import { ImageZoomModal } from './ImageZoomModal';
+import Image from 'next/image';
 
 interface ProductDetailProps {
   product: Product;
@@ -109,11 +110,13 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack,
                 onClick={() => setIsZoomModalOpen(true)}
               >
                 {product.imageUrls.map((url, index) => (
-                  <img 
+                  <Image 
                     key={index}
                     src={url} 
                     alt={`${product.name} - изображение ${index + 1}`} 
                     className="w-full h-auto object-cover aspect-square flex-shrink-0"
+                    width={500}
+                    height={500}
                   />
                 ))}
               </div>

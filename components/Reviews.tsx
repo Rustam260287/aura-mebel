@@ -107,3 +107,5 @@ export const Reviews: React.FC<ReviewsProps> = memo(({ reviews, onAddReview }) =
     </div>
   );
 });
+
+Reviews.displayName = 'Reviews';

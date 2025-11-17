@@ -16,7 +16,6 @@ interface AdminPageProps {
   onNavigate: (view: View) => void;
   onUpdateProduct: (updatedProduct: Product) => Promise<void>;
   onAddProduct: (productData: Omit<Product, 'id'>) => Promise<void>;
-  onAddBlogPost: (postData: Omit<BlogPost, 'id' | 'imageUrl'> & { imageBase64: string }) => Promise<void>;
   onUpdateBlogPost: (updatedPost: BlogPost) => Promise<void>;
   onDeleteBlogPost: (postId: string) => Promise<void>;
   onDeleteProduct: (productId: string) => Promise<void>;
@@ -31,7 +30,6 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   onNavigate,
   onUpdateProduct,
   onAddProduct,
-  onAddBlogPost,
   onUpdateBlogPost,
   onDeleteBlogPost,
   onDeleteProduct,

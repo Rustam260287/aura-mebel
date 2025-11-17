@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { PencilSquareIcon, TrashIcon } from '../../components/Icons';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useToast } from '../../contexts/ToastContext';
+import Image from 'next/image';
 
 interface AdminProductsProps {
   products: Product[];
@@ -55,7 +56,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ products, onEditPr
               {products.map(product => (
                 <tr key={product.id} className="bg-white border-b hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                    <img src={product.imageUrls[0]} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
+                    <Image src={product.imageUrls[0]} alt={product.name} className="w-12 h-12 object-cover rounded-md" width={48} height={48} />
                     <span className="truncate max-w-xs">{product.name}</span>
                   </td>
                   <td className="px-6 py-4">{product.category}</td>
@@ -84,7 +85,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ products, onEditPr
         title="Подтвердите удаление"
         message={
           <>
-            Вы уверены, что хотите удалить товар "<strong>{productToDelete?.name}</strong>"? Это действие необратимо.
+            Вы уверены, что хотите удалить товар &quot;<strong>{productToDelete?.name}</strong>&quot;? Это действие необратимо.
           </>
         }
         isLoading={isDeleting}

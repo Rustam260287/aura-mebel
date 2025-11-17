@@ -1,9 +1,0 @@
-{
-  "[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry)": {
-    "id": "[project]/components/Header.tsx [client] (ecmascript, next/dynamic entry)",
-    "files": [
-      "static/chunks/_5792ff66._.js",
-      "static/chunks/components_Header_tsx_e1e7941c._.js"
-    ]
-  }
-}

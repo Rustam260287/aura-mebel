@@ -37,3 +37,5 @@ export const CategoryPills: React.FC<CategoryPillsProps> = memo(({ categories, s
     </div>
   );
 });
+
+CategoryPills.displayName = 'CategoryPills';

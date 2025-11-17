@@ -4,7 +4,7 @@ import React, { useState, memo } from 'react';
 import Link from 'next/link'; // <-- Импортируем Link
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { HeartIcon, ShoppingCartIcon, SparklesIcon, Bars3Icon, XMarkIcon } from './Icons';
+import { HeartIcon, ShoppingCartIcon, SparklesIcon, Bars3Icon } from './Icons';
 import { Button } from './Button';
 
 // Убираем onNavigate, он больше не нужен
@@ -24,7 +24,7 @@ const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: bo
 const HeaderComponent: React.FC<HeaderProps> = ({ onStyleFinderClick }) => {
   const { cartCount, toggleCart } = useCart();
   const { wishlistCount } = useWishlist();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [, setIsMobileMenuOpen] = useState(false);
 
   // Обновляем navLinks, чтобы они содержали href
   const navLinks = [

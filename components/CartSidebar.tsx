@@ -5,6 +5,7 @@ import { useCart, CartItem } from '../contexts/CartContext';
 import type { View } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from './Icons';
+import Image from 'next/image';
 
 // ... (остальная часть файла без изменений)
 interface CartSidebarProps {
@@ -73,7 +74,7 @@ interface CartSidebarItemProps {
 const CartSidebarItem: React.FC<CartSidebarItemProps> = ({ item, onRemove, onUpdateQuantity }) => {
     return (
         <div className="flex gap-4">
-            <img src={item.imageUrls[0]} alt={item.name} className="w-24 h-24 object-cover rounded-md" loading="lazy"/>
+            <Image src={item.imageUrls[0]} alt={item.name} className="w-24 h-24 object-cover rounded-md" width={96} height={96}/>
             <div className="flex-grow flex flex-col justify-between">
                 <div>
                     <h3 className="font-semibold text-brand-charcoal">{item.name}</h3>

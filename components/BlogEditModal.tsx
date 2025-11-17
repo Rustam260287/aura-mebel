@@ -2,7 +2,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import type { BlogPost } from '../types';
 import { Button } from './Button';
-import { XMarkIcon, SparklesIcon, ArrowPathIcon } from './Icons';
+import { XMarkIcon } from './Icons';
 import { useToast } from '../contexts/ToastContext';
 // import { generateSeoBlogContent } from '../services/geminiService'; // Закомментировано
 
@@ -15,7 +15,6 @@ interface BlogEditModalProps {
 export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose, onSave }) => {
   const [formData, setFormData] = useState<BlogPost>(post);
   const [relatedProductsString, setRelatedProductsString] = useState('');
-  const [isGeneratingSeo, setIsGeneratingSeo] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -26,24 +25,6 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleGenerateSeo = async () => {
-    // setIsGeneratingSeo(true);
-    // try {
-    //     const seoResult = await generateSeoBlogContent(formData); // Закомментировано
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         title: seoResult.title,
-    //         excerpt: seoResult.excerpt,
-    //     }));
-    //     addToast('Заголовок и анонс оптимизированы!', 'success');
-    // } catch (error) {
-    //     addToast('Ошибка SEO-оптимизации', 'error');
-    //     console.error("SEO generation failed:", error);
-    // } finally {
-    //     setIsGeneratingSeo(false);
-    // }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,3 +92,5 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
     </div>
   );
 });
+
+BlogEditModal.displayName = 'BlogEditModal';

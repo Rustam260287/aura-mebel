@@ -7,6 +7,7 @@ import { ToastProvider } from '../contexts/ToastContext';
 import { AuthProvider } from '../contexts/AuthContext'; // Импортируем AuthProvider
 import '../styles/globals.css';
 import Head from 'next/head';
+import { ChatMessage } from '../contexts/AiChatContext';
 
 const ClientProviders = dynamic(() => 
   import('../components/ClientProviders').then(mod => mod.ClientProviders), 
@@ -16,7 +17,7 @@ const ClientProviders = dynamic(() =>
 function MyApp({ Component, pageProps }: AppProps) {
   const { allProducts = [] } = pageProps;
 
-  const handleChatSessionEnd = (sessionMessages: any[]) => {
+  const handleChatSessionEnd = (sessionMessages: ChatMessage[]) => {
     console.log('Chat session ended:', sessionMessages);
   };
 

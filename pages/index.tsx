@@ -5,7 +5,7 @@ import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin'; // Обновленный импорт
-import type { Product, View } from '../types';
+import type { Product } from '../types';
 
 import { Hero } from '../components/Hero';
 import { CategoryShowcase } from '../components/CategoryShowcase';
@@ -29,19 +29,19 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [virtualStageProduct, setVirtualStageProduct] = useState<Product | null>(null);
 
-  if (error) {
-    return <div style={{ color: 'red', padding: '2rem' }}>Error loading data: {error}</div>;
-  }
-
-  const handleNavigate = (view: View) => {
-    // ...
-  };
-  
   const popularProducts = useMemo(() => {
     if (!allProducts || allProducts.length === 0) return [];
     return [...allProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
   }, [allProducts]);
 
+  if (error) {
+    return <div style={{ color: 'red', padding: '2rem' }}>Error loading data: {error}</div>;
+  }
+
+  const handleNavigate = () => {
+    // ...
+  };
+  
   return (
     <>
       <Header onStyleFinderClick={() => {}} />

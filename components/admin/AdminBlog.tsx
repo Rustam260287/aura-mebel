@@ -2,19 +2,17 @@
 import React, { useState } from 'react';
 import type { BlogPost } from '../../types';
 import { Button } from '../../components/Button';
-import { SparklesIcon, PencilSquareIcon, TrashIcon } from '../../components/Icons';
+import { SparklesIcon } from '../../components/Icons';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 interface AdminBlogProps {
-  posts: BlogPost[];
-  onEditPost: (post: BlogPost) => void;
   onDeletePost: (postId: string) => Promise<void>;
   // Функция для обновления списка постов из родительского компонента
   setBlogPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
 }
 
-export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, onEditPost, onDeletePost, setBlogPosts }) => {
+export const AdminBlog: React.FC<AdminBlogProps> = ({ onDeletePost, setBlogPosts }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
@@ -79,7 +77,7 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, onEditPost, onDelet
                 onClose={() => setPostToDelete(null)}
                 onConfirm={handleConfirmDelete}
                 title="Подтвердите удаление"
-                message={<>Вы уверены, что хотите удалить статью "<strong>{postToDelete?.title}</strong>"?</>}
+                message={<>Вы уверены, что хотите удалить статью &quot;<strong>{postToDelete?.title}</strong>&quot;?</>}
                 isLoading={isDeleting}
             />
         </div>

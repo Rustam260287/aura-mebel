@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { XMarkIcon, SparklesIcon } from './Icons';
 import { changeProductUpholstery } from '../services/geminiService';
 import { imageUrlToBase64 } from '../utils';
+import Image from 'next/image';
 
 interface UpholsteryChangerModalProps {
   product: Product;
@@ -56,7 +57,7 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = mem
         <div className="p-6 flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {/* Left Column: Controls & Original Image */}
           <div className="flex flex-col gap-4">
-            <p>Опишите материал или цвет, который вы хотите видеть. Например: "темно-зеленый велюр" или "кожа в стиле винтаж".</p>
+            <p>Опишите материал или цвет, который вы хотите видеть. Например: &quot;темно-зеленый велюр&quot; или &quot;кожа в стиле винтаж&quot;.</p>
             
             <textarea
                 value={prompt}
@@ -72,7 +73,7 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = mem
             
             <div className="mt-4">
                 <h3 className="font-semibold text-center mb-2">Оригинал</h3>
-                <img src={product.imageUrls[0]} alt={product.name} className="w-full rounded-lg shadow-md aspect-square object-cover" />
+                <Image src={product.imageUrls[0]} alt={product.name} className="w-full rounded-lg shadow-md aspect-square object-cover" width={500} height={500} />
             </div>
           </div>
 
@@ -88,7 +89,7 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = mem
                 )}
                 
                 {!isLoading && generatedImage && (
-                    <img src={generatedImage} alt="Сгенерированное изображение обивки" className="w-full h-full rounded-lg shadow-md object-cover" />
+                    <Image src={generatedImage} alt="Сгенерированное изображение обивки" className="object-cover rounded-lg shadow-md" fill sizes="50vw" />
                 )}
 
                 {!isLoading && !generatedImage && (
@@ -101,3 +102,5 @@ export const UpholsteryChangerModal: React.FC<UpholsteryChangerModalProps> = mem
     </div>
   );
 });
+
+UpholsteryChangerModal.displayName = 'UpholsteryChangerModal';

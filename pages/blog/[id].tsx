@@ -127,7 +127,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         } else {
             product.imageUrls = ['/placeholder.svg'];
         }
-        delete (product as any).imageUrl;
+        delete (product as Partial<Product>).imageUrl;
         return product;
     }));
 

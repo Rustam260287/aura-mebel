@@ -22,3 +22,5 @@ export const StarRating: React.FC<StarRatingProps> = memo(({ rating, maxRating =
     </div>
   );
 });
+
+StarRating.displayName = 'StarRating';

@@ -102,3 +102,5 @@ export const Pagination: React.FC<PaginationProps> = memo(({ currentPage, totalP
     </nav>
   );
 });
+
+Pagination.displayName = 'Pagination';

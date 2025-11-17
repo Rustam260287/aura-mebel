@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { PhotoIcon, XMarkIcon, SparklesIcon } from './Icons';
 import { generateConfiguredImage } from '../services/geminiService';
 import { fileToBase64 } from '../utils';
+import Image from 'next/image';
 
 interface VirtualStagingModalProps {
   product: Product;
@@ -97,7 +98,7 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = memo(({ p
         <div className="p-6 flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {/* Left Column: Upload & Controls */}
           <div className="flex flex-col gap-4">
-            <p>Загрузите фото вашей комнаты, чтобы "примерить" <strong>{product.name}</strong>.</p>
+            <p>Загрузите фото вашей комнаты, чтобы &quot;примерить&quot; <strong>{product.name}</strong>.</p>
             
             {!imagePreview && (
                 <label
@@ -139,13 +140,13 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = memo(({ p
                   {imagePreview && (
                     <div>
                         <h3 className="font-semibold text-center mb-2">Ваша комната</h3>
-                        <img src={imagePreview} alt="Ваша комната" className="w-full rounded-lg shadow-md aspect-square object-cover" />
+                        <Image src={imagePreview} alt="Ваша комната" className="w-full rounded-lg shadow-md aspect-square object-cover" width={500} height={500} />
                     </div>
                   )}
                   {generatedImage && (
                     <div>
                         <h3 className="font-semibold text-center mb-2">Результат</h3>
-                        <img src={generatedImage} alt="Сгенерированное изображение" className="w-full rounded-lg shadow-md aspect-square object-cover" />
+                        <Image src={generatedImage} alt="Сгенерированное изображение" className="w-full rounded-lg shadow-md aspect-square object-cover" width={500} height={500} />
                     </div>
                   )}
               </div>
@@ -163,3 +164,5 @@ export const VirtualStagingModal: React.FC<VirtualStagingModalProps> = memo(({ p
     </div>
   );
 });
+
+VirtualStagingModal.displayName = 'VirtualStagingModal';
