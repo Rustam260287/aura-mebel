@@ -109,13 +109,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
         </button>
       </div>
-      <div className="relative overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden">
         <Image 
           src={product.imageUrls[0]} 
           alt={product.name} 
-          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-          width={500}
-          height={500}
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         {onQuickView && (
            <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
