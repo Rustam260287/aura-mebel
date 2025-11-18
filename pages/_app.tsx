@@ -1,11 +1,11 @@
 
 // pages/_app.tsx
+import '../styles/globals.css';
 import '../firebaseConfig';
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
 import { ToastProvider } from '../contexts/ToastContext';
 import { AuthProvider } from '../contexts/AuthContext'; // Импортируем AuthProvider
-import '../styles/globals.css';
 import Head from 'next/head';
 import { ChatMessage } from '../contexts/AiChatContext';
 
