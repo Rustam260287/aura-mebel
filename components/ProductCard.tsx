@@ -115,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           alt={product.name} 
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {onQuickView && (
            <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -141,7 +141,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           </div>
           <div className="flex items-center">
             <StarRating rating={product.rating} />
-            <span className="text-xs text-gray-400 ml-1">({product.reviews.length})</span>
+            <span className="text-xs text-gray-400 ml-1">({product.reviews?.length || 0})</span>
           </div>
         </div>
       </div>
