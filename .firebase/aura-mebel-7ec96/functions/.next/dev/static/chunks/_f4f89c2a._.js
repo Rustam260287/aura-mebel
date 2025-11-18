@@ -1,0 +1,1144 @@
+(globalThis.TURBOPACK || (globalThis.TURBOPACK = [])).push([typeof document === "object" ? document.currentScript : undefined,
+"[project]/contexts/CartContext.tsx [client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "CartProvider",
+    ()=>CartProvider,
+    "useCart",
+    ()=>useCart
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/index.js [client] (ecmascript)");
+;
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
+"use client";
+;
+const CartContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["createContext"])(undefined);
+const CartProvider = ({ children })=>{
+    _s();
+    const [cartItems, setCartItems] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [isCartOpen, setIsCartOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const toggleCart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "CartProvider.useCallback[toggleCart]": ()=>setIsCartOpen({
+                "CartProvider.useCallback[toggleCart]": (prev)=>!prev
+            }["CartProvider.useCallback[toggleCart]"])
+    }["CartProvider.useCallback[toggleCart]"], []);
+    const clearCart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "CartProvider.useCallback[clearCart]": ()=>{
+            setCartItems([]);
+        }
+    }["CartProvider.useCallback[clearCart]"], []);
+    const removeFromCart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "CartProvider.useCallback[removeFromCart]": (cartId)=>{
+            setCartItems({
+                "CartProvider.useCallback[removeFromCart]": (prev)=>prev.filter({
+                        "CartProvider.useCallback[removeFromCart]": (item)=>item.cartId !== cartId
+                    }["CartProvider.useCallback[removeFromCart]"])
+            }["CartProvider.useCallback[removeFromCart]"]);
+        }
+    }["CartProvider.useCallback[removeFromCart]"], []);
+    const addToCart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "CartProvider.useCallback[addToCart]": (product, configuration, quantity = 1)=>{
+            const configStr = configuration ? JSON.stringify(Object.keys(configuration).sort().map({
+                "CartProvider.useCallback[addToCart]": (key)=>[
+                        key,
+                        configuration[key]
+                    ]
+            }["CartProvider.useCallback[addToCart]"])) : '';
+            const existingItem = cartItems.find({
+                "CartProvider.useCallback[addToCart].existingItem": (item)=>{
+                    const itemConfigStr = item.configuration ? JSON.stringify(Object.keys(item.configuration).sort().map({
+                        "CartProvider.useCallback[addToCart].existingItem": (key)=>[
+                                key,
+                                item.configuration[key]
+                            ]
+                    }["CartProvider.useCallback[addToCart].existingItem"])) : '';
+                    return item.id === product.id && itemConfigStr === configStr;
+                }
+            }["CartProvider.useCallback[addToCart].existingItem"]);
+            if (existingItem) {
+                setCartItems({
+                    "CartProvider.useCallback[addToCart]": (currentCartItems)=>currentCartItems.map({
+                            "CartProvider.useCallback[addToCart]": (item)=>item.cartId === existingItem.cartId ? {
+                                    ...item,
+                                    quantity: item.quantity + quantity
+                                } : item
+                        }["CartProvider.useCallback[addToCart]"])
+                }["CartProvider.useCallback[addToCart]"]);
+            } else {
+                const newCartItem = {
+                    ...product,
+                    cartId: `${product.id}-${Date.now()}`,
+                    quantity,
+                    configuration,
+                    configuredPrice: product.price
+                };
+                setCartItems({
+                    "CartProvider.useCallback[addToCart]": (prev)=>[
+                            ...prev,
+                            newCartItem
+                        ]
+                }["CartProvider.useCallback[addToCart]"]);
+            }
+        }
+    }["CartProvider.useCallback[addToCart]"], [
+        cartItems
+    ]);
+    const updateQuantity = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "CartProvider.useCallback[updateQuantity]": (cartId, quantity)=>{
+            if (quantity <= 0) {
+                removeFromCart(cartId);
+            } else {
+                setCartItems({
+                    "CartProvider.useCallback[updateQuantity]": (prev)=>prev.map({
+                            "CartProvider.useCallback[updateQuantity]": (item)=>item.cartId === cartId ? {
+                                    ...item,
+                                    quantity
+                                } : item
+                        }["CartProvider.useCallback[updateQuantity]"])
+                }["CartProvider.useCallback[updateQuantity]"]);
+            }
+        }
+    }["CartProvider.useCallback[updateQuantity]"], [
+        removeFromCart
+    ]);
+    const cartCount = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "CartProvider.useMemo[cartCount]": ()=>{
+            return cartItems.reduce({
+                "CartProvider.useMemo[cartCount]": (total, item)=>total + item.quantity
+            }["CartProvider.useMemo[cartCount]"], 0);
+        }
+    }["CartProvider.useMemo[cartCount]"], [
+        cartItems
+    ]);
+    const totalPrice = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "CartProvider.useMemo[totalPrice]": ()=>{
+            return cartItems.reduce({
+                "CartProvider.useMemo[totalPrice]": (total, item)=>total + item.configuredPrice * item.quantity
+            }["CartProvider.useMemo[totalPrice]"], 0);
+        }
+    }["CartProvider.useMemo[totalPrice]"], [
+        cartItems
+    ]);
+    const contextValue = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "CartProvider.useMemo[contextValue]": ()=>({
+                cartItems,
+                addToCart,
+                removeFromCart,
+                updateQuantity,
+                isCartOpen,
+                toggleCart,
+                cartCount,
+                totalPrice,
+                clearCart
+            })
+    }["CartProvider.useMemo[contextValue]"], [
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        isCartOpen,
+        toggleCart,
+        cartCount,
+        totalPrice,
+        clearCart
+    ]);
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(CartContext.Provider, {
+        value: contextValue,
+        children: children
+    }, void 0, false, {
+        fileName: "[project]/contexts/CartContext.tsx",
+        lineNumber: 102,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+};
+_s(CartProvider, "HTF0fWgfUwuAGjjZu0J2cUwYJhI=");
+_c = CartProvider;
+const useCart = ()=>{
+    _s1();
+    const context = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useContext"])(CartContext);
+    if (context === undefined) {
+        throw new Error('useCart must be used within a CartProvider');
+    }
+    return context;
+};
+_s1(useCart, "b9L3QQ+jgeyIrH0NfHrJ8nn7VMU=");
+var _c;
+__turbopack_context__.k.register(_c, "CartProvider");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/contexts/WishlistContext.tsx [client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "WishlistProvider",
+    ()=>WishlistProvider,
+    "useWishlist",
+    ()=>useWishlist
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/index.js [client] (ecmascript)");
+;
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
+"use client";
+;
+const WishlistContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["createContext"])(undefined);
+const WishlistProvider = ({ children })=>{
+    _s();
+    const [wishlistItems, setWishlistItems] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])({
+        "WishlistProvider.useState": ()=>{
+            // Эта логика теперь безопасна, так как компонент рендерится только на клиенте
+            try {
+                const item = window.localStorage.getItem('aura_wishlist');
+                return item ? JSON.parse(item) : [];
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+    }["WishlistProvider.useState"]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "WishlistProvider.useEffect": ()=>{
+            try {
+                window.localStorage.setItem('aura_wishlist', JSON.stringify(wishlistItems));
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    }["WishlistProvider.useEffect"], [
+        wishlistItems
+    ]);
+    const addToWishlist = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "WishlistProvider.useCallback[addToWishlist]": (id)=>{
+            setWishlistItems({
+                "WishlistProvider.useCallback[addToWishlist]": (prev)=>[
+                        ...new Set([
+                            ...prev,
+                            id
+                        ])
+                    ]
+            }["WishlistProvider.useCallback[addToWishlist]"]);
+        }
+    }["WishlistProvider.useCallback[addToWishlist]"], []);
+    const removeFromWishlist = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "WishlistProvider.useCallback[removeFromWishlist]": (id)=>{
+            setWishlistItems({
+                "WishlistProvider.useCallback[removeFromWishlist]": (prev)=>prev.filter({
+                        "WishlistProvider.useCallback[removeFromWishlist]": (itemId)=>itemId !== id
+                    }["WishlistProvider.useCallback[removeFromWishlist]"])
+            }["WishlistProvider.useCallback[removeFromWishlist]"]);
+        }
+    }["WishlistProvider.useCallback[removeFromWishlist]"], []);
+    const isInWishlist = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "WishlistProvider.useCallback[isInWishlist]": (id)=>{
+            return wishlistItems.includes(id);
+        }
+    }["WishlistProvider.useCallback[isInWishlist]"], [
+        wishlistItems
+    ]);
+    const wishlistCount = wishlistItems.length;
+    const contextValue = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "WishlistProvider.useMemo[contextValue]": ()=>({
+                wishlistItems,
+                addToWishlist,
+                removeFromWishlist,
+                isInWishlist,
+                wishlistCount
+            })
+    }["WishlistProvider.useMemo[contextValue]"], [
+        wishlistItems,
+        addToWishlist,
+        removeFromWishlist,
+        isInWishlist,
+        wishlistCount
+    ]);
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(WishlistContext.Provider, {
+        value: contextValue,
+        children: children
+    }, void 0, false, {
+        fileName: "[project]/contexts/WishlistContext.tsx",
+        lineNumber: 59,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+};
+_s(WishlistProvider, "t47D5HAiDP6ualGVY0ct8bYxwww=");
+_c = WishlistProvider;
+const useWishlist = ()=>{
+    _s1();
+    const context = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useContext"])(WishlistContext);
+    if (context === undefined) {
+        throw new Error('useWishlist must be used within a WishlistProvider');
+    }
+    return context;
+};
+_s1(useWishlist, "b9L3QQ+jgeyIrH0NfHrJ8nn7VMU=");
+var _c;
+__turbopack_context__.k.register(_c, "WishlistProvider");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/components/Icons.tsx [client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ArrowLeftIcon",
+    ()=>ArrowLeftIcon,
+    "ArrowPathIcon",
+    ()=>ArrowPathIcon,
+    "ArrowUpTrayIcon",
+    ()=>ArrowUpTrayIcon,
+    "Bars3Icon",
+    ()=>Bars3Icon,
+    "ChatBubbleLeftRightIcon",
+    ()=>ChatBubbleLeftRightIcon,
+    "CheckCircleIcon",
+    ()=>CheckCircleIcon,
+    "ChevronLeftIcon",
+    ()=>ChevronLeftIcon,
+    "ChevronRightIcon",
+    ()=>ChevronRightIcon,
+    "CubeTransparentIcon",
+    ()=>CubeTransparentIcon,
+    "HeartIcon",
+    ()=>HeartIcon,
+    "LoadingIcon",
+    ()=>LoadingIcon,
+    "MinusIcon",
+    ()=>MinusIcon,
+    "PaintBrushIcon",
+    ()=>PaintBrushIcon,
+    "PaperAirplaneIcon",
+    ()=>PaperAirplaneIcon,
+    "PencilSquareIcon",
+    ()=>PencilSquareIcon,
+    "PhotoIcon",
+    ()=>PhotoIcon,
+    "PinterestIcon",
+    ()=>PinterestIcon,
+    "PlusIcon",
+    ()=>PlusIcon,
+    "RobotIcon",
+    ()=>RobotIcon,
+    "ShoppingCartIcon",
+    ()=>ShoppingCartIcon,
+    "SlidersHorizontalIcon",
+    ()=>SlidersHorizontalIcon,
+    "SparklesIcon",
+    ()=>SparklesIcon,
+    "StarIcon",
+    ()=>StarIcon,
+    "TrashIcon",
+    ()=>TrashIcon,
+    "XMarkIcon",
+    ()=>XMarkIcon
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+;
+const HeartIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        fill: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            d: "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 9,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 8,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c = HeartIcon;
+const CubeTransparentIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9.75l-9-5.25M12 12.75l9 5.25"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 16,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 15,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c1 = CubeTransparentIcon;
+const ArrowUpTrayIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 22,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 21,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c2 = ArrowUpTrayIcon;
+const XMarkIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M6 18L18 6M6 6l12 12"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 28,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 27,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c3 = XMarkIcon;
+const SparklesIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.25l-.648-1.688a2.25 2.25 0 01-1.47-1.47l-1.688-.648 1.688-.648a2.25 2.25 0 011.47-1.47l.648-1.688.648 1.688a2.25 2.25 0 011.47 1.47l1.688.648-1.688.648a2.25 2.25 0 01-1.47 1.47z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 34,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 33,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c4 = SparklesIcon;
+const RobotIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        strokeWidth: "1.75",
+        stroke: "currentColor",
+        fill: "none",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className: className,
+        ...props,
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                stroke: "none",
+                d: "M0 0h24v24H0z",
+                fill: "none"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 50,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                d: "M7 7h10a2 2 0 0 1 2 2v1l1 1v3l-1 1v3a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-3l-1 -1v-3l1 -1v-1a2 2 0 0 1 2 -2z"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 51,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                d: "M10 16h4"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 52,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                cx: "8.5",
+                cy: "11.5",
+                r: ".5",
+                fill: "currentColor"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 53,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                cx: "15.5",
+                cy: "11.5",
+                r: ".5",
+                fill: "currentColor"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 54,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                d: "M9 7l-1 -4"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 55,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                d: "M15 7l1 -4"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 56,
+                columnNumber: 5
+            }, ("TURBOPACK compile-time value", void 0))
+        ]
+    }, void 0, true, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 39,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c5 = RobotIcon;
+const SlidersHorizontalIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 62,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 61,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c6 = SlidersHorizontalIcon;
+const TrashIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 68,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 67,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c7 = TrashIcon;
+const PlusIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M12 4.5v15m7.5-7.5h-15"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 74,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 73,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c8 = PlusIcon;
+const MinusIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M19.5 12h-15"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 80,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 79,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c9 = MinusIcon;
+const ArrowLeftIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 86,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 85,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c10 = ArrowLeftIcon;
+const PaintBrushIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.622-3.385m0 0a3 3 0 10-5.78-1.128 2.25 2.25 0 012.4-2.245 4.5 4.5 0 00-8.4 2.245c0 .399.078.78.22 1.128m0 0V21m3.388-16.121a15.998 15.998 0 00-3.388-1.62m-5.043-.025a15.998 15.998 0 01-1.622-3.385m5.043.025a15.998 15.998 0 00-1.622-3.385m3.388 1.62a15.998 15.998 0 00-1.622-3.385"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 92,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 91,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c11 = PaintBrushIcon;
+const ChevronLeftIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M15.75 19.5L8.25 12l7.5-7.5"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 98,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 97,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c12 = ChevronLeftIcon;
+const ChevronRightIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M8.25 4.5l7.5 7.5-7.5 7.5"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 104,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 103,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c13 = ChevronRightIcon;
+const StarIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        fill: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            fillRule: "evenodd",
+            d: "M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z",
+            clipRule: "evenodd"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 110,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 109,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c14 = StarIcon;
+const PhotoIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 116,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 115,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c15 = PhotoIcon;
+const ArrowPathIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-11.664 0l3.181 3.183m0 0l-3.181-3.183"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 122,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 121,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c16 = ArrowPathIcon;
+const PaperAirplaneIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 128,
+            columnNumber: 5
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 127,
+        columnNumber: 3
+    }, ("TURBOPACK compile-time value", void 0));
+_c17 = PaperAirplaneIcon;
+const PencilSquareIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 134,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 133,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c18 = PencilSquareIcon;
+const CheckCircleIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 140,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 139,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c19 = CheckCircleIcon;
+const ChatBubbleLeftRightIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72 3.72a1.05 1.05 0 01-1.485 0l-3.72-3.72A2.1 2.1 0 014.5 17.097V12.811c0-.97.616-1.813 1.5-2.097m6.525 0l3.72-3.72a1.05 1.05 0 011.485 0l3.72 3.72a2.1 2.1 0 011.98 2.193v4.286c0 .414-.158.812-.44 1.125l-1.558 1.558a1.05 1.05 0 01-1.485 0l-1.558-1.558c-.282-.282-.44-.68-.44-1.125V12.811a2.1 2.1 0 012.1-2.1h.375m-6.525 0h.375m-6.525 0l-3.72-3.72a1.05 1.05 0 00-1.485 0l-3.72 3.72A2.1 2.1 0 003 12.811v4.286c0 .414.158.812.44 1.125l1.558 1.558a1.05 1.05 0 001.485 0l1.558-1.558c.282-.282-.44-.68.44-1.125V12.81a2.1 2.1 0 00-2.1-2.1h-.375m6.525 0h-.375"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 146,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 145,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c20 = ChatBubbleLeftRightIcon;
+const ShoppingCartIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        fill: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            d: "M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 152,
+            columnNumber: 7
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 151,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c21 = ShoppingCartIcon;
+const Bars3Icon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24",
+        strokeWidth: 1.75,
+        stroke: "currentColor",
+        className: className,
+        ...props,
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 159,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 158,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c22 = Bars3Icon;
+const PinterestIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        className: className,
+        ...props,
+        viewBox: "0 0 24 24",
+        fill: "currentColor",
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+            d: "M12 0C5.373 0 0 5.373 0 12c0 5.103 3.213 9.422 7.625 11.013.013-.438-.03-.837-.05-1.225-.05-.4-.3-1.625-.3-1.625s-.1-.4-.1-.975c0-.913.538-1.6 1.213-1.6.575 0 .85.438.85.963 0 .587-.375 1.462-.563 2.275-.15 1.35 1.163 2.45 2.513 2.45 2.988 0 5.063-3.15 5.063-6.413 0-3.3-2.363-5.612-5.713-5.612-3.837 0-6.025 2.862-6.025 5.762 0 .688.263 1.425.6 1.825.075.088.088.163.063.263-.025.125-.088.337-.113.437-.025.113-.088.138-.213.088-1.213-.488-2-1.938-2-3.337 0-2.613 2.388-5.337 6.488-5.337 3.537 0 6.263 2.513 6.263 6.013 0 3.662-2.213 6.55-5.3 6.55-1.025 0-2-.525-2.338-1.125 0 0-.513 2.038-.638 2.538-.175.762-.525 1.587-.788 2.112C10.013 23.8 11.013 24 12 24c6.625 0 12-5.375 12-12S18.625 0 12 0z"
+        }, void 0, false, {
+            fileName: "[project]/components/Icons.tsx",
+            lineNumber: 165,
+            columnNumber: 9
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 164,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c23 = PinterestIcon;
+const LoadingIcon = ({ className, ...props })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+        fill: "none",
+        viewBox: "0 0 24 24",
+        className: className,
+        ...props,
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                className: "opacity-25",
+                cx: "12",
+                cy: "12",
+                r: "10",
+                stroke: "currentColor",
+                strokeWidth: "2.5"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 171,
+                columnNumber: 9
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                className: "opacity-75",
+                d: "M4 12a8 8 0 018-8",
+                stroke: "currentColor",
+                strokeWidth: "2.5",
+                strokeLinecap: "round"
+            }, void 0, false, {
+                fileName: "[project]/components/Icons.tsx",
+                lineNumber: 172,
+                columnNumber: 9
+            }, ("TURBOPACK compile-time value", void 0))
+        ]
+    }, void 0, true, {
+        fileName: "[project]/components/Icons.tsx",
+        lineNumber: 170,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+_c24 = LoadingIcon;
+var _c, _c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c10, _c11, _c12, _c13, _c14, _c15, _c16, _c17, _c18, _c19, _c20, _c21, _c22, _c23, _c24;
+__turbopack_context__.k.register(_c, "HeartIcon");
+__turbopack_context__.k.register(_c1, "CubeTransparentIcon");
+__turbopack_context__.k.register(_c2, "ArrowUpTrayIcon");
+__turbopack_context__.k.register(_c3, "XMarkIcon");
+__turbopack_context__.k.register(_c4, "SparklesIcon");
+__turbopack_context__.k.register(_c5, "RobotIcon");
+__turbopack_context__.k.register(_c6, "SlidersHorizontalIcon");
+__turbopack_context__.k.register(_c7, "TrashIcon");
+__turbopack_context__.k.register(_c8, "PlusIcon");
+__turbopack_context__.k.register(_c9, "MinusIcon");
+__turbopack_context__.k.register(_c10, "ArrowLeftIcon");
+__turbopack_context__.k.register(_c11, "PaintBrushIcon");
+__turbopack_context__.k.register(_c12, "ChevronLeftIcon");
+__turbopack_context__.k.register(_c13, "ChevronRightIcon");
+__turbopack_context__.k.register(_c14, "StarIcon");
+__turbopack_context__.k.register(_c15, "PhotoIcon");
+__turbopack_context__.k.register(_c16, "ArrowPathIcon");
+__turbopack_context__.k.register(_c17, "PaperAirplaneIcon");
+__turbopack_context__.k.register(_c18, "PencilSquareIcon");
+__turbopack_context__.k.register(_c19, "CheckCircleIcon");
+__turbopack_context__.k.register(_c20, "ChatBubbleLeftRightIcon");
+__turbopack_context__.k.register(_c21, "ShoppingCartIcon");
+__turbopack_context__.k.register(_c22, "Bars3Icon");
+__turbopack_context__.k.register(_c23, "PinterestIcon");
+__turbopack_context__.k.register(_c24, "LoadingIcon");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/components/ToastContainer.tsx [client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ToastContainer",
+    ()=>ToastContainer
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/index.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/ToastContext.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Icons.tsx [client] (ecmascript)");
+;
+var _s = __turbopack_context__.k.signature();
+;
+;
+;
+const ToastContainer = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["memo"])(_c = _s(()=>{
+    _s();
+    const { toasts } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"])();
+    if (toasts.length === 0) {
+        return null;
+    }
+    const iconMap = {
+        success: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["CheckCircleIcon"], {
+            className: "w-6 h-6 text-green-500"
+        }, void 0, false, {
+            fileName: "[project]/components/ToastContainer.tsx",
+            lineNumber: 13,
+            columnNumber: 14
+        }, ("TURBOPACK compile-time value", void 0)),
+        error: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["XMarkIcon"], {
+            className: "w-6 h-6 text-red-500"
+        }, void 0, false, {
+            fileName: "[project]/components/ToastContainer.tsx",
+            lineNumber: 14,
+            columnNumber: 12
+        }, ("TURBOPACK compile-time value", void 0)),
+        info: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["CheckCircleIcon"], {
+            className: "w-6 h-6 text-blue-500"
+        }, void 0, false, {
+            fileName: "[project]/components/ToastContainer.tsx",
+            lineNumber: 15,
+            columnNumber: 11
+        }, ("TURBOPACK compile-time value", void 0))
+    };
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "fixed top-24 right-6 z-50 space-y-3 w-full max-w-sm",
+        children: toasts.map((toast)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-white rounded-lg shadow-2xl p-4 flex items-start gap-3 animate-fade-in-right",
+                role: "alert",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex-shrink-0",
+                        children: iconMap[toast.type]
+                    }, void 0, false, {
+                        fileName: "[project]/components/ToastContainer.tsx",
+                        lineNumber: 26,
+                        columnNumber: 11
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "flex-grow text-brand-charcoal font-medium",
+                        children: toast.message
+                    }, void 0, false, {
+                        fileName: "[project]/components/ToastContainer.tsx",
+                        lineNumber: 29,
+                        columnNumber: 11
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, toast.id, true, {
+                fileName: "[project]/components/ToastContainer.tsx",
+                lineNumber: 21,
+                columnNumber: 9
+            }, ("TURBOPACK compile-time value", void 0)))
+    }, void 0, false, {
+        fileName: "[project]/components/ToastContainer.tsx",
+        lineNumber: 19,
+        columnNumber: 5
+    }, ("TURBOPACK compile-time value", void 0));
+}, "1YTCnXrq2qRowe0H/LBWLjtXoYc=", false, function() {
+    return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
+    ];
+})), "1YTCnXrq2qRowe0H/LBWLjtXoYc=", false, function() {
+    return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
+    ];
+});
+_c1 = ToastContainer;
+ToastContainer.displayName = 'ToastContainer';
+var _c, _c1;
+__turbopack_context__.k.register(_c, "ToastContainer$memo");
+__turbopack_context__.k.register(_c1, "ToastContainer");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/components/ClientProviders.tsx [client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ClientProviders",
+    ()=>ClientProviders
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$CartContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/CartContext.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$WishlistContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/WishlistContext.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ToastContainer$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ToastContainer.tsx [client] (ecmascript)");
+"use client";
+;
+;
+;
+;
+function ClientProviders({ children }) {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$CartContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["CartProvider"], {
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$WishlistContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["WishlistProvider"], {
+            children: [
+                children,
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ToastContainer$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["ToastContainer"], {}, void 0, false, {
+                    fileName: "[project]/components/ClientProviders.tsx",
+                    lineNumber: 17,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/components/ClientProviders.tsx",
+            lineNumber: 15,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "[project]/components/ClientProviders.tsx",
+        lineNumber: 14,
+        columnNumber: 5
+    }, this);
+}
+_c = ClientProviders;
+var _c;
+__turbopack_context__.k.register(_c, "ClientProviders");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/components/ClientProviders.tsx [client] (ecmascript, next/dynamic entry)", ((__turbopack_context__) => {
+
+__turbopack_context__.n(__turbopack_context__.i("[project]/components/ClientProviders.tsx [client] (ecmascript)"));
+}),
+]);
+
+//# sourceMappingURL=_f4f89c2a._.js.map

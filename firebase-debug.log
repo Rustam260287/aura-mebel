@@ -1,0 +1,1132 @@
+[debug] [2025-11-18T09:22:51.377Z] ----------------------------------------------------------------------
+[debug] [2025-11-18T09:22:51.380Z] Command:       /nix/store/ixbb20farqh1f4fqbmsn6b1ixn8mc8ij-nodejs-20.18.1/bin/node /home/user/.global_modules/bin/firebase deploy --project aura-mebel-7ec96
+[debug] [2025-11-18T09:22:51.380Z] CLI Version:   14.25.0
+[debug] [2025-11-18T09:22:51.380Z] Platform:      linux
+[debug] [2025-11-18T09:22:51.381Z] Node Version:  v20.18.1
+[debug] [2025-11-18T09:22:51.381Z] Time:          Tue Nov 18 2025 09:22:51 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-11-18T09:22:51.381Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-11-18T09:22:51.868Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:51.869Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:51.869Z] [iam] checking project aura-mebel-7ec96 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-11-18T09:22:51.871Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:51.871Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:51.871Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:51.872Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:51.873Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions [none]
+[debug] [2025-11-18T09:22:51.873Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:22:51.873Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-18T09:22:52.629Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions 200
+[debug] [2025-11-18T09:22:52.630Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-18T09:22:52.631Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:52.631Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:52.632Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:52.632Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:52.632Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96 [none]
+[debug] [2025-11-18T09:22:52.854Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96 200
+[debug] [2025-11-18T09:22:52.854Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96 {"projectId":"aura-mebel-7ec96","projectNumber":"149768023865","displayName":"aura-mebel","name":"projects/aura-mebel-7ec96","resources":{"hostingSite":"aura-mebel-7ec96"},"state":"ACTIVE","etag":"1_670b5de0-6013-44d3-82e1-1371df0dbf01"}
+[debug] [2025-11-18T09:22:56.176Z] defaultcredentials: no credential available.
+[debug] [2025-11-18T09:22:56.177Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:56.177Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:56.178Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:56.178Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:56.179Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites pageToken=&pageSize=10
+[debug] [2025-11-18T09:22:57.017Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites 200
+[debug] [2025-11-18T09:22:57.018Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites {"sites":[{"name":"projects/aura-mebel-7ec96/sites/aura-mebel-7ec96","defaultUrl":"https://aura-mebel-7ec96.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2025-11-18T09:22:57.019Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:57.020Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:57.020Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:57.020Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:57.020Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites 
+[debug] [2025-11-18T09:22:57.292Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites 200
+[debug] [2025-11-18T09:22:57.292Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites {"sites":[{"name":"projects/aura-mebel-7ec96/sites/aura-mebel-7ec96","defaultUrl":"https://aura-mebel-7ec96.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2025-11-18T09:22:57.293Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:57.293Z] No OAuth tokens found
+[debug] [2025-11-18T09:22:57.293Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:22:57.293Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:22:57.295Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps/-/config [none]
+[debug] [2025-11-18T09:22:57.770Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps/-/config 200
+[debug] [2025-11-18T09:22:57.770Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps/-/config {"projectId":"aura-mebel-7ec96","appId":"1:149768023865:web:7e9fbd950241375d6a02e8","storageBucket":"aura-mebel-7ec96.firebasestorage.app","apiKey":"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y","authDomain":"aura-mebel-7ec96.firebaseapp.com","messagingSenderId":"149768023865","measurementId":"G-5YG8EC89CY","projectNumber":"149768023865","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2025-11-18T09:23:06.386Z] No OAuth tokens found
+[debug] [2025-11-18T09:23:06.387Z] No OAuth tokens found
+[debug] [2025-11-18T09:23:06.387Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:23:06.387Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:23:06.387Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 [none]
+[debug] [2025-11-18T09:23:07.122Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 200
+[debug] [2025-11-18T09:23:07.123Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 {"name":"projects/aura-mebel-7ec96/sites/aura-mebel-7ec96","defaultUrl":"https://aura-mebel-7ec96.web.app","type":"DEFAULT_SITE"}
+[info]    ▲ Next.js 16.0.3 (Turbopack)
+   - Environments: .env.local
+
+
+[info]    Running TypeScript ...
+
+[info]    Creating an optimized production build ...
+
+[info]  ✓ Compiled successfully in 24.7s
+
+[info]    Collecting page data using 1 worker ...
+
+[info] Инициализация Firebase Admin SDK...
+
+[info] Firebase Admin SDK успешно инициализирован.
+
+[info]    Generating static pages using 1 worker (0/24) ...
+
+[info] Инициализация Firebase Admin SDK...
+
+[info] Firebase Admin SDK успешно инициализирован.
+
+[info]    Generating static pages using 1 worker (6/24) 
+
+[info]    Generating static pages using 1 worker (12/24) 
+
+[info]    Generating static pages using 1 worker (18/24) 
+
+[info]  ✓ Generating static pages using 1 worker (24/24) in 1778.8ms
+
+[info]    Finalizing page optimization ...
+
+[info] 
+
+[info] Route (pages)                 Revalidate  Expire
+┌ ● / (1171 ms)                       1m      1y
+├   /_app
+├ ○ /404
+├ ƒ /admin
+├ ƒ /api/blog
+├ ƒ /api/blog/[id]
+├ ƒ /api/blog/generate
+├ ƒ /api/products
+├ ƒ /api/products/[id]
+├ ● /blog (1174 ms)                   1m      1y
+├ ● /blog/[id] (3439 ms)              1m      1y
+│ ├ /blog/1 (1185 ms)
+│ ├ /blog/2 (1180 ms)
+│ └ /blog/3
+├ ○ /login (831 ms)
+├ ● /products (1173 ms)               1m      1y
+└ ● /products/[id] (2101 ms)          1m      1y
+  ├ /products/1
+  ├ /products/10
+  ├ /products/11
+  └ [+10 more paths]
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • Image Optimization
+[info]  • use of fallback /blog/[id]
+[info]  • use of fallback /products/[id]
+[info]  • use of revalidate /blog/[id]
+[info]  • use of revalidate null
+[debug] [2025-11-18T09:23:57.675Z]  • use of revalidate /products/[id]
+[debug] [2025-11-18T09:23:57.675Z]  • non-static route /admin
+[debug] [2025-11-18T09:23:57.675Z]  • non-static route /api/blog
+[debug] [2025-11-18T09:23:57.675Z]  • non-static route /api/blog/[id]
+[debug] [2025-11-18T09:23:57.675Z]  • non-static route /api/blog/generate
+[debug] [2025-11-18T09:23:57.675Z]  • non-static route /api/products
+[debug] [2025-11-18T09:23:57.676Z]  • non-static route /api/products/[id]
+[info]  • and 7 other reasons, use --debug to see more
+[info] 
+[debug] [2025-11-18T09:23:58.729Z] skipping /blog/1 due to revalidate
+[debug] [2025-11-18T09:23:58.729Z] skipping /blog/2 due to revalidate
+[debug] [2025-11-18T09:23:58.730Z] skipping /blog/3 due to revalidate
+[debug] [2025-11-18T09:23:58.730Z] skipping /blog due to revalidate
+[debug] [2025-11-18T09:23:58.730Z] skipping /products/1 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/10 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/11 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/12 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/13 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/2 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/3 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/4 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/5 due to revalidate
+[debug] [2025-11-18T09:23:58.733Z] skipping /products/6 due to revalidate
+[debug] [2025-11-18T09:23:58.735Z] skipping /products/7 due to revalidate
+[debug] [2025-11-18T09:23:58.736Z] skipping /products/8 due to revalidate
+[debug] [2025-11-18T09:23:58.737Z] skipping /products/9 due to revalidate
+[debug] [2025-11-18T09:23:58.737Z] skipping /products due to revalidate
+[debug] [2025-11-18T09:23:58.737Z] skipping / due to revalidate
+[debug] [2025-11-18T09:24:04.383Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:04.384Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:04.384Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:04.386Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:04.387Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 [none]
+[debug] [2025-11-18T09:24:05.172Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 200
+[debug] [2025-11-18T09:24:05.173Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/aura-mebel-7ec96/sites/aura-mebel-7ec96 {"name":"projects/aura-mebel-7ec96/sites/aura-mebel-7ec96","defaultUrl":"https://aura-mebel-7ec96.web.app","type":"DEFAULT_SITE"}
+[debug] [2025-11-18T09:24:57.814Z] [web frameworks] effective firebase.json:  {
+  "hosting": [
+    {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "site": "aura-mebel-7ec96",
+      "rewrites": [
+        {
+          "source": "**",
+          "function": {
+            "functionId": "ssrauramebel7ec96",
+            "region": "us-central1",
+            "pinTag": true
+          }
+        }
+      ],
+      "redirects": [],
+      "headers": [
+        {
+          "source": "**/*.[jt]s",
+          "headers": [
+            {
+              "key": "Set-Cookie",
+              "value": "__FIREBASE_DEFAULTS__=eyJjb25maWciOnsicHJvamVjdElkIjoiYXVyYS1tZWJlbC03ZWM5NiIsImFwcElkIjoiMToxNDk3NjgwMjM4NjU6d2ViOjdlOWZiZDk1MDI0MTM3NWQ2YTAyZTgiLCJzdG9yYWdlQnVja2V0IjoiYXVyYS1tZWJlbC03ZWM5Ni5maXJlYmFzZXN0b3JhZ2UuYXBwIiwiYXBpS2V5IjoiQUl6YVN5Q3FUaWV4T1R4ejd5cDBQZFN0dHZRbVRBSnpRZFpNSS1ZIiwiYXV0aERvbWFpbiI6ImF1cmEtbWViZWwtN2VjOTYuZmlyZWJhc2VhcHAuY29tIiwibWVzc2FnaW5nU2VuZGVySWQiOiIxNDk3NjgwMjM4NjUiLCJtZWFzdXJlbWVudElkIjoiRy01WUc4RUM4OUNZIiwicHJvamVjdE51bWJlciI6IjE0OTc2ODAyMzg2NSIsInZlcnNpb24iOiIyIn0sIl9hdXRoVG9rZW5TeW5jVVJMIjoiL19fc2Vzc2lvbiJ9; SameSite=Strict; Expires=2027-10-13T20:04:57.813Z; Path=/;"
+            }
+          ]
+        }
+      ],
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "public": ".firebase/aura-mebel-7ec96/hosting",
+      "webFramework": "next_ssr"
+    }
+  ],
+  "functions": [
+    {
+      "source": ".firebase/aura-mebel-7ec96/functions",
+      "codebase": "firebase-frameworks-aura-mebel-7ec96"
+    }
+  ]
+}
+[debug] [2025-11-18T09:24:57.816Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:57.817Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:57.817Z] [iam] checking project aura-mebel-7ec96 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-11-18T09:24:57.821Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:57.822Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:57.822Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:57.822Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:57.823Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions [none]
+[debug] [2025-11-18T09:24:57.824Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:57.824Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-11-18T09:24:58.454Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions 200
+[debug] [2025-11-18T09:24:58.454Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'aura-mebel-7ec96'...
+[info] 
+[info] i  deploying functions, firestore, hosting 
+[debug] [2025-11-18T09:24:58.470Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.470Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.470Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:58.473Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:58.473Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 [none]
+[debug] [2025-11-18T09:24:58.686Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 200
+[debug] [2025-11-18T09:24:58.689Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 {"projectNumber":"149768023865","projectId":"aura-mebel-7ec96","lifecycleState":"ACTIVE","name":"aura-mebel","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-11-01T10:46:24.187079Z"}
+[info] i  functions: preparing codebase firebase-frameworks-aura-mebel-7ec96 for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[debug] [2025-11-18T09:24:58.700Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.700Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.700Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:58.700Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:58.701Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.701Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.701Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:58.701Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2025-11-18T09:24:58.702Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.703Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.703Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:58.703Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-11-18T09:24:58.704Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.704Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:58.704Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:58.704Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:58.704Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-18T09:24:58.704Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:58.708Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/runtimeconfig.googleapis.com [none]
+[debug] [2025-11-18T09:24:58.709Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:58.713Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudbuild.googleapis.com [none]
+[debug] [2025-11-18T09:24:58.713Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudbuild.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:58.716Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/artifactregistry.googleapis.com [none]
+[debug] [2025-11-18T09:24:58.716Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/artifactregistry.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:59.510Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-18T09:24:59.510Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API cloudfunctions.googleapis.com. Enabling now... 
+[debug] [2025-11-18T09:24:59.513Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:59.513Z] No OAuth tokens found
+[debug] [2025-11-18T09:24:59.513Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:24:59.514Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:24:59.514Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com:enable [none]
+[debug] [2025-11-18T09:24:59.514Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com:enable x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:24:59.529Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/runtimeconfig.googleapis.com 200
+[debug] [2025-11-18T09:24:59.530Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2025-11-18T09:24:59.553Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudbuild.googleapis.com 200
+[debug] [2025-11-18T09:24:59.557Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudbuild.googleapis.com [omitted]
+[info] ✔  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2025-11-18T09:24:59.574Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/artifactregistry.googleapis.com 200
+[debug] [2025-11-18T09:24:59.574Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/artifactregistry.googleapis.com [omitted]
+[info] ✔  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2025-11-18T09:25:00.495Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com:enable 200
+[debug] [2025-11-18T09:25:00.495Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/cloudfunctions.googleapis.com:enable [omitted]
+[debug] [2025-11-18T09:25:10.505Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:10.505Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:10.505Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:10.505Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:10.506Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/adminSdkConfig [none]
+[debug] [2025-11-18T09:25:10.990Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/adminSdkConfig 200
+[debug] [2025-11-18T09:25:10.990Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/adminSdkConfig {"projectId":"aura-mebel-7ec96","storageBucket":"aura-mebel-7ec96.firebasestorage.app"}
+[debug] [2025-11-18T09:25:10.992Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:10.992Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:10.993Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:10.993Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:10.993Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/aura-mebel-7ec96/configs [none]
+[debug] [2025-11-18T09:25:11.191Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/aura-mebel-7ec96/configs 200
+[debug] [2025-11-18T09:25:11.191Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/aura-mebel-7ec96/configs {}
+[debug] [2025-11-18T09:25:11.196Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-11-18T09:25:11.979Z] > [functions] package.json contents: {
+  "name": "aura-мебель",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.5.0",
+    "firebase-admin": "^13.6.0",
+    "next": "^16.0.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sharp": "^0.32 || ^0.33",
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "server.js"
+}
+[debug] [2025-11-18T09:25:11.979Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase firebase-frameworks-aura-mebel-7ec96 to determine what to deploy 
+[debug] [2025-11-18T09:25:11.983Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-11-18T09:25:11.995Z] Found firebase-functions binary at '/home/user/aura-mebel/.firebase/aura-mebel-7ec96/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8732
+
+[debug] [2025-11-18T09:25:12.546Z] Got response from /__/functions.yaml {"endpoints":{"ssrauramebel7ec96":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"ssrauramebel7ec96"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:16.631Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:16.631Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:16.631Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:16.631Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:16.634Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com [none]
+[debug] [2025-11-18T09:25:16.634Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:25:17.396Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com 200
+[debug] [2025-11-18T09:25:17.397Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com [omitted]
+[warn] ⚠  extensions: missing required API firebaseextensions.googleapis.com. Enabling now... 
+[debug] [2025-11-18T09:25:17.398Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:17.398Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:17.399Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:17.399Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:17.399Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com:enable [none]
+[debug] [2025-11-18T09:25:17.399Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com:enable x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:25:18.546Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com:enable 200
+[debug] [2025-11-18T09:25:18.547Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseextensions.googleapis.com:enable [omitted]
+[debug] [2025-11-18T09:25:28.556Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:28.556Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:28.556Z] [iam] checking project aura-mebel-7ec96 for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2025-11-18T09:25:28.557Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:28.558Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:28.558Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:28.558Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:28.558Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions [none]
+[debug] [2025-11-18T09:25:28.559Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:25:28.559Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-11-18T09:25:29.162Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions 200
+[debug] [2025-11-18T09:25:29.162Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-11-18T09:25:29.163Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:29.163Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:29.163Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:29.164Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:29.167Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/aura-mebel-7ec96/instances pageSize=100&pageToken=
+[debug] [2025-11-18T09:25:31.225Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/aura-mebel-7ec96/instances 200
+[debug] [2025-11-18T09:25:31.226Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/aura-mebel-7ec96/instances {}
+[info] i  functions: Loaded environment variables from .env. 
+[info] i  functions: preparing .firebase/aura-mebel-7ec96/functions directory for uploading... 
+[info] i  functions: packaged /home/user/aura-mebel/.firebase/aura-mebel-7ec96/functions (16.32 MB) for uploading 
+[debug] [2025-11-18T09:25:35.617Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:35.617Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:35.617Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:35.618Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:35.618Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/aura-mebel-7ec96/locations/-/functions [none]
+[debug] [2025-11-18T09:25:36.163Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/aura-mebel-7ec96/locations/-/functions 200
+[debug] [2025-11-18T09:25:36.166Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/aura-mebel-7ec96/locations/-/functions {}
+[debug] [2025-11-18T09:25:36.168Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:36.169Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:36.169Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:36.169Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:36.170Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2025-11-18T09:25:37.087Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/-/functions 200
+[debug] [2025-11-18T09:25:37.089Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/-/functions {}
+[info] i  functions: ensuring required API run.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:37.094Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.094Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.094Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:37.094Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:37.096Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.096Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.096Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:37.096Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:37.097Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.097Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.097Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:37.097Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  functions: ensuring required API storage.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:37.098Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.098Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.098Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:37.100Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:37.101Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/run.googleapis.com [none]
+[debug] [2025-11-18T09:25:37.101Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/run.googleapis.com x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:37.104Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com [none]
+[debug] [2025-11-18T09:25:37.104Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:37.106Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/pubsub.googleapis.com [none]
+[debug] [2025-11-18T09:25:37.106Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/pubsub.googleapis.com x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:37.108Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/storage.googleapis.com [none]
+[debug] [2025-11-18T09:25:37.109Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/storage.googleapis.com x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:37.893Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/run.googleapis.com 200
+[debug] [2025-11-18T09:25:37.894Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/run.googleapis.com [omitted]
+[info] ✔  functions: required API run.googleapis.com is enabled 
+[debug] [2025-11-18T09:25:37.946Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com 200
+[debug] [2025-11-18T09:25:37.952Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API eventarc.googleapis.com. Enabling now... 
+[debug] [2025-11-18T09:25:37.956Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.956Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:37.957Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:37.957Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:37.957Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com:enable [none]
+[debug] [2025-11-18T09:25:37.957Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com:enable x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:37.970Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/pubsub.googleapis.com 200
+[debug] [2025-11-18T09:25:37.971Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/pubsub.googleapis.com [omitted]
+[info] ✔  functions: required API pubsub.googleapis.com is enabled 
+[debug] [2025-11-18T09:25:37.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/storage.googleapis.com 200
+[debug] [2025-11-18T09:25:37.991Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/149768023865/services/storage.googleapis.com [omitted]
+[info] ✔  functions: required API storage.googleapis.com is enabled 
+[debug] [2025-11-18T09:25:38.700Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com:enable 200
+[debug] [2025-11-18T09:25:38.701Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/149768023865/services/eventarc.googleapis.com:enable [omitted]
+[info] i  functions: generating the service identity for pubsub.googleapis.com... 
+[debug] [2025-11-18T09:25:48.721Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:48.721Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:48.721Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:48.722Z] > authorizing via signed-in user (amin8914@gmail.com)
+[info] i  functions: generating the service identity for eventarc.googleapis.com... 
+[debug] [2025-11-18T09:25:48.724Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:48.724Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:48.727Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:48.727Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:48.728Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[debug] [2025-11-18T09:25:48.728Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/pubsub.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:48.728Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/pubsub.googleapis.com:generateServiceIdentity {}
+[debug] [2025-11-18T09:25:48.738Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[debug] [2025-11-18T09:25:48.739Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/eventarc.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/149768023865
+[debug] [2025-11-18T09:25:48.740Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/eventarc.googleapis.com:generateServiceIdentity {}
+[debug] [2025-11-18T09:25:49.718Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/pubsub.googleapis.com:generateServiceIdentity 200
+[debug] [2025-11-18T09:25:49.719Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-149768023865@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"110851798120646641424"}}
+[debug] [2025-11-18T09:25:49.742Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/eventarc.googleapis.com:generateServiceIdentity 200
+[debug] [2025-11-18T09:25:49.742Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/149768023865/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-149768023865@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"115498577927792195620"}}
+[debug] [2025-11-18T09:25:49.761Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:49.766Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:49.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:49.766Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:49.767Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 [none]
+[debug] [2025-11-18T09:25:50.420Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 200
+[debug] [2025-11-18T09:25:50.421Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96 {"projectNumber":"149768023865","projectId":"aura-mebel-7ec96","lifecycleState":"ACTIVE","name":"aura-mebel","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-11-01T10:46:24.187079Z"}
+[debug] [2025-11-18T09:25:50.422Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:50.422Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:50.422Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:50.426Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:50.426Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/149768023865 [none]
+[debug] [2025-11-18T09:25:50.706Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/149768023865 200
+[debug] [2025-11-18T09:25:50.706Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/149768023865 {"kind":"compute#project","id":"2387969130662344600","creationTimestamp":"2025-11-14T11:56:40.600-08:00","name":"aura-mebel-7ec96","commonInstanceMetadata":{"kind":"compute#metadata","fingerprint":"mVW_bsC8qgQ="},"quotas":[{"metric":"SNAPSHOTS","limit":1000,"usage":0},{"metric":"NETWORKS","limit":5,"usage":1},{"metric":"FIREWALLS","limit":100,"usage":4},{"metric":"IMAGES","limit":100,"usage":0},{"metric":"STATIC_ADDRESSES","limit":8,"usage":0},{"metric":"ROUTES","limit":200,"usage":0},{"metric":"FORWARDING_RULES","limit":15,"usage":0},{"metric":"TARGET_POOLS","limit":50,"usage":0},{"metric":"HEALTH_CHECKS","limit":75,"usage":0},{"metric":"IN_USE_ADDRESSES","limit":4,"usage":0},{"metric":"TARGET_INSTANCES","limit":50,"usage":0},{"metric":"TARGET_HTTP_PROXIES","limit":10,"usage":0},{"metric":"URL_MAPS","limit":10,"usage":0},{"metric":"BACKEND_SERVICES","limit":50,"usage":0},{"metric":"INSTANCE_TEMPLATES","limit":100,"usage":0},{"metric":"TARGET_VPN_GATEWAYS","limit":5,"usage":0},{"metric":"VPN_TUNNELS","limit":10,"usage":0},{"metric":"BACKEND_BUCKETS","limit":3,"usage":0},{"metric":"ROUTERS","limit":10,"usage":0},{"metric":"TARGET_SSL_PROXIES","limit":10,"usage":0},{"metric":"TARGET_HTTPS_PROXIES","limit":10,"usage":0},{"metric":"SSL_CERTIFICATES","limit":10,"usage":0},{"metric":"SUBNETWORKS","limit":100,"usage":0},{"metric":"TARGET_TCP_PROXIES","limit":10,"usage":0},{"metric":"CPUS_ALL_REGIONS","limit":12,"usage":0},{"metric":"SECURITY_POLICIES","limit":0,"usage":0},{"metric":"SECURITY_POLICY_RULES","limit":0,"usage":0},{"metric":"XPN_SERVICE_PROJECTS","limit":1000,"usage":0},{"metric":"PACKET_MIRRORINGS","limit":20,"usage":0},{"metric":"NETWORK_ENDPOINT_GROUPS","limit":100,"usage":0},{"metric":"INTERCONNECTS","limit":6,"usage":0},{"metric":"SSL_POLICIES","limit":10,"usage":0},{"metric":"GLOBAL_INTERNAL_ADDRESSES","limit":5000,"usage":0},{"metric":"VPN_GATEWAYS","limit":5,"usage":0},{"metric":"MACHINE_IMAGES","limit":100,"usage":0},{"metric":"SECURITY_POLICY_CEVAL_RULES","limit":0,"usage":0},{"metric":"GPUS_ALL_REGIONS","limit":0,"usage":0},{"metric":"EXTERNAL_VPN_GATEWAYS","limit":5,"usage":0},{"metric":"PUBLIC_ADVERTISED_PREFIXES","limit":1,"usage":0},{"metric":"PUBLIC_DELEGATED_PREFIXES","limit":10,"usage":0},{"metric":"STATIC_BYOIP_ADDRESSES","limit":128,"usage":0},{"metric":"NETWORK_FIREWALL_POLICIES","limit":10,"usage":0},{"metric":"INTERNAL_TRAFFIC_DIRECTOR_FORWARDING_RULES","limit":15,"usage":0},{"metric":"GLOBAL_EXTERNAL_MANAGED_FORWARDING_RULES","limit":15,"usage":0},{"metric":"GLOBAL_INTERNAL_MANAGED_BACKEND_SERVICES","limit":50,"usage":0},{"metric":"GLOBAL_EXTERNAL_MANAGED_BACKEND_SERVICES","limit":50,"usage":0},{"metric":"GLOBAL_EXTERNAL_PROXY_LB_BACKEND_SERVICES","limit":50,"usage":0},{"metric":"GLOBAL_INTERNAL_TRAFFIC_DIRECTOR_BACKEND_SERVICES","limit":100,"usage":0}],"selfLink":"https://www.googleapis.com/compute/v1/projects/aura-mebel-7ec96","defaultServiceAccount":"149768023865-compute@developer.gserviceaccount.com","xpnProjectStatus":"UNSPECIFIED_XPN_PROJECT_STATUS","defaultNetworkTier":"PREMIUM","vmDnsSetting":"ZONAL_ONLY","cloudArmorTier":"CA_STANDARD"}
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:50.709Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:50.709Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:50.709Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:50.709Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:50.710Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firestore.googleapis.com [none]
+[debug] [2025-11-18T09:25:50.710Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firestore.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:25:51.455Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firestore.googleapis.com 200
+[debug] [2025-11-18T09:25:51.456Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firestore.googleapis.com [omitted]
+[info] ✔  firestore: required API firestore.googleapis.com is enabled 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2025-11-18T09:25:51.467Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:51.467Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:51.467Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:51.468Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:51.468Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/aura-mebel-7ec96/databases/(default) [none]
+[debug] [2025-11-18T09:25:51.686Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/aura-mebel-7ec96/databases/(default) 200
+[debug] [2025-11-18T09:25:51.686Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/aura-mebel-7ec96/databases/(default) {"name":"projects/aura-mebel-7ec96/databases/(default)","uid":"d64812f8-d859-46f9-8d27-3e3fd7c5b0dd","createTime":"2025-11-01T10:47:43.022467Z","updateTime":"2025-11-01T10:47:43.022467Z","locationId":"europe-west4","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2025-11-18T08:25:51.679358Z","appEngineIntegrationMode":"DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IJKCpeaw+5ADMN6JlN3G8pAD"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2025-11-18T09:25:51.691Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:51.691Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:51.691Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:51.691Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:51.693Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96:test [none]
+[debug] [2025-11-18T09:25:51.693Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96:test [omitted]
+[debug] [2025-11-18T09:25:52.345Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96:test 200
+[debug] [2025-11-18T09:25:52.345Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96:test {}
+[info] ✔  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2025-11-18T09:25:52.349Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:52.349Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:52.349Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:52.350Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:52.350Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/aura-mebel-7ec96/versions [none]
+[debug] [2025-11-18T09:25:52.350Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/aura-mebel-7ec96/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase--project-idx","firebase-web-framework":"next_ssr"}}
+[debug] [2025-11-18T09:25:53.772Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/aura-mebel-7ec96/versions 200
+[debug] [2025-11-18T09:25:53.772Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/aura-mebel-7ec96/versions {"name":"projects/149768023865/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-web-framework":"next_ssr"}}
+[debug] [2025-11-18T09:25:53.774Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:53.774Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:53.774Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:53.774Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:53.777Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-11-18T09:25:54.078Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-11-18T09:25:54.079Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/014277-8B5F1F-6B2C47","billingEnabled":true}
+[debug] [2025-11-18T09:25:54.083Z] [functions] found 1 new HTTP functions, testing setIamPolicy permission...
+[debug] [2025-11-18T09:25:54.084Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:54.084Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:54.084Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:54.086Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:54.086Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions [none]
+[debug] [2025-11-18T09:25:54.086Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-11-18T09:25:54.086Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["cloudfunctions.functions.setIamPolicy"]}
+[debug] [2025-11-18T09:25:54.223Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions 200
+[debug] [2025-11-18T09:25:54.223Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/aura-mebel-7ec96:testIamPermissions {"permissions":["cloudfunctions.functions.setIamPolicy"]}
+[debug] [2025-11-18T09:25:54.223Z] [functions] found setIamPolicy permission, proceeding with deploy
+[debug] [2025-11-18T09:25:54.227Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:54.228Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:54.228Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:54.228Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:54.228Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2025-11-18T09:25:56.243Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2025-11-18T09:25:56.243Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com/0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip?GoogleAccessId=service-149768023865@gcf-admin-robot.iam.gserviceaccount.com&Expires=1763459756&Signature=iZFUWN71QBD2XeWR0t902dOirrFX3d0qM9f982k%2FvH8DyDZKvnsQZhyL5iYb13ztRAVlnxGi9bOXhrbSYwHhSYnqBJvCaqB%2Bow5OEj0%2Ftgl0ckAlSOIw99sc5ySaNOz44HsedVvZ65I3SWt%2FXFceTgnPs1oNY7vC3BMA2eHu4CRaHlchB9hmLdcxzBvn2%2FDcuHuVTtx%2BKARgp3nZZGxvROMXZKeToC5x3%2FJigqJdIxs9M75HiOMHuCWisT2Kt%2FSyC%2BUuk8YVEJovX%2FH2DCSXX46E9OFFrSPt8cdmIPxdXVbthFzH6R%2FykR5atZM%2BtIACUNJ9yu7hkN9yvn6QECBPHw%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com","object":"0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip"}}
+[debug] [2025-11-18T09:25:56.247Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com/0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip GoogleAccessId=service-149768023865%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1763459756&Signature=iZFUWN71QBD2XeWR0t902dOirrFX3d0qM9f982k%2FvH8DyDZKvnsQZhyL5iYb13ztRAVlnxGi9bOXhrbSYwHhSYnqBJvCaqB%2Bow5OEj0%2Ftgl0ckAlSOIw99sc5ySaNOz44HsedVvZ65I3SWt%2FXFceTgnPs1oNY7vC3BMA2eHu4CRaHlchB9hmLdcxzBvn2%2FDcuHuVTtx%2BKARgp3nZZGxvROMXZKeToC5x3%2FJigqJdIxs9M75HiOMHuCWisT2Kt%2FSyC%2BUuk8YVEJovX%2FH2DCSXX46E9OFFrSPt8cdmIPxdXVbthFzH6R%2FykR5atZM%2BtIACUNJ9yu7hkN9yvn6QECBPHw%3D%3D
+[debug] [2025-11-18T09:25:56.247Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com/0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip [stream]
+[debug] [2025-11-18T09:25:58.374Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com/0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip 200
+[debug] [2025-11-18T09:25:58.374Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com/0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip [omitted]
+[info] ✔  functions: .firebase/aura-mebel-7ec96/functions source uploaded successfully 
+[debug] [2025-11-18T09:25:58.376Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.377Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.377Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:58.377Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:58.377Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/releases pageSize=10&pageToken=
+[debug] [2025-11-18T09:25:58.685Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/releases 200
+[debug] [2025-11-18T09:25:58.686Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/releases {"releases":[{"name":"projects/aura-mebel-7ec96/releases/cloud.firestore","rulesetName":"projects/aura-mebel-7ec96/rulesets/6993575a-4c79-429e-b969-244207d3618f","createTime":"2025-11-01T17:15:25.965069Z","updateTime":"2025-11-10T18:11:14.984992Z"},{"name":"projects/aura-mebel-7ec96/releases/firebase.storage/aura-mebel-7ec96.firebasestorage.app","rulesetName":"projects/aura-mebel-7ec96/rulesets/3aed9937-997d-4ada-a795-7dd122f8c411","createTime":"2025-11-12T18:49:38.698656Z","updateTime":"2025-11-14T17:55:40.753911Z"}]}
+[debug] [2025-11-18T09:25:58.707Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.707Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.707Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:58.708Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:58.708Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets/6993575a-4c79-429e-b969-244207d3618f [none]
+[debug] [2025-11-18T09:25:58.866Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets/6993575a-4c79-429e-b969-244207d3618f 200
+[debug] [2025-11-18T09:25:58.866Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets/6993575a-4c79-429e-b969-244207d3618f [omitted]
+[info] i  firestore: uploading rules firestore.rules... 
+[debug] [2025-11-18T09:25:58.869Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.869Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:58.869Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:58.870Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:58.870Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets [none]
+[debug] [2025-11-18T09:25:58.870Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets [omitted]
+[debug] [2025-11-18T09:25:59.668Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets 200
+[debug] [2025-11-18T09:25:59.669Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/aura-mebel-7ec96/rulesets {"name":"projects/aura-mebel-7ec96/rulesets/7deb82a2-9d6a-4670-86a9-67d5d5010b0b","source":{"files":[{"content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n\n    // Products can be read by anyone, but only written by authenticated users (admins).\n    match /products/{productId} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n\n    // Blog posts can be read by anyone, but only written by authenticated users (admins).\n    match /blog/{postId} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n\n    // User-specific data (like carts, wishlists) should be protected.\n    // This is a placeholder - you would refine this based on your user data structure.\n    match /users/{userId}/{document=**} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}\n","name":"firestore.rules"}]},"createTime":"2025-11-18T09:25:59.591695Z","metadata":{"services":["cloud.firestore"]}}
+[debug] [2025-11-18T09:25:59.669Z] [rules] created ruleset projects/aura-mebel-7ec96/rulesets/7deb82a2-9d6a-4670-86a9-67d5d5010b0b
+[info] i  firestore: deploying indexes... 
+[info] i  hosting[aura-mebel-7ec96]: beginning deploy... 
+[info] i  hosting[aura-mebel-7ec96]: found 49 files in .firebase/aura-mebel-7ec96/hosting 
+[debug] [2025-11-18T09:25:59.703Z] [hosting] uploading with 200 concurrency
+[debug] [2025-11-18T09:25:59.705Z] [hosting] hash cache [LmZpcmViYXNlL2F1cmEtbWViZWwtN2VjOTYvaG9zdGluZw] not populated
+[debug] [2025-11-18T09:25:59.970Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:59.973Z] No OAuth tokens found
+[debug] [2025-11-18T09:25:59.973Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:25:59.973Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:25:59.978Z] [hosting] hash cache [LmZpcmViYXNlL2F1cmEtbWViZWwtN2VjOTYvaG9zdGluZw] stored for 49 files
+[debug] [2025-11-18T09:25:59.978Z] [hosting][hash queue][FINAL] {"max":250,"min":72,"avg":99.93877551020408,"active":0,"complete":49,"success":49,"errored":0,"retried":0,"total":49,"elapsed":270}
+[debug] [2025-11-18T09:25:59.979Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/149768023865/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb:populateFiles [none]
+[debug] [2025-11-18T09:25:59.979Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/149768023865/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb:populateFiles {"files":{"/login.html":"a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7","/404.html":"4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560","/_next/static/chunks/turbopack-d0f1b141960d92d3.js":"169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a","/_next/static/chunks/turbopack-c5f5c30e8f8f9c20.js":"33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f","/_next/static/chunks/turbopack-96c87dca879e1269.js":"a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39","/_next/static/chunks/turbopack-769da1fd9c257e4e.js":"5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8","/_next/static/chunks/turbopack-71e6122ee6108466.js":"8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d","/_next/static/chunks/f8d393448ef9e536.js":"584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044","/_next/static/chunks/f4c76aa5b5b405e6.js":"cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb","/_next/static/chunks/turbopack-57f4d2aab84e057b.js":"f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971","/_next/static/chunks/turbopack-1f711f6562056364.js":"c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9","/_next/static/chunks/turbopack-a368e18395b0c18f.js":"d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc","/_next/static/chunks/c0f2b9bbb3556b2e.js":"67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9","/_next/static/chunks/ceb0aca175845db9.css":"838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78","/_next/static/chunks/turbopack-afeef21a330188f0.js":"19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b","/_next/static/chunks/a3e10069aa37d79b.js":"004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662","/_next/static/chunks/988db25c959773e3.js":"b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270","/_next/static/chunks/90b51732da41c208.js":"dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765","/_next/static/chunks/de03a9b485f0cf73.js":"62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3","/_next/static/chunks/8e1d75a82d34c0d2.js":"59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13","/_next/static/chunks/92efe4f206cc3cde.js":"8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73","/_next/static/chunks/81de62be6d695aaa.js":"2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1","/_next/static/chunks/700022329b1c82af.js":"ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09","/_next/static/chunks/ae493344ad8186df.js":"0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2","/_next/static/chunks/6ce8e4a3fea81844.js":"88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23","/_next/static/chunks/6288fc84021086d4.js":"ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905","/_next/static/chunks/d19088806dd7f685.js":"2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3","/_next/static/chunks/848bbcaee1c0e5e8.js":"be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4","/_next/static/chunks/55f812600f05fa95.js":"f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75","/_next/static/chunks/44b303e4d7b1e484.js":"91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb","/_next/static/chunks/37f5307f03fd2910.js":"6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b","/_next/static/chunks/5717b46f84b3ac4a.js":"4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1","/_next/static/chunks/5c058d4584d0c530.js":"c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8","/_next/static/chunks/19b371336ef230b6.js":"f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb","/_next/static/chunks/0ed8457063c42d5a.js":"db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a","/_next/static/J2nDJ-YqqMDU-hXcEaYdr/_ssgManifest.js":"5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a","/_next/static/J2nDJ-YqqMDU-hXcEaYdr/_clientMiddlewareManifest.json":"d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f","/_next/static/J2nDJ-YqqMDU-hXcEaYdr/_buildManifest.js":"3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8","/_next/static/chunks/20739daaa7281ca2.js":"4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69","/_next/static/chunks/4b5d87a84284b7a9.js":"3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad","/_next/static/chunks/40f310bf0db6038d.js":"e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467","/_next/static/chunks/11b18491183e3a32.js":"e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b","/_next/static/chunks/4e592d4993405069.js":"353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc","/_next/static/chunks/51e8f93699e8889b.js":"f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0","/_next/static/chunks/d0e5f67fbcd40b40.js":"9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93","/_next/static/chunks/7938a418d0a4edfe.js":"7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2","/_next/static/chunks/040217faf94abae8.js":"a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61","/_next/static/chunks/b3d82288fed31e92.js":"28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59","/_next/static/chunks/2911cf2c98880996.js":"4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91"}}
+[debug] [2025-11-18T09:26:00.762Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/149768023865/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb:populateFiles 200
+[debug] [2025-11-18T09:26:00.762Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/149768023865/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb:populateFiles {"uploadRequiredHashes":["4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69","db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a","0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2","d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc","28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59","5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a","f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75","ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09","67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9","dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765","584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044","e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467","838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78","91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb","4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1","353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc","d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f","2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1","3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad","4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560","be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4","ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905","c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9","33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f","c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8","9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93","4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91","b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270","6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b","88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23","62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3","2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3","f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0","3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8","f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb","8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d","7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2","a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39","a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7","a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61","f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971","5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8","8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73","e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b","59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13","169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a","cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb","004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662","19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files"}
+[debug] [2025-11-18T09:26:00.764Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.764Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.764Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.765Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.765Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.765Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.765Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.768Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.768Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.768Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.768Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.768Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.769Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.769Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.769Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.769Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.773Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.773Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.773Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.773Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.774Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.774Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.774Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.774Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.774Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.777Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.777Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.777Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.777Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.777Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.777Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.777Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.778Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.778Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.778Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.778Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.778Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.778Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.778Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.779Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.779Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.779Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.779Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.779Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.780Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.780Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.780Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.780Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.781Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.781Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.781Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.781Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.781Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.782Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.782Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.784Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.784Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.785Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.785Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.785Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.785Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.785Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.786Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.786Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.786Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.786Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.786Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.786Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.787Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.787Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.787Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.787Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.788Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.788Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.788Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.788Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.788Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.789Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.789Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.789Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.789Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.789Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.790Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.790Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.790Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.790Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.790Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.790Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.791Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.791Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.791Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.791Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.791Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.791Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.791Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.791Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.792Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.792Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.792Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.792Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.792Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.792Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.792Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.793Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.793Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.793Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.793Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.793Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.793Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.793Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.794Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.794Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.794Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.794Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.794Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.794Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.794Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.794Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.794Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.795Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.795Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.796Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.796Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.796Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.797Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.797Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.797Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.797Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.797Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.797Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.797Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.797Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.798Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.798Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.798Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.798Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.798Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.798Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.799Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.799Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.799Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.799Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.799Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.799Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.800Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.800Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.800Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.800Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.800Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.800Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.800Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.800Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.801Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.801Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.801Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.801Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.801Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.802Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.802Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.802Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.802Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.802Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.802Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.802Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.803Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.803Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.803Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.803Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.803Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.803Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.803Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.803Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.804Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.804Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.804Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.804Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.804Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.805Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.805Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.805Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.805Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.805Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.805Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.807Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.807Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.807Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.807Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.808Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.808Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:00.808Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:00.808Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:00.808Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69 [none]
+[debug] [2025-11-18T09:26:00.808Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69 [stream]
+[debug] [2025-11-18T09:26:00.811Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a [none]
+[debug] [2025-11-18T09:26:00.811Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a [stream]
+[debug] [2025-11-18T09:26:00.813Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2 [none]
+[debug] [2025-11-18T09:26:00.813Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2 [stream]
+[debug] [2025-11-18T09:26:00.814Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc [none]
+[debug] [2025-11-18T09:26:00.814Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc [stream]
+[debug] [2025-11-18T09:26:00.816Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59 [none]
+[debug] [2025-11-18T09:26:00.816Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59 [stream]
+[debug] [2025-11-18T09:26:00.817Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a [none]
+[debug] [2025-11-18T09:26:00.817Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a [stream]
+[debug] [2025-11-18T09:26:00.819Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75 [none]
+[debug] [2025-11-18T09:26:00.819Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75 [stream]
+[debug] [2025-11-18T09:26:00.820Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09 [none]
+[debug] [2025-11-18T09:26:00.820Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09 [stream]
+[debug] [2025-11-18T09:26:00.822Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9 [none]
+[debug] [2025-11-18T09:26:00.822Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9 [stream]
+[debug] [2025-11-18T09:26:00.823Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765 [none]
+[debug] [2025-11-18T09:26:00.823Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765 [stream]
+[debug] [2025-11-18T09:26:00.826Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044 [none]
+[debug] [2025-11-18T09:26:00.826Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044 [stream]
+[debug] [2025-11-18T09:26:00.827Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467 [none]
+[debug] [2025-11-18T09:26:00.828Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467 [stream]
+[debug] [2025-11-18T09:26:00.829Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78 [none]
+[debug] [2025-11-18T09:26:00.829Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78 [stream]
+[debug] [2025-11-18T09:26:00.830Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb [none]
+[debug] [2025-11-18T09:26:00.831Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb [stream]
+[debug] [2025-11-18T09:26:00.832Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1 [none]
+[debug] [2025-11-18T09:26:00.832Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1 [stream]
+[debug] [2025-11-18T09:26:00.833Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc [none]
+[debug] [2025-11-18T09:26:00.833Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc [stream]
+[debug] [2025-11-18T09:26:00.835Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f [none]
+[debug] [2025-11-18T09:26:00.835Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f [stream]
+[debug] [2025-11-18T09:26:00.836Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1 [none]
+[debug] [2025-11-18T09:26:00.836Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1 [stream]
+[debug] [2025-11-18T09:26:00.838Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad [none]
+[debug] [2025-11-18T09:26:00.838Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad [stream]
+[debug] [2025-11-18T09:26:00.839Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560 [none]
+[debug] [2025-11-18T09:26:00.839Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560 [stream]
+[debug] [2025-11-18T09:26:00.841Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4 [none]
+[debug] [2025-11-18T09:26:00.841Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4 [stream]
+[debug] [2025-11-18T09:26:00.844Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905 [none]
+[debug] [2025-11-18T09:26:00.844Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905 [stream]
+[debug] [2025-11-18T09:26:00.847Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9 [none]
+[debug] [2025-11-18T09:26:00.847Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9 [stream]
+[debug] [2025-11-18T09:26:00.849Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f [none]
+[debug] [2025-11-18T09:26:00.849Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f [stream]
+[debug] [2025-11-18T09:26:00.850Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8 [none]
+[debug] [2025-11-18T09:26:00.850Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8 [stream]
+[debug] [2025-11-18T09:26:00.852Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93 [none]
+[debug] [2025-11-18T09:26:00.852Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93 [stream]
+[debug] [2025-11-18T09:26:00.853Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91 [none]
+[debug] [2025-11-18T09:26:00.853Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91 [stream]
+[debug] [2025-11-18T09:26:00.854Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270 [none]
+[debug] [2025-11-18T09:26:00.854Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270 [stream]
+[debug] [2025-11-18T09:26:00.856Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b [none]
+[debug] [2025-11-18T09:26:00.856Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b [stream]
+[debug] [2025-11-18T09:26:00.858Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23 [none]
+[debug] [2025-11-18T09:26:00.858Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23 [stream]
+[debug] [2025-11-18T09:26:00.859Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3 [none]
+[debug] [2025-11-18T09:26:00.860Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3 [stream]
+[debug] [2025-11-18T09:26:00.861Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3 [none]
+[debug] [2025-11-18T09:26:00.861Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3 [stream]
+[debug] [2025-11-18T09:26:00.862Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0 [none]
+[debug] [2025-11-18T09:26:00.863Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0 [stream]
+[debug] [2025-11-18T09:26:00.864Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8 [none]
+[debug] [2025-11-18T09:26:00.864Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8 [stream]
+[debug] [2025-11-18T09:26:00.868Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb [none]
+[debug] [2025-11-18T09:26:00.868Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb [stream]
+[debug] [2025-11-18T09:26:00.870Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d [none]
+[debug] [2025-11-18T09:26:00.870Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d [stream]
+[debug] [2025-11-18T09:26:00.871Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2 [none]
+[debug] [2025-11-18T09:26:00.871Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2 [stream]
+[debug] [2025-11-18T09:26:00.874Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39 [none]
+[debug] [2025-11-18T09:26:00.874Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39 [stream]
+[debug] [2025-11-18T09:26:00.880Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7 [none]
+[debug] [2025-11-18T09:26:00.881Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7 [stream]
+[debug] [2025-11-18T09:26:00.883Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61 [none]
+[debug] [2025-11-18T09:26:00.883Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61 [stream]
+[debug] [2025-11-18T09:26:00.888Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971 [none]
+[debug] [2025-11-18T09:26:00.888Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971 [stream]
+[debug] [2025-11-18T09:26:00.890Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8 [none]
+[debug] [2025-11-18T09:26:00.890Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8 [stream]
+[debug] [2025-11-18T09:26:00.892Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73 [none]
+[debug] [2025-11-18T09:26:00.892Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73 [stream]
+[debug] [2025-11-18T09:26:00.894Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b [none]
+[debug] [2025-11-18T09:26:00.894Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b [stream]
+[debug] [2025-11-18T09:26:00.896Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13 [none]
+[debug] [2025-11-18T09:26:00.897Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13 [stream]
+[debug] [2025-11-18T09:26:00.899Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a [none]
+[debug] [2025-11-18T09:26:00.899Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a [stream]
+[debug] [2025-11-18T09:26:00.904Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb [none]
+[debug] [2025-11-18T09:26:00.904Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb [stream]
+[debug] [2025-11-18T09:26:00.906Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662 [none]
+[debug] [2025-11-18T09:26:00.907Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662 [stream]
+[debug] [2025-11-18T09:26:00.908Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b [none]
+[debug] [2025-11-18T09:26:00.909Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b [stream]
+[debug] [2025-11-18T09:26:00.911Z] [hosting][populate queue][FINAL] {"max":839,"min":839,"avg":839,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":942}
+[debug] [2025-11-18T09:26:00.911Z] [hosting] uploads queued: 49
+[debug] [2025-11-18T09:26:01.983Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f 200
+[debug] [2025-11-18T09:26:01.983Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f [stream]
+[debug] [2025-11-18T09:26:02.060Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467 200
+[debug] [2025-11-18T09:26:02.060Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e226212f2f94a6e91a6ee2a25d9a3203b57b9ec6e9d763e533a643d0d8fb6467 [stream]
+[debug] [2025-11-18T09:26:02.071Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb 200
+[debug] [2025-11-18T09:26:02.071Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f3f0df040ebe0b0f13edc2aaf37a86e31ba4f1cdb5f3005036994625941695cb [stream]
+[debug] [2025-11-18T09:26:02.074Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a 200
+[debug] [2025-11-18T09:26:02.074Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/169e64816138e776220c80948988bcac4a28c8119e8f7a9eeff5617e06fd381a [stream]
+[debug] [2025-11-18T09:26:02.075Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1 200
+[debug] [2025-11-18T09:26:02.076Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2a8486c2751a6438c368870d8500119faf45b0ff5b1e5047634f079078e411e1 [stream]
+[debug] [2025-11-18T09:26:02.079Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8 200
+[debug] [2025-11-18T09:26:02.079Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c153919dd2650416c8f81adc634b82fa7d0cda878c23ecd87b28a5c77a9fc2b8 [stream]
+[debug] [2025-11-18T09:26:02.092Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93 200
+[debug] [2025-11-18T09:26:02.092Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/9da4179384350c1ea885d6486fe0e417d819732371f8f7d5397cbe74f90afc93 [stream]
+[debug] [2025-11-18T09:26:02.093Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39 200
+[debug] [2025-11-18T09:26:02.094Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a18800ec98a99bb48edab943e8fb8a040f6c57d08973d315db59ed7a74dbbc39 [stream]
+[debug] [2025-11-18T09:26:02.097Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09 200
+[debug] [2025-11-18T09:26:02.097Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ed9a4105f2c8e353aae01fd3bfed5bcf64eeba4a07db5722992c3c92e6d3dd09 [stream]
+[debug] [2025-11-18T09:26:02.104Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971 200
+[debug] [2025-11-18T09:26:02.104Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f5a1ccd0f70cfc079aa08e13a56288261b7181cc18c60c4d2e900b0fb5bb7971 [stream]
+[debug] [2025-11-18T09:26:02.107Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d 200
+[debug] [2025-11-18T09:26:02.107Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8c9ec72062030b545861a03a23f26d34994ffaa243e154cf2c27b796de8d0e4d [stream]
+[debug] [2025-11-18T09:26:02.113Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8 200
+[debug] [2025-11-18T09:26:02.113Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3508db6f4d8da9915bfadfbe82fd688ffed1eccde01617aad6873a94c30363d8 [stream]
+[debug] [2025-11-18T09:26:02.119Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3 200
+[debug] [2025-11-18T09:26:02.119Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/2f31dff655df189289358874eacee0af4760ead1df03db45a148a1daa9ff98e3 [stream]
+[debug] [2025-11-18T09:26:02.123Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f 200
+[debug] [2025-11-18T09:26:02.123Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/33603058b80b0f1e7459ad1a4221a2b8355fc7e265cbeada7bd9ca3ca9cbe37f [stream]
+[debug] [2025-11-18T09:26:02.132Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb 200
+[debug] [2025-11-18T09:26:02.133Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/cf3536be79a17c2ab6bbcae9212054f3915efbc6a63d886a86202d5d664281cb [stream]
+[debug] [2025-11-18T09:26:02.140Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0 200
+[debug] [2025-11-18T09:26:02.142Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f8d6df69588e809f8e54d2584630acca200213b0c3dcadbe1659d62e6cb735f0 [stream]
+[debug] [2025-11-18T09:26:02.148Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a 200
+[debug] [2025-11-18T09:26:02.148Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5ff636663043855d7c1f98e67e37956e2151c8e5971b0712ec1413de94d28c1a [stream]
+[debug] [2025-11-18T09:26:02.166Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b 200
+[debug] [2025-11-18T09:26:02.167Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/19ee21288f0fa013dc8559d75c4a22f0ae7e01521b958fbcc2a63b089e56855b [stream]
+[debug] [2025-11-18T09:26:02.170Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b 200
+[debug] [2025-11-18T09:26:02.170Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/e05c2b8cacebafbfd9732e49aa3bde6802d6f0a5c374e8186d4769389d30c52b [stream]
+[debug] [2025-11-18T09:26:02.177Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23 200
+[debug] [2025-11-18T09:26:02.178Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/88aa13fd0d39a3c44e61ee943be51c929c453f4fea7921505e97fda958509c23 [stream]
+[debug] [2025-11-18T09:26:02.198Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73 200
+[debug] [2025-11-18T09:26:02.199Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/8e179006aa57cb98eb6317bc002c6fa241124ff532eb8fd8d8eae9fe6c17cf73 [stream]
+[debug] [2025-11-18T09:26:02.200Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8 200
+[debug] [2025-11-18T09:26:02.201Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/5088d31e922576edd3cdb3ffbcf0ba6ce131d14bc6a52497050f24a82ef72bf8 [stream]
+[debug] [2025-11-18T09:26:02.212Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9 200
+[debug] [2025-11-18T09:26:02.213Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/c2311ba3bb06af1c269e7ed417b46f80cb9e76a2ebf159f42534f09d9acfb6e9 [stream]
+[debug] [2025-11-18T09:26:02.214Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78 200
+[debug] [2025-11-18T09:26:02.214Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/838a1f8eea9b176ae9aa9a2a92440f736ccd04e9f18b44128eda18974dd53f78 [stream]
+[debug] [2025-11-18T09:26:02.216Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270 200
+[debug] [2025-11-18T09:26:02.216Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/b4c7a8ce84d97aa6cb6a8d0f5fd4e14d6e444d8997b08b053694204133925270 [stream]
+[debug] [2025-11-18T09:26:02.222Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75 200
+[debug] [2025-11-18T09:26:02.222Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/f0d7ef9855a9098316c239dd4116b15764457240921d3964489152ec2051ad75 [stream]
+[debug] [2025-11-18T09:26:02.223Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b 200
+[debug] [2025-11-18T09:26:02.223Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/6ce5e8f76e92a97b7ab12abb21cba3094f1f430638db03851138846a379a7a2b [stream]
+[debug] [2025-11-18T09:26:02.225Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3 200
+[debug] [2025-11-18T09:26:02.225Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/62ca4d0b208fc530ad4603cf3fa3342f36d8af2c992367ac2c248bdf73f962c3 [stream]
+[debug] [2025-11-18T09:26:02.229Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad 200
+[debug] [2025-11-18T09:26:02.229Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/3b28a61ab97ab00973f9c08f2d95ecfc668301a81635b7773017bf69097f4cad [stream]
+[debug] [2025-11-18T09:26:02.236Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765 200
+[debug] [2025-11-18T09:26:02.237Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/dda7e255e616e177629edb862cdeeaa143aa5f6a1c90c4c6034641d4bce7f765 [stream]
+[debug] [2025-11-18T09:26:02.241Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc 200
+[debug] [2025-11-18T09:26:02.241Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/d87b85432191e0b8a64265f2b095bd798c5752bf805e0c58bb73c8f2515372bc [stream]
+[debug] [2025-11-18T09:26:02.241Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560 200
+[debug] [2025-11-18T09:26:02.242Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4f4f5a218ff4c06ed242b54a31f5dd3156f25edeee20e755f73df48a5f06f560 [stream]
+[debug] [2025-11-18T09:26:02.242Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4 200
+[debug] [2025-11-18T09:26:02.242Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/be81c3fe4ea7f206f0992a3361b50513df1e8f5eb6221d43f8609f0503bb45d4 [stream]
+[debug] [2025-11-18T09:26:02.245Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662 200
+[debug] [2025-11-18T09:26:02.245Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/004de7f901ca4b669d05f2da552cec720190008ab53bc3f11a0f0fc40d933662 [stream]
+[debug] [2025-11-18T09:26:02.246Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc 200
+[debug] [2025-11-18T09:26:02.246Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/353a40b0fe042e1a4b1a3a70198afd8d6dbf67468ac25f5079f8e365644d29cc [stream]
+[debug] [2025-11-18T09:26:02.249Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61 200
+[debug] [2025-11-18T09:26:02.249Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a880c9acb92209cb5f7492ad150f241fe306792d1d154af59ffa3517f6af7b61 [stream]
+[debug] [2025-11-18T09:26:02.251Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7 200
+[debug] [2025-11-18T09:26:02.251Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/a23676712425335bf8a00d75c93aef66eb9543cca0135b3272642dee128758e7 [stream]
+[debug] [2025-11-18T09:26:02.257Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044 200
+[debug] [2025-11-18T09:26:02.257Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/584114537b40b1dfae239f198c1a069edba0b3e95cb9e532c4eb40f03eb63044 [stream]
+[debug] [2025-11-18T09:26:02.273Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59 200
+[debug] [2025-11-18T09:26:02.275Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/28c98d5736a62b3368916f6d104c1eb645d6f98a02a42258ea1dfa82c4345a59 [stream]
+[debug] [2025-11-18T09:26:02.318Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb 200
+[debug] [2025-11-18T09:26:02.318Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/91171f62eca89c05963a49b0a6c4a827c8846a2c9a4f80102519921fee0696fb [stream]
+[debug] [2025-11-18T09:26:02.335Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9 200
+[debug] [2025-11-18T09:26:02.336Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/67714bada3b7a4eb7b3f54f527e013c31e874b0571c898a66348d3d34b4beda9 [stream]
+[debug] [2025-11-18T09:26:02.338Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a 200
+[debug] [2025-11-18T09:26:02.338Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/db649f477a8f773e6409a9357bc727fb632ac7387c3fefcbf3404f70437e492a [stream]
+[debug] [2025-11-18T09:26:02.344Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2 200
+[debug] [2025-11-18T09:26:02.344Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/0fce04aabd5038e5c898098e1812da9b51a1b6b38536104a735b8e74e25f90a2 [stream]
+[debug] [2025-11-18T09:26:02.348Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13 200
+[debug] [2025-11-18T09:26:02.348Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/59fbfe847545728fb0e8d525f5fe9f547e5ba145a0458ff98fb840b230780f13 [stream]
+[debug] [2025-11-18T09:26:02.466Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1 200
+[debug] [2025-11-18T09:26:02.467Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4644bafeb449c630175469cf9998903bae799bb451adc94a30719515e38fcab1 [stream]
+[debug] [2025-11-18T09:26:02.479Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2 200
+[debug] [2025-11-18T09:26:02.479Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/7536eebe53e1e2be467c98ea4883713536a694c4d9345e7dab409f3218f66fd2 [stream]
+[debug] [2025-11-18T09:26:02.488Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69 200
+[debug] [2025-11-18T09:26:02.489Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4a2bbeb9b8c6e124082144c641379cadb23b09574fdfdb953d67c9278b848b69 [stream]
+[debug] [2025-11-18T09:26:02.490Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91 200
+[debug] [2025-11-18T09:26:02.491Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/4dcdf72d213a4a6c230bb4210785e9534f990bcff1d6c37550c9a5026c7b2a91 [stream]
+[debug] [2025-11-18T09:26:02.514Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905 200
+[debug] [2025-11-18T09:26:02.515Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/aura-mebel-7ec96/versions/b1b8e98107830bbb/files/ec5fb4cca148aa4327af388a7eba158e31fbe2b52bea1111809ee4fa05774905 [stream]
+[debug] [2025-11-18T09:26:02.515Z] [hosting][upload queue][FINAL] {"max":1727,"min":1197,"avg":1428.6326530612246,"active":0,"complete":49,"success":49,"errored":0,"retried":0,"total":49,"elapsed":1753}
+[info] ✔  hosting[aura-mebel-7ec96]: file upload complete 
+[debug] [2025-11-18T09:26:02.516Z] [hosting] deploy completed after 2841ms
+[info] i  functions: creating Node.js 20 (2nd Gen) function firebase-frameworks-aura-mebel-7ec96:ssrauramebel7ec96(us-central1)... 
+[debug] [2025-11-18T09:26:02.526Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:02.526Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:02.527Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:02.527Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:02.527Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions functionId=ssrauramebel7ec96
+[debug] [2025-11-18T09:26:02.527Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions {"name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-uploads-149768023865.us-central1.cloudfunctions.appspot.com","object":"0c4ee61f-1f3a-4c18-8bf0-f0fe8025c2e9.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":null,"serviceAccountEmail":null,"availableMemory":"256Mi","minInstanceCount":null,"maxInstanceCount":null,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"}}
+[debug] [2025-11-18T09:26:04.549Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions 200
+[debug] [2025-11-18T09:26:04.549Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/functions {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2"},"done":false}
+[debug] [2025-11-18T09:26:04.552Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:04.553Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:04.553Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:04.553Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:04.553Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:05.220Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:05.220Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2025-11-18T09:26:05.722Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:05.723Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:05.723Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:05.724Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:05.724Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:05.725Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:06.390Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:06.390Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2025-11-18T09:26:07.390Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:07.393Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:07.393Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:07.393Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:07.394Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:07.394Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:08.061Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:08.062Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2025-11-18T09:26:10.063Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:10.065Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:10.065Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:10.067Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:10.068Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:10.068Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:10.749Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:10.750Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2025-11-18T09:26:14.752Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:14.752Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:14.753Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:14.753Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:14.753Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:14.761Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:15.579Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:15.579Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0"},"done":false}
+[debug] [2025-11-18T09:26:23.580Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:23.586Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:23.586Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:23.586Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:23.591Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:23.591Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:24.284Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:24.287Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0"},"done":false}
+[debug] [2025-11-18T09:26:34.289Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:34.290Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:34.290Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:34.291Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:34.291Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:34.293Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:34.987Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:34.991Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/149768023865/locations/us-central1/builds/78ccf745-c97c-440f-9d47-7ceea3bd7db0"},"done":false}
+[debug] [2025-11-18T09:26:44.991Z] [create-firebase-frameworks-aura-mebel-7ec96-us-central1-ssrauramebel7ec96] Retrying task index 0
+[debug] [2025-11-18T09:26:44.993Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:44.993Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:44.993Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:44.993Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:44.993Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 [none]
+[debug] [2025-11-18T09:26:45.677Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 200
+[debug] [2025-11-18T09:26:45.679Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445 {"name":"projects/aura-mebel-7ec96/locations/us-central1/operations/operation-1763457963177-643db0d78b653-88e1575e-4e093445","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2025-11-18T09:26:04.465438538Z","endTime":"2025-11-18T09:26:41.223367563Z","target":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/aura-mebel-7ec96/locations/us-central1/functions/ssrauramebel7ec96","buildConfig":{"runtime":"nodejs20","entryPoint":"ssrauramebel7ec96","source":{"storageSource":{"bucket":"gcf-v2-sources-149768023865-us-central1","object":"ssrauramebel7ec96/function-source.zip","generation":"1763457964078413"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/aura-mebel-7ec96/serviceAccounts/149768023865-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"aura-mebel-7ec96.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}","GCLOUD_PROJECT":"aura-mebel-7ec96","EVENTARC_CLOUD_EVENT_SOURCE":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96","FUNCTION_TARGET":"ssrauramebel7ec96","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"149768023865-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase--project-idx","firebase-functions-codebase":"firebase-frameworks-aura-mebel-7ec96","firebase-functions-hash":"3010090ad3a9c5829253f9d19e9c1dce4912f77e"},"environment":"GEN_2"},"stages":[{"name":"ARTIFACT_REGISTRY","message":"Deleting function artifacts in Artifact Registry","state":"COMPLETE"},{"name":"SERVICE","message":"Deleting Cloud Run service","state":"COMPLETE","resource":"projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96"}],"operationType":"CREATE_FUNCTION"},"done":true,"error":{"code":3,"message":"Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865.\n"}}
+[debug] [2025-11-18T09:26:45.679Z] Got source token undefined for region us-central1
+[error] Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account
+ You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865.
+
+[debug] [2025-11-18T09:26:45.690Z] Total Function Deployment time: 43169
+[debug] [2025-11-18T09:26:45.690Z] 1 Functions Deployed
+[debug] [2025-11-18T09:26:45.690Z] 1 Functions Errored
+[debug] [2025-11-18T09:26:45.690Z] 0 Function Deployments Aborted
+[debug] [2025-11-18T09:26:45.690Z] Average Function Deployment time: 43165
+[info] 
+[info] Functions deploy had errors with the following functions:
+	firebase-frameworks-aura-mebel-7ec96:ssrauramebel7ec96(us-central1)
+[debug] [2025-11-18T09:26:45.699Z] Not printing URL for HTTPS function. Typically this means it didn't match a filter or we failed deployment
+[debug] [2025-11-18T09:26:45.703Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:45.703Z] No OAuth tokens found
+[debug] [2025-11-18T09:26:45.703Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:26:45.704Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:26:45.704Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts [none]
+[debug] [2025-11-18T09:26:46.435Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts 200
+[debug] [2025-11-18T09:26:46.436Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts {"name":"projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts","format":"DOCKER","description":"This repository is created and used by Cloud Functions for storing function docker images.","labels":{"goog-managed-by":"cloudfunctions"},"createTime":"2025-11-18T09:26:12.536659Z","updateTime":"2025-11-18T09:26:12.536659Z","mode":"STANDARD_REPOSITORY","vulnerabilityScanningConfig":{"lastEnableTime":"2025-11-18T09:26:04.691054655Z","enablementState":"SCANNING_DISABLED","enablementStateReason":"API containerscanning.googleapis.com is not enabled."},"satisfiesPzi":true,"registryUri":"us-central1-docker.pkg.dev/aura-mebel-7ec96/gcf-artifacts"}
+[warn] ⚠  functions: No cleanup policy detected for repositories in us-central1. This may result in a small monthly bill as container images accumulate over time. 
+[info] i  functions: Configuring cleanup policy for repository in us-central1. Images older than 1 days will be automatically deleted. 
+[debug] [2025-11-18T09:27:10.910Z] Setting up artifact cleanup policy for region us-central1
+[debug] [2025-11-18T09:27:10.911Z] No OAuth tokens found
+[debug] [2025-11-18T09:27:10.917Z] No OAuth tokens found
+[debug] [2025-11-18T09:27:10.917Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-18T09:27:10.917Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-11-18T09:27:10.918Z] >>> [apiv2][query] PATCH https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts updateMask=name%2CcleanupPolicies%2CcleanupPolicyDryRun%2Clabels
+[debug] [2025-11-18T09:27:10.918Z] >>> [apiv2][body] PATCH https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts {"name":"projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts","cleanupPolicies":{"firebase-functions-cleanup":{"id":"firebase-functions-cleanup","condition":{"tagState":"ANY","olderThan":"86400s"},"action":"DELETE"}},"cleanupPolicyDryRun":false,"labels":{"goog-managed-by":"cloudfunctions"}}
+[debug] [2025-11-18T09:27:11.706Z] <<< [apiv2][status] PATCH https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts 200
+[debug] [2025-11-18T09:27:11.706Z] <<< [apiv2][body] PATCH https://artifactregistry.googleapis.com/v1/projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts {"name":"projects/aura-mebel-7ec96/locations/us-central1/repositories/gcf-artifacts","format":"DOCKER","description":"This repository is created and used by Cloud Functions for storing function docker images.","labels":{"goog-managed-by":"cloudfunctions"},"createTime":"2025-11-18T09:26:12.536659Z","updateTime":"2025-11-18T09:27:11.606805Z","mode":"STANDARD_REPOSITORY","cleanupPolicies":{"firebase-functions-cleanup":{"id":"firebase-functions-cleanup","action":"DELETE","condition":{"tagState":"ANY","olderThan":"86400s"}}},"vulnerabilityScanningConfig":{"lastEnableTime":"2025-11-18T09:26:04.691054655Z","enablementState":"SCANNING_DISABLED","enablementStateReason":"API containerscanning.googleapis.com is not enabled."},"satisfiesPzi":true}
+[info] i  functions: Configured cleanup policy for repository in us-central1. 
+[debug] [2025-11-18T09:27:11.707Z] Functions deploy failed.
+[debug] [2025-11-18T09:27:11.707Z] {
+  "endpoint": {
+    "id": "ssrauramebel7ec96",
+    "project": "aura-mebel-7ec96",
+    "region": "us-central1",
+    "entryPoint": "ssrauramebel7ec96",
+    "platform": "gcfv2",
+    "runtime": "nodejs20",
+    "httpsTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase--project-idx"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "concurrency": 80,
+    "vpc": null,
+    "environmentVariables": {
+      "VERCEL_URL": "aura-mebel-7ec96.web.app",
+      "__FIREBASE_FRAMEWORKS_ENTRY__": "next.js",
+      "__FIREBASE_DEFAULTS__": "{\"config\":{\"projectId\":\"aura-mebel-7ec96\",\"appId\":\"1:149768023865:web:7e9fbd950241375d6a02e8\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\",\"apiKey\":\"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y\",\"authDomain\":\"aura-mebel-7ec96.firebaseapp.com\",\"messagingSenderId\":\"149768023865\",\"measurementId\":\"G-5YG8EC89CY\",\"projectNumber\":\"149768023865\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}",
+      "FIREBASE_CONFIG": "{\"projectId\":\"aura-mebel-7ec96\",\"storageBucket\":\"aura-mebel-7ec96.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "aura-mebel-7ec96",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/aura-mebel-7ec96/locations/us-central1/services/ssrauramebel7ec96"
+    },
+    "codebase": "firebase-frameworks-aura-mebel-7ec96",
+    "cpu": 1,
+    "targetedByOnly": false,
+    "hash": "3010090ad3a9c5829253f9d19e9c1dce4912f77e"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "exit": 1,
+    "message": "Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865.\n",
+    "original": {
+      "code": 3,
+      "message": "Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/78ccf745-c97c-440f-9d47-7ceea3bd7db0?project=149768023865.\n"
+    },
+    "status": 3,
+    "code": 3
+  }
+}
+[debug] [2025-11-18T09:27:11.720Z] Error: Failed to create function ssrauramebel7ec96 in region us-central1
+    at /home/user/.global_modules/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:306:27
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Fabricator.createV2Function (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:290:30)
+    at async Fabricator.createEndpoint (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:137:13)
+    at async handle (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:89:17)
+[error] 
+[error] Error: There was an error deploying functions

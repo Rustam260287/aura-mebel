@@ -1,0 +1,18 @@
+{
+  "/": "pages/index.js",
+  "/_app": "pages/_app.js",
+  "/_document": "pages/_document.js",
+  "/_error": "pages/_error.js",
+  "/admin": "pages/admin.js",
+  "/api/blog": "pages/api/blog.js",
+  "/api/blog/[id]": "pages/api/blog/[id].js",
+  "/api/blog/generate": "pages/api/blog/generate.js",
+  "/api/products": "pages/api/products.js",
+  "/api/products/[id]": "pages/api/products/[id].js",
+  "/blog": "pages/blog.js",
+  "/blog/[id]": "pages/blog/[id].js",
+  "/login": "pages/login.html",
+  "/products": "pages/products.js",
+  "/products/[id]": "pages/products/[id].js",
+  "/404": "pages/404.html"
+}

@@ -1,0 +1,11 @@
+var R=require("../chunks/ssr/[turbopack]_runtime.js")("server/pages/products.js")
+R.c("server/chunks/ssr/components_QuickViewModal_tsx_cc8a01f0._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__eb3afcec._.js")
+R.c("server/chunks/ssr/node_modules_6eac5c02._.js")
+R.c("server/chunks/ssr/node_modules_8969dc04._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__894f3286._.js")
+R.c("server/chunks/ssr/components_ClientProviders_tsx_b75bc208._.js")
+R.c("server/chunks/ssr/node_modules_next_153cc73c._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__50925795._.js")
+R.m("[project]/node_modules/next/dist/esm/build/templates/pages.js { INNER_PAGE => \"[project]/pages/products/index.tsx [ssr] (ecmascript)\", INNER_DOCUMENT => \"[project]/pages/_document.tsx [ssr] (ecmascript)\", INNER_APP => \"[project]/pages/_app.tsx [ssr] (ecmascript)\" } [ssr] (ecmascript)")
+module.exports=R.m("[project]/node_modules/next/dist/esm/build/templates/pages.js { INNER_PAGE => \"[project]/pages/products/index.tsx [ssr] (ecmascript)\", INNER_DOCUMENT => \"[project]/pages/_document.tsx [ssr] (ecmascript)\", INNER_APP => \"[project]/pages/_app.tsx [ssr] (ecmascript)\" } [ssr] (ecmascript)").exports
