@@ -15,26 +15,19 @@ const ensureFirebaseAdminInitialized = () => {
   try {
     console.log('Lazy initializing Firebase Admin SDK from service account file...');
     
-    const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
+    // Используем google-credentials.json напрямую, если это ваш основной файл
+    const serviceAccountPath = path.resolve(process.cwd(), 'google-credentials.json');
     
     if (!fs.existsSync(serviceAccountPath)) {
-        // Не выводим критическую ошибку, если файл просто отсутствует
-        console.warn('serviceAccountKey.json not found. Firebase Admin SDK not initialized.');
+        console.warn('google-credentials.json not found. Firebase Admin SDK not initialized.');
         return null;
     }
       
     const serviceAccountString = fs.readFileSync(serviceAccountPath, 'utf8');
     const serviceAccount = JSON.parse(serviceAccountString);
 
-    // --- ОКОНЧАТЕЛЬНОЕ ИСПРАВЛЕНИЕ ---
-    // Программно заменяем строковые '\n' на реальные символы новой строки
-    const formattedPrivateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
-
     admin.initializeApp({
-      credential: admin.credential.cert({
-        ...serviceAccount,
-        private_key: formattedPrivateKey, // Используем исправленный ключ
-      }),
+      credential: admin.credential.cert(serviceAccount),
       storageBucket: `${serviceAccount.project_id}.appspot.com`,
     });
 
