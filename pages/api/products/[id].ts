@@ -1,50 +1,31 @@
 
 // pages/api/products/[id].ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAdminDb } from '../../../../lib/firebaseAdmin';
-import { Product } from '../../../../types';
+import { getAdminDb } from '../../../lib/firebaseAdmin';
+import { Product } from '../../../types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
-  if (typeof id !== 'string') {
-    return res.status(400).json({ error: 'Invalid product ID' });
-  }
-
   const db = getAdminDb();
+
   if (!db) {
-    return res.status(500).json({ error: 'Database not initialized' });
+    return res.status(500).json({ error: 'Admin DB not initialized' });
   }
-  const productRef = db.collection('products').doc(id);
 
   if (req.method === 'PUT') {
     try {
-      const updatedProductData: Partial<Product> = req.body;
-      delete updatedProductData.id; // Ensure ID is not overwritten
-
-      await productRef.update({
-        ...updatedProductData,
-        updatedAt: new Date().toISOString(),
-      });
-      
-      const updatedDoc = await productRef.get();
-      const updatedProduct = { id: updatedDoc.id, ...updatedDoc.data() };
-      
+      const updatedProduct: Product = req.body;
+      await db.collection('products').doc(id as string).set(updatedProduct, { merge: true });
       res.status(200).json(updatedProduct);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      res.status(500).json({ error: `Failed to update product: ${errorMessage}` });
+      res.status(500).json({ error: 'Failed to update product' });
     }
   } else if (req.method === 'DELETE') {
     try {
-      const doc = await productRef.get();
-      if (!doc.exists) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      await productRef.delete();
+      await db.collection('products').doc(id as string).delete();
       res.status(204).end();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      res.status(500).json({ error: `Failed to delete product: ${errorMessage}` });
+      res.status(500).json({ error: 'Failed to delete product' });
     }
   } else {
     res.setHeader('Allow', ['PUT', 'DELETE']);

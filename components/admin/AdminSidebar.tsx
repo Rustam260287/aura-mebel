@@ -1,10 +1,10 @@
 import React from 'react';
 import { ArrowLeftIcon, ChatBubbleLeftRightIcon } from '../../components/Icons'; // Assuming icons are accessible
-import type { View } from '../../types';
+import type { View, AdminView } from '../../types';
 
 interface AdminSidebarProps {
-  activeView: string;
-  setView: (view: 'dashboard' | 'products' | 'blog' | 'chat-analytics') => void;
+  activeView: AdminView;
+  setView: (view: AdminView) => void;
   onNavigate: (view: View) => void;
   isOpen: boolean;
   onClose: () => void;

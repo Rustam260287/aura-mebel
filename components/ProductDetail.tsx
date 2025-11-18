@@ -3,7 +3,7 @@ import type { Product, Review } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { Reviews } from './Reviews';
-import { ArrowLeftIcon, CubeTransparentIcon, PaintBrushIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, SlidersHorizontalIcon, PinterestIcon } from './Icons';
+import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PinterestIcon } from './Icons';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
@@ -14,13 +14,10 @@ import Image from 'next/image';
 interface ProductDetailProps {
   product: Product;
   onBack: () => void;
-  onConfigure?: (product: Product) => void;
-  onVirtualStage?: (product: Product) => void;
-  onUpholsteryChange?: (product: Product) => void;
 }
 
-const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack, onConfigure, onVirtualStage, onUpholsteryChange }) => {
-  const [currentReviews, setCurrentReviews] = useState<Review[]>(product.reviews);
+const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
+  const [currentReviews, setCurrentReviews] = useState<Review[]>(product.reviews || []);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   
@@ -166,62 +163,29 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack,
             <p className="text-brand-charcoal leading-relaxed mb-8">{product.seoDescription || product.description}</p>
             
             <div className="space-y-6 mb-8">
-              {product.isConfigurable ? (
-                  <div className="bg-brand-cream-dark p-6 rounded-lg text-center border-2 border-dashed border-brand-brown/30">
-                      <h3 className="text-xl font-semibold text-brand-charcoal mb-2">Это настраиваемый товар!</h3>
-                      <Button 
-                          size="lg" 
-                          onClick={() => onConfigure?.(product)} 
-                          className="w-full animate-pulse"
-                      >
-                          <SlidersHorizontalIcon className="w-6 h-6 mr-3" />
-                          Перейти в конфигуратор
-                      </Button>
-                      <p className="text-sm text-brand-charcoal/70 mt-3">Настройте цвет, материал и другие детали, чтобы создать мебель своей мечты.</p>
-                  </div>
-              ) : (
-                  <div className="flex items-center gap-4">
-                      <Button size="lg" onClick={handleAddToCart} className="flex-grow">
-                          Добавить в корзину
-                      </Button>
-                      <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4">
-                          <HeartIcon className={`w-6 h-6 ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : ''}`} />
-                      </Button>
-                  </div>
-              )}
+              <div className="flex items-center gap-4">
+                  <Button size="lg" onClick={handleAddToCart} className="flex-grow">
+                      Добавить в корзину
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4">
+                      <HeartIcon className={`w-6 h-6 ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : ''}`} />
+                  </Button>
+              </div>
 
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-4 border-t border-brand-cream-dark">
-                  {onVirtualStage && (
-                      <Button variant="ghost" onClick={() => onVirtualStage(product)}>
-                          <CubeTransparentIcon className="w-5 h-5 mr-2" />
-                          Примерить в интерьере
-                      </Button>
-                  )}
-                  {product.isConfigurable && onUpholsteryChange && (
-                      <Button variant="ghost" onClick={() => onUpholsteryChange(product)}>
-                          <PaintBrushIcon className="w-5 h-5 mr-2" />
-                          Изменить обивку с ИИ
-                      </Button>
-                  )}
                   <Button variant="ghost" onClick={handlePinterestShare}>
                         <PinterestIcon className="w-5 h-5 mr-2" />
                         Сохранить в Pinterest
                   </Button>
-                  {product.isConfigurable && (
-                      <Button variant="ghost" onClick={handleWishlistClick}>
-                          <HeartIcon className={`w-5 h-5 mr-2 ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : ''}`} />
-                          {isWished ? 'В избранном' : 'В избранное'}
-                      </Button>
-                  )}
               </div>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold text-brand-charcoal mb-3">Характеристики</h3>
               <ul className="list-disc list-inside text-brand-charcoal space-y-2 leading-relaxed">
-                <li><strong>Размеры:</strong> {product.details.dimensions}</li>
-                <li><strong>Материал:</strong> {product.details.material}</li>
-                <li><strong>Уход:</strong> {product.details.care}</li>
+                {product.details.dimensions && <li><strong>Размеры:</strong> {product.details.dimensions}</li>}
+                {product.details.material && <li><strong>Материал:</strong> {product.details.material}</li>}
+                {product.details.care && <li><strong>Уход:</strong> {product.details.care}</li>}
               </ul>
             </div>
           </div>

@@ -4,20 +4,17 @@ import React, { useMemo, useState } from 'react';
 import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin'; // Обновленный импорт
-import type { Product } from '../types';
+import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin';
+import type { Product, View } from '../types';
 
 import { Hero } from '../components/Hero';
 import { CategoryShowcase } from '../components/CategoryShowcase';
 import { Catalog } from '../components/Catalog';
 import { Footer } from '../components/Footer';
+import { Header } from '../components/Header'; // Импортируем статически
 
-const Header = dynamic(() => import('../components/Header').then(mod => mod.Header), { ssr: false });
 const CartSidebar = dynamic(() => import('../components/CartSidebar').then(mod => mod.CartSidebar), { ssr: false });
-const AiChatbot = dynamic(() => import('../components/AiChatbot').then(mod => mod.AiChatbot), { ssr: false });
-const FloatingChatButton = dynamic(() => import('../components/FloatingChatButton').then(mod => mod.FloatingChatButton), { ssr: false });
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
-const VirtualStagingModal = dynamic(() => import('../components/VirtualStagingModal').then(mod => mod.VirtualStagingModal), { ssr: false });
 
 interface HomePageProps {
   allProducts: Product[];
@@ -27,7 +24,6 @@ interface HomePageProps {
 export default function HomePage({ allProducts, error }: HomePageProps) {
   const router = useRouter();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
-  const [virtualStageProduct, setVirtualStageProduct] = useState<Product | null>(null);
 
   const popularProducts = useMemo(() => {
     if (!allProducts || allProducts.length === 0) return [];
@@ -38,37 +34,41 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
     return <div style={{ color: 'red', padding: '2rem' }}>Error loading data: {error}</div>;
   }
 
-  const handleNavigate = () => {
-    // ...
+  const handleNavigate = (view: View) => {
+    if (view.page === 'catalog') {
+      if (view.category) {
+        router.push(`/products?category=${encodeURIComponent(view.category)}`);
+      } else {
+        router.push('/products');
+      }
+    }
   };
   
   return (
     <>
-      <Header onStyleFinderClick={() => {}} />
+      <Header />
       <main className="flex-grow">
         <Hero onNavigate={handleNavigate} />
         <CategoryShowcase onNavigate={handleNavigate} />
         <Catalog
           allProducts={popularProducts}
+          isLoading={router.isFallback}
           onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
-          onVirtualStage={setVirtualStageProduct}
+          onVirtualStage={() => {}} // Пустая функция, так как VirtualStaging удален
           isHomePage
         />
       </main>
       <Footer />
       <CartSidebar onNavigate={(view) => router.push(`/${view.page}`)} />
-      <AiChatbot />
-      <FloatingChatButton />
       {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
-      {virtualStageProduct && <VirtualStagingModal product={virtualStageProduct} onClose={() => setVirtualStageProduct(null)} />}
     </>
   );
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const adminDb = getAdminDb(); // Вызываем функцию
-  const adminStorage = getAdminStorage(); // Вызываем функцию
+  const adminDb = getAdminDb();
+  const adminStorage = getAdminStorage();
 
   if (!adminDb || !adminStorage) {
     return { props: { allProducts: [], error: "Firebase Admin SDK initialization failed." } };
@@ -86,7 +86,7 @@ export const getStaticProps: GetStaticProps = async () => {
         }
 
         const imageUrls = await Promise.all(product.imageUrls.map(async (url) => {
-            if (url && url.startsWith('gs://')) { // Добавлена проверка на существование url
+            if (url && url.startsWith('gs://')) {
                 const path = url.substring(url.indexOf('/', 5) + 1);
                 try {
                     const [signedUrl] = await bucket.file(path).getSignedUrl({
@@ -103,7 +103,7 @@ export const getStaticProps: GetStaticProps = async () => {
                     return '/placeholder.svg';
                 }
             }
-            return url || '/placeholder.svg'; // Возвращаем плейсхолдер, если url пустой
+            return url || '/placeholder.svg';
         }));
         
         return { ...product, imageUrls };
@@ -111,6 +111,7 @@ export const getStaticProps: GetStaticProps = async () => {
     
     return {
       props: { allProducts: JSON.parse(JSON.stringify(allProducts)) },
+      revalidate: 60,
     };
   } catch (error) {
     console.error("Error fetching data:", error);

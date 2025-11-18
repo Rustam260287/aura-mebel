@@ -7,9 +7,9 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
 import { ToastProvider } from '../contexts/ToastContext';
-import { AuthGuard } from '../components/AuthGuard'; // Импортируем AuthGuard
-import { useAuth } from '../contexts/AuthContext'; // Импортируем useAuth для кнопки выхода
-import { Button } from '../components/Button'; // Импортируем Button
+import { AuthGuard } from '../components/AuthGuard';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/Button';
 
 const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mod.AdminPage), { ssr: false });
 
@@ -20,15 +20,14 @@ interface AdminContainerProps {
 
 function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerProps) {
   const router = useRouter();
-  const { logout } = useAuth(); // Получаем функцию logout
+  const { logout } = useAuth();
   const [products] = useState<Product[]>(initialProducts);
-  const [blogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
 
   const handleNavigate = () => {
     router.push('/');
   };
 
-  // ... (все обработчики остаются без изменений)
   const handleUpdateProduct = useCallback(async () => {
     // ...
   }, []);
@@ -49,14 +48,10 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
     // ...
   }, []);
 
-  const handleAddBlogPost = useCallback(async () => {
-    // ...
-  }, []);
-
   return (
     <>
       <div className="absolute top-4 right-4 z-20">
-        <Button onClick={logout} variant="secondary">Logout</Button>
+        <Button onClick={logout} variant="outline">Выйти</Button>
       </div>
       <AdminPage 
           allProducts={products}
@@ -66,7 +61,6 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
           onUpdateProduct={handleUpdateProduct}
           onAddProduct={handleAddProduct}
           onDeleteProduct={handleDeleteProduct}
-          onAddBlogPost={handleAddBlogPost}
           onUpdateBlogPost={handleUpdateBlogPost}
           onDeleteBlogPost={handleDeleteBlogPost}
       />
@@ -74,7 +68,6 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
   );
 }
 
-// Оборачиваем все в AuthGuard
 export default function AdminPageContainer(props: AdminContainerProps) {
   return (
     <AuthGuard>
@@ -86,7 +79,6 @@ export default function AdminPageContainer(props: AdminContainerProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  // ... (getServerSideProps остается без изменений)
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
     return { props: { initialProducts: [], initialBlogPosts: [], error: "Admin DB not initialized" } };

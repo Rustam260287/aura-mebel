@@ -1,15 +1,12 @@
 
 // pages/products/[id].tsx
 import { GetStaticPaths, GetStaticProps } from 'next';
-import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin'; // Обновленный импорт
+import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
 import type { Product } from '../../types';
-
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { ProductDetail } from '../../components/ProductDetail';
-
-const Header = dynamic(() => import('../../components/Header').then(mod => mod.Header), { ssr: false });
-const Footer = dynamic(() => import('../../components/Footer').then(mod => mod.Footer), { ssr: false });
+import { Header } from '../../components/Header';
+import { Footer } from '../../components/Footer';
 
 interface ProductPageProps {
   product?: Product;
@@ -18,6 +15,10 @@ interface ProductPageProps {
 
 export default function ProductPage({ product, error }: ProductPageProps) {
   const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Загрузка...</div>;
+  }
 
   if (error) {
     return (
@@ -40,9 +41,13 @@ export default function ProductPage({ product, error }: ProductPageProps) {
 
   return (
     <>
-      <Header onStyleFinderClick={() => {}} />
+      <Header />
       <main>
-        <ProductDetail product={product} onBack={() => router.back()} />
+        <ProductDetail 
+          product={product} 
+          onBack={() => router.back()}
+          // AI-функции удалены
+        />
       </main>
       <Footer />
     </>
@@ -52,13 +57,13 @@ export default function ProductPage({ product, error }: ProductPageProps) {
 export const getStaticPaths: GetStaticPaths = async () => {
     const adminDb = getAdminDb();
     if (!adminDb) {
-        return { paths: [], fallback: 'blocking' };
+        return { paths: [], fallback: true }; // Используем fallback: true
     }
     const productsSnapshot = await adminDb.collection('products').get();
     const paths = productsSnapshot.docs.map(doc => ({
         params: { id: doc.id },
     }));
-    return { paths, fallback: 'blocking' };
+    return { paths, fallback: true };
 };
 
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -67,8 +72,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
     return { props: { error: "Product ID not found." } };
   }
   const { id } = params;
-  const adminDb = getAdminDb(); // Вызываем функцию
-  const adminStorage = getAdminStorage(); // Вызываем функцию
+  const adminDb = getAdminDb();
+  const adminStorage = getAdminStorage();
 
   if (!adminDb || !adminStorage) {
     return { props: { error: "Firebase Admin SDK initialization failed." } };
@@ -86,7 +91,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     if (Array.isArray(productData.imageUrls)) {
         const bucket = adminStorage.bucket();
         productData.imageUrls = await Promise.all(productData.imageUrls.map(async (url) => {
-            if (url && url.startsWith('gs://')) { // Добавлена проверка
+            if (url && url.startsWith('gs://')) {
                 const path = url.substring(url.indexOf('/', 5) + 1);
                 try {
                     const [signedUrl] = await bucket.file(path).getSignedUrl({
@@ -95,11 +100,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
                     });
                     return signedUrl;
                 } catch (e) {
-                    if (e instanceof Error) {
-                        console.error(`Error getting signed URL for ${path}:`, e.message);
-                    } else {
-                        console.error(`An unknown error occurred while getting signed URL for ${path}`);
-                    }
+                    console.error(`Error getting signed URL for ${path}:`, e instanceof Error ? e.message : e);
                     return '/placeholder.svg';
                 }
             }
@@ -109,12 +110,11 @@ export const getStaticProps: GetStaticProps = async (context) => {
         productData.imageUrls = ['/placeholder.svg'];
     }
     
-    delete (productData as Partial<Product>).imageUrl;
-
     return {
       props: {
         product: JSON.parse(JSON.stringify(productData)),
       },
+      revalidate: 60,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

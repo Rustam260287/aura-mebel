@@ -1,33 +1,37 @@
+
 // pages/blog/index.tsx
 import { GetStaticProps } from 'next';
 import { getAdminDb } from '../../lib/firebaseAdmin';
 import type { BlogPost, View } from '../../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-
-import { BlogListPage } from '../../components/BlogListPage'; // Используем ваш существующий компонент
+import { BlogListPage } from '../../components/BlogListPage';
+import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 
-const Header = dynamic(() => import('../../components/Header').then(mod => mod.Header), { ssr: false });
-
-interface BlogProps {
+interface BlogIndexProps {
   posts: BlogPost[];
+  error?: string;
 }
 
-export default function BlogIndexPage({ posts }: BlogProps) {
+export default function BlogIndex({ posts, error }: BlogIndexProps) {
   const router = useRouter();
 
+  if (error) {
+    return <div>Ошибка загрузки постов.</div>;
+  }
+  
   const handleNavigate = (view: View) => {
     if (view.page === 'blog-post') {
       router.push(`/blog/${view.postId}`);
-    } else if (view.page === 'home') {
-      router.push('/');
+    } else {
+      router.push(`/${view.page}`);
     }
   };
 
   return (
     <>
-      <Header onStyleFinderClick={() => {}} />
+      <Header />
       <main>
         <BlogListPage posts={posts} onNavigate={handleNavigate} />
       </main>
@@ -37,19 +41,20 @@ export default function BlogIndexPage({ posts }: BlogProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const dbAdmin = getAdminDb();
-  if (!dbAdmin) {
-    return { props: { posts: [] } };
-  }
-
-  try {
-    const blogSnapshot = await dbAdmin.collection('blog').orderBy('id', 'desc').get();
-    const posts = blogSnapshot.docs.map(doc => doc.data());
-    return {
-      props: { posts: JSON.parse(JSON.stringify(posts)) },
-    };
-  } catch (error) {
-    console.error("Error fetching blog posts:", error);
-    return { props: { posts: [] } };
-  }
+    const db = getAdminDb();
+    if (!db) {
+        return { props: { posts: [], error: "Admin DB not initialized" } };
+    }
+    try {
+        const snapshot = await db.collection('blog').orderBy('date', 'desc').get();
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+        return {
+            props: {
+                posts: JSON.parse(JSON.stringify(posts)),
+            },
+            revalidate: 60,
+        };
+    } catch (error) {
+        return { props: { posts: [], error: "Failed to fetch posts" } };
+    }
 };

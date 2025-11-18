@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import type { Product, BlogPost, View, ChatMessage } from '../types';
+import type { Product, BlogPost, View, ChatMessage, AdminView } from '../types';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { AdminDashboard } from '../components/admin/AdminDashboard';
 import { AdminProducts } from '../components/admin/AdminProducts';
@@ -20,8 +20,6 @@ interface AdminPageProps {
   onDeleteBlogPost: (postId: string) => Promise<void>;
   onDeleteProduct: (productId: string) => Promise<void>;
 }
-
-type AdminView = 'dashboard' | 'products' | 'blog' | 'chat-analytics';
 
 const AdminPageComponent: React.FC<AdminPageProps> = ({ 
   allProducts, 

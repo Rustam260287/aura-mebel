@@ -1,18 +1,15 @@
 "use client";
 
-import React, { useState, memo } from 'react';
-import Link from 'next/link'; // <-- Импортируем Link
+import React, { useState, memo, Fragment } from 'react';
+import Link from 'next/link';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { HeartIcon, ShoppingCartIcon, SparklesIcon, Bars3Icon } from './Icons';
-import { Button } from './Button';
+import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon } from './Icons';
+import { Transition } from '@headlessui/react';
 
-// Убираем onNavigate, он больше не нужен
-interface HeaderProps {
-  onStyleFinderClick: () => void;
-}
+// Упрощенный HeaderProps без AI
+interface HeaderProps {}
 
-// Упрощаем NavLink, теперь это просто стилизованный Link
 const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: boolean; onClick?: () => void }> = ({ href, children, isMobile, onClick }) => {
   return (
     <Link href={href} onClick={onClick} className={isMobile ? 'block px-4 py-2 text-lg text-brand-charcoal hover:bg-brand-cream-dark rounded-md' : 'text-brand-charcoal/80 hover:text-brand-brown transition-colors font-medium'}>
@@ -21,20 +18,20 @@ const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: bo
   );
 };
 
-const HeaderComponent: React.FC<HeaderProps> = ({ onStyleFinderClick }) => {
+const HeaderComponent: React.FC<HeaderProps> = () => {
   const { cartCount, toggleCart } = useCart();
   const { wishlistCount } = useWishlist();
-  const [, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Обновляем navLinks, чтобы они содержали href
+  // Убираем ссылки на AI-разделы
   const navLinks = [
-    { label: 'Каталог', href: '/catalog' },
-    { label: 'AI-редизайн', href: '/ai-room-makeover' },
-    { label: 'Визуальный поиск', href: '/visual-search' },
+    { label: 'Каталог', href: '/products' },
     { label: 'Блог', href: '/blog' },
     { label: 'О нас', href: '/about' },
     { label: 'Контакты', href: '/contacts' },
   ];
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <>
@@ -44,16 +41,13 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onStyleFinderClick }) => {
             <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider">
               Aura
             </Link>
+            {/* Убираем кнопку "AI-стилист" из десктопного меню */}
             <nav className="hidden md:flex items-center gap-8">
               {navLinks.map(link => (
                 <NavLink key={link.label} href={link.href}>
                   {link.label}
                 </NavLink>
               ))}
-              <Button variant="outline" size="sm" onClick={onStyleFinderClick}>
-                <SparklesIcon className="w-5 h-5 mr-2" />
-                AI-стилист
-              </Button>
             </nav>
             <div className="flex items-center gap-4">
               <Link href="/wishlist" className="relative text-brand-charcoal/80 hover:text-brand-brown transition-colors p-2 rounded-full hover:bg-brand-cream-dark" aria-label={`Избранное, ${wishlistCount} товаров`}>
@@ -73,7 +67,49 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onStyleFinderClick }) => {
           </div>
         </div>
       </header>
-      {/* ... мобильное меню также нужно будет обновить ... */}
+
+      {/* Мобильное меню без AI */}
+      <Transition show={isMobileMenuOpen} as={Fragment}>
+        <div className="md:hidden fixed inset-0 z-40">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="absolute inset-0 bg-black/30" onClick={closeMobileMenu} />
+          </Transition.Child>
+          <Transition.Child
+            as="div"
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-brand-cream shadow-xl"
+            enter="transform transition ease-in-out duration-300"
+            enterFrom="translate-x-full"
+            enterTo="translate-x-0"
+            leave="transform transition ease-in-out duration-300"
+            leaveFrom="translate-x-0"
+            leaveTo="translate-x-full"
+          >
+            <div className="p-5 flex flex-col h-full">
+              <div className="flex justify-between items-center mb-8">
+                <span className="text-3xl font-serif text-brand-brown">Aura</span>
+                <button onClick={closeMobileMenu}>
+                  <XMarkIcon className="w-8 h-8" />
+                </button>
+              </div>
+              <nav className="flex flex-col gap-4">
+                {navLinks.map(link => (
+                  <NavLink key={link.label} href={link.href} isMobile onClick={closeMobileMenu}>
+                    {link.label}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          </Transition.Child>
+        </div>
+      </Transition>
     </>
   );
 };

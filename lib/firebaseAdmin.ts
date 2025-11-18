@@ -1,57 +1,67 @@
-
 // lib/firebaseAdmin.ts
-import admin from 'firebase-admin';
-import { Firestore } from 'firebase-admin/firestore';
-import { Storage } from 'firebase-admin/storage';
-import fs from 'fs';
-import path from 'path';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getStorage, Storage } from 'firebase-admin/storage';
 
-// Эта функция будет нашим единственным способом получить доступ к admin SDK
-const ensureFirebaseAdminInitialized = () => {
-  if (admin.apps.length > 0) {
-    return admin;
+// Проверяем, заданы ли необходимые переменные окружения.
+const hasAdminConfig =
+  process.env.FIREBASE_PROJECT_ID &&
+  process.env.FIREBASE_CLIENT_EMAIL &&
+  process.env.FIREBASE_PRIVATE_KEY;
+
+const getServiceAccount = () => {
+  if (!hasAdminConfig) {
+    console.warn('Переменные окружения для Firebase Admin не заданы. SDK не будет инициализирован.');
+    return null;
+  }
+  return {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // Заменяем escape-последовательности \n на реальные переносы строк.
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  };
+};
+
+let adminApp: App | null = null;
+
+const ensureFirebaseAdminInitialized = (): App | null => {
+  // Если инстанс уже создан, возвращаем его.
+  if (adminApp) {
+    return adminApp;
+  }
+  
+  // Если приложение уже было инициализировано где-то еще, используем его.
+  if (getApps().length > 0) {
+    adminApp = getApps()[0];
+    return adminApp;
   }
 
-  try {
-    console.log('Lazy initializing Firebase Admin SDK from service account file...');
-    
-    // Используем google-credentials.json напрямую, если это ваш основной файл
-    const serviceAccountPath = path.resolve(process.cwd(), 'google-credentials.json');
-    
-    if (!fs.existsSync(serviceAccountPath)) {
-        console.warn('google-credentials.json not found. Firebase Admin SDK not initialized.');
-        return null;
-    }
-      
-    const serviceAccountString = fs.readFileSync(serviceAccountPath, 'utf8');
-    const serviceAccount = JSON.parse(serviceAccountString);
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      storageBucket: `${serviceAccount.project_id}.appspot.com`,
-    });
-
-    console.log('Lazy initialization of Firebase Admin SDK successful.');
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed:', error.message);
-    } else {
-      console.error('CRITICAL: Lazy initialization of Firebase Admin SDK failed with an unknown error.');
-    }
+  const serviceAccount = getServiceAccount();
+  if (!serviceAccount) {
     return null;
   }
 
-  return admin;
+  try {
+    console.log('Инициализация Firebase Admin SDK из переменных окружения...');
+    adminApp = initializeApp({
+      credential: cert(serviceAccount),
+      storageBucket: `${serviceAccount.projectId}.appspot.com`,
+    });
+    console.log('Firebase Admin SDK успешно инициализирован.');
+    return adminApp;
+  } catch (error) {
+    console.error('КРИТИЧЕСКАЯ ОШИБКА: Не удалось инициализировать Firebase Admin SDK:', error instanceof Error ? error.message : error);
+    return null;
+  }
 };
 
-
-// Функции-геттеры, которые будут использоваться в getServerSideProps
+// Экспортируемые функции для получения доступа к сервисам.
 export const getAdminDb = (): Firestore | null => {
-  const adminInstance = ensureFirebaseAdminInitialized();
-  return adminInstance ? adminInstance.firestore() : null;
+  const app = ensureFirebaseAdminInitialized();
+  return app ? getFirestore(app) : null;
 };
 
 export const getAdminStorage = (): Storage | null => {
-  const adminInstance = ensureFirebaseAdminInitialized();
-  return adminInstance ? adminInstance.storage() : null;
+  const app = ensureFirebaseAdminInitialized();
+  return app ? getStorage(app) : null;
 };

@@ -1,24 +1,29 @@
 // final-check.mjs
 import { VertexAI } from '@google-cloud/vertexai';
-import fs from 'fs';
-import path from 'path';
+import dotenv from 'dotenv';
+
+// Загружаем переменные окружения из .env.local
+dotenv.config({ path: '.env.local' });
 
 console.log("--- Запуск финальной проверки Vertex AI ---");
 
-// 1. Загрузка учетных данных
-const keyFilePath = path.join(process.cwd(), 'google-credentials.json');
-let credentials;
-try {
-  const keyFileContent = fs.readFileSync(keyFilePath, 'utf8');
-  credentials = JSON.parse(keyFileContent);
-} catch (error) {
-  console.error("!!! ОШИБКА: Не удалось загрузить google-credentials.json.", error);
+// 1. Загрузка учетных данных из переменных окружения
+const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+const CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL;
+const PRIVATE_KEY = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+
+if (!PROJECT_ID || !CLIENT_EMAIL || !PRIVATE_KEY) {
+  console.error("!!! ОШИБКА: Не все переменные окружения (PROJECT_ID, CLIENT_EMAIL, PRIVATE_KEY) определены в .env.local.");
   process.exit(1);
 }
 
-// 2. Инициализация клиента с РАБОТАЮЩЕЙ конфигурацией
-const PROJECT_ID = credentials.project_id;
-const LOCATION = 'us-east1'; // Используем подтвержденный рабочий регион
+const credentials = {
+  client_email: CLIENT_EMAIL,
+  private_key: PRIVATE_KEY,
+};
+
+// 2. Инициализация клиента
+const LOCATION = 'us-east1';
 const MODEL_NAME = 'gemini-pro';
 
 const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION, credentials });

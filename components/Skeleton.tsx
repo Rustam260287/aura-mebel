@@ -1,15 +1,13 @@
-import React, { memo } from 'react';
+// components/Skeleton.tsx
+import React from 'react';
 
-interface SkeletonProps {
-  className?: string;
-}
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const Skeleton: React.FC<SkeletonProps> = memo(({ className }) => {
+export const Skeleton: React.FC<SkeletonProps> = ({ className, ...props }) => {
   return (
-    <div className={`relative overflow-hidden bg-gray-200 rounded ${className}`}>
-      <div className="absolute inset-0 transform -translate-x-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer" />
-    </div>
+    <div
+      className={`animate-pulse bg-gray-200 rounded-md ${className}`}
+      {...props}
+    />
   );
-});
-
-Skeleton.displayName = 'Skeleton';
+};

@@ -90,3 +90,5 @@ export interface FurnitureBlueprint {
     totalPrice: number;
   };
 }
+
+export type AdminView = 'dashboard' | 'products' | 'blog' | 'chat-analytics';
