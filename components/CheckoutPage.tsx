@@ -4,6 +4,7 @@ import { useCart } from '../contexts/CartContext';
 import { Button } from './Button';
 import { CheckCircleIcon } from './Icons';
 import Image from 'next/image';
+import { useToast } from '../contexts/ToastContext';
 
 interface CheckoutPageProps {
   view: { page: 'checkout' } | { page: 'order-success', orderId: string };
@@ -12,6 +13,8 @@ interface CheckoutPageProps {
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigate }) => {
   const { cartItems, totalPrice, clearCart } = useCart();
+  const { addToast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -25,18 +28,38 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const fakeOrderId = Math.random().toString(36).substring(2, 10).toUpperCase();
-    console.log('Order Submitted:', {
-      orderId: fakeOrderId,
-      customer: formData,
-      items: cartItems,
-      total: totalPrice,
-    });
+    setIsSubmitting(true);
 
-    clearCart();
-    onNavigate({ page: 'order-success', orderId: fakeOrderId });
+    try {
+        const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                customer: formData,
+                items: cartItems,
+                total: totalPrice,
+            }),
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to place order');
+        }
+
+        const data = await res.json();
+        const orderId = data.id;
+
+        clearCart();
+        onNavigate({ page: 'order-success', orderId });
+    } catch (error) {
+        console.error('Order error:', error);
+        addToast('Не удалось оформить заказ. Пожалуйста, попробуйте позже.', 'error');
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   if (view.page === 'order-success') {
@@ -110,7 +133,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
                   <p className="text-sm text-gray-500">
                     {item.quantity} x {item.configuredPrice.toLocaleString('ru-RU')} ₽
                   </p>
-                  {item.category === 'Кастом' && (
+                  {item.category === 'Custom' && (
                       <p className="text-xs text-brand-terracotta mt-1 p-1 bg-amber-50 rounded">
                         <strong>Кастомный товар:</strong> менеджер свяжется с вами для подтверждения.
                       </p>
@@ -127,8 +150,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
               <span className="font-semibold">Итого:</span>
               <span className="font-serif text-3xl text-brand-brown">{totalPrice.toLocaleString('ru-RU')} ₽</span>
             </div>
-            <Button size="lg" type="submit" className="w-full mt-6">
-              Подтвердить заказ
+            <Button size="lg" type="submit" disabled={isSubmitting} className="w-full mt-6">
+              {isSubmitting ? 'Оформление...' : 'Подтвердить заказ'}
             </Button>
           </div>
         </div>

@@ -3,11 +3,29 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import { Product } from '../../../types';
+import { verifyIdToken, isAdmin } from '../../../lib/authMiddleware';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const db = getAdminDb();
   if (!db) {
     return res.status(500).json({ error: 'Database not initialized' });
+  }
+
+  // Authorization Check
+  if (req.method !== 'GET') { // GET requests might be public? Or typically product listing is public via other means. This endpoint seems to be for creation (POST).
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing or invalid authorization header' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+      const decodedToken = await verifyIdToken(token);
+      if (!isAdmin(decodedToken.email)) {
+          return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+      }
+    } catch (error) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
   if (req.method === 'POST') {

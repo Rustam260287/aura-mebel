@@ -91,4 +91,33 @@ export interface FurnitureBlueprint {
   };
 }
 
-export type AdminView = 'dashboard' | 'products' | 'blog' | 'chat-analytics';
+export interface OrderItem {
+    cartId: string;
+    id: string;
+    name: string;
+    price: number;
+    configuredPrice: number;
+    imageUrls: string[];
+    category: string;
+    quantity: number;
+    selectedOptions?: Record<string, string>;
+}
+
+export interface OrderCustomer {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    comments?: string;
+}
+
+export interface Order {
+    id: string;
+    customer: OrderCustomer;
+    items: OrderItem[];
+    total: number;
+    status: 'new' | 'processing' | 'completed' | 'cancelled';
+    createdAt: string;
+}
+
+export type AdminView = 'dashboard' | 'products' | 'blog' | 'chat-analytics' | 'orders';

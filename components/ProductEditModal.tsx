@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
-import { XMarkIcon, SparklesIcon, ArrowPathIcon } from './Icons';
+import { XMarkIcon, SparklesIcon, ArrowPathIcon, TrashIcon } from './Icons';
 import { useToast } from '../contexts/ToastContext';
+import { storage } from '../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Image from 'next/image';
 
 interface ProductEditModalProps {
   product: Product | null;
@@ -23,6 +26,7 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
     reviews: [],
   });
   const [isSeoLoading, setIsSeoLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   const { addToast } = useToast();
 
@@ -48,8 +52,6 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
   const handleGenerateSeo = useCallback(async () => {
     setIsSeoLoading(true);
     try {
-        // This functionality is not yet implemented in geminiService.ts
-        // For now, we'll just show a toast.
         addToast('SEO generation is not yet implemented.', 'info');
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'An error occurred.', 'error');
@@ -58,9 +60,45 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
     }
   }, [addToast]);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+    setIsUploading(true);
+
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      setProductData(prev => ({
+        ...prev,
+        imageUrls: [...(prev.imageUrls || []), downloadURL]
+      }));
+      addToast('Image uploaded successfully', 'success');
+    } catch (error) {
+      console.error("Upload error:", error);
+      addToast('Failed to upload image', 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setProductData(prev => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(product ? { ...product, ...productData } : productData);
+    // Ensure price is a number
+    const dataToSave = {
+        ...productData,
+        price: Number(productData.price)
+    };
+    onSave(product ? { ...product, ...dataToSave } : dataToSave);
   };
   
   return (
@@ -72,12 +110,71 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
         </div>
 
         <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Название</label>
+                <input type="text" name="name" value={productData.name} onChange={handleChange} className="w-full p-2 border rounded" required />
+            </div>
+            <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Цена</label>
+                <input type="number" name="price" value={productData.price} onChange={handleChange} className="w-full p-2 border rounded" required />
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Название</label>
-            <input type="text" name="name" value={productData.name} onChange={handleChange} className="w-full p-2 border rounded" required />
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Категория</label>
+            <select name="category" value={productData.category} onChange={handleChange} className="w-full p-2 border rounded">
+                <option value="">Выберите категорию</option>
+                <option value="Диваны">Диваны</option>
+                <option value="Кресла">Кресла</option>
+                <option value="Кровати">Кровати</option>
+                <option value="Столы">Столы</option>
+                <option value="Стулья">Стулья</option>
+                <option value="Шкафы">Шкафы</option>
+            </select>
+          </div>
+
+          <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Изображения</label>
+              <div className="flex flex-wrap gap-4 mb-4">
+                  {productData.imageUrls?.map((url, index) => (
+                      <div key={index} className="relative group w-24 h-24">
+                          <Image src={url} alt={`Product ${index}`} className="w-full h-full object-cover rounded border" width={96} height={96} />
+                          <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                              <TrashIcon className="w-4 h-4" />
+                          </button>
+                      </div>
+                  ))}
+                  <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown">
+                      <span className="text-xs text-center text-gray-500">{isUploading ? '...' : '+ Фото'}</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                  </label>
+              </div>
           </div>
           
-          {/* ... Other form fields ... */}
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Описание</label>
+            <textarea name="description" value={productData.description} onChange={handleChange} className="w-full p-2 border rounded" rows={4} required></textarea>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             <div>
+                <label htmlFor="details.dimensions" className="block text-sm font-medium text-gray-700">Размеры</label>
+                <input type="text" name="details.dimensions" value={productData.details.dimensions} onChange={handleChange} className="w-full p-2 border rounded" />
+             </div>
+             <div>
+                <label htmlFor="details.material" className="block text-sm font-medium text-gray-700">Материал</label>
+                <input type="text" name="details.material" value={productData.details.material} onChange={handleChange} className="w-full p-2 border rounded" />
+             </div>
+             <div>
+                <label htmlFor="details.care" className="block text-sm font-medium text-gray-700">Уход</label>
+                <input type="text" name="details.care" value={productData.details.care} onChange={handleChange} className="w-full p-2 border rounded" />
+             </div>
+          </div>
 
           <div className="flex items-end gap-4">
             <div className="flex-grow">
