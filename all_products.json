@@ -1,0 +1,992 @@
+[
+  {
+    "name": "Агата",
+    "price": 165000,
+    "description": "Описание\n    \tКоллекция Агата обладает элегантной индивидуальностью, построенной на контрасте между простотой материалов и качествомдеталей. Цветовая гамма обеспечивает ощущение тепла и уюта, которое должна создавать спальная комната.\nДизайн, созданный из гармонично подобранных деталей, привносящих подлинную элегантность.\nТехническая информация:\nКРОВАТЬ Ш. 2220 В. 1440 Д. 2040\nШКАФ Ш. 2700 В. 2120 Г. 560\nТУАЛЕТНЫЙ СТОЛИК Ш. 1480 В. 810 Г. 470\nТУМБА Ш. 620 В. 510 Г. 410",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/agata.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/agata-detail.html"
+  },
+  {
+    "name": "Адалия",
+    "price": 189200,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/adaliya.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/adaliya-detail.html"
+  },
+  {
+    "name": "Анжелика",
+    "price": 192500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/angelika2.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/anzhelika-1-detail.html"
+  },
+  {
+    "name": "Ариана",
+    "price": 165000,
+    "description": "Описание\n    \tСовременный оригинальный набор предметов мебели позволит создать неповторимое уютное пространство спальной и гостиной комнат.\nПростые формы и строгий внешний вид придадут современный вид любому интерьеру!\nТехническая информация:\nКРОВАТЬ Ш. 2480 В. 1500 Д. 2050\nШКАФ Ш. 2800 В. 2150 Г. 540\nТУАЛЕТНЫЙ СТОЛИК Ш. 1400 В. 880 Г. 480, зеркало: Ш. 770 В.740\nТУМБА Ш. 580 В. 480 Г. 440\nТВ-тумба Ш. 180 В. 50 Г. 63",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/ariana.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/ariana-detail.html"
+  },
+  {
+    "name": "Ариэль",
+    "price": 170500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/ariel.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/ariel-detail.html"
+  },
+  {
+    "name": "Атланта",
+    "price": 176000,
+    "description": "Описание\n    \tСочетая комфорт и элегантность, спальня Атланта выполнена в приглушенных тонах с золотыми акцентами.\nСтильный и современный выбор для вашей спальной комнаты.\nТехническая информация:\nКРОВАТЬ Ш. 2658 В. 1393 Д. 2100\nШКАФ Ш. 2700 В. 2120 Г. 540\nКОМОД Ш. 1200 В. 932 Г. 480, зеркало: Ш. 860 В. 1180\nТУМБА Ш. 600 В. 436 Г. 480",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/atlanta.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/atlanta-detail.html"
+  },
+  {
+    "name": "Богемия-нью",
+    "price": 84150,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/bogemia.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/bogemiya-nyu-detail.html"
+  },
+  {
+    "name": "Бруклин",
+    "price": 83600,
+    "description": "Описание\n    \tСпальный гарнитур Бруклин – для тех, кто предпочитает простую, но эстетичную и комфортную мебель.\nДерево и камень – отличное сочетание для любителей простых, но современных интерьеров.\nТехническая информация:\nКРОВАТЬ Ш. 1900 В. 1280 Д. 2060\nШКАФ Ш. 2290В. 2110 Г. 545\nТУАЛЕТНЫЙ СТОЛИК Ш. 1170 В. 780 Г. 440, зеркало: Ш. 900 В. 680\nТУМБА Ш. 540 В. 500 Г. 390",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/bruklin.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/bruklin-detail.html"
+  },
+  {
+    "name": "Вивальди",
+    "price": 181500,
+    "description": "Описание\n    \tКоллекция Вивальди покоряет целостностью: декор, способный объединить каждую деталь в элегантную композицию.\nМебель, созданная для того, чтобы вы действительно наслаждались своим домом.\nТехническая информация:\nКРОВАТЬ Ш. 3250 В. 1500 Д. 2060\nШКАФ Ш. 2720 В. 2160 Г. 570\nТУАЛЕТНЫЙ СТОЛИК Ш. 1440 В. 800 Г. 450\nТУМБА Ш. 670 В. 500 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/vivaldi.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/vivaldi-detail.html"
+  },
+  {
+    "name": "Граффити",
+    "price": 104500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/graffiti.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/graffiti-detail.html"
+  },
+  {
+    "name": "Грация",
+    "price": 104500,
+    "description": "Описание\n    \tОснова дизайна спального гарнитура Грация – это сочетание минимализма и современности. При этом спальня внесёт в интерьер нотки элегантности благодаря декору предметов мебели.\nСочетание эстетики с полезными деталями, для тех, кто ищет разные стили, сохраняя в себе оригинальность.\nТехническая информация:\nКРОВАТЬ Ш. 1900 В. 1380 Д. 2060\nШКАФ Ш. 2290 В. 2110 Г. 545\nКОМОД Ш. 940 В. 940 Г. 480, зеркало – Ш. 680 В. 920\nТУМБА Ш. 540 В. 585 Г. 420",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/gratsiya.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/gratsiya-detail.html"
+  },
+  {
+    "name": "Джесси, крем, 6 пред.",
+    "price": 153650,
+    "description": "Описание\n    \tСпальня Джесси, 6 предметов\nЦвет: крем\nРазмеры:\n \nШкаф: Ш 2860, В 2130, Г 610\nКровать: 1.8, Ш 2050, В 1200, Г 2250\nТумба: Ш 640, В 490, Г 440\nТрельяж: Ш 1350, В 820, Г 450\nЗеркало: Ш 710, В 800",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/3.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/dzhessi-2c-krem-2c-6-pred-detail.html"
+  },
+  {
+    "name": "Изабель",
+    "price": 167200,
+    "description": "Описание\n    \tСпальня Изабель – это сочетание элегантности и простоты, гармонии и комфорта. Светлые тона спальни придают ей лёгкость и простор.\nТехническая информация:\nКРОВАТЬ Ш. 2580 В. 1280 Д. 2100\nШКАФ Ш. 2720 В. 2152 Г. 536\nТУАЛЕТНЫЙ СТОЛИК Ш. 1632 В. 870 Г. 480, зеркало: Ш. 700 В. 850\nТУМБА Ш. 582 В. 521 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/izabel.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/izabel-detail.html"
+  },
+  {
+    "name": "Ирис, сатин, 6 пред.",
+    "price": 169550,
+    "description": "Описание\n    \tСпальня Ирис, 6 предметов\nЦвет: сатин\nРазмеры:\nШкаф: Ш 2720, В 2160, Г 600\nКровать: 1.8, Ш 2430, В 1320, Г 2100\nТумба: Ш 580, В 430, Г 440\nТрельяж: Ш 1240, В 890, Г 490\nЗеркало: Ш 800, В 800",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/15.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/iris-2c-satin-2c-6-pred-detail.html"
+  },
+  {
+    "name": "Капри",
+    "price": 187000,
+    "description": "Описание\n    \tНабор мебели Капри добавит благородства и глубины вашей комнате благодаря особому дизайну изголовья и зеркалам.\nЭлегантность и комфорт коллекции Капри заставят вас почувствовать себя особенными благодаря своим золотым акцентам.\nТехническая информация:\nКРОВАТЬ Ш. 2100 В. 1630 Д. 2080\nШКАФ Ш. 2700 В. 2120 Г. 560\nТУАЛЕТНЫЙ СТОЛИК Ш. 1510 В. 830 Г. 510\nТУМБА Ш. 750 В. 1630 Г. 530",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kapri.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/kapri-detail.html"
+  },
+  {
+    "name": "Марсель",
+    "price": 189200,
+    "description": "Описание\n    \tСпокойные и нейтральные тона спальни Марсель позволяют создать умиротворяющую атмосферу для отдыха и сна.\nИдеальное сочетание функциональности и эстетики.\nТехническая информация:\nКРОВАТЬ Ш. 2150 В. 1190 Д. 2100\nШКАФ Ш. 2788 В. 2044 Г. 540\nТУАЛЕТНЫЙ СТОЛИК Ш. 1636 В. 906 Г. 500, зеркало: Ш. 800 В. 800\nТУМБА Ш. 600 В. 404 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/marsel.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/marsel-detail.html"
+  },
+  {
+    "name": "Милан",
+    "price": 168300,
+    "description": "Описание\n    \tКоллекция Милан сочетает в себе красоту и функциональность, создавая гармоничную атмосферу уюта и спокойствия в вашей спальне.\nИдеальное решение для создания комфортабельного и стильного интерьера вашей спальни.\nТехническая информация:\nКРОВАТЬ Ш. 2080 В. 1320 Д. 2450\nШКАФ Ш. 2707 В. 2120 Г. 635\nТУАЛЕТНЫЙ СТОЛИК Ш. 1680 В. 768 Г. 553, зеркало: Ш. 1233 В. 878\nТУМБА Ш. 668 В. 580 Г. 503",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/milan.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/milan-detail.html"
+  },
+  {
+    "name": "Миледи",
+    "price": 115500,
+    "description": "Описание\n    \tРоскошный набор предметов мебели коллекции Миледи создаст красивое уютное пространство спальной комнаты.\nГлоток свежего воздуха для современных интерьеров.\nТехническая информация:\nКРОВАТЬ Ш. 1900 В. 1380 Д. 2060\nШКАФ Ш. 2290 В. 2110 Г. 545\nКОМОД Ш. 940 В. 940 Г. 480, зеркало – Ш. 900 В. 920\nТУМБА Ш. 540 В. 1380 Г. 420",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/miledi.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/miledi-detail.html"
+  },
+  {
+    "name": "Милена",
+    "price": 203500,
+    "description": "Описание\n    \tКоллекция Милена обладает элегантной индивидуальностью, построенной на контрасте между простотой материалов и качеством деталей. Цветовая гамма обеспечивает ощущение тепла и уюта, которое должнасоздавать спальная комната.\nДизайн, созданный из гармонично подобранных деталей, привносящих подлинную элегантность.\nТехническая информация:\nКРОВАТЬ Ш. 2220 В. 1440 Д. 2040\nШКАФ Ш. 2700 В. 2120 Г. 560\nТУАЛЕТНЫЙ СТОЛИК Ш. 1480 В. 810 Г. 470\nТУМБА Ш. 620 В. 510 Г. 410",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/milena.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/milena-detail.html"
+  },
+  {
+    "name": "Мишель",
+    "price": 203500,
+    "description": "Описание\n    \tВ спальне Мишель гармонично сочетаются элегантность классического дизайна и современные функциональные решения.\nСпальня Мишель – это уютное и стильное пространство для комфортного сна и отдыха.\nТехническая информация:\nКРОВАТЬ Ш. 2700 В. 1300 Д. 2100\nШКАФ Ш. 2770 В. 2200 Г. 630\nКОМОД Ш. 1200 В. 1020 Г. 550, зеркало: Ш. 920 В. 920\nТУМБА Ш. 668 В. 480 Г. 500",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/mishel.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/mishel-detail.html"
+  },
+  {
+    "name": "Мия",
+    "price": 184800,
+    "description": "Описание\n    \tСпальный гарнитур Мия порадует ценителей современной классики. Сочетание светлых и тёплых оттенков создадут атмосферу воздушности и лёгкости в вашей спальне.\nДля ценителей сдержанной классики.\nТехническая информация:\nКРОВАТЬ Ш. 2260 В. 1680 Д. 2200\nШКАФ Ш. 2720 В. 2230 Г. 620\nКОМОД Ш. 820 В. 1440 Г. 470, зеркало: Ш. 1020 В. 1120\nТУМБА Ш. 600 В. 690 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/miya.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/miya-detail.html"
+  },
+  {
+    "name": "Адалия",
+    "price": 159500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/adaliya-1.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/adaliya-1-detail.html"
+  },
+  {
+    "name": "Анжелика угловая",
+    "price": 132000,
+    "description": "Описание\n    \tРазмеры: 2,1 х 3,9 м",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/Angelika_ugol.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/anzhelika-uglovaya-detail.html"
+  },
+  {
+    "name": "Бренд Прямая",
+    "price": 159500,
+    "description": "Описание\n    \tСтрогие линии, изысканная отделка и современный дизайн удовлетворят пожелания даже привередливых ценителей качественной мебели.\nТехническая информация:\nКУХНЯ ПРЯМАЯ Ш. 4400 В. 2270 Г. 550",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/brend.png"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/brend-detail.html"
+  },
+  {
+    "name": "Бренд Угловая",
+    "price": 192500,
+    "description": "Описание\n    \tСтрогие линии, изысканная отделка и современный дизайн удовлетворят пожелания даже привередливых ценителей качественной мебели.\nТехническая информация:\nКУХНЯ УГЛОВАЯ Ш. 3800 × 2000 В. 2270 Г. 550",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/brendU.png"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/brend-uglovaya-detail.html"
+  },
+  {
+    "name": "Венеция",
+    "price": 96800,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/venecija_4,2.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/venetsiya-detail.html"
+  },
+  {
+    "name": "Венеция угловая",
+    "price": 121000,
+    "description": "Описание\n    \tРазмеры 3,6 х 2,5 м",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kg_venecija_ugol.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/venetsiya-uglovaya-detail.html"
+  },
+  {
+    "name": "Женева",
+    "price": 102300,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/geneva_4,2.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/zheneva-1-detail.html"
+  },
+  {
+    "name": "Женева",
+    "price": 104500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kg_geneva.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/zheneva-detail.html"
+  },
+  {
+    "name": "Женева угловая",
+    "price": 132000,
+    "description": "Описание\n    \tРазмеры 3,9 х 2,5 м",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kg_geneva_ugol.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/zheneva-uglovaya-detail.html"
+  },
+  {
+    "name": "Мария",
+    "price": 99000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/marija_4,2.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/mariya-detail.html"
+  },
+  {
+    "name": "Мария",
+    "price": 104500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/marija_4,8.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/mariya-1-detail.html"
+  },
+  {
+    "name": "Мария",
+    "price": 115500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/marija_5,1.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/mariya-2-detail.html"
+  },
+  {
+    "name": "Мария угловая",
+    "price": 126500,
+    "description": "Описание\n    \tРазмеры: 3,9 х 2,7 м",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/marija_ugol.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/mariya-uglovaya-detail.html"
+  },
+  {
+    "name": "Медея угловая",
+    "price": 110500,
+    "description": "Описание\n    \tРазмер 3,6 х 2,5 м",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kg_medeja_ugol.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/medeya-uglovaya-detail.html"
+  },
+  {
+    "name": "Наоми",
+    "price": 95700,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/naomi_4,2.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/naomi-detail.html"
+  },
+  {
+    "name": "Оливия",
+    "price": 99000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/oliviya-1.jpg"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/oliviya-1-detail.html"
+  },
+  {
+    "name": "Селена",
+    "price": 143000,
+    "description": "Описание\n    \tС первого взгляда кухня Селена очаровывает и вдохновляет, а главное – не оставляет равнодушным ни одного человека.\nФасады благородного белого цвета, декорированные золотом, придают неповторимую изысканность.\nТехническая информация:\nКУХНЯ ПРЯМАЯ Ш. 4200 В. 2270 Г. 550",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/selena-2.png"
+    ],
+    "category": "Кухни",
+    "originalUrl": "https://label-com.ru/katalog/kukhni-1/selena-2-detail.html"
+  },
+  {
+    "name": "Bella",
+    "price": 158550,
+    "description": "Описание\n    \tНОВИНКА ⚜️Bella⚜️\nВ комплект входит: диван, два кресла и 4 подушкиРазмеры: Диван:Ширина - 3.10Глубина - 1м.Высота - 90Лежачее место - 180 на 60смВ откидном виде 80смКресло:Ширина -75смГлубина - 80смВысота -85смСидячее место - 60/55см",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/BELLA.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/bella-detail.html"
+  },
+  {
+    "name": "BUGATTI",
+    "price": 143000,
+    "description": "Описание\n    \t✨Новинка✨   ТРЕНД СЕЗОНА\nГабаритные размеры:\nСтандартного уголка:\nугол 3,30/2,40\nВысота 90\nГлубина 1м\nРазмер сидячего места ширина 65 см\nПри выдвижении спинки 85 см\nВысота сидячего места 43 см\nСпинки выдвижные\nУгол модульный можно перекидывать Право / Лево",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/327.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/bugatti-detail.html"
+  },
+  {
+    "name": "E L I T",
+    "price": 170000,
+    "description": "Описание\n    \tПредставляем Новинку: E L I T \nДиван:\nДлина 245Сидячее место 180/60В откидном виде 180/85Высота спинки 90От стены 94Высота боковинки от пола 60Кресло Длина кресло 82От стены 85Сидячее место 60Глубина 57Высота спинки 94\nДекоры из дерева! Премиальный Бренд!Расцветка ткани и декора можно сделать на ваш вкус.Диван модульный, нераскладной,только спинка откидная.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/262.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/e-l-i-t-detail.html"
+  },
+  {
+    "name": "Gucci",
+    "price": 148500,
+    "description": "Описание\n    \tПредставляем новинку ⚡️⚡️⚡️Gucci⚡️⚡️⚡️ - декоры из металла, премиальный Бренд! Расцветка ткани и декора можно сделать на ваш вкус. Диван не раскладной,только спинка откидная.\nДиван\nДлина  235\nСидячее место 185/65\nВ откидном виде  185/100\nВысота спинки 93см\nОт стены 90см\n Кресло\nВысота спинки  88\nГлубина 52\nШирина 72\nВнутренний размер сидушки 52/56",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/gucci.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/gucci-detail.html"
+  },
+  {
+    "name": "GUCCI 777",
+    "price": 175000,
+    "description": "Описание\n    \t\n\n\n\n \n\n\n\n \n \n \n\n\n\n \n\n\n\n\n \nВ комплекте: диван , два кресла и шесть подушек.Диван\nДлина: 2.40 мШирина: 1.05 мВысота: 85 смВысота подлокотника: 65 смСидячее место: 170/60 смЛежачее место: 170/85 см \nОткидной механизм \n \nКресло\nДлина: 90 смШирина: 100 смВысота: 100 смСидячее место Ширина: 50 смГлубина: 60 см",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/gucci6.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/gucci-777-detail.html"
+  },
+  {
+    "name": "Gucci Premium",
+    "price": 159500,
+    "description": "Описание\n    \t \nДекоры из металла! Премиальный Бренд!\nРасцветка ткани и декора можно сделать на ваш вкус.\nДиван не раскладной,только спинка откидная.\nДиван:\nДлина  240\nСидячее место 180/65\nВ откидном виде  180/100\nВысота спинки 95см\nОт стены 90см\nВысота боковинки от пола 74см\nКресло:\nВысота спинки  88\nГлубина 52\nШирина 72\nВнутренний размер сидушки\n52/56",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/gucci-premium.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/gucci-premium-detail.html"
+  },
+  {
+    "name": "IZABELL",
+    "price": 154000,
+    "description": "Описание\n    \tКОМПЛЕКТ: диван , два кресла и четыре подушки\n Цена зависит от материала.\nРазмеры:\nДиван:\nШирина:-95см.\nДлина:-130см.\nВысота:-85м.\nСидушка:-180/70см.\nКресло:\nШирина:-75 м.\nГлубина:-60 см.\nВысота:-85см.\n \nСпинки съемные , можно пронести, через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/izabell.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/izabell-detail.html"
+  },
+  {
+    "name": "KREYA",
+    "price": 148700,
+    "description": "Описание\n    \t\n\n\n\n \n\n\n\n\n \nВ комплект входит: диван, два кресла и 2 подушки\n \nДиван \nШирина - 2.35 смГлубина - 1 мВысота - 87 смСидячее место - 185/55 смДиван спинка выдвижнаяЛежачее место 1,85/82 Высота сидушки от пола 40 см\n \nКресло \nШирина - 90 смГлубина - 85 смВысота - 1,03 мСидячее место - 60/55 смВысота от пола 43 см",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/kreya1.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/kreya-detail.html"
+  },
+  {
+    "name": "Latina",
+    "price": 154600,
+    "description": "Описание\n    \t!!!НОВИНКА 2025!!!\n▪️Latina▪️\nВ комплекте: диван , два кресла и пять подушек.\nРазмеры:\nДиван:Длина - 2.45 мШирина - 1.10 смВысота - 93 смЛежачее место 1,90/80 см\nКресло:Длина - 100смШирина - 80смВысота - 100смСидячее место - 60/45Цена 154,600",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/12.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/latina-detail.html"
+  },
+  {
+    "name": "Maserati",
+    "price": 164000,
+    "description": "Описание\n    \t\n\n\n\n \n\n \n\n\n\n\n \nВ комплекте: диван , два кресла и четыре подушки\nДиван\nШирин: 2,30 см Глубина: 1 м Высота: 80 см Сидушка: 160/70 см Спальное место 180/90 см\n \nКресло\nШирина: 85 см Глубина: 90 см Высота: 1 м Сидушка: 50/60 см\n \nСпинки съемные, можно пронести, через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/mazerati7.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/maserati-detail.html"
+  },
+  {
+    "name": "MOON FAMILY",
+    "price": 162400,
+    "description": "Описание\n    \t\n\n\n \n \n \n \n \n\n\n \n \n \n \n \n\n\n \n \n \n \n \n\n\n\n \nДиван \nДлина - 295 смСидячее место - 285/65 смВ откидном виде - 285/90 смВысота спинки - 77 см От стены - 100 см Высота боковинки от пола - 55 см \n \nКресло \nДлина кресло - 85 см От стены - 90 см Сидячее место - 85/75 смГлубина - 85 см Высота спинки - 75 см\n \nДекоры из металла и дерева!\nМеханизм: откидные спинки дивана!\nКресла на крутящем механизме! \nБеспроводная зарядка, usb порталы!\nРасцветка ткани и декора: можно сделать на ваш вкус.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/MOON3.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/moon-family-detail.html"
+  },
+  {
+    "name": "MOON FAMILY",
+    "price": 147350,
+    "description": "Описание\n    \tПредставляем новинку MOON FAMILY\nДиван длина 370Сидячее место 370/65В откидном виде 370/90Высота спинки 77 От стены 100см Высота боковинки от пола 55см\nКресло длина 85 От стены 90 Сидячее место 85/75Глубина 85 Высота спинки 75\nДекоры из металла и дерево!Механизм откидные спинки дивана!Кресла на крутящем механизме! Беспроводная зарядка,usb порталы!\nРасцветка ткани и декора можно сделать на ваш вкус.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/251.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/moon-family-1-detail.html"
+  },
+  {
+    "name": "ORION",
+    "price": 155350,
+    "description": "Описание\n    \t✨Новинка ORION✨\nВ комплекте:Диван,два кресла + Две декоративных подушки\nСтандартный размер:Диван:Длина 2,40 мВысота 90 смГлубина 1 мДлина сидушки 1,70Глубина сидушки 70 смВысота от пола 45 смСидушка в открытом виде 90/1,70Спинка выдвижнаяПодлокотники с регулируемым подъемным механизмомКресло:Ширина 80 смГлубина 90 смВысота 1 мСидушка 55/50",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/147.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/orion-detail.html"
+  },
+  {
+    "name": "PRADA",
+    "price": 154000,
+    "description": "Описание\n    \tКОМПЛЕКТ: диван , два кресла и пять подушек.\nЦена зависит от материала, и от покраски Декора. \nРазмеры:\nДиван:\nШирина:-2.30 см.\nГлубина:-95 см.\nВысота:- 80 см\nСидушка:-180/65см.\nЛежачее место 180/95\nКресло:\nШирина:-1. м\nГлубина:-90 см.\nВысота:-80 см\n \nСпинки съемные , можно пронести, через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/prada.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/prada-detail.html"
+  },
+  {
+    "name": "Rolex",
+    "price": 142000,
+    "description": "Описание\n    \t\n\n\n\n \n\n \n\n\n\n\n \nДиван \nДлина: 235 смВысота спинки: 94 смСидушка: 185/56 смВ откидном виде: 185/92 см\n \nКресло \nВысота: 88 смГлубина: 52 смШирина: 72 смВнутренний размер сидушки: 52/56 смВысота спинки: 88 см\n \nРасцветка ткани и декора: можно сделать на ваш вкус.\nДиван не раскладной, только спинка откидная",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/rolex1.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/rolex-detail.html"
+  },
+  {
+    "name": "SALVA",
+    "price": 152350,
+    "description": "Описание\n    \t⚜️SALVA ⚜️\nВ комплекте: диван , два кресла и четыре подушек\nЦена зависит от материала, и от покраски декора - уточняйте!\nРазмеры:Диван:Длина :-2,40 см. Ширина :-1 MВысота:- 90 сп Глубина сидушки 1,70/60 см Лежачее место 2,20/90 см\nКресло:Длина :-90 смШирина :-1 mВысота:-1. MСидячее место 50/60\nСпинки съемные , можно пронести, через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/264.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/salva-detail.html"
+  },
+  {
+    "name": "Santoni",
+    "price": 128450,
+    "description": "Описание\n    \t⚜️Santoni⚜️\nВ комплекте: диван , два кресла и две подушки\nЦена зависит от материала и поролона - уточняйте!\nРазмеры:Диван:Длина :-2.30мШирина :-1.05мВысота:-97смГлубина сидушки 170/55см Лежачее место 170/85см\nКресло:Длина :74смШирина :-90 см Высота:-1.03смСидячее место 50/54",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/234.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/santoni-detail.html"
+  },
+  {
+    "name": "TERENISA",
+    "price": 168500,
+    "description": "Описание\n    \t\n\n\n\n \n\n\n\n \n \n \n\n\n\n \n\n\n\n\n \nВ комплект входит: диван, два кресла и 4 подушкиДиван\nШирина - 2.40 мГлубина - 95 смВысота - 90 смЛежачее место - 210/85 см\n \nКресло \nШирина - 80 смГлубина - 80 смВысота - 1 мСидячее место - 55/50 см\n \nРасцветку ткани можно сделать на ваш вкус.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/terenissa3.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/terenisa-detail.html"
+  },
+  {
+    "name": "Tesla",
+    "price": 154650,
+    "description": "Описание\n    \tНОВИНКА ⚜️Tesla⚜️\nВ комплект входит: диван, два кресла и 2 подушкиРазмеры: Диван:Ширина - 2.40Глубина - 1м.Высота - 90Лежачее место - 2.10В откидном виде 80смКресло:Ширина -90Глубина - 80смВысота -90Сидячее место - 60/55см",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/22.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/tesla-detail.html"
+  },
+  {
+    "name": "ZILLI",
+    "price": 170000,
+    "description": "Описание\n    \t\n\n\n\n \n\n\n\n \n \n \n\n\n\n \n\n\n\n\n \nВ комплекте: диван, два кресла и четыре подушкиДиван\nШирина: 2.80 смГлубина: 1.10 мВысота: 80 см Сидушка: 90/65 смСпальное место: 180/90 см\n \nКресло\nШирина: 80 см Глубина: 80 см Высота: 1.10 см Сидушка: 50/50 см\n \nСпинки съемные, можно пронести через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/zilli1.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/zilli-detail.html"
+  },
+  {
+    "name": "Амазонка",
+    "price": 136000,
+    "description": "Описание\n    \t\n\n\n\n \n\n \n\n\n\n\n \n \nОкружите себя непревзойдённой красотой этой модели! Настолько она красивая в реальности, просто надо увидеть один раз, чтобы влюбиться.\n \nГабаритные номинальные размеры\nДиван\n• Длина 2,20 м• Глубина 1 м• Высота 130 см• Сиденье дивана 167x70 см\n \nКресло\n• Длина 120 см• Глубина 90 см• Высота 130 см•Сиденье кресла 53x60 см\n \nМатериалы\n• Декор - Пенополиуретан• Обивка - Ткани от ведущих поставщиков• Каркас - Фанера+сосна\n \nДиван не раскладной",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/Amazonka2.jpeg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/yarkaya-novinka-amazonka-detail.html"
+  },
+  {
+    "name": "Анжелика",
+    "price": 85000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/angelika.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/anzhelika-detail.html"
+  },
+  {
+    "name": "комплект СТОЛ и СТУЛЬЯ",
+    "price": 142500,
+    "description": "Описание\n    \t!!!АКЦИЯ 5%!!!\nстол размер 2,50х3\nстулья 8-10 штук",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/3-stol-razmer-2-2c50kh3-stulya-8-10-shtuk-tsena-za-komplekt-150-tys-5-142-2c500-detail.html"
+  },
+  {
+    "name": "Монако 2м белый",
+    "price": 44000,
+    "description": "Описание\n    \tМебель для гостиной Монако сочетает в себе комфорт и эстетику. Натуральные материалы, неподвластная времени элегантность аксессуаров, скромность и изящество линий.\nКоллекция Монако – это воплощение элегантного стиля, о котором вы мечтали. Предметы коллекции подарят сказочную красоту жилым помещениям, ставя во главу угла комфорт и эстетику благодаря металлическим ножкам и элегантным золотым линиям.\nТехническая информация:\nСТОЛ Ш. 990 В. 820 Д. 1850\nСТУЛ Ш. 585 В. 840 Г. 630\nКОМОД Ш. 1910 В. 820 Г. 450\nТВ-ТУМБА Ш. 2000 В. 520 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/monako-1.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/monako-1-detail.html"
+  },
+  {
+    "name": "Ницца 2м мокко",
+    "price": 46500,
+    "description": "Описание\n    \tПастельные цвета, в сочетании с современными и элегантными деталями коллекции Ницца luxury украсят ваши жилые помещения своей гармонией.\nТехническая информация:\nСТУЛ Ш. 570 В. 1110 Г. 870\nСТОЛ Ш. 990 В. 770 Д. 1860\nКОМОД Ш. 2090 В. 780 Г. 520\nТВ-ТУМБА Ш. 2250 В. 530 Г. 520",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/niza.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/nitstsa-2m-mokko-detail.html"
+  },
+  {
+    "name": "Оливия",
+    "price": 62000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/oliviya-2.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/oliviya-2-detail.html"
+  },
+  {
+    "name": "Стол Вика",
+    "price": 40000,
+    "description": "Описание\n    \tНе раздвижной",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_vika4.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-vika-1-detail.html"
+  },
+  {
+    "name": "Стол Вика",
+    "price": 35000,
+    "description": "Описание\n    \tНе раздвижной",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_vika.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-vika-detail.html"
+  },
+  {
+    "name": "Стол Голд",
+    "price": 39000,
+    "description": "Описание\n    \tНожки - МДФ",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_gold22.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-gold-2-detail.html"
+  },
+  {
+    "name": "Стол Голд",
+    "price": 45000,
+    "description": "Описание\n    \tНожки - МДФ",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_gold1.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-gold-3-detail.html"
+  },
+  {
+    "name": "Стол Голд",
+    "price": 35000,
+    "description": "Описание\n    \tНожки - МДФ",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_gold.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-gold-detail.html"
+  },
+  {
+    "name": "Стол Голд",
+    "price": 37000,
+    "description": "Описание\n    \tНожки - МДФ",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_gold2.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-gold-1-detail.html"
+  },
+  {
+    "name": "Стол Лапка",
+    "price": 24000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_lapka.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-lapka-detail.html"
+  },
+  {
+    "name": "Стол Лапка",
+    "price": 26000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_lapka7.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-lapka-1-detail.html"
+  },
+  {
+    "name": "Стол Милан",
+    "price": 25000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_milan.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-milan-detail.html"
+  },
+  {
+    "name": "Стол Милан",
+    "price": 27000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_milan2.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-milan-1-detail.html"
+  },
+  {
+    "name": "Стол Милана",
+    "price": 25000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_milana.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-milana-detail.html"
+  },
+  {
+    "name": "Стол Милана",
+    "price": 28000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_milana8.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-milana-1-detail.html"
+  },
+  {
+    "name": "Стол Рим",
+    "price": 28000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_rim.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-rim-detail.html"
+  },
+  {
+    "name": "Стол Рим",
+    "price": 30000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_rim8.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-rim-1-detail.html"
+  },
+  {
+    "name": "Стол Рим 2",
+    "price": 28000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_rim2.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-rim-2-detail.html"
+  },
+  {
+    "name": "Стол Рим 2",
+    "price": 30000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_rim26.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stol-rim-3-detail.html"
+  },
+  {
+    "name": "ЭСТЕЛЬ",
+    "price": 154000,
+    "description": "Описание\n    \tКОМПЛЕКТ: диван , два кресла и пять подушек.\nЦена зависит от материала, и от покраски Декора.\nРазмеры:\nДиван:\nДлина :-2,30 см.\nШирина :-95 см\nВысота:-1м.\nГлубина сидушки 1,70/60 см\nЛежачее место 1,70/90 см\nКресло:\nДлина :-95 см\nШирина :-80 см\nВысота:-1.м\nСидячее место 60/70\n \nСпинки съемные , можно пронести, через любой дверной проем.",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/estel4.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/estel-detail.html"
+  },
+  {
+    "name": "ЭМИЛИЯ",
+    "price": 137500,
+    "description": "Описание\n    \tКОМПЛЕКТ: диван , два кресла, подушки.\nЦена зависит от материала, и от покраски Декора.\nРазмеры:\nДиван:\nДлина: 2,40 см.\nШирина: 1 м\nВысота: 92 см\nГлубина сидушки 1,90/95 см\nКресло:\nДлина: 1 м\nШирина: 1 м\nВысота: 92 см\nСидячее место 52/95",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/emiliya.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/emiliya-detail.html"
+  },
+  {
+    "name": "Элит",
+    "price": 106700,
+    "description": "Описание\n    \tДизайн коллекции Элит на стыке минимализма и современности. Спокойные тона и яркие акценты придают вашей комнате элегантность, а практичные функции делают вашу жизнь проще.\nСочетание природных элементов со стильными материалами придаст вашей спальной комнате стильный характер.\nТехническая информация:\nКРОВАТЬ Ш. 1800 В. 1190 Д. 2000\nШКАФ Ш. 1800 В. 2250 Г. 520\nКОМОД Ш. 960 В. 1260 Г. 470\nТУМБА Ш. 560 В. 510 Г. 420",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/elit.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/elit-detail.html"
+  },
+  {
+    "name": "Элен",
+    "price": 181500,
+    "description": "Описание\n    \tИзысканная и утончённая, коллекция Элен сделана с такой же любовью, которую она может предложить.\nНежные цвета, минималистичный декор создают роскошную атмосферу и современный интерьер.\nТехническая информация:\nКРОВАТЬ Ш. 2450 В. 1500 Д. 2100\nШКАФ Ш. 2990 В. 2200 Г. 550\nТУАЛЕТНЫЙ СТОЛИК Ш. 1704 В. 920 Г. 480, зеркало: Ш. 870 В. 970\nТУМБА Ш. 700 В. 500 Г. 440\nТВ-тумба Ш. 180 В. 51 Г. 47",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/elen.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/elen-detail.html"
+  },
+  {
+    "name": "Оливия",
+    "price": 86900,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/oliviya.jpg"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/oliviya-detail.html"
+  },
+  {
+    "name": "Елена",
+    "price": 110000,
+    "description": "Описание\n    \tКомплект: диван (не раскладной ) и 2 кресла",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/elena.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/elena-detail.html"
+  },
+  {
+    "name": "Эдель",
+    "price": 126500,
+    "description": "Описание\n    \tКомплект:  диван (раскладной) и 2 кресла",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/edel.jpg"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/edel-detail.html"
+  },
+  {
+    "name": "Ариэль",
+    "price": 137500,
+    "description": "Описание\n    \tКомплект:  диван (раскладной) и 2 кресла",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/555.png"
+    ],
+    "category": "Мягкая мебель",
+    "originalUrl": "https://label-com.ru/katalog/myagkaya-mebel/ariel-1-detail.html"
+  },
+  {
+    "name": "Нэнси",
+    "price": 167200,
+    "description": "Описание\n    \tСпальня Нэнси в неоклассическом стиле представляет собой гармоничное сочетание элегантности и комфорта. Цветовая гамма спокойная, преимущественно пастельные тона, акценты расставляются позолоченными элементами декора.Классический стиль в совеременном исполненеии.\nТехническая информация:\nКРОВАТЬ Ш. 2070 В. 1440 Д. 2100\nШКАФ Ш. 2720 В. 2230 Г. 620\nКОМОД Ш. 1302 В. 906 Г. 510, зеркало: Ш. 1080 В. 830\nТУМБА Ш. 532 В. 612 Г. 530",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/nensi.png"
+    ],
+    "category": "Спальни",
+    "originalUrl": "https://label-com.ru/katalog/spalni/nensi-detail.html"
+  },
+  {
+    "name": "Стул Монако",
+    "price": 17500,
+    "description": "Описание\n    \tМебель для гостиной Монако сочетает в себе комфорт и эстетику. Натуральные материалы, неподвластная времени элегантность аксессуаров, скромность и изящество линий.\nКоллекция Монако – это воплощение элегантного стиля, о котором вы мечтали. Предметы коллекции подарят сказочную красоту жилым помещениям, ставя во главу угла комфорт и эстетику благодаря металлическим ножкам и элегантным золотым линиям.\nТехническая информация:\nСТУЛ Ш. 585 В. 840 Г. 630",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/999.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stul-monako-detail.html"
+  },
+  {
+    "name": "Стул Ницца",
+    "price": 18500,
+    "description": "Описание\n    \tПастельные цвета, в сочетании с современными и элегантными деталями коллекции Ницца luxury украсят ваши жилые помещения своей гармонией.\nТехническая информация:\nСТУЛ Ш. 570 В. 1110 Г. 870",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stul-nitstsa.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stul-nitstsa-detail.html"
+  },
+  {
+    "name": "Тв тумба Ариана",
+    "price": 30500,
+    "description": "Описание\n    \tСовременный оригинальный набор предметов мебели позволит создать неповторимое уютное пространство спальной и гостиной комнат.\nПростые формы и строгий внешний вид придадут современный вид любому интерьеру!\nТехническая информация:\n \nТВ-тумба Ш. 180 В. 50 Г. 63",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/aritv.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/tv-tumba-ariana-detail.html"
+  },
+  {
+    "name": "тумба тв Монако",
+    "price": 30000,
+    "description": "Описание\n    \tМебель для гостиной Монако сочетает в себе комфорт и эстетику. Натуральные материалы, неподвластная времени элегантность аксессуаров, скромность и изящество линий.\nКоллекция Монако – это воплощение элегантного стиля, о котором вы мечтали. Предметы коллекции подарят сказочную красоту жилым помещениям, ставя во главу угла комфорт и эстетику благодаря металлическим ножкам и элегантным золотым линиям.\nТехническая информация:\n \nТВ-ТУМБА Ш. 2000 В. 520 Г. 450",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/tumba-tv-monako.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/tumba-tv-monako-detail.html"
+  },
+  {
+    "name": "тумба тв Ницца",
+    "price": 31000,
+    "description": "Описание\n    \tПастельные цвета, в сочетании с современными и элегантными деталями коллекции Ницца luxury украсят ваши жилые помещения своей гармонией.\nТехническая информация:\n \nТВ-ТУМБА Ш. 2250 В. 530 Г. 520",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/tumba-tv-nitstsa.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/tumba-tv-nitstsa-detail.html"
+  },
+  {
+    "name": "тв тумба Сэнди",
+    "price": 15000,
+    "description": "Описание\n    \tДля ценителей природных расцветок и интерьера без излишество, не лишённого, при этом, комфорта, создана данная коллекция.\nСтильная и современная мебель.\nТехническая информация:\nТВ-тумба",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/tv-tumba-sendi.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/tv-tumba-sendi-detail.html"
+  },
+  {
+    "name": "тв тумба Элен",
+    "price": 31000,
+    "description": "Описание\n    \tИзысканная и утончённая, коллекция Элен сделана с такой же любовью, которую она может предложить.\nНежные цвета, минималистичный декор создают роскошную атмосферу и современный интерьер.\nТехническая информация:\nТВ-тумба Ш. 180 В. 51 Г. 47",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/tv-tumba-elen.png"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/tv-tumba-elen-detail.html"
+  },
+  {
+    "name": "Стул Милана",
+    "price": 6500,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_milana5.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stul-milana-detail.html"
+  },
+  {
+    "name": "Стул Вика",
+    "price": 7000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_vika9.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stul-vika-detail.html"
+  },
+  {
+    "name": "Стул Лапка",
+    "price": 6000,
+    "description": "",
+    "imageUrls": [
+      "https://label-com.ru/images/virtuemart/product/stol_lapka9.jpg"
+    ],
+    "category": "Гостиная",
+    "originalUrl": "https://label-com.ru/katalog/gostinaya/stul-lapka-detail.html"
+  }
+]

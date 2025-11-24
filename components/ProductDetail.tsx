@@ -160,7 +160,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
               <span className="ml-2 text-sm text-gray-600">({currentReviews.length} отзывов)</span>
             </div>
             <p className="text-3xl font-serif text-brand-charcoal mb-6">{product.price.toLocaleString('ru-RU')} ₽</p>
-            <p className="text-brand-charcoal leading-relaxed mb-8">{product.seoDescription || product.description}</p>
+            <p className="text-brand-charcoal leading-relaxed mb-8 whitespace-pre-line">{product.seoDescription || product.description}</p>
             
             <div className="space-y-6 mb-8">
               <div className="flex items-center gap-4">

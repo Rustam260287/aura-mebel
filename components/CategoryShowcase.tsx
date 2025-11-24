@@ -7,18 +7,19 @@ interface CategoryShowcaseProps {
   onNavigate: (view: View) => void;
 }
 
+// Обновленные категории, соответствующие импортированным данным
 const categories = [
-  { name: 'Диваны', imageSeed: 'modern-sofa-living-room' },
-  { name: 'Столы', imageSeed: 'wooden-dining-table' },
-  { name: 'Кресла', imageSeed: 'cozy-armchair-reading' },
-  { name: 'Хранение', imageSeed: 'stylish-storage-cabinet' },
-  { name: 'Кровати', imageSeed: 'minimalist-bedroom-bed' },
-  { name: 'Стулья', imageSeed: 'designer-chairs-set' },
+  { name: 'Спальни', imageSeed: 'bedroom-interior-design' },
+  { name: 'Кухни', imageSeed: 'modern-kitchen-interior' },
+  { name: 'Мягкая мебель', imageSeed: 'cozy-sofa-living-room' },
+  { name: 'Гостиная', imageSeed: 'living-room-furniture' },
+  // { name: 'Диваны', imageSeed: 'modern-sofa-living-room' }, // Можно оставить, если появятся
+  // { name: 'Столы', imageSeed: 'wooden-dining-table' },
 ];
 
 const CategoryCard: React.FC<{ name: string; imageSeed: string; onClick: () => void; index: number; }> = ({ name, imageSeed, onClick, index }) => {
   const imageUrl = `https://picsum.photos/seed/${imageSeed}/600/600`;
-  const ref = useRef<HTMLDivElement>(null!); // Исправляем тип здесь
+  const ref = useRef<HTMLDivElement>(null!);
   const isVisible = useIntersectionObserver(ref, { threshold: 0.2, rootMargin: '0px 0px -50px 0px' });
 
   return (
@@ -44,7 +45,7 @@ const CategoryCard: React.FC<{ name: string; imageSeed: string; onClick: () => v
 };
 
 export const CategoryShowcase: React.FC<CategoryShowcaseProps> = memo(({ onNavigate }) => {
-  const titleRef = useRef<HTMLHeadingElement>(null!); // И исправляем тип здесь
+  const titleRef = useRef<HTMLHeadingElement>(null!);
   const isTitleVisible = useIntersectionObserver(titleRef, { threshold: 0.5 });
 
   const handleCategoryClick = (categoryName: string) => {
@@ -57,7 +58,8 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = memo(({ onNavig
         <h2 ref={titleRef} className={`text-4xl font-serif text-brand-charcoal mb-8 text-center ${isTitleVisible ? 'animate-subtle-fade-in' : 'opacity-0'}`}>
           По категориям
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {/* Адаптивная сетка: 2 колонки на моб, 4 на больших экранах, т.к. всего 4 категории */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.map((cat, index) => (
             <CategoryCard
               key={cat.name}

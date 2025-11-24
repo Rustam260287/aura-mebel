@@ -16,6 +16,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'label-com.ru',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   devIndicators: {

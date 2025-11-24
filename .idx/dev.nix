@@ -1,26 +1,55 @@
-# This is a Nix configuration file.
-# It is used to define the environment in which your application is developed, built, and run.
+# To learn more about how to use Nix to configure your environment
+# see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
-  # Pinned to a specific version for stability and reproducibility
-  channel = "stable-23.11";
+  # Which nixpkgs channel to use.
+  channel = "stable-23.11"; # or "unstable"
 
-  # Add any nix packages you want to be available in your workspace
-  # Check https://search.nixos.org/packages to find packages
+  # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.nodejs_20
     pkgs.nodePackages.firebase-tools
-    pkgs.google-cloud-sdk # Добавляем Google Cloud SDK
+    pkgs.google-cloud-sdk
+    pkgs.jq
+    pkgs.python3
   ];
 
-  services.firebase.enable = true;
-  # Enable this if you want to use the local Firebase emulator
-  # services.firebase.emulator.enable = true;
+  # Sets environment variables in the workspace
+  env = {};
+  idx = {
+    # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
+    extensions = [
+      # "vscodevim.vim"
+    ];
 
+    # Enable previews
+    previews = {
+      enable = true;
+      previews = {
+        # web = {
+        #   # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
+        #   # and show it in IDX's web preview panel
+        #   command = ["npm", "run", "dev"];
+        #   manager = "web";
+        #   env = {
+        #     # Environment variables to set for your server
+        #     PORT = "$PORT";
+        #   };
+        # };
+      };
+    };
 
-  # Use "nix run" to start the dev server
-  scripts.dev.exec = "npm run dev";
-
-  # The following are examples of how to configure your workspace.
-  # For more information, see https://www.jetpack.io/devbox/docs/configuration/
-  # and https://nixos.org/manual/nixpkgs/stable/
+    # Workspace lifecycle hooks
+    workspace = {
+      # Runs when a workspace is first created
+      onCreate = {
+        # Example: install JS dependencies from NPM
+        # npm-install = "npm install";
+      };
+      # Runs when the workspace is (re)started
+      onStart = {
+        # Example: start a background task to watch and re-build backend code
+        # watch-backend = "npm run watch-backend";
+      };
+    };
+  };
 }
