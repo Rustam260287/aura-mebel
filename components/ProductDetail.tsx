@@ -18,28 +18,23 @@ interface ProductDetailProps {
   onBack: () => void;
 }
 
-// Умный парсер характеристик
 const parseDescription = (description: string) => {
     const mainDescSeparator = 'Техническая информация:';
     let mainDescription = description.replace('Описание', '').trim();
     let techSpecs = [];
-
     const separatorIndex = description.indexOf(mainDescSeparator);
     if (separatorIndex !== -1) {
         mainDescription = description.substring(0, separatorIndex).replace('Описание', '').trim();
         const techPart = description.substring(separatorIndex + mainDescSeparator.length).trim();
-        // Разделяем по названиям предметов, которые начинаются с заглавной буквы
         const regex = /(?=[А-Я][а-я]+(\s[А-Яа-я]+)*\s*Ш\.)/g;
         techSpecs = techPart.split(regex).filter(s => s.trim());
     }
-
     return { mainDescription, techSpecs };
 };
 
-
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
   const safeProduct = { reviews: [], imageUrls: [], details: { dimensions: '', material: '', care: '' }, description: '', ...product };
-
+  
   const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
@@ -52,11 +47,20 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   const { mainDescription, techSpecs } = useMemo(() => parseDescription(safeProduct.description), [safeProduct.description]);
 
-  // ... (остальные хуки без изменений)
   const handleNextImage = useCallback(() => { setCurrentImageIndex(prev => (prev + 1) % safeProduct.imageUrls.length); }, [safeProduct.imageUrls.length]);
   const handlePrevImage = useCallback(() => { setCurrentImageIndex(prev => (prev - 1 + safeProduct.imageUrls.length) % safeProduct.imageUrls.length); }, [safeProduct.imageUrls.length]);
   const handleWishlistClick = useCallback(() => { if (isWished) { removeFromWishlist(safeProduct.id); } else { addToWishlist(safeProduct.id); } }, [isWished, safeProduct.id, addToWishlist, removeFromWishlist]);
   const handleAddToCart = useCallback(() => { addToCart(safeProduct); addToast(`${safeProduct.name} добавлен в корзину`, 'success'); }, [addToCart, safeProduct, addToast]);
+
+  // --- ВОССТАНОВЛЕННАЯ ФУНКЦИЯ ---
+  const handleAddReview = useCallback((newReviewData: Omit<Review, 'date'>) => {
+    const newReview: Review = {
+      ...newReviewData,
+      date: new Date().toISOString(),
+    };
+    setCurrentReviews(prev => [newReview, ...prev]);
+    addToast('Спасибо за ваш отзыв!', 'success');
+  }, [addToast]);
 
   return (
     <>
@@ -66,8 +70,33 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
           Назад в каталог
         </Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
-          {/* ... (код галереи без изменений) ... */}
+          {/* ... Image Gallery ... */}
+          <div className="relative group">
+            <div className="relative overflow-hidden rounded-lg shadow-md">
+              <div 
+                className="flex transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                onClick={() => safeProduct.imageUrls.length > 0 && setIsZoomModalOpen(true)}
+              >
+                {safeProduct.imageUrls.length > 0 ? (
+                  safeProduct.imageUrls.map((url, index) => (
+                    url && <Image 
+                      key={index}
+                      src={url} 
+                      alt={`${safeProduct.name} - изображение ${index + 1}`} 
+                      className="w-full h-auto object-cover aspect-square flex-shrink-0"
+                      width={600}
+                      height={600}
+                    />
+                  ))
+                ) : (
+                  <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
+                    <PhotoIcon className="w-24 h-24 text-gray-300" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Product Info */}
           <div className="flex flex-col">
@@ -87,23 +116,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                 </Button>
             </div>
 
-            {/* --- НОВЫЙ БЛОК С ВКЛАДКАМИ --- */}
             <div className="w-full">
               <Tab.Group>
                 <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream-dark p-1">
                   <Tab as={Fragment}>
-                    {({ selected }) => (
-                      <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>
-                        Описание
-                      </button>
-                    )}
+                    {({ selected }) => ( <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>Описание</button> )}
                   </Tab>
                   <Tab as={Fragment}>
-                    {({ selected }) => (
-                      <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>
-                        Характеристики
-                      </button>
-                    )}
+                    {({ selected }) => ( <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>Характеристики</button> )}
                   </Tab>
                 </Tab.List>
                 <Tab.Panels className="mt-4">
