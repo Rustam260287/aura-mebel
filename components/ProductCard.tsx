@@ -23,8 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
   
-  // **ИЗМЕНЕНИЕ:** Приоритет для улучшенного изображения
-  const displayImage = product.upscaledImageUrl || (product.imageUrls && product.imageUrls[0]) || '/placeholder.svg';
+  const displayImage = (product.imageUrls && product.imageUrls[0]) || '/placeholder.svg';
 
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {

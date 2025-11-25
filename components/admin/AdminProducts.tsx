@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { Product } from '../../types';
 import { Button } from '../../components/Button';
@@ -56,7 +57,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ products, onEditPr
               {products.map(product => (
                 <tr key={product.id} className="bg-white border-b hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                    <Image src={product.imageUrls[0]} alt={product.name} className="w-12 h-12 object-cover rounded-md" width={48} height={48} />
+                    <Image src={(product.imageUrls && product.imageUrls[0]) || '/placeholder.svg'} alt={product.name} className="w-12 h-12 object-cover rounded-md" width={48} height={48} />
                     <span className="truncate max-w-xs">{product.name}</span>
                   </td>
                   <td className="px-6 py-4">{product.category}</td>
