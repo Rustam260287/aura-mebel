@@ -34,7 +34,9 @@ const parseDescription = (description: string) => {
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const safeProduct = { reviews: [], imageUrls: [], description: '', ...product };
+  // **ИСПРАВЛЕНИЕ:** Используем деструктуризацию с значениями по умолчанию
+  const { reviews = [], imageUrls = [], description = '', ...restOfProduct } = product;
+  const safeProduct = { reviews, imageUrls, description, ...restOfProduct };
   
   const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -46,10 +48,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const isWished = isInWishlist(safeProduct.id);
 
-  // **ИСПРАВЛЕНИЕ:** Перемещаем объявление images ВВЕРХ
-  const images = useMemo(() => safeProduct.imageUrls.filter(url => url), [safeProduct.imageUrls]);
+  const images = useMemo(() => imageUrls.filter(url => url), [imageUrls]);
 
-  const { mainDesc, techSpecs } = useMemo(() => parseDescription(safeProduct.description), [safeProduct.description]);
+  const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
 
   const handleNextImage = useCallback(() => { setCurrentImageIndex(prev => (prev + 1) % images.length); }, [images.length]);
   const handlePrevImage = useCallback(() => { setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length); }, [images.length]);
