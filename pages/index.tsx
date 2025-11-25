@@ -1,4 +1,3 @@
-
 // pages/index.tsx
 import React, { useMemo, useState } from 'react';
 import { GetStaticProps } from 'next';
@@ -11,7 +10,8 @@ import { Hero } from '../components/Hero';
 import { CategoryShowcase } from '../components/CategoryShowcase';
 import { Catalog } from '../components/Catalog';
 import { Footer } from '../components/Footer';
-import { Header } from '../components/Header'; // Импортируем статически
+import { Header } from '../components/Header';
+import { SEO } from '../components/SEO';
 
 const CartSidebar = dynamic(() => import('../components/CartSidebar').then(mod => mod.CartSidebar), { ssr: false });
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
@@ -31,7 +31,12 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
   }, [allProducts]);
 
   if (error) {
-    return <div style={{ color: 'red', padding: '2rem' }}>Error loading data: {error}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-brand-terracotta">
+        <h1 className="text-2xl font-bold mb-4">Ошибка загрузки данных</h1>
+        <p>{error}</p>
+      </div>
+    );
   }
 
   const handleNavigate = (view: View) => {
@@ -46,6 +51,7 @@ export default function HomePage({ allProducts, error }: HomePageProps) {
   
   return (
     <>
+      <SEO title="Главная" description="Откройте для себя мир премиальной мебели Aura. Идеальное сочетание стиля, комфорта и качества для вашего дома." />
       <Header />
       <main className="flex-grow">
         <Hero onNavigate={handleNavigate} />
@@ -95,11 +101,7 @@ export const getStaticProps: GetStaticProps = async () => {
                     });
                     return signedUrl;
                 } catch (e) {
-                    if (e instanceof Error) {
-                        console.error(`Error getting signed URL for ${path}:`, e.message);
-                    } else {
-                        console.error(`An unknown error occurred while getting signed URL for ${path}`);
-                    }
+                    // Log error but fallback gracefully
                     return '/placeholder.svg';
                 }
             }

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Global focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-terracotta ring-offset-2 ring-offset-brand-cream;
+  }
+}
+
 /* Custom scrollbar for better aesthetics */
 ::-webkit-scrollbar {
   width: 8px;
@@ -10,7 +17,7 @@
   background: #FBF9F4; /* brand-cream */
 }
 ::-webkit-scrollbar-thumb {
-  background: #D1C4E9; /* A muted brown, consider replacing with a brand color */
+  background: #AFA599; /* A muted brown/grey closer to palette */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
