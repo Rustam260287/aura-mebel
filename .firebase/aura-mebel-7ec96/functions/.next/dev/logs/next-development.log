@@ -1,7 +1,16 @@
-[00:00:01.449] Server  LOG      ✓ Ready in 959ms
-[00:00:05.303] Server  WARN     ⚠ Cross origin request detected from 3000-firebase-aura-mebelgit-1763209593259.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+[00:00:02.687] Server  LOG      ✓ Ready in 2.2s
+[00:00:02.690] Server  WARN     ⚠ Cross origin request detected from 3000-firebase-aura-mebelgit-1763209593259.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
-[00:00:08.864] Server  LOG      ○ Compiling /blog ...
-[00:00:14.455] Server  LOG     Инициализация Firebase Admin SDK...
-[00:00:14.457] Server  LOG     Firebase Admin SDK успешно инициализирован.
-[00:00:37.775] Server  ERROR    ⨯ "upstream image response failed for" "https://firebasestorage.googleapis.com/v0/b/azntaxi.firebasestorage.app/o/%D0%94%D0%B8%D0%B2%D0%B0%D0%BD%20%D0%B2%20%D1%81%D1%82%D0%B8%D0%BB%D0%B5%20%D0%BC%D0%B8%D0%B4-%D1%81%D0%B5%D0%BD%D1%87%D1%83%D1%80%D0%B8.webp?alt=media" 404
+[00:00:05.989] Server  LOG      ○ Compiling /products/[id] ...
+[00:00:15.682] Server  LOG     Инициализация Firebase Admin SDK...
+[00:00:15.683] Server  LOG     Firebase Admin SDK успешно инициализирован.
+[00:00:23.984] Browser WARN    Image with src "https://label-com.ru/images/virtuemart/product/BELLA.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:00:36.316] Server  WARN    Warning: data for page "/products" is 849 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+[00:01:12.955] Server  WARN    Warning: data for page "/products" is 849 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+[00:01:38.226] Server  WARN    Warning: data for page "/products" is 849 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+[00:01:57.522] Server  WARN    Warning: data for page "/products" is 849 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data

@@ -74,6 +74,24 @@
           "hostname": "firebasestorage.googleapis.com",
           "port": "",
           "pathname": "/**"
+        },
+        {
+          "protocol": "https",
+          "hostname": "storage.googleapis.com",
+          "port": "",
+          "pathname": "/**"
+        },
+        {
+          "protocol": "https",
+          "hostname": "aura-mebel-7ec96.firebasestorage.app",
+          "port": "",
+          "pathname": "/**"
+        },
+        {
+          "protocol": "https",
+          "hostname": "label-com.ru",
+          "port": "",
+          "pathname": "/**"
         }
       ],
       "qualities": [
@@ -83,10 +101,7 @@
     },
     "devIndicators": {
       "position": "bottom-left",
-      "buildActivity": true,
-      "allowedDevOrigins": [
-        "https://3000-firebase-aura-mebelgit-1763209593259.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev"
-      ]
+      "buildActivity": true
     },
     "onDemandEntries": {
       "maxInactiveAge": 60000,

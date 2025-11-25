@@ -1838,8 +1838,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$ind
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Button.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Icons.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/ToastContext.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$firebaseConfig$2e$ts__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/firebaseConfig.ts [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$storage$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/storage/dist/esm/index.esm.js [client] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/storage/dist/index.esm.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
+;
+;
+;
 ;
 ;
 ;
@@ -1862,6 +1869,7 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
         reviews: []
     });
     const [isSeoLoading, setIsSeoLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isUploading, setIsUploading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const { addToast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"])();
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ProductEditModalComponent.useEffect": ()=>{
@@ -1894,8 +1902,6 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
         "ProductEditModalComponent.useCallback[handleGenerateSeo]": async ()=>{
             setIsSeoLoading(true);
             try {
-                // This functionality is not yet implemented in geminiService.ts
-                // For now, we'll just show a toast.
                 addToast('SEO generation is not yet implemented.', 'info');
             } catch (err) {
                 addToast(err instanceof Error ? err.message : 'An error occurred.', 'error');
@@ -1906,12 +1912,46 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
     }["ProductEditModalComponent.useCallback[handleGenerateSeo]"], [
         addToast
     ]);
+    const handleImageUpload = async (e)=>{
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        const storageRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["ref"])(__TURBOPACK__imported__module__$5b$project$5d2f$firebaseConfig$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["storage"], `products/${Date.now()}_${file.name}`);
+        setIsUploading(true);
+        try {
+            const snapshot = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["uploadBytes"])(storageRef, file);
+            const downloadURL = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["getDownloadURL"])(snapshot.ref);
+            setProductData((prev)=>({
+                    ...prev,
+                    imageUrls: [
+                        ...prev.imageUrls || [],
+                        downloadURL
+                    ]
+                }));
+            addToast('Image uploaded successfully', 'success');
+        } catch (error) {
+            console.error("Upload error:", error);
+            addToast('Failed to upload image', 'error');
+        } finally{
+            setIsUploading(false);
+        }
+    };
+    const handleRemoveImage = (indexToRemove)=>{
+        setProductData((prev)=>({
+                ...prev,
+                imageUrls: prev.imageUrls.filter((_, index)=>index !== indexToRemove)
+            }));
+    };
     const handleSubmit = (e)=>{
         e.preventDefault();
+        // Ensure price is a number
+        const dataToSave = {
+            ...productData,
+            price: Number(productData.price)
+        };
         onSave(product ? {
             ...product,
-            ...productData
-        } : productData);
+            ...dataToSave
+        } : dataToSave);
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4",
@@ -1926,7 +1966,7 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                             children: product ? 'Редактировать товар' : 'Добавить товар'
                         }, void 0, false, {
                             fileName: "[project]/components/ProductEditModal.tsx",
-                            lineNumber: 70,
+                            lineNumber: 108,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1937,18 +1977,18 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                 className: "w-6 h-6"
                             }, void 0, false, {
                                 fileName: "[project]/components/ProductEditModal.tsx",
-                                lineNumber: 71,
+                                lineNumber: 109,
                                 columnNumber: 63
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/components/ProductEditModal.tsx",
-                            lineNumber: 71,
+                            lineNumber: 109,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/ProductEditModal.tsx",
-                    lineNumber: 69,
+                    lineNumber: 107,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1956,32 +1996,366 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                     className: "flex-grow overflow-y-auto p-6 space-y-4",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "grid grid-cols-2 gap-4",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    htmlFor: "name",
-                                    className: "block text-sm font-medium text-gray-700",
-                                    children: "Название"
-                                }, void 0, false, {
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "name",
+                                            className: "block text-sm font-medium text-gray-700",
+                                            children: "Название"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 115,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "text",
+                                            name: "name",
+                                            value: productData.name,
+                                            onChange: handleChange,
+                                            className: "w-full p-2 border rounded",
+                                            required: true
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 116,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 76,
+                                    lineNumber: 114,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "text",
-                                    name: "name",
-                                    value: productData.name,
-                                    onChange: handleChange,
-                                    className: "w-full p-2 border rounded",
-                                    required: true
-                                }, void 0, false, {
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "price",
+                                            className: "block text-sm font-medium text-gray-700",
+                                            children: "Цена"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 119,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "number",
+                                            name: "price",
+                                            value: productData.price,
+                                            onChange: handleChange,
+                                            className: "w-full p-2 border rounded",
+                                            required: true
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 120,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 77,
+                                    lineNumber: 118,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/ProductEditModal.tsx",
-                            lineNumber: 75,
+                            lineNumber: 113,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    htmlFor: "category",
+                                    className: "block text-sm font-medium text-gray-700",
+                                    children: "Категория"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 125,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                    name: "category",
+                                    value: productData.category,
+                                    onChange: handleChange,
+                                    className: "w-full p-2 border rounded",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "",
+                                            children: "Выберите категорию"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 127,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Диваны",
+                                            children: "Диваны"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 128,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Кресла",
+                                            children: "Кресла"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 129,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Кровати",
+                                            children: "Кровати"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 130,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Столы",
+                                            children: "Столы"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 131,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Стулья",
+                                            children: "Стулья"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 132,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                            value: "Шкафы",
+                                            children: "Шкафы"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 133,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 126,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/ProductEditModal.tsx",
+                            lineNumber: 124,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "block text-sm font-medium text-gray-700 mb-2",
+                                    children: "Изображения"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 138,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex flex-wrap gap-4 mb-4",
+                                    children: [
+                                        productData.imageUrls?.map((url, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "relative group w-24 h-24",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"], {
+                                                        src: url,
+                                                        alt: `Product ${index}`,
+                                                        className: "w-full h-full object-cover rounded border",
+                                                        width: 96,
+                                                        height: 96
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/ProductEditModal.tsx",
+                                                        lineNumber: 142,
+                                                        columnNumber: 27
+                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>handleRemoveImage(index),
+                                                        className: "absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["TrashIcon"], {
+                                                            className: "w-4 h-4"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                                            lineNumber: 148,
+                                                            columnNumber: 31
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/ProductEditModal.tsx",
+                                                        lineNumber: 143,
+                                                        columnNumber: 27
+                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                ]
+                                            }, index, true, {
+                                                fileName: "[project]/components/ProductEditModal.tsx",
+                                                lineNumber: 141,
+                                                columnNumber: 23
+                                            }, ("TURBOPACK compile-time value", void 0))),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            className: "w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-xs text-center text-gray-500",
+                                                    children: isUploading ? '...' : '+ Фото'
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                                    lineNumber: 153,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                    type: "file",
+                                                    accept: "image/*",
+                                                    className: "hidden",
+                                                    onChange: handleImageUpload,
+                                                    disabled: isUploading
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                                    lineNumber: 154,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 152,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 139,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/ProductEditModal.tsx",
+                            lineNumber: 137,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    htmlFor: "description",
+                                    className: "block text-sm font-medium text-gray-700",
+                                    children: "Описание"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 160,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                                    name: "description",
+                                    value: productData.description,
+                                    onChange: handleChange,
+                                    className: "w-full p-2 border rounded",
+                                    rows: 4,
+                                    required: true
+                                }, void 0, false, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 161,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/ProductEditModal.tsx",
+                            lineNumber: 159,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "grid grid-cols-1 md:grid-cols-3 gap-4",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "details.dimensions",
+                                            className: "block text-sm font-medium text-gray-700",
+                                            children: "Размеры"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 166,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "text",
+                                            name: "details.dimensions",
+                                            value: productData.details.dimensions,
+                                            onChange: handleChange,
+                                            className: "w-full p-2 border rounded"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 167,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 165,
+                                    columnNumber: 14
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "details.material",
+                                            className: "block text-sm font-medium text-gray-700",
+                                            children: "Материал"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 170,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "text",
+                                            name: "details.material",
+                                            value: productData.details.material,
+                                            onChange: handleChange,
+                                            className: "w-full p-2 border rounded"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 171,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 169,
+                                    columnNumber: 14
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            htmlFor: "details.care",
+                                            className: "block text-sm font-medium text-gray-700",
+                                            children: "Уход"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 174,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "text",
+                                            name: "details.care",
+                                            value: productData.details.care,
+                                            onChange: handleChange,
+                                            className: "w-full p-2 border rounded"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ProductEditModal.tsx",
+                                            lineNumber: 175,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/ProductEditModal.tsx",
+                                    lineNumber: 173,
+                                    columnNumber: 14
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/ProductEditModal.tsx",
+                            lineNumber: 164,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1996,7 +2370,7 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                             children: "SEO Описание"
                                         }, void 0, false, {
                                             fileName: "[project]/components/ProductEditModal.tsx",
-                                            lineNumber: 84,
+                                            lineNumber: 181,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -2007,13 +2381,13 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                             rows: 3
                                         }, void 0, false, {
                                             fileName: "[project]/components/ProductEditModal.tsx",
-                                            lineNumber: 85,
+                                            lineNumber: 182,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 83,
+                                    lineNumber: 180,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2025,24 +2399,24 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                         className: "w-5 h-5 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/components/ProductEditModal.tsx",
-                                        lineNumber: 88,
+                                        lineNumber: 185,
                                         columnNumber: 33
                                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["SparklesIcon"], {
                                         className: "w-5 h-5"
                                     }, void 0, false, {
                                         fileName: "[project]/components/ProductEditModal.tsx",
-                                        lineNumber: 88,
+                                        lineNumber: 185,
                                         columnNumber: 85
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 87,
+                                    lineNumber: 184,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/ProductEditModal.tsx",
-                            lineNumber: 82,
+                            lineNumber: 179,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2055,7 +2429,7 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                     children: "Отмена"
                                 }, void 0, false, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 93,
+                                    lineNumber: 190,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2063,34 +2437,34 @@ const ProductEditModalComponent = ({ product, onClose, onSave })=>{
                                     children: "Сохранить"
                                 }, void 0, false, {
                                     fileName: "[project]/components/ProductEditModal.tsx",
-                                    lineNumber: 94,
+                                    lineNumber: 191,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/ProductEditModal.tsx",
-                            lineNumber: 92,
+                            lineNumber: 189,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/ProductEditModal.tsx",
-                    lineNumber: 74,
+                    lineNumber: 112,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/components/ProductEditModal.tsx",
-            lineNumber: 68,
+            lineNumber: 106,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/components/ProductEditModal.tsx",
-        lineNumber: 67,
+        lineNumber: 105,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(ProductEditModalComponent, "iV7C5dnHl5raZf2NBQyYo6znF+A=", false, function() {
+_s(ProductEditModalComponent, "ArNTGyakRmOoP+iszYnVKwJLYpg=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
@@ -2117,8 +2491,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$ind
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Button.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Icons.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/ToastContext.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$firebaseConfig$2e$ts__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/firebaseConfig.ts [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$storage$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/storage/dist/esm/index.esm.js [client] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/storage/dist/index.esm.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
+;
+;
+;
 ;
 ;
 ;
@@ -2127,6 +2508,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
     _s();
     const [formData, setFormData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(post);
     const [relatedProductsString, setRelatedProductsString] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])('');
+    const [isUploading, setIsUploading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const { addToast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"])();
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BlogEditModal.useEffect": ()=>{
@@ -2141,6 +2523,32 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
         setFormData((prev)=>({
                 ...prev,
                 [name]: value
+            }));
+    };
+    const handleImageUpload = async (e)=>{
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        const storageRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["ref"])(__TURBOPACK__imported__module__$5b$project$5d2f$firebaseConfig$2e$ts__$5b$client$5d$__$28$ecmascript$29$__["storage"], `blog/${Date.now()}_${file.name}`);
+        setIsUploading(true);
+        try {
+            const snapshot = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["uploadBytes"])(storageRef, file);
+            const downloadURL = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__["getDownloadURL"])(snapshot.ref);
+            setFormData((prev)=>({
+                    ...prev,
+                    imageUrl: downloadURL
+                }));
+            addToast('Image uploaded successfully', 'success');
+        } catch (error) {
+            console.error("Upload error:", error);
+            addToast('Failed to upload image', 'error');
+        } finally{
+            setIsUploading(false);
+        }
+    };
+    const handleRemoveImage = ()=>{
+        setFormData((prev)=>({
+                ...prev,
+                imageUrl: ''
             }));
     };
     const handleSubmit = async (e)=>{
@@ -2167,7 +2575,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                             children: "Редактировать статью"
                         }, void 0, false, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 47,
+                            lineNumber: 78,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2178,18 +2586,18 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                 className: "w-6 h-6"
                             }, void 0, false, {
                                 fileName: "[project]/components/BlogEditModal.tsx",
-                                lineNumber: 49,
+                                lineNumber: 80,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 48,
+                            lineNumber: 79,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/BlogEditModal.tsx",
-                    lineNumber: 46,
+                    lineNumber: 77,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -2206,12 +2614,12 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                         children: "Заголовок"
                                     }, void 0, false, {
                                         fileName: "[project]/components/BlogEditModal.tsx",
-                                        lineNumber: 56,
+                                        lineNumber: 87,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 55,
+                                    lineNumber: 86,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2221,16 +2629,16 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     value: formData.title,
                                     onChange: handleChange,
                                     required: true,
-                                    className: "block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown"
+                                    className: "block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 62,
+                                    lineNumber: 89,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 54,
+                            lineNumber: 85,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2241,7 +2649,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     children: "Анонс"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 66,
+                                    lineNumber: 93,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -2251,16 +2659,94 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     onChange: handleChange,
                                     rows: 3,
                                     required: true,
-                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown"
+                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 67,
+                                    lineNumber: 94,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 65,
+                            lineNumber: 92,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "block text-sm font-medium text-gray-700 mb-2",
+                                    children: "Изображение обложки"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/BlogEditModal.tsx",
+                                    lineNumber: 98,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                formData.imageUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "relative group w-full max-w-md aspect-video bg-gray-100 rounded overflow-hidden",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"], {
+                                            src: formData.imageUrl,
+                                            alt: "Post Cover",
+                                            fill: true,
+                                            className: "object-cover"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/BlogEditModal.tsx",
+                                            lineNumber: 101,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: handleRemoveImage,
+                                            className: "absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Icons$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["TrashIcon"], {
+                                                className: "w-5 h-5"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/BlogEditModal.tsx",
+                                                lineNumber: 107,
+                                                columnNumber: 25
+                                            }, ("TURBOPACK compile-time value", void 0))
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/BlogEditModal.tsx",
+                                            lineNumber: 102,
+                                            columnNumber: 22
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/BlogEditModal.tsx",
+                                    lineNumber: 100,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "w-full max-w-md h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown bg-gray-50 hover:bg-gray-100 transition-colors",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-sm text-gray-600",
+                                            children: isUploading ? 'Загрузка...' : 'Нажмите для загрузки изображения'
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/BlogEditModal.tsx",
+                                            lineNumber: 112,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "file",
+                                            accept: "image/*",
+                                            className: "hidden",
+                                            onChange: handleImageUpload,
+                                            disabled: isUploading
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/BlogEditModal.tsx",
+                                            lineNumber: 113,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/BlogEditModal.tsx",
+                                    lineNumber: 111,
+                                    columnNumber: 18
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/BlogEditModal.tsx",
+                            lineNumber: 97,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2271,7 +2757,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     children: "Содержание (HTML)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 71,
+                                    lineNumber: 119,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -2281,16 +2767,16 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     onChange: handleChange,
                                     rows: 8,
                                     required: true,
-                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown"
+                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 72,
+                                    lineNumber: 120,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 70,
+                            lineNumber: 118,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2301,7 +2787,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     children: "ID связанных товаров (через запятую)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 76,
+                                    lineNumber: 124,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2310,16 +2796,16 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     id: "relatedProducts",
                                     value: relatedProductsString,
                                     onChange: (e)=>setRelatedProductsString(e.target.value),
-                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown"
+                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 77,
+                                    lineNumber: 125,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 75,
+                            lineNumber: 123,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2330,7 +2816,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     children: "Промпт для изображения (на английском)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 129,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2339,23 +2825,22 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                                     id: "imagePrompt",
                                     value: formData.imagePrompt,
                                     onChange: handleChange,
-                                    required: true,
-                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown"
+                                    className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
                                 }, void 0, false, {
                                     fileName: "[project]/components/BlogEditModal.tsx",
-                                    lineNumber: 82,
+                                    lineNumber: 130,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 80,
+                            lineNumber: 128,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/BlogEditModal.tsx",
-                    lineNumber: 53,
+                    lineNumber: 84,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
@@ -2368,7 +2853,7 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                             children: "Отмена"
                         }, void 0, false, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 88,
+                            lineNumber: 136,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2377,31 +2862,31 @@ const BlogEditModal = /*#__PURE__*/ _s((0, __TURBOPACK__imported__module__$5b$pr
                             children: "Сохранить"
                         }, void 0, false, {
                             fileName: "[project]/components/BlogEditModal.tsx",
-                            lineNumber: 89,
+                            lineNumber: 137,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/BlogEditModal.tsx",
-                    lineNumber: 87,
+                    lineNumber: 135,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/components/BlogEditModal.tsx",
-            lineNumber: 42,
+            lineNumber: 73,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/components/BlogEditModal.tsx",
-        lineNumber: 41,
+        lineNumber: 72,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
-}, "ux6VpZ2yvYuq626EFhvWaGaxbuY=", false, function() {
+}, "kfJzVmPw/0zRl51Fid1SGxUOMLs=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
-})), "ux6VpZ2yvYuq626EFhvWaGaxbuY=", false, function() {
+})), "kfJzVmPw/0zRl51Fid1SGxUOMLs=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
     ];

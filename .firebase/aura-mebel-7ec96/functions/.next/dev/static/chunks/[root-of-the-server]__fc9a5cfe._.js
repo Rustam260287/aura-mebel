@@ -489,12 +489,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2
 ;
 ;
 const firebaseConfig = {
-    apiKey: ("TURBOPACK compile-time value", "AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y"),
-    authDomain: `${("TURBOPACK compile-time value", "aura-mebel-7ec96")}.firebaseapp.com`,
-    projectId: ("TURBOPACK compile-time value", "aura-mebel-7ec96"),
-    storageBucket: `${("TURBOPACK compile-time value", "aura-mebel-7ec96")}.appspot.com`,
-    messagingSenderId: ("TURBOPACK compile-time value", "149768023865"),
-    appId: ("TURBOPACK compile-time value", "1:149768023865:web:7e9fbd950241375d6a02e8")
+    apiKey: ("TURBOPACK compile-time value", "your-api-key"),
+    authDomain: `${("TURBOPACK compile-time value", "your-project-id")}.firebaseapp.com`,
+    projectId: ("TURBOPACK compile-time value", "your-project-id"),
+    // storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`, // БЫЛО (неправильно)
+    storageBucket: `${("TURBOPACK compile-time value", "your-project-id")}.firebasestorage.app`,
+    messagingSenderId: ("TURBOPACK compile-time value", "your-sender-id"),
+    appId: ("TURBOPACK compile-time value", "your-app-id")
 };
 // Initialize Firebase
 let app;

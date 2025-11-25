@@ -29,6 +29,14 @@
       "namedRegex": "^/api/blog/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/api/orders/[id]",
+      "regex": "^/api/orders/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/orders/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/products/[id]",
       "regex": "^/api/products/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -61,10 +69,22 @@
       "namedRegex": "^/(?:/)?$"
     },
     {
+      "page": "/about",
+      "regex": "^/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about(?:/)?$"
+    },
+    {
       "page": "/admin",
       "regex": "^/admin(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/ai-room-makeover",
+      "regex": "^/ai\\-room\\-makeover(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ai\\-room\\-makeover(?:/)?$"
     },
     {
       "page": "/api/blog",
@@ -79,6 +99,12 @@
       "namedRegex": "^/api/blog/generate(?:/)?$"
     },
     {
+      "page": "/api/orders",
+      "regex": "^/api/orders(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/orders(?:/)?$"
+    },
+    {
       "page": "/api/products",
       "regex": "^/api/products(?:/)?$",
       "routeKeys": {},
@@ -91,6 +117,24 @@
       "namedRegex": "^/blog(?:/)?$"
     },
     {
+      "page": "/checkout",
+      "regex": "^/checkout(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/checkout(?:/)?$"
+    },
+    {
+      "page": "/contacts",
+      "regex": "^/contacts(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contacts(?:/)?$"
+    },
+    {
+      "page": "/furniture-from-photo",
+      "regex": "^/furniture\\-from\\-photo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/furniture\\-from\\-photo(?:/)?$"
+    },
+    {
       "page": "/login",
       "regex": "^/login(?:/)?$",
       "routeKeys": {},
@@ -101,40 +145,50 @@
       "regex": "^/products(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/products(?:/)?$"
+    },
+    {
+      "page": "/wishlist",
+      "regex": "^/wishlist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishlist(?:/)?$"
     }
   ],
   "dataRoutes": [
     {
       "page": "/",
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/index\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/index\\.json$"
     },
     {
       "page": "/admin",
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/admin\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/admin\\.json$"
     },
     {
       "page": "/blog",
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/blog\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/blog\\.json$"
     },
     {
       "page": "/blog/[id]",
       "routeKeys": {
         "nxtPid": "nxtPid"
       },
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/blog/([^/]+?)\\.json$",
-      "namedDataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/blog/(?<nxtPid>[^/]+?)\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/blog/([^/]+?)\\.json$",
+      "namedDataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/blog/(?<nxtPid>[^/]+?)\\.json$"
     },
     {
       "page": "/products",
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/products\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/products\\.json$"
     },
     {
       "page": "/products/[id]",
       "routeKeys": {
         "nxtPid": "nxtPid"
       },
-      "dataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/products/([^/]+?)\\.json$",
-      "namedDataRouteRegex": "^/_next/data/J2nDJ\\-YqqMDU\\-hXcEaYdr/products/(?<nxtPid>[^/]+?)\\.json$"
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/products/([^/]+?)\\.json$",
+      "namedDataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/products/(?<nxtPid>[^/]+?)\\.json$"
+    },
+    {
+      "page": "/wishlist",
+      "dataRouteRegex": "^/_next/data/15N6UJ1ZcCWJtJ8S4Eosx/wishlist\\.json$"
     }
   ],
   "rsc": {

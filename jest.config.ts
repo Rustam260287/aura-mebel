@@ -8,8 +8,9 @@ const createJestConfig = nextJest({
 
 const config: Config = {
   coverageProvider: 'v8',
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testEnvironment: 'jest-environment-jsdom',
+  // ИСПРАВЛЕНИЕ: ссылка на .js файл
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   moduleNameMapper: {
@@ -19,7 +20,12 @@ const config: Config = {
     '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/types$': '<rootDir>/types.ts',
+    '^jose': require.resolve('jose'),
   },
+  
+  transformIgnorePatterns: [
+    '/node_modules/(?!(firebase-admin|jose|@panva/hkdf|uuid|@google-cloud/firestore|google-auth-library|@firebase/util)/)',
+  ],
 };
 
 export default createJestConfig(config);

@@ -812,9 +812,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$AuthGuard$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/AuthGuard.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/AuthContext.tsx [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Button$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/Button.tsx [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$auth$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/auth/dist/esm/index.esm.js [client] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$auth$2f$dist$2f$esm$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/auth/dist/esm/index.js [client] (ecmascript)");
 ;
 ;
 var _s = __turbopack_context__.k.signature();
+;
 ;
 ;
 ;
@@ -835,36 +838,152 @@ function AdminContainer({ initialProducts, initialBlogPosts }) {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const { logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useAuth"])();
-    const [products] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(initialProducts);
+    const { addToast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"])();
+    const [products, setProducts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(initialProducts);
     const [blogPosts, setBlogPosts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(initialBlogPosts);
+    const getAuthToken = async ()=>{
+        const auth = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$auth$2f$dist$2f$esm$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["getAuth"])();
+        const user = auth.currentUser;
+        if (user) {
+            return await user.getIdToken();
+        }
+        throw new Error("User not authenticated");
+    };
     const handleNavigate = ()=>{
         router.push('/');
     };
     const handleUpdateProduct = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "AdminContainer.useCallback[handleUpdateProduct]": async ()=>{
-        // ...
+        "AdminContainer.useCallback[handleUpdateProduct]": async (updatedProduct)=>{
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(`/api/products/${updatedProduct.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedProduct)
+                });
+                if (!res.ok) throw new Error('Failed to update product');
+                setProducts({
+                    "AdminContainer.useCallback[handleUpdateProduct]": (prev)=>prev.map({
+                            "AdminContainer.useCallback[handleUpdateProduct]": (p)=>p.id === updatedProduct.id ? updatedProduct : p
+                        }["AdminContainer.useCallback[handleUpdateProduct]"])
+                }["AdminContainer.useCallback[handleUpdateProduct]"]);
+                addToast('Товар успешно обновлен', 'success');
+            } catch (error) {
+                console.error(error);
+                addToast('Ошибка обновления товара', 'error');
+            }
         }
-    }["AdminContainer.useCallback[handleUpdateProduct]"], []);
+    }["AdminContainer.useCallback[handleUpdateProduct]"], [
+        addToast
+    ]);
     const handleAddProduct = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "AdminContainer.useCallback[handleAddProduct]": async ()=>{
-        // ...
+        "AdminContainer.useCallback[handleAddProduct]": async (productData)=>{
+            try {
+                const token = await getAuthToken();
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productData)
+                });
+                if (!res.ok) throw new Error('Failed to add product');
+                const newProduct = await res.json();
+                setProducts({
+                    "AdminContainer.useCallback[handleAddProduct]": (prev)=>[
+                            ...prev,
+                            newProduct
+                        ]
+                }["AdminContainer.useCallback[handleAddProduct]"]);
+                addToast('Товар успешно добавлен', 'success');
+            } catch (error) {
+                console.error(error);
+                addToast('Ошибка добавления товара', 'error');
+            }
         }
-    }["AdminContainer.useCallback[handleAddProduct]"], []);
+    }["AdminContainer.useCallback[handleAddProduct]"], [
+        addToast
+    ]);
     const handleDeleteProduct = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "AdminContainer.useCallback[handleDeleteProduct]": async ()=>{
-        // ...
+        "AdminContainer.useCallback[handleDeleteProduct]": async (productId)=>{
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(`/api/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) throw new Error('Failed to delete product');
+                setProducts({
+                    "AdminContainer.useCallback[handleDeleteProduct]": (prev)=>prev.filter({
+                            "AdminContainer.useCallback[handleDeleteProduct]": (p)=>p.id !== productId
+                        }["AdminContainer.useCallback[handleDeleteProduct]"])
+                }["AdminContainer.useCallback[handleDeleteProduct]"]);
+            // Toast is handled in AdminProducts usually, but we can duplicate or ensure it's handled once.
+            // The child component AdminProducts seems to handle its own toast on success/fail of this promise.
+            } catch (error) {
+                console.error(error);
+                throw error; // Re-throw for the child component to handle UI state
+            }
         }
     }["AdminContainer.useCallback[handleDeleteProduct]"], []);
     const handleUpdateBlogPost = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "AdminContainer.useCallback[handleUpdateBlogPost]": async ()=>{
-        // ...
+        "AdminContainer.useCallback[handleUpdateBlogPost]": async (updatedPost)=>{
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(`/api/blog/${updatedPost.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedPost)
+                });
+                if (!res.ok) throw new Error('Failed to update blog post');
+                setBlogPosts({
+                    "AdminContainer.useCallback[handleUpdateBlogPost]": (prev)=>prev.map({
+                            "AdminContainer.useCallback[handleUpdateBlogPost]": (p)=>p.id === updatedPost.id ? updatedPost : p
+                        }["AdminContainer.useCallback[handleUpdateBlogPost]"])
+                }["AdminContainer.useCallback[handleUpdateBlogPost]"]);
+                addToast('Пост успешно обновлен', 'success');
+            } catch (error) {
+                console.error(error);
+                addToast('Ошибка обновления поста', 'error');
+            }
         }
-    }["AdminContainer.useCallback[handleUpdateBlogPost]"], []);
+    }["AdminContainer.useCallback[handleUpdateBlogPost]"], [
+        addToast
+    ]);
     const handleDeleteBlogPost = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "AdminContainer.useCallback[handleDeleteBlogPost]": async ()=>{
-        // ...
+        "AdminContainer.useCallback[handleDeleteBlogPost]": async (postId)=>{
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(`/api/blog/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) throw new Error('Failed to delete blog post');
+                setBlogPosts({
+                    "AdminContainer.useCallback[handleDeleteBlogPost]": (prev)=>prev.filter({
+                            "AdminContainer.useCallback[handleDeleteBlogPost]": (p)=>p.id !== postId
+                        }["AdminContainer.useCallback[handleDeleteBlogPost]"])
+                }["AdminContainer.useCallback[handleDeleteBlogPost]"]);
+                addToast('Пост успешно удален', 'success');
+            } catch (error) {
+                console.error(error);
+                addToast('Ошибка удаления поста', 'error');
+            }
         }
-    }["AdminContainer.useCallback[handleDeleteBlogPost]"], []);
+    }["AdminContainer.useCallback[handleDeleteBlogPost]"], [
+        addToast
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -875,12 +994,12 @@ function AdminContainer({ initialProducts, initialBlogPosts }) {
                     children: "Выйти"
                 }, void 0, false, {
                     fileName: "[project]/pages/admin.tsx",
-                    lineNumber: 54,
+                    lineNumber: 153,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/pages/admin.tsx",
-                lineNumber: 53,
+                lineNumber: 152,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AdminPage, {
@@ -895,16 +1014,17 @@ function AdminContainer({ initialProducts, initialBlogPosts }) {
                 onDeleteBlogPost: handleDeleteBlogPost
             }, void 0, false, {
                 fileName: "[project]/pages/admin.tsx",
-                lineNumber: 56,
+                lineNumber: 155,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(AdminContainer, "hnCrv9N2DuNrTLFgzXswjVrP/jk=", false, function() {
+_s(AdminContainer, "0mSUGXU2KfxccB9gBzdsXT2UFWM=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useAuth"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useAuth"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$ToastContext$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
 });
 _c1 = AdminContainer;
@@ -916,17 +1036,17 @@ function AdminPageContainer(props) {
                 ...props
             }, void 0, false, {
                 fileName: "[project]/pages/admin.tsx",
-                lineNumber: 75,
+                lineNumber: 174,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/pages/admin.tsx",
-            lineNumber: 74,
+            lineNumber: 173,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/pages/admin.tsx",
-        lineNumber: 73,
+        lineNumber: 172,
         columnNumber: 5
     }, this);
 }
