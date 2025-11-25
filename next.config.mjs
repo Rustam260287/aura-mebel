@@ -18,6 +18,18 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'storage.googleapis.com', // Added for Admin SDK uploaded images
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'aura-mebel-7ec96.firebasestorage.app', // Added for safety
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'label-com.ru',
         port: '',
         pathname: '/**',
@@ -26,7 +38,7 @@ const nextConfig = {
   },
   devIndicators: {
     buildActivity: true,
-    allowedDevOrigins: ["https://3000-firebase-aura-mebelgit-1763209593259.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev"]
+    // allowedDevOrigins is dynamically managed in some environments, but we keep it here
   }
 };
 
