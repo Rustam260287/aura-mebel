@@ -2,7 +2,8 @@
 
 import React, { useState, memo, Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+// ИСПРАВЛЕНИЕ: Используем хук для Pages Router
+import { useRouter } from 'next/router';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from './Icons';
@@ -27,10 +28,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // Use a safe way to access search params that doesn't break during SSG/SSR if possible, 
-  // or just rely on client-side routing.
-  // Note: In Next.js 13+ pages dir, useSearchParams is from next/navigation (client component).
-
   const navLinks = [
     { label: 'Каталог', href: '/products' },
     { label: 'Блог', href: '/blog' },
@@ -60,12 +57,10 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
       <header className="sticky top-0 bg-brand-cream/80 backdrop-blur-md z-30 shadow-sm transition-all duration-300">
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
-            {/* Logo */}
             <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider mr-8">
               Aura
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-8 flex-1">
               {navLinks.map(link => (
                 <NavLink key={link.label} href={link.href}>
@@ -74,9 +69,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
               ))}
             </nav>
 
-            {/* Desktop Actions */}
             <div className="flex items-center gap-2">
-                {/* Search - Desktop */}
                 <div className="hidden md:flex items-center relative mr-2">
                     <form 
                         onSubmit={handleSearchSubmit} 
@@ -119,7 +112,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
       <Transition show={isMobileMenuOpen} as={Fragment}>
         <div className="md:hidden fixed inset-0 z-40">
           <Transition.Child
@@ -151,7 +143,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                 </button>
               </div>
 
-               {/* Search - Mobile */}
                <form onSubmit={handleSearchSubmit} className="mb-6">
                     <div className="relative">
                         <input

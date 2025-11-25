@@ -106,7 +106,8 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           style={{ transitionDelay: '100ms' }}
           aria-label={isWished ? 'Удалить из избранного' : 'Добавить в избранное'}
         >
-          <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
+          {/* ИСПРАВЛЕНИЕ: Убран fill-*, цвет управляется через text-* */}
+          <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
         </button>
       </div>
       <div className="relative w-full aspect-square overflow-hidden">

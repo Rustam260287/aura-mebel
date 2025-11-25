@@ -7,7 +7,6 @@ import { Button } from './Button';
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from './Icons';
 import Image from 'next/image';
 
-// ... (остальная часть файла без изменений)
 interface CartSidebarProps {
   onNavigate: (view: View) => void;
 }
@@ -23,7 +22,12 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
     if (!isCartOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 animate-subtle-fade-in" onClick={toggleCart}>
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 animate-subtle-fade-in" 
+          onClick={toggleCart}
+          // Добавляем aria-label для доступности и тестов
+          aria-label="Корзина покупок" 
+        >
             <div 
                 className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-cream shadow-2xl flex flex-col"
                 onClick={e => e.stopPropagation()}
