@@ -1,3 +1,4 @@
+
 import React, { useState, memo, useCallback } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
@@ -21,6 +22,10 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
   const isWished = isInWishlist(product.id);
 
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+  
+  // **ИЗМЕНЕНИЕ:** Приоритет для улучшенного изображения
+  const displayImage = product.upscaledImageUrl || (product.imageUrls && product.imageUrls[0]) || '/placeholder.svg';
+
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -106,13 +111,12 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           style={{ transitionDelay: '100ms' }}
           aria-label={isWished ? 'Удалить из избранного' : 'Добавить в избранное'}
         >
-          {/* ИСПРАВЛЕНИЕ: Убран fill-*, цвет управляется через text-* */}
           <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
         </button>
       </div>
       <div className="relative w-full aspect-square overflow-hidden">
         <Image 
-          src={product.imageUrls[0]} 
+          src={displayImage} 
           alt={product.name} 
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           fill
