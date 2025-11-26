@@ -35,6 +35,7 @@ export interface Product {
   details: ProductDetails;
   isConfigurable?: boolean;
   configurationOptions?: ConfigurationOption[];
+  upscaledImageUrl?: string; // Добавляем необязательное поле
 }
 
 export interface BlogPost {

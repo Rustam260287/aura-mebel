@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { Reviews } from './Reviews';
 import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon } from './Icons';
-import { useCartDispatch } from '../contexts/CartContext'; // Гарантированно правильный импорт
+import { useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { ImageZoomModal } from './ImageZoomModal';
@@ -34,8 +34,8 @@ const parseDescription = (description: string) => {
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const { reviews = [], imageUrls = [], description = '', upscaledImageUrl, ...restOfProduct } = product;
-  const safeProduct = { reviews, imageUrls, description, upscaledImageUrl, ...restOfProduct };
+  const { reviews = [], imageUrls = [], description = '', ...restOfProduct } = product;
+  const safeProduct = { reviews, imageUrls, description, ...restOfProduct };
   
   const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -47,13 +47,8 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const isWished = isInWishlist(safeProduct.id);
 
-  const galleryImages = useMemo(() => {
-    const allImages = [...imageUrls];
-    if (upscaledImageUrl) {
-      allImages.unshift(upscaledImageUrl);
-    }
-    return [...new Set(allImages)].filter(url => url);
-  }, [imageUrls, upscaledImageUrl]);
+  // Упрощаем: используем только imageUrls
+  const galleryImages = useMemo(() => imageUrls.filter(url => url), [imageUrls]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
 
