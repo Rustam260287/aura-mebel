@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import { Button } from './Button';
 import { PhotoIcon, ArrowPathIcon } from './Icons';
 import { FurnitureBlueprint, Product } from '../types';
 import { fileToBase64 } from '../utils';
-import { useCart } from '../contexts/CartContext';
+import { useCartDispatch } from '../contexts/CartContext'; // ИСПРАВЛЕНО
 
 export const FurnitureFromPhotoPage = () => {
     const [image, setImage] = useState<File | null>(null);
@@ -11,7 +12,7 @@ export const FurnitureFromPhotoPage = () => {
     const [dimensions, setDimensions] = useState({ width: '100', height: '80', depth: '60' });
     const [isLoading, setIsLoading] = useState(false);
     const [blueprint, setBlueprint] = useState<FurnitureBlueprint | null>(null);
-    const { addToCart } = useCart();
+    const { addToCart } = useCartDispatch(); // ИСПРАВЛЕНО
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
