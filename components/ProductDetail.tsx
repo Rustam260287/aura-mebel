@@ -47,7 +47,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const isWished = isInWishlist(safeProduct.id);
 
-  // Упрощаем: используем только imageUrls
   const galleryImages = useMemo(() => imageUrls.filter(url => url), [imageUrls]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
@@ -116,8 +115,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                   <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2 prose-headings:my-4">
                     <div dangerouslySetInnerHTML={{ __html: mainDesc.replace(/\n/g, '<br />') }} />
                   </Tab.Panel>
-                  {techSpecs && <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-li:my-1">
-                     <div dangerouslySetInnerHTML={{ __html: techSpecs.replace(/\n/g, '<br />') }} />
+                  {techSpecs && <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2">
+                     {/* ИСПРАВЛЕНИЕ: Добавляем font-serif и убираем стили списка по умолчанию */}
+                     <div className="font-serif" dangerouslySetInnerHTML={{ __html: techSpecs.replace(/\n/g, '<br />') }} />
                   </Tab.Panel>}
                 </Tab.Panels>
               </Tab.Group>
