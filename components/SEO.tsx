@@ -1,3 +1,4 @@
+
 import Head from 'next/head';
 import React from 'react';
 
@@ -8,10 +9,10 @@ interface SEOProps {
   url?: string;
 }
 
-const SITE_NAME = 'Aura Мебель';
-const DEFAULT_DESCRIPTION = 'Премиальная мебель для вашего дома. Aura Мебель предлагает широкий выбор стильной и качественной мебели.';
-const DEFAULT_IMAGE = '/og-image.jpg'; // Ensure this image exists in public folder
-const SITE_URL = 'https://aura-mebel.com'; // Replace with actual domain
+const SITE_NAME = 'Labelcom Мебель';
+const DEFAULT_DESCRIPTION = 'Премиальная мебель для вашего дома. Labelcom Мебель предлагает широкий выбор стильной и качественной мебели.';
+const DEFAULT_IMAGE = '/og-image.jpg';
+const SITE_URL = 'https://labelcom-mebel.com'; // Замените на реальный домен
 
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
@@ -29,7 +30,6 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href="/favicon.ico" />
       
-      {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={fullTitle} />
@@ -37,7 +37,6 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:image" content={image} />
       <meta property="og:site_name" content={SITE_NAME} />
 
-      {/* Twitter */}
       <meta property="twitter:card" content="summary_large_image" />
       <meta property="twitter:url" content={fullUrl} />
       <meta property="twitter:title" content={fullTitle} />

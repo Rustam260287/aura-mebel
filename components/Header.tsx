@@ -4,7 +4,6 @@
 import React, { useState, memo, Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-// ИСПРАВЛЕНИЕ: Используем разделенные хуки
 import { useCartState, useCartDispatch } from '../contexts/CartContext'; 
 import { useWishlist } from '../contexts/WishlistContext';
 import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from './Icons';
@@ -21,7 +20,6 @@ const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: bo
 };
 
 const HeaderComponent: React.FC<HeaderProps> = () => {
-  // Получаем только то, что нужно для рендера
   const { cartCount } = useCartState();
   const { toggleCart } = useCartDispatch();
   const { wishlistCount } = useWishlist();
@@ -62,7 +60,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
             <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider mr-8">
-              Aura
+              Labelcom
             </Link>
 
             <nav className="hidden md:flex items-center gap-8 flex-1">
@@ -141,7 +139,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
           >
             <div className="p-5 flex flex-col h-full">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-3xl font-serif text-brand-brown">Aura</span>
+                <span className="text-3xl font-serif text-brand-brown">Labelcom</span>
                 <button onClick={closeMobileMenu}>
                   <XMarkIcon className="w-8 h-8" />
                 </button>

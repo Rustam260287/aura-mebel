@@ -1,4 +1,4 @@
- 
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import admin from 'firebase-admin';
 import fs from 'fs';
@@ -68,7 +68,7 @@ async function generateDescriptionFromImage(productName, imageUrl) {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
     const prompt = `
-    Ты — элитный копирайтер мебельного магазина "Aura".
+    Ты — элитный копирайтер мебельного магазина "Labelcom".
     Твоя задача — написать идеальное описание для товара с названием "${productName}", основываясь ИСКЛЮЧИТЕЛЬНО на предоставленном изображении.
 
     ТРЕБОВАНИЯ:
