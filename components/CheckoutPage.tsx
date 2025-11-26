@@ -1,6 +1,8 @@
+
 import React, { useState, memo } from 'react';
 import type { View } from '../types';
-import { useCart } from '../contexts/CartContext';
+// ИСПРАВЛЕНИЕ: Используем разделенные хуки
+import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { Button } from './Button';
 import { CheckCircleIcon } from './Icons';
 import Image from 'next/image';
@@ -12,7 +14,8 @@ interface CheckoutPageProps {
 }
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigate }) => {
-  const { cartItems, totalPrice, clearCart } = useCart();
+  const { cartItems, totalPrice } = useCartState();
+  const { clearCart } = useCartDispatch();
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
