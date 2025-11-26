@@ -1,9 +1,9 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { getAdminDb, getAdminStorage } from '../lib/firebaseAdmin';
+import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
 import { Hero } from '../components/Hero';
 import { CategoryShowcase } from '../components/CategoryShowcase';
@@ -73,29 +73,31 @@ export const getStaticProps: GetStaticProps = async () => {
       throw new Error("Firebase Admin SDK initialization failed.");
     }
 
-    // **ОПТИМИЗАЦИЯ:** Запрашиваем только 4 товара с самым высоким рейтингом
     const productsSnapshot = await adminDb.collection('products')
       .orderBy('rating', 'desc')
       .limit(4)
       .get();
       
     const popularProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
-
-    // Обработка URL картинок (если нужно) остается, но теперь только для 4 товаров
-    // (В нашем случае URL уже публичные, поэтому этот шаг можно пропустить или упростить)
     
     return {
       props: { 
         popularProducts: JSON.parse(JSON.stringify(popularProducts)) 
       },
-      revalidate: 3600, // Пересобираем страницу раз в час
+      revalidate: 3600,
     };
   } catch (error) {
     console.error("Error fetching popular products:", error);
-    // Если Firestore требует индекс, ошибка будет содержать ссылку для его создания
-    if (error.message.includes('requires an index')) {
-         return { props: { popularProducts: [], error: `Firestore требует индекс. Пожалуйста, создайте его по ссылке из лога ошибки в терминале.` } };
+
+    // **ИСПРАВЛЕНИЕ:** Проверяем тип ошибки перед доступом к .message
+    if (error instanceof Error) {
+      if (error.message.includes('requires an index')) {
+        return { props: { popularProducts: [], error: `Firestore требует индекс. Пожалуйста, создайте его по ссылке из лога ошибки в терминале.` } };
+      }
+      return { props: { popularProducts: [], error: error.message } };
     }
-    return { props: { popularProducts: [], error: error.message } };
+    
+    // Fallback для неизвестных ошибок
+    return { props: { popularProducts: [], error: 'Произошла неизвестная ошибка.' } };
   }
 };
