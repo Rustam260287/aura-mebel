@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { Reviews } from './Reviews';
 import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon } from './Icons';
-import { useCart } from '../contexts/CartContext';
+import { useCartDispatch } from '../contexts/CartContext'; // Гарантированно правильный импорт
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { ImageZoomModal } from './ImageZoomModal';
@@ -41,19 +41,18 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   
-  const { addToCart } = useCart();
+  const { addToCart } = useCartDispatch();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToast } = useToast();
   
   const isWished = isInWishlist(safeProduct.id);
 
-  // **ИЗМЕНЕНИЕ:** Собираем галерею, ставя улучшенное фото первым
   const galleryImages = useMemo(() => {
     const allImages = [...imageUrls];
     if (upscaledImageUrl) {
       allImages.unshift(upscaledImageUrl);
     }
-    return [...new Set(allImages)].filter(url => url); // Убираем дубликаты и пустые строки
+    return [...new Set(allImages)].filter(url => url);
   }, [imageUrls, upscaledImageUrl]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
@@ -77,7 +76,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
           Назад в каталог
         </Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
           <div className="flex flex-col gap-4">
             <div className="relative group">
               <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50">
@@ -105,8 +103,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">{galleryImages.map((url, index) => (<button key={index} onClick={() => setCurrentImageIndex(index)} className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${currentImageIndex === index ? 'border-brand-brown shadow-md scale-105' : 'border-transparent opacity-70 hover:opacity-100'}`}><Image src={url} alt={`Миниатюра ${index + 1}`} fill className="object-cover" sizes="80px" /></button>))}</div>
             )}
           </div>
-
-          {/* Product Info */}
           <div className="flex flex-col">
             <h1 className="text-4xl lg:text-5xl font-serif text-brand-brown mb-4">{safeProduct.name}</h1>
             <div className="flex items-center mb-4"><StarRating rating={safeProduct.rating} /><span className="ml-2 text-sm text-gray-600">({currentReviews.length} отзывов)</span></div>

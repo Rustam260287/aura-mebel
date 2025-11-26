@@ -1,10 +1,11 @@
+
 "use client";
 
 import React, { useState, memo, Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
-// ИСПРАВЛЕНИЕ: Используем хук для Pages Router
 import { useRouter } from 'next/router';
-import { useCart } from '../contexts/CartContext';
+// ИСПРАВЛЕНИЕ: Используем разделенные хуки
+import { useCartState, useCartDispatch } from '../contexts/CartContext'; 
 import { useWishlist } from '../contexts/WishlistContext';
 import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from './Icons';
 import { Transition } from '@headlessui/react';
@@ -20,8 +21,11 @@ const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: bo
 };
 
 const HeaderComponent: React.FC<HeaderProps> = () => {
-  const { cartCount, toggleCart } = useCart();
+  // Получаем только то, что нужно для рендера
+  const { cartCount } = useCartState();
+  const { toggleCart } = useCartDispatch();
   const { wishlistCount } = useWishlist();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

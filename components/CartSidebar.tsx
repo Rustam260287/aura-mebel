@@ -1,7 +1,9 @@
+
 "use client";
 
 import React, { memo } from 'react';
-import { useCart, CartItem } from '../contexts/CartContext';
+// ИСПРАВЛЕНИЕ: Используем разделенные хуки
+import { CartItem, useCartState, useCartDispatch } from '../contexts/CartContext';
 import type { View } from '../types';
 import { Button } from './Button';
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from './Icons';
@@ -12,7 +14,9 @@ interface CartSidebarProps {
 }
 
 const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
-    const { isCartOpen, toggleCart, cartItems, removeFromCart, updateQuantity, cartCount, totalPrice } = useCart();
+    // Получаем состояние и функции из разных хуков
+    const { isCartOpen, cartItems, cartCount, totalPrice } = useCartState();
+    const { toggleCart, removeFromCart, updateQuantity } = useCartDispatch();
 
     const handleCheckout = () => {
         toggleCart();
@@ -25,7 +29,6 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
         <div 
           className="fixed inset-0 bg-black/50 z-50 animate-subtle-fade-in" 
           onClick={toggleCart}
-          // Добавляем aria-label для доступности и тестов
           aria-label="Корзина покупок" 
         >
             <div 

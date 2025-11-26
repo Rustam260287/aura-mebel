@@ -1,4 +1,4 @@
-
+ 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import admin from 'firebase-admin';
 import fs from 'fs';
