@@ -3,7 +3,7 @@ import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
+import { getAdminDb } from '../../lib/firebaseAdmin';
 import type { Product } from '../../types';
 import { Catalog } from '../../components/Catalog';
 import { Header } from '../../components/Header';
@@ -45,19 +45,13 @@ export default function CatalogPage({ products, currentPage, totalPages, error }
         
         <Catalog
           allProducts={products}
-          isLoading={false} // SSR уже загрузил данные
+          isLoading={false}
           onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
           onVirtualStage={() => {}}
-          initialCategory={typeof router.query.category === 'string' ? router.query.category : undefined}
-          // Важно: Catalog компонент сейчас фильтрует на клиенте. 
-          // При SSR пагинации фильтрация тоже должна быть на сервере,
-          // но для простоты пока оставим клиентскую фильтрацию ВНУТРИ страницы из 12 товаров,
-          // что не совсем верно. В идеале нужно перенести всю фильтрацию в Catalog на сервер.
-          // Пока что просто выводим товары текущей страницы.
+          // **ИСПРАВЛЕНИЕ:** Удалена ненужная строка initialCategory
         />
 
-        {/* Пагинация */}
         <div className="flex justify-center items-center gap-4 mt-12">
           <Button 
             variant="outline" 
@@ -90,28 +84,16 @@ export default function CatalogPage({ products, currentPage, totalPages, error }
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const adminDb = getAdminDb();
-    const adminStorage = getAdminStorage();
-
-    if (!adminDb || !adminStorage) {
+    if (!adminDb) {
       throw new Error("Firebase Admin SDK initialization failed.");
     }
 
     const page = Number(context.query.page) || 1;
-    const category = context.query.category; // Пока не используем для фильтрации на сервере, но можно добавить
     
-    // Получаем общее количество товаров (для расчета страниц)
-    // В Firestore подсчет документов дорогой, но для 150 товаров это нормально.
-    // Можно использовать aggregation queries для оптимизации.
-    const allDocsSnapshot = await adminDb.collection('products').select('id').get(); // Выбираем только ID для экономии
+    const allDocsSnapshot = await adminDb.collection('products').select('id').get();
     const totalItems = allDocsSnapshot.size;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-    // Пагинация в Firestore сложная (нужны курсоры), но для небольшого каталога (150 товаров)
-    // можно просто получить все и отрезать нужный кусок на сервере.
-    // Это все равно будет быстрее, чем слать все на клиент, но не идеально для 1000+ товаров.
-    
-    // ОПТИМИЗАЦИЯ: Получаем только нужный срез
-    // offset() в Firestore платный по чтению пропущенных документов, но самый простой способ.
     const productsSnapshot = await adminDb.collection('products')
       .offset((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE)
@@ -119,29 +101,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
-    // Обработка URL картинок
-    const bucket = adminStorage.bucket();
-    const products = await Promise.all(productsData.map(async (product) => {
-      if (!Array.isArray(product.imageUrls)) {
-        return { ...product, imageUrls: ['/placeholder.svg'] };
-      }
-      
-      const imageUrls = await Promise.all(product.imageUrls.map(async (url) => {
-        if (url && url.startsWith('gs://')) {
-            // Логика для gs:// ссылок (если есть)
-            // ...
-             return '/placeholder.svg'; // Заглушка, если не настроено
-        }
-        return url || '/placeholder.svg';
-      }));
-      
-      // Приоритет для upscaledImageUrl если он есть (хотя мы удалили его генерацию, но поле может быть в базе)
-      if (product.upscaledImageUrl) {
-          imageUrls.unshift(product.upscaledImageUrl);
-      }
-      
+    // Упрощенная обработка URL, так как они должны быть публичными
+    const products = productsData.map(product => {
+      const imageUrls = (product.imageUrls || []).map(url => url || '/placeholder.svg');
       return { ...product, imageUrls };
-    }));
+    });
     
     return {
       props: { 
@@ -152,6 +116,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   } catch (error) {
     console.error("Error fetching data for catalog:", error);
-    return { props: { products: [], currentPage: 1, totalPages: 1, error: error instanceof Error ? error.message : "An unknown error occurred" } };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { props: { products: [], currentPage: 1, totalPages: 1, error: errorMessage } };
   }
 };
