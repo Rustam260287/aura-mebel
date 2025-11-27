@@ -1,3 +1,4 @@
+
 import React, { memo } from 'react';
 import { Button } from './Button';
 import { XMarkIcon, ArrowPathIcon } from './Icons';
@@ -7,10 +8,12 @@ interface ConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message: React.ReactNode;
+  message?: React.ReactNode; // Сообщение теперь опционально
+  children?: React.ReactNode; // Добавляем поддержку дочерних элементов
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
+  confirmButtonVariant?: 'primary' | 'danger'; // Вариант для цвета кнопки
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = memo(({
@@ -19,11 +22,18 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = memo(({
   onConfirm,
   title,
   message,
-  confirmText = 'Удалить',
+  children, // Получаем дочерние элементы
+  confirmText = 'Подтвердить',
   cancelText = 'Отмена',
   isLoading = false,
+  confirmButtonVariant = 'danger',
 }) => {
   if (!isOpen) return null;
+
+  const confirmButtonClasses = confirmButtonVariant === 'danger'
+    ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white'
+    : 'bg-brand-brown hover:bg-brand-brown-dark focus:ring-brand-brown text-white';
+
 
   return (
     <div
@@ -44,7 +54,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = memo(({
           </Button>
         </header>
         <div className="p-6">
-          <p className="text-brand-charcoal">{message}</p>
+          {/* Если есть children, показываем их. Иначе - показываем message. */}
+          {children || <p className="text-brand-charcoal">{message}</p>}
         </div>
         <footer className="p-6 bg-gray-50 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
@@ -52,14 +63,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = memo(({
           </Button>
           <Button
             type="button"
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white"
+            className={confirmButtonClasses}
             onClick={onConfirm}
             disabled={isLoading}
           >
             {isLoading ? (
               <>
                 <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
-                <span>Удаление...</span>
+                <span>Обработка...</span>
               </>
             ) : (
               confirmText

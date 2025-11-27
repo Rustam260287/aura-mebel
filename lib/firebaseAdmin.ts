@@ -1,56 +1,45 @@
-// lib/firebaseAdmin.ts
-import { initializeApp, getApps, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { getStorage, Storage } from 'firebase-admin/storage';
 
-let adminApp: App | null = null;
+import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
 
-// Эта функция гарантирует, что SDK инициализируется только один раз.
-const ensureFirebaseAdminInitialized = (): App | null => {
-  if (adminApp) {
-    return adminApp;
-  }
-
-  if (getApps().length > 0) {
-    adminApp = getApps()[0];
-    return adminApp;
-  }
-
-  // SDK автоматически использует переменную окружения GOOGLE_APPLICATION_CREDENTIALS,
-  // если она установлена, поэтому нам не нужно вручную обрабатывать ключ.
-  const projectId = process.env.FIREBASE_PROJECT_ID;
+// Проверяем, было ли приложение уже инициализировано
+if (!admin.apps.length) {
+  console.log('Firebase Admin SDK не был инициализирован. Попытка инициализации...');
   
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    console.warn('Переменная окружения GOOGLE_APPLICATION_CREDENTIALS не задана. Firebase Admin SDK не будет инициализирован.');
+  const serviceAccountPath = path.resolve('./service-account-key.json');
+
+  if (fs.existsSync(serviceAccountPath)) {
+    try {
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: `${serviceAccount.project_id}.firebasestorage.app`,
+      });
+      console.log('Firebase Admin SDK успешно инициализирован.');
+
+    } catch (error) {
+      console.error('Ошибка при инициализации Firebase Admin SDK:', error);
+    }
+  } else {
+    console.warn('Файл service-account-key.json не найден. Admin SDK не инициализирован.');
+  }
+}
+
+// Экспортируем функции, которые будут возвращать сервисы (или null, если инициализация не удалась)
+const getAdminDb = () => {
+  if (!admin.apps.length) {
     return null;
   }
+  return admin.firestore();
+};
 
-  if (!projectId) {
-    console.warn('Переменная окружения FIREBASE_PROJECT_ID не задана. Firebase Admin SDK не будет инициализирован.');
+const getAdminStorage = () => {
+  if (!admin.apps.length) {
     return null;
   }
-
-  try {
-    console.log('Инициализация Firebase Admin SDK...');
-    adminApp = initializeApp({
-      storageBucket: `${projectId}.appspot.com`,
-    });
-    console.log('Firebase Admin SDK успешно инициализирован.');
-    return adminApp;
-  } catch (error) {
-    console.error('КРИТИЧЕСКАЯ ОШИБКА: Не удалось инициализировать Firebase Admin SDK:', error instanceof Error ? error.message : error);
-    return null;
-  }
+  return admin.storage();
 };
 
-// Инициализируем сразу при загрузке модуля.
-ensureFirebaseAdminInitialized();
-
-// Экспортируемые функции для получения доступа к сервисам.
-export const getAdminDb = (): Firestore | null => {
-  return adminApp ? getFirestore(adminApp) : null;
-};
-
-export const getAdminStorage = (): Storage | null => {
-  return adminApp ? getStorage(adminApp) : null;
-};
+export { getAdminDb, getAdminStorage };
