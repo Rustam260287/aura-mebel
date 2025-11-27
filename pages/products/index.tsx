@@ -49,7 +49,6 @@ export default function CatalogPage({ products, currentPage, totalPages, error }
           onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
           onVirtualStage={() => {}}
-          // **ИСПРАВЛЕНИЕ:** Удалена ненужная строка initialCategory
         />
 
         <div className="flex justify-center items-center gap-4 mt-12">
@@ -101,7 +100,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
-    // Упрощенная обработка URL, так как они должны быть публичными
     const products = productsData.map(product => {
       const imageUrls = (product.imageUrls || []).map(url => url || '/placeholder.svg');
       return { ...product, imageUrls };
@@ -115,7 +113,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching data for catalog:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return { props: { products: [], currentPage: 1, totalPages: 1, error: errorMessage } };
   }

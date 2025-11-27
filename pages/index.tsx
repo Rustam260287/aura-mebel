@@ -12,7 +12,7 @@ import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
 
-const CartSidebar = dynamic(() => import('../components/CartSidebar').then(mod => mod.CartSidebar), { ssr: false });
+// Убираем CartSidebar отсюда
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 
 interface HomePageProps {
@@ -45,7 +45,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   
   return (
     <>
-      <SEO title="Главная" description="Откройте для себя мир премиальной мебели Aura. Идеальное сочетание стиля, комфорта и качества для вашего дома." />
+      <SEO title="Главная" description="Откройте для себя мир премиальной мебели Labelcom. Идеальное сочетание стиля, комфорта и качества для вашего дома." />
       <Header />
       <main className="flex-grow">
         <Hero onNavigate={handleNavigate} />
@@ -60,7 +60,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
         />
       </main>
       <Footer />
-      <CartSidebar onNavigate={(view) => router.push(`/${view.page}`)} />
+      {/* CartSidebar был здесь, но теперь он глобальный */}
       {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
     </>
   );
@@ -87,17 +87,12 @@ export const getStaticProps: GetStaticProps = async () => {
       revalidate: 3600,
     };
   } catch (error) {
-    console.error("Error fetching popular products:", error);
-
-    // **ИСПРАВЛЕНИЕ:** Проверяем тип ошибки перед доступом к .message
     if (error instanceof Error) {
       if (error.message.includes('requires an index')) {
         return { props: { popularProducts: [], error: `Firestore требует индекс. Пожалуйста, создайте его по ссылке из лога ошибки в терминале.` } };
       }
       return { props: { popularProducts: [], error: error.message } };
     }
-    
-    // Fallback для неизвестных ошибок
     return { props: { popularProducts: [], error: 'Произошла неизвестная ошибка.' } };
   }
 };

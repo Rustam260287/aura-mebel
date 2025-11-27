@@ -3,25 +3,21 @@
 import '../styles/globals.css';
 import '../firebaseConfig';
 import type { AppProps } from 'next/app';
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic'; // Убираем dynamic
 import { ToastProvider } from '../contexts/ToastContext';
 import { AuthProvider } from '../contexts/AuthContext';
+import { ClientProviders } from '../components/ClientProviders'; // Импортируем напрямую
 import Head from 'next/head';
 
-// ClientProviders больше не нужен для AI, но может быть полезен для других клиентских контекстов
-const ClientProviders = dynamic(() => 
-  import('../components/ClientProviders').then(mod => mod.ClientProviders), 
-  { ssr: false }
-);
+// ClientProviders теперь импортируется синхронно, что гарантирует готовность контекста
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <ToastProvider>
         <Head>
-          <title>Aura Мебель</title>
+          <title>Labelcom Мебель</title>
         </Head>
-        {/* Оставляем ClientProviders на случай будущих расширений */}
         <ClientProviders>
           <div className="flex flex-col min-h-screen font-sans bg-brand-cream text-brand-charcoal">
             <Component {...pageProps} />
