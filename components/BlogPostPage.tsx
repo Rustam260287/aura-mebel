@@ -1,14 +1,14 @@
 
 import React, { memo } from 'react';
-import type { BlogPost, Product, View } from '../../types';
-import { ArrowLeftIcon } from '../Icons';
-import { Button } from '../Button';
+import type { BlogPost, Product, View } from '@/types'; // ИСПРАВЛЕНО
+import { ArrowLeftIcon } from './Icons';
+import { Button } from './Button';
 import Image from 'next/image';
-import { ProductCard } from '../ProductCard'; // Импортируем карточку товара
+import { ProductCard } from './ProductCard';
 
 interface BlogPostPageProps {
   post: BlogPost;
-  relatedProducts: Product[]; // Теперь получаем готовые данные
+  relatedProducts: Product[];
   onNavigate: (view: View) => void;
 }
 
@@ -40,7 +40,6 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = memo(({ post, relatedPr
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
-        {/* Секция "Рекомендуемые товары" */}
         {relatedProducts && relatedProducts.length > 0 && (
           <section className="mt-16 pt-12 border-t">
             <h2 className="text-3xl font-serif text-brand-brown mb-8 text-center">Товары, упомянутые в статье</h2>
@@ -50,7 +49,6 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = memo(({ post, relatedPr
                   key={product.id} 
                   product={product}
                   onProductSelect={(id) => onNavigate({ page: 'product', productId: id })}
-                  // Передаем пустые функции, если QuickView не нужен здесь
                   onQuickView={() => {}} 
                   onVirtualStage={() => {}}
                 />
