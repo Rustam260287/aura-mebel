@@ -1,0 +1,32 @@
+ {
+  "short_name": "Labelcom",
+  "name": "Labelcom Мебель",
+  "description": "Современный интернет-магазин стильной и качественной мебели в Альметьевске. Наш ИИ-помошник поможет вам создать интерьер мечты.",
+  "icons": [
+    {
+      "src": "/icons/favicon-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "/icons/favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#5D4037",
+  "background_color": "#FBF9F4"
+}

@@ -1,0 +1,8 @@
+__turbopack_load_page_chunks__("/wishlist", [
+  "static/chunks/26bcbde809af43b2.js",
+  "static/chunks/eb7284bbc9ef73d3.js",
+  "static/chunks/d0e5f67fbcd40b40.js",
+  "static/chunks/040217faf94abae8.js",
+  "static/chunks/60b8084e4e7d58d4.js",
+  "static/chunks/turbopack-9d3248cb3ad8f02b.js"
+])
