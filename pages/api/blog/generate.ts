@@ -86,7 +86,9 @@ async function generateAndUploadImage(imagePrompt: string, postId: string): Prom
 
     try {
         console.log(`Starting image generation with prompt: "${enhancedPrompt}"`);
-        const imageBlob = await hf.textToImage({
+        // Приведение типа к unknown, затем к Blob для устранения ошибки TypeScript, 
+        // так как он ошибочно считает возвращаемое значение строкой.
+        const imageResult = await hf.textToImage({
             model: 'stabilityai/stable-diffusion-xl-base-1.0',
             inputs: enhancedPrompt,
             parameters: { negative_prompt: 'blurry, low quality, distortion, ugly, text, watermark' }
@@ -94,6 +96,8 @@ async function generateAndUploadImage(imagePrompt: string, postId: string): Prom
         
         console.log("Image generated successfully.");
 
+        // Явное приведение к Blob
+        const imageBlob = imageResult as unknown as Blob;
         const arrayBuffer = await imageBlob.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
