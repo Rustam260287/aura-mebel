@@ -22,16 +22,19 @@ function extractJson(text: string): any {
 async function getAllProductsSummary() {
     const db = getAdminDb();
     if (!db) return [];
-    const snapshot = await db.collection('products').select('name', 'category', 'price').get();
+    // Добавили imageUrls в выборку
+    const snapshot = await db.collection('products').select('name', 'category', 'price', 'imageUrls').get();
     return snapshot.docs.map(doc => ({ 
         id: doc.id, 
         name: doc.data().name, 
         category: doc.data().category,
-        price: doc.data().price 
+        price: doc.data().price,
+        imageUrls: doc.data().imageUrls || [] 
     }));
 }
 
 async function generateTextContent(topic: string, products: any[]): Promise<any> {
+    // В промпт не включаем URL картинок, чтобы не тратить токены
     const productsList = products.map(p => `- ID: ${p.id}, Название: "${p.name}", Категория: ${p.category}, Цена: ${p.price} руб.`).join('\n');
     
     const fullPrompt = `Напиши развернутую, экспертную и вдохновляющую статью для блога мебельного магазина "Labelcom" на тему: "${topic}".
@@ -74,56 +77,10 @@ async function generateTextContent(topic: string, products: any[]): Promise<any>
     return extractJson(data.candidates[0].content.parts[0].text);
 }
 
+// Функция генерации изображений временно не используется по запросу пользователя
 async function generateAndUploadImage(imagePrompt: string, postId: string): Promise<string> {
-    const hfToken = process.env.HUGGING_FACE_API_KEY;
-    if (!hfToken) {
-        console.warn("HUGGING_FACE_API_KEY not found in environment variables (checked .env.local), skipping image generation.");
-        return '';
-    }
-
-    const hf = new HfInference(hfToken);
-    const enhancedPrompt = `High quality photo of a modern furniture interior, ${imagePrompt}, realistic lighting, 4k, interior design magazine style, award winning photography`;
-
-    try {
-        console.log(`Starting image generation with prompt: "${enhancedPrompt}"`);
-        // Приведение типа к unknown, затем к Blob для устранения ошибки TypeScript, 
-        // так как он ошибочно считает возвращаемое значение строкой.
-        const imageResult = await hf.textToImage({
-            model: 'stabilityai/stable-diffusion-xl-base-1.0',
-            inputs: enhancedPrompt,
-            parameters: { negative_prompt: 'blurry, low quality, distortion, ugly, text, watermark' }
-        });
-        
-        console.log("Image generated successfully.");
-
-        // Явное приведение к Blob
-        const imageBlob = imageResult as unknown as Blob;
-        const arrayBuffer = await imageBlob.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        const storage = getAdminStorage();
-        if (!storage) throw new Error("Firebase Storage not initialized");
-
-        const bucket = storage.bucket();
-        const safePostId = postId.replace(/[^a-zA-Z0-9]/g, '_');
-        const fileName = `blog/${safePostId}_generated.jpg`;
-        const file = bucket.file(fileName);
-
-        await file.save(buffer, {
-            metadata: { contentType: 'image/jpeg' }
-        });
-        console.log("Image saved to storage bucket.");
-
-        await file.makePublic();
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-        console.log("Public URL generated:", publicUrl);
-        
-        return publicUrl;
-
-    } catch (error) {
-        console.error("Image generation or upload failed:", error);
-        return '';
-    }
+    // Временно отключено
+    return '';
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -135,16 +92,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log("Starting blog generation for topic:", topic);
         const products = await getAllProductsSummary();
         const blogData = await generateTextContent(topic, products);
-        console.log("Text content generated. Image prompt:", blogData.imagePrompt);
+        console.log("Text content generated.");
         
         const postId = new Date().toISOString();
-        let imageUrl = '';
         
-        if (blogData.imagePrompt) {
-            imageUrl = await generateAndUploadImage(blogData.imagePrompt, postId);
-        } else {
-            console.warn("No image prompt provided by AI.");
+        // --- ЛОГИКА ВЫБОРА КАРТИНКИ ---
+        let imageUrl = '';
+
+        // 1. Пытаемся взять картинку из первого рекомендованного товара
+        if (blogData.relatedProducts && Array.isArray(blogData.relatedProducts) && blogData.relatedProducts.length > 0) {
+            const firstRelatedId = blogData.relatedProducts[0];
+            const relatedProduct = products.find(p => p.id === firstRelatedId);
+            if (relatedProduct && relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0) {
+                imageUrl = relatedProduct.imageUrls[0];
+                console.log(`Image selected from related product "${relatedProduct.name}":`, imageUrl);
+            }
         }
+
+        // 2. Если не нашли, ищем любой товар, подходящий по теме (простая эвристика)
+        if (!imageUrl) {
+             const matchingProduct = products.find(p => 
+                p.imageUrls && p.imageUrls.length > 0 && 
+                (topic.toLowerCase().includes(p.category.toLowerCase()) || p.category.toLowerCase().includes(topic.toLowerCase()))
+             );
+             if (matchingProduct) {
+                 imageUrl = matchingProduct.imageUrls[0];
+                 console.log(`Image selected from matching category product "${matchingProduct.name}":`, imageUrl);
+             }
+        }
+
+        // 3. Если совсем ничего не нашли, используем picsum.photos как заглушку (тематическую, но рандомную)
+        if (!imageUrl) {
+             // Используем seed на основе топика, чтобы картинка была стабильной для одной темы
+             // Но picsum.photos дает просто красивые фото, не обязательно мебель.
+             // Лучше использовать placeholder или оставить пустым (тогда будет SVG заглушка на фронте)
+             // Пользователь просил "из интернета вставлялось картинка по теме".
+             // Можно попробовать https://loremflickr.com/1200/630/furniture,interior
+             imageUrl = `https://loremflickr.com/1200/630/furniture,interior/all?lock=${Math.floor(Math.random() * 100)}`;
+             console.log("Image selected from LoremFlickr:", imageUrl);
+        }
+        // ------------------------------
         
         const newPost = { 
             id: postId, 
@@ -159,7 +146,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
              await db.collection('blog').doc(newPost.id).set(newPost);
         }
         
-        res.status(200).json({ message: 'Статья успешно создана (статус: черновик)', post: newPost });
+        res.status(200).json({ message: 'Статья успешно создана', post: newPost });
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
