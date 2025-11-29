@@ -7,6 +7,7 @@ import type { AppProps } from 'next/app';
 import { ToastProvider } from '../contexts/ToastContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ClientProviders } from '../components/ClientProviders'; // Импортируем напрямую
+import { ChatWidget } from '../components/ChatWidget';
 import Head from 'next/head';
 
 // ClientProviders теперь импортируется синхронно, что гарантирует готовность контекста
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ClientProviders>
           <div className="flex flex-col min-h-screen font-sans bg-brand-cream text-brand-charcoal">
             <Component {...pageProps} />
+            <ChatWidget />
           </div>
         </ClientProviders>
       </ToastProvider>
