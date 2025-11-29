@@ -15,10 +15,10 @@ const FooterComponent: React.FC = () => {
             <h4 className="font-semibold text-brand-charcoal mb-4">Навигация</h4>
             <ul className="space-y-2">
               <li><Link href="/products" className="text-brand-charcoal/80 hover:text-brand-brown">Каталог</Link></li>
-              <li><Link href="/ai-room-makeover" className="text-brand-charcoal/80 hover:text-brand-brown">AI-редизайн</Link></li>
               <li><Link href="/blog" className="text-brand-charcoal/80 hover:text-brand-brown">Блог</Link></li>
               <li><Link href="/about" className="text-brand-charcoal/80 hover:text-brand-brown">О нас</Link></li>
               <li><Link href="/contacts" className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</Link></li>
+              <li><Link href="/shipping" className="text-brand-charcoal/80 hover:text-brand-brown">Доставка и оплата</Link></li>
               <li><Link href="/admin" className="text-brand-charcoal/80 hover:text-brand-brown">Админ-панель</Link></li>
             </ul>
           </div>

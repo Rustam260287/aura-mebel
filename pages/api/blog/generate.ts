@@ -1,82 +1,80 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
+// Эта функция остается, она нам понадобится
 function extractJson(text: string): any {
-    // This regex finds a JSON block either in a ```json markdown block or as a standalone object.
     const jsonMatch = text.match(/```json([\s\S]*?)```|(\{[\s\S]*\})/);
-    if (!jsonMatch) {
-        console.error("AI response did not contain a JSON block. Response:", text);
-        throw new Error("Не удалось найти JSON в ответе AI.");
-    }
-    // Group 1 is the content of ```json ... ```, Group 2 is the standalone object.
+    if (!jsonMatch) throw new Error("Не удалось найти JSON в ответе AI. Ответ: " + text);
     const jsonString = jsonMatch[1] || jsonMatch[2];
-     if (!jsonString) {
-        throw new Error("Не удалось извлечь JSON-строку.");
-    }
+    if (!jsonString) throw new Error("Не удалось извлечь JSON-строку.");
     try {
         return JSON.parse(jsonString);
     } catch (e) {
-        console.error("Ошибка парсинга JSON:", e, "\nИсходный текст:", text);
-        throw new Error(`Невалидный JSON от AI. Ошибка: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error("Невалидный JSON от AI.");
     }
 }
 
-async function generateBlogPost(topic: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+async function getAllProductsSummary() {
+    const db = getAdminDb();
+    if (!db) return [];
+    const snapshot = await db.collection('products').select('name', 'category').get();
+    return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name, category: doc.data().category }));
+}
 
-    // Using a single template literal for clarity and to avoid joining errors.
-    const prompt = `Напиши подробную, увлекательную и полезную статью для блога мебельного магазина на следующую тему: "${topic}".
+async function generateTextContent(topic: string, products: any[]): Promise<any> {
+    const productsList = products.map(p => `- ID: ${p.id}, Название: "${p.name}", Категория: ${p.category}`).join('\n');
+    const fullPrompt = `Напиши статью для блога мебельного магазина "Labelcom" на тему: "${topic}". Включи подзаго-ловки, списки, выдели важное. В конце подбери 3-5 подходящих товаров из списка ниже.
+    
+    СПИСОК ТОВАРОВ:
+    ${productsList}
 
-Статья должна быть хорошо структурирована, с заголовками и абзацами. Она должна быть написана в дружелюбном, но экспертном тоне.
-В конце статьи должен быть призыв к действию, например, посетить наш магазин или посмотреть каталог.
+    В ответ верни ТОЛЬКО JSON-объект в блоке \`\`\`json ... \`\`\` со структурой:
+    {
+      "title": "...",
+      "excerpt": "...",
+      "content": "(HTML формат)",
+      "imagePrompt": "(промпт для картинки на английском)",
+      "relatedProducts": ["id1", "id2"]
+    }`;
 
-В ответ **ОБЯЗАТЕЛЬНО** верни только один JSON-объект, заключенный в блок кода markdown (\`\`\`json ... \`\`\`), со следующей структурой:
-{
-  "title": "(заголовок статьи)",
-  "excerpt": "(короткая выдержка, 1-2 предложения, для превью)",
-  "content": "(полный текст статьи в формате HTML, используй теги <h2> для подзаголовков, <p> для абзацев и <strong> или <b> для выделения)",
-  "imagePrompt": "(опиши на английском языке изображение, которое хорошо бы подошло к этой статье, для генерации нейросетью, например: a cozy living room with a modern sofa and a large window)"
-}`; // IMPORTANT: No comma after the last property
+    const API_URL = `${process.env.ARTEMOX_BASE_URL}/models/gemini-1.5-flash:generateContent`;
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.ARTEMOX_API_KEY}` },
+        body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
+    });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    return extractJson(text);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Ошибка API генерации текста (${response.status}): ${errorText}`);
+    }
+    const data = await response.json();
+    return extractJson(data.candidates[0].content.parts[0].text);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
+    if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
     try {
         const { topic } = req.body;
-        if (!topic) {
-            return res.status(400).json({ message: 'Тема статьи обязательна' });
-        }
+        if (!topic) return res.status(400).json({ message: 'Тема статьи обязательна' });
 
-        const blogData = await generateBlogPost(topic);
-
-        const newPost = {
-            id: new Date().toISOString(),
-            ...blogData,
-            relatedProducts: [],
-            imageUrl: '',
-        };
-
-        const db = getAdminDb();
-        await db.collection('blog').doc(newPost.id).set(newPost);
+        const products = await getAllProductsSummary();
+        const blogData = await generateTextContent(topic, products);
         
-        res.status(200).json({ message: 'Статья успешно создана', post: newPost });
+        // **ИЗМЕНЕНИЕ:** Просто сохраняем пост без картинки
+        const newPost = { id: new Date().toISOString(), ...blogData, imageUrl: '', createdAt: new Date().toISOString() };
+        
+        const db = getAdminDb();
+        if (db) {
+             await db.collection('blog').doc(newPost.id).set(newPost);
+        }
+        
+        res.status(200).json({ message: 'Статья успешно создана (без изображения)', post: newPost });
 
     } catch (error) {
-        // IMPROVED ERROR HANDLING: Pass the actual error message to the client.
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Ошибка в /api/blog/generate:", errorMessage);
-        res.status(500).json({ message: errorMessage }); // Sending the specific error message
+        res.status(500).json({ message: errorMessage });
     }
 }
