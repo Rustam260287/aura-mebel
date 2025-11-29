@@ -14,13 +14,13 @@ export const Contacts: React.FC = memo(() => {
             <div>
               <h3 className="text-xl font-semibold mb-2">Телефон:</h3>
               <p>
-                <a href="tel:+79991234567" className="hover:text-brand-brown transition-colors">+7 (999) 123-45-67</a>
+                <a href="tel:+79872167075" className="hover:text-brand-brown transition-colors">+7 (987) 216-70-75</a>
               </p>
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-2">Email:</h3>
               <p>
-                <a href="mailto:hello@labelcom.ru" className="hover:text-brand-brown transition-colors">hello@labelcom.ru</a>
+                <a href="mailto:hello@labelcom.store" className="hover:text-brand-brown transition-colors">hello@labelcom.store</a>
               </p>
             </div>
             <div>

@@ -1,8 +1,40 @@
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import Link from 'next/link';
+import { useToast } from '../contexts/ToastContext';
 
 const FooterComponent: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        addToast(data.message, 'success');
+        setEmail('');
+      } else {
+        addToast(data.message || 'Ошибка подписки', 'error');
+      }
+    } catch (error) {
+      addToast('Не удалось подписаться. Попробуйте позже.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer className="bg-brand-cream-dark mt-auto">
       <div className="container mx-auto px-6 py-12">
@@ -29,15 +61,28 @@ const FooterComponent: React.FC = () => {
               <li>г. Москва, Москва-Сити, Башня Федерация, 45 этаж</li>
               <li className="font-semibold mt-2">Республика Татарстан</li>
               <li>г. Альметьевск, ул. Ленина, 85а</li>
-              <li className="mt-2">hello@labelcom.ru</li>
+              <li className="mt-2">hello@labelcom.store</li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Подписка</h4>
             <p className="text-sm text-brand-charcoal/80 mb-4">Узнавайте о новинках первыми.</p>
-             <form className="flex">
-                <input type="email" placeholder="Email" className="bg-white border border-transparent rounded-l-md px-4 py-2 w-full focus:outline-none focus:border-brand-brown" />
-                <button type="submit" className="bg-brand-brown text-white px-4 py-2 rounded-r-md hover:bg-brand-brown/90 transition-colors">OK</button>
+             <form className="flex" onSubmit={handleSubscribe}>
+                <input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-white border border-transparent rounded-l-md px-4 py-2 w-full focus:outline-none focus:border-brand-brown" 
+                />
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="bg-brand-brown text-white px-4 py-2 rounded-r-md hover:bg-brand-brown/90 transition-colors disabled:opacity-70"
+                >
+                    {loading ? '...' : 'OK'}
+                </button>
              </form>
           </div>
         </div>
