@@ -43,6 +43,8 @@ const FooterComponent: React.FC = () => {
         </div>
         <div className="mt-12 border-t border-brand-brown/20 pt-8 text-center text-sm text-brand-charcoal/60">
           &copy; {new Date().getFullYear()} Labelcom Мебель. Все права защищены.
+          <br />
+          <span className="text-xs mt-1 block">labelcom.store</span>
         </div>
       </div>
     </footer>

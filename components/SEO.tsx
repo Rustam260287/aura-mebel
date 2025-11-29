@@ -12,7 +12,7 @@ interface SEOProps {
 const SITE_NAME = 'Labelcom Мебель';
 const DEFAULT_DESCRIPTION = 'Премиальная мебель для вашего дома. Labelcom Мебель предлагает широкий выбор стильной и качественной мебели.';
 const DEFAULT_IMAGE = '/og-image.jpg';
-const SITE_URL = 'https://labelcom-mebel.com'; // Замените на реальный домен
+const SITE_URL = 'https://labelcom.store'; // ИСПРАВЛЕНО: Новый домен
 
 export const SEO: React.FC<SEOProps> = ({ 
   title, 
