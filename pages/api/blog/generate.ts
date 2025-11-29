@@ -92,7 +92,7 @@ async function generateAndUploadImage(imagePrompt: string, postId: string): Prom
             parameters: { negative_prompt: 'blurry, low quality, distortion, ugly, text, watermark' }
         });
         
-        console.log("Image generated successfully. Size:", imageBlob.size);
+        console.log("Image generated successfully.");
 
         const arrayBuffer = await imageBlob.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
