@@ -102,7 +102,7 @@ async function generateAndUploadImage(imagePrompt: string, postId: string): Prom
             style: "natural"
         });
 
-        const imageBase64 = response.data[0].b64_json;
+        const imageBase64 = response.data?.[0]?.b64_json;
         if (!imageBase64) throw new Error("No image data returned from OpenAI");
 
         const buffer = Buffer.from(imageBase64, 'base64');
