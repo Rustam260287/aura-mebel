@@ -41,7 +41,7 @@ export const ChatWidget: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             message: userMessage,
-            history: newMessages.slice(-6).filter(m => m.role !== 'system') // Context context
+            history: newMessages.slice(-6) // Send last 6 messages
         }),
       });
 
