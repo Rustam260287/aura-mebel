@@ -25,9 +25,9 @@ const FooterComponent: React.FC = () => {
            <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Контакты</h4>
             <ul className="space-y-2 text-brand-charcoal/80 text-sm">
-              <li className="font-semibold">Главный офис:</li>
+              <li className="font-semibold">ООО ЛЭЙБЛКОМ</li>
               <li>г. Москва, Москва-Сити, Башня Федерация, 45 этаж</li>
-              <li className="font-semibold mt-2">Филиал:</li>
+              <li className="font-semibold mt-2">Республика Татарстан</li>
               <li>г. Альметьевск, ул. Ленина, 85а</li>
               <li className="mt-2">hello@labelcom.ru</li>
             </ul>
