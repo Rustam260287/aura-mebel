@@ -17,7 +17,7 @@ const BlogPostCard: React.FC<{ post: BlogPost; onClick: () => void }> = ({ post,
     >
         <div className="relative overflow-hidden h-64">
             <Image 
-                src={post.imageUrl} 
+                src={post.imageUrl || '/placeholder.svg'} 
                 alt={post.title} 
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 fill

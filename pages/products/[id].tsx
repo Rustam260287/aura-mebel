@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { ProductDetail } from '../../components/ProductDetail';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
+import { SEO } from '../../components/SEO';
 
 interface ProductPageProps {
   product?: Product;
@@ -39,14 +40,30 @@ export default function ProductPage({ product, error }: ProductPageProps) {
     );
   }
 
+  // Формируем SEO данные
+  // Если есть специальное seoDescription, используем его. Иначе берем начало обычного описания.
+  const descriptionText = product.seoDescription || product.description || '';
+  const seoDescription = descriptionText.length > 160 
+    ? descriptionText.substring(0, 157) + '...' 
+    : descriptionText;
+    
+  const seoImage = (product.imageUrls && product.imageUrls.length > 0) 
+    ? product.imageUrls[0] 
+    : undefined;
+
   return (
     <>
+      <SEO 
+        title={product.name} 
+        description={seoDescription || `Купить ${product.name} по выгодной цене.`}
+        image={seoImage}
+        url={`/products/${product.id}`}
+      />
       <Header />
       <main>
         <ProductDetail 
           product={product} 
           onBack={() => router.back()}
-          // AI-функции удалены
         />
       </main>
       <Footer />

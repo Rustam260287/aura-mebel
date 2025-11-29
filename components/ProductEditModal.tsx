@@ -53,15 +53,37 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
   };
   
   const handleGenerateSeo = useCallback(async () => {
+    if (!productData.name) {
+        addToast('Введите название товара для генерации SEO.', 'error');
+        return;
+    }
+
     setIsSeoLoading(true);
     try {
-        addToast('SEO generation is not yet implemented.', 'info');
+        const response = await fetch('/api/products/generate-seo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: productData.name,
+                category: productData.category,
+                description: productData.description
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to generate SEO');
+        }
+
+        const data = await response.json();
+        setProductData(prev => ({ ...prev, seoDescription: data.seoDescription }));
+        addToast('SEO описание успешно сгенерировано!', 'success');
     } catch (err) {
-      addToast(err instanceof Error ? err.message : 'An error occurred.', 'error');
+      console.error(err);
+      addToast('Не удалось сгенерировать SEO описание.', 'error');
     } finally {
       setIsSeoLoading(false);
     }
-  }, [addToast]);
+  }, [productData.name, productData.category, productData.description, addToast]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -188,7 +210,7 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
               <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700">SEO Описание</label>
               <textarea name="seoDescription" value={productData.seoDescription || ''} onChange={handleChange} className="w-full p-2 border rounded" rows={3}></textarea>
             </div>
-            <Button variant="outline" type="button" onClick={handleGenerateSeo} disabled={isSeoLoading}>
+            <Button variant="outline" type="button" onClick={handleGenerateSeo} disabled={isSeoLoading} title="Сгенерировать SEO описание с помощью ИИ">
                 {isSeoLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin"/> : <SparklesIcon className="w-5 h-5"/>}
             </Button>
           </div>
