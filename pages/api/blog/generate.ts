@@ -1,8 +1,9 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb, getAdminStorage } from '../../../lib/firebaseAdmin';
-import { HfInference } from '@huggingface/inference';
 import dotenv from 'dotenv';
+import OpenAI from 'openai';
+import fetch from 'node-fetch'; // Explicit import for node environment if needed, or global
 
 // Явно загружаем .env.local, если переменные еще не загружены
 dotenv.config({ path: '.env.local' });
@@ -54,7 +55,7 @@ async function generateTextContent(topic: string, products: any[]): Promise<any>
       "title": "Привлекательный заголовок статьи",
       "excerpt": "Краткий анонс для списка статей (2-3 предложения, интригующий)",
       "content": "Полный текст статьи в формате HTML. Используй теги <h2>, <h3>, <p>, <ul>, <li>, <strong>. Не используй тег <img> в тексте.",
-      "imagePrompt": "Подробное описание изображения для обложки статьи на английском языке (для генерации через AI)",
+      "imagePrompt": "Подробное описание изображения для обложки статьи на английском языке (для генерации через DALL-E). Описание должно быть визуальным, фотореалистичным и уютным.",
       "relatedProducts": ["id1", "id2", "id3"] // Массив ID упомянутых или подходящих товаров (3-5 штук)
     }`;
 
@@ -62,6 +63,9 @@ async function generateTextContent(topic: string, products: any[]): Promise<any>
     const apiKey = process.env.ARTEMOX_API_KEY;
     const baseUrl = process.env.ARTEMOX_BASE_URL;
 
+    // Fallback to OpenAI text generation if Artemox not configured, 
+    // but preserving original logic here for text. 
+    // Assuming text generation works fine as is.
     const API_URL = `${baseUrl}/models/gemini-1.5-flash:generateContent`;
     const response = await fetch(API_URL, {
         method: 'POST',
@@ -73,14 +77,63 @@ async function generateTextContent(topic: string, products: any[]): Promise<any>
       const errorText = await response.text();
       throw new Error(`Ошибка API генерации текста (${response.status}): ${errorText}`);
     }
-    const data = await response.json();
+    const data: any = await response.json();
     return extractJson(data.candidates[0].content.parts[0].text);
 }
 
-// Функция генерации изображений временно не используется по запросу пользователя
+// Функция генерации изображений через OpenAI DALL-E 3
 async function generateAndUploadImage(imagePrompt: string, postId: string): Promise<string> {
-    // Временно отключено
-    return '';
+    if (!process.env.OPENAI_API_KEY) {
+        console.warn("OPENAI_API_KEY not found. Skipping image generation.");
+        return '';
+    }
+
+    try {
+        console.log("Generating image with prompt:", imagePrompt);
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const response = await openai.images.generate({
+            model: "dall-e-3",
+            prompt: `Professional interior photography, photorealistic, high quality, 4k. ${imagePrompt}`,
+            n: 1,
+            size: "1024x1024",
+            response_format: "b64_json",
+            quality: "standard",
+            style: "natural"
+        });
+
+        const imageBase64 = response.data[0].b64_json;
+        if (!imageBase64) throw new Error("No image data returned from OpenAI");
+
+        const buffer = Buffer.from(imageBase64, 'base64');
+        const storage = getAdminStorage();
+        if (!storage) throw new Error("Storage not initialized");
+
+        const bucket = storage.bucket();
+        // Сохраняем как WebP или PNG. DALL-E возвращает PNG (если url) или raw data. b64_json - это данные.
+        // Сохраним как .png
+        const filename = `blog/${postId}_cover.png`;
+        const file = bucket.file(filename);
+
+        await file.save(buffer, {
+            metadata: { contentType: 'image/png' },
+            public: true
+        });
+
+        // Получаем публичную ссылку. 
+        // file.publicUrl() возвращает ссылку, которая часто требует прав доступа если бакет закрыт,
+        // но мы сделали public: true.
+        // Более надежный вариант для Firebase Storage:
+        // https://storage.googleapis.com/BUCKET_NAME/FILE_PATH
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+        
+        console.log("Image uploaded to:", publicUrl);
+        return publicUrl;
+
+    } catch (error) {
+        console.error("Error generating/uploading image:", error);
+        return '';
+    }
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -91,25 +144,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log("Starting blog generation for topic:", topic);
         const products = await getAllProductsSummary();
+        
+        // 1. Генерируем текст (используя существующий механизм Gemini/Artemox)
         const blogData = await generateTextContent(topic, products);
         console.log("Text content generated.");
         
-        const postId = new Date().toISOString();
+        const postId = Date.now().toString(); // Simple ID based on timestamp
         
         // --- ЛОГИКА ВЫБОРА КАРТИНКИ ---
         let imageUrl = '';
 
-        // 1. Пытаемся взять картинку из первого рекомендованного товара
-        if (blogData.relatedProducts && Array.isArray(blogData.relatedProducts) && blogData.relatedProducts.length > 0) {
-            const firstRelatedId = blogData.relatedProducts[0];
-            const relatedProduct = products.find(p => p.id === firstRelatedId);
-            if (relatedProduct && relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0) {
-                imageUrl = relatedProduct.imageUrls[0];
-                console.log(`Image selected from related product "${relatedProduct.name}":`, imageUrl);
+        // 2. Пробуем сгенерировать уникальную картинку через DALL-E 3
+        if (blogData.imagePrompt) {
+            imageUrl = await generateAndUploadImage(blogData.imagePrompt, postId);
+        }
+
+        // 3. Если генерация не удалась, используем запасные варианты
+        if (!imageUrl) {
+            // Пытаемся взять картинку из первого рекомендованного товара
+            if (blogData.relatedProducts && Array.isArray(blogData.relatedProducts) && blogData.relatedProducts.length > 0) {
+                const firstRelatedId = blogData.relatedProducts[0];
+                const relatedProduct = products.find(p => p.id === firstRelatedId);
+                if (relatedProduct && relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0) {
+                    imageUrl = relatedProduct.imageUrls[0];
+                    console.log(`Image selected from related product "${relatedProduct.name}":`, imageUrl);
+                }
             }
         }
 
-        // 2. Если не нашли, ищем любой товар, подходящий по теме (простая эвристика)
         if (!imageUrl) {
              const matchingProduct = products.find(p => 
                 p.imageUrls && p.imageUrls.length > 0 && 
@@ -121,13 +183,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
              }
         }
 
-        // 3. Если совсем ничего не нашли, используем picsum.photos как заглушку (тематическую, но рандомную)
         if (!imageUrl) {
-             // Используем seed на основе топика, чтобы картинка была стабильной для одной темы
-             // Но picsum.photos дает просто красивые фото, не обязательно мебель.
-             // Лучше использовать placeholder или оставить пустым (тогда будет SVG заглушка на фронте)
-             // Пользователь просил "из интернета вставлялось картинка по теме".
-             // Можно попробовать https://loremflickr.com/1200/630/furniture,interior
              imageUrl = `https://loremflickr.com/1200/630/furniture,interior/all?lock=${Math.floor(Math.random() * 100)}`;
              console.log("Image selected from LoremFlickr:", imageUrl);
         }
@@ -138,7 +194,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ...blogData, 
             imageUrl: imageUrl, 
             status: 'draft', 
-            createdAt: postId 
+            createdAt: new Date().toISOString()
         };
         
         const db = getAdminDb();

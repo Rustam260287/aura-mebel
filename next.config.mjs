@@ -11,6 +11,7 @@ const withPWA = withPWAInit({
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  turbopack: {}, // Silences the "using webpack with no turbopack config" error
   images: {
     remotePatterns: [
       {
