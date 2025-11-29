@@ -32,7 +32,10 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
 
   useEffect(() => {
     if (product) {
-      setProductData(product);
+      setProductData({
+          ...product,
+          details: product.details || { dimensions: '', material: '', care: '' }
+      });
     }
   }, [product]);
 
@@ -131,6 +134,10 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
                 <option value="Столы">Столы</option>
                 <option value="Стулья">Стулья</option>
                 <option value="Шкафы">Шкафы</option>
+                <option value="Кухни">Кухни</option>
+                <option value="Мягкая мебель">Мягкая мебель</option>
+                <option value="Гостиная">Гостиная</option>
+                <option value="Спальни">Спальни</option>
             </select>
           </div>
 
@@ -164,15 +171,15 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
              <div>
                 <label htmlFor="details.dimensions" className="block text-sm font-medium text-gray-700">Размеры</label>
-                <input type="text" name="details.dimensions" value={productData.details.dimensions} onChange={handleChange} className="w-full p-2 border rounded" />
+                <input type="text" name="details.dimensions" value={productData.details?.dimensions || ''} onChange={handleChange} className="w-full p-2 border rounded" />
              </div>
              <div>
                 <label htmlFor="details.material" className="block text-sm font-medium text-gray-700">Материал</label>
-                <input type="text" name="details.material" value={productData.details.material} onChange={handleChange} className="w-full p-2 border rounded" />
+                <input type="text" name="details.material" value={productData.details?.material || ''} onChange={handleChange} className="w-full p-2 border rounded" />
              </div>
              <div>
                 <label htmlFor="details.care" className="block text-sm font-medium text-gray-700">Уход</label>
-                <input type="text" name="details.care" value={productData.details.care} onChange={handleChange} className="w-full p-2 border rounded" />
+                <input type="text" name="details.care" value={productData.details?.care || ''} onChange={handleChange} className="w-full p-2 border rounded" />
              </div>
           </div>
 
