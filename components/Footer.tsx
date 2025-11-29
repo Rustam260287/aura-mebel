@@ -57,11 +57,15 @@ const FooterComponent: React.FC = () => {
            <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Контакты</h4>
             <ul className="space-y-2 text-brand-charcoal/80 text-sm">
-              <li className="font-semibold">ООО ЛЭЙБЛКОМ</li>
+              <li className="font-bold mb-1">ООО "Labelcom"</li>
+              
+              <li className="font-semibold text-brand-brown">Центральный офис</li>
               <li>г. Москва, Москва-Сити, Башня Федерация, 45 этаж</li>
-              <li className="font-semibold mt-2">Республика Татарстан</li>
+              
+              <li className="font-semibold text-brand-brown mt-2">Филиал в Республике Татарстан</li>
               <li>г. Альметьевск, ул. Ленина, 85а</li>
-              <li className="mt-2">hello@labelcom.store</li>
+              
+              <li className="mt-3 text-brand-brown hover:underline"><a href="mailto:hello@labelcom.store">hello@labelcom.store</a></li>
             </ul>
           </div>
           <div>
