@@ -17,3 +17,5 @@ env:
     value: "1:149768023865:web:7e9fbd950241375d6a02e8"
   - variable: ADMIN_EMAILS
     value: amin8914@gmail.com
+  - variable: OPENAI_API_KEY
+    value: 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
