@@ -33,6 +33,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
   const navLinks = [
     { label: 'Каталог', href: '/products' },
     { label: 'Блог', href: '/blog' },
+    { label: 'AI Редизайн', href: '/ai-room-makeover' },
     { label: 'О нас', href: '/about' },
     { label: 'Контакты', href: '/contacts' },
   ];
