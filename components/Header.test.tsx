@@ -3,12 +3,13 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Header } from './Header';
-import { useCart } from '../contexts/CartContext';
+import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 
 // --- Mocks ---
 jest.mock('../contexts/CartContext', () => ({
-  useCart: jest.fn(),
+  useCartState: jest.fn(),
+  useCartDispatch: jest.fn(),
 }));
 
 jest.mock('../contexts/WishlistContext', () => ({
@@ -24,16 +25,20 @@ jest.mock('next/router', () => ({
 
 // --- Test Suite ---
 describe('Header Component', () => {
-  let mockUseCart: jest.Mock;
+  let mockUseCartState: jest.Mock;
+  let mockUseCartDispatch: jest.Mock;
   let mockUseWishlist: jest.Mock;
 
   beforeEach(() => {
-    mockUseCart = useCart as jest.Mock;
+    mockUseCartState = useCartState as jest.Mock;
+    mockUseCartDispatch = useCartDispatch as jest.Mock;
     mockUseWishlist = useWishlist as jest.Mock;
     mockRouterPush.mockClear();
 
-    mockUseCart.mockReturnValue({
+    mockUseCartState.mockReturnValue({
       cartCount: 0,
+    });
+    mockUseCartDispatch.mockReturnValue({
       toggleCart: jest.fn(),
     });
     mockUseWishlist.mockReturnValue({
@@ -44,14 +49,14 @@ describe('Header Component', () => {
   it('renders logo and navigation links', () => {
     render(<Header />);
     
-    expect(screen.getByText('Aura')).toBeInTheDocument();
+    expect(screen.getByText('Labelcom')).toBeInTheDocument();
     expect(screen.getByText('Каталог')).toBeInTheDocument();
     expect(screen.getByText('Блог')).toBeInTheDocument();
     expect(screen.getByText('О нас')).toBeInTheDocument();
   });
 
   it('displays correct item counts in cart and wishlist', () => {
-    mockUseCart.mockReturnValue({ cartCount: 3, toggleCart: jest.fn() });
+    mockUseCartState.mockReturnValue({ cartCount: 3 });
     mockUseWishlist.mockReturnValue({ wishlistCount: 5 });
 
     render(<Header />);
@@ -65,7 +70,7 @@ describe('Header Component', () => {
 
   it('calls toggleCart when cart button is clicked', async () => {
     const mockToggleCart = jest.fn();
-    mockUseCart.mockReturnValue({ cartCount: 0, toggleCart: mockToggleCart });
+    mockUseCartDispatch.mockReturnValue({ toggleCart: mockToggleCart });
 
     render(<Header />);
     

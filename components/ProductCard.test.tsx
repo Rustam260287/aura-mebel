@@ -21,8 +21,11 @@ jest.mock('../contexts/ToastContext', () => ({
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
+    // Filter out 'fill' and other Next.js specific props that <img> doesn't support
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { fill, ...rest } = props;
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} />;
+    return <img {...rest} />;
   },
 }));
 
@@ -36,6 +39,11 @@ const mockProduct = {
   rating: 4,
   reviews: [],
   description: 'A beautiful sofa.',
+  details: {
+      dimensions: '200x100x90',
+      material: 'Velvet',
+      care: 'Dry clean'
+  }
 };
 
 // A helper component to wrap ProductCard with necessary providers

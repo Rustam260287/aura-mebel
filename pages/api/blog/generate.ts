@@ -62,15 +62,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const products = await getAllProductsSummary();
         const blogData = await generateTextContent(topic, products);
         
-        // **ИЗМЕНЕНИЕ:** Просто сохраняем пост без картинки
-        const newPost = { id: new Date().toISOString(), ...blogData, imageUrl: '', createdAt: new Date().toISOString() };
+        // **ИЗМЕНЕНИЕ:** Просто сохраняем пост без картинки, добавляем статус draft
+        const newPost = { 
+            id: new Date().toISOString(), 
+            ...blogData, 
+            imageUrl: '', 
+            status: 'draft', 
+            createdAt: new Date().toISOString() 
+        };
         
         const db = getAdminDb();
         if (db) {
              await db.collection('blog').doc(newPost.id).set(newPost);
         }
         
-        res.status(200).json({ message: 'Статья успешно создана (без изображения)', post: newPost });
+        res.status(200).json({ message: 'Статья успешно создана (статус: черновик)', post: newPost });
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

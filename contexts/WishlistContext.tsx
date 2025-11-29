@@ -13,24 +13,31 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [wishlistItems, setWishlistItems] = useState<string[]>(() => {
-    // Эта логика теперь безопасна, так как компонент рендерится только на клиенте
-    try {
-      const item = window.localStorage.getItem('aura_wishlist');
-      return item ? JSON.parse(item) : [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  });
+  const [wishlistItems, setWishlistItems] = useState<string[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      window.localStorage.setItem('aura_wishlist', JSON.stringify(wishlistItems));
+      const item = window.localStorage.getItem('aura_wishlist');
+      if (item) {
+        setWishlistItems(JSON.parse(item));
+      }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoaded(true);
     }
-  }, [wishlistItems]);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        window.localStorage.setItem('aura_wishlist', JSON.stringify(wishlistItems));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [wishlistItems, isLoaded]);
 
 
   const addToWishlist = useCallback((id: string) => {

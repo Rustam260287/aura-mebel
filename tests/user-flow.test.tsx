@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import HomePage from '@/pages/index';
+import { CartSidebar } from '@/components/CartSidebar';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -20,7 +21,13 @@ jest.mock('next/router', () => ({
 
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => <img {...props} />,
+  default: (props: any) => {
+    // Filter out 'fill' and other Next.js specific props that <img> doesn't support
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { fill, ...rest } = props;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...rest} />;
+  },
 }));
 
 // --- Mock Data ---
@@ -34,6 +41,11 @@ const mockProducts: Product[] = [
     rating: 5,
     reviews: [],
     description: 'A very testable sofa.',
+    details: {
+        dimensions: '200x100x90',
+        material: 'Test fabric',
+        care: 'Test care'
+    }
   },
   {
     id: 'prod-2',
@@ -44,6 +56,11 @@ const mockProducts: Product[] = [
     rating: 4,
     reviews: [],
     description: 'A nice chair.',
+    details: {
+        dimensions: '50x50x90',
+        material: 'Wood',
+        care: 'Wipe clean'
+    }
   },
 ];
 
@@ -52,7 +69,10 @@ const renderHomePage = () => {
     <ToastProvider>
       <WishlistProvider>
         <CartProvider>
-          <HomePage allProducts={mockProducts} />
+          {/* Changed allProducts to popularProducts as per HomePage definition */}
+          <HomePage popularProducts={mockProducts} />
+          {/* Include CartSidebar for testing cart interaction */}
+          <CartSidebar onNavigate={jest.fn()} />
         </CartProvider>
       </WishlistProvider>
     </ToastProvider>

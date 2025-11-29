@@ -32,7 +32,7 @@ export interface Product {
   seoDescription?: string;
   rating: number;
   reviews: Review[];
-  details: ProductDetails;
+  details?: ProductDetails; // Made optional as per test fix
   isConfigurable?: boolean;
   configurationOptions?: ConfigurationOption[];
   upscaledImageUrl?: string; // Добавляем необязательное поле
@@ -46,6 +46,8 @@ export interface BlogPost {
   relatedProducts: string[]; // array of product IDs
   imagePrompt: string;
   imageUrl: string;
+  status: 'draft' | 'published'; // Added status field
+  createdAt?: string;
 }
 
 export type View =

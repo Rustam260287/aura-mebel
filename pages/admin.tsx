@@ -210,8 +210,16 @@ export const getServerSideProps: GetServerSideProps = async () => {
     const productsSnapshot = await dbAdmin.collection('products').orderBy('name').get();
     const initialProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
     
-    const blogSnapshot = await dbAdmin.collection('blog').orderBy('date', 'desc').get();
-    const initialBlogPosts = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+    // ИСПРАВЛЕНИЕ: Убираем orderBy('date'), так как поле может отсутствовать
+    const blogSnapshot = await dbAdmin.collection('blog').get();
+    const allBlogPosts = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+    
+    // Сортировка в памяти (по createdAt или id)
+    const initialBlogPosts = allBlogPosts.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.id).getTime();
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.id).getTime();
+        return dateB - dateA;
+    });
 
     const ordersSnapshot = await dbAdmin.collection('orders').orderBy('createdAt', 'desc').get();
     const initialOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];

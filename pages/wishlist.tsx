@@ -26,6 +26,9 @@ export default function Wishlist({ allProducts }: WishlistPageProps) {
                  if (view.page === 'product' && 'productId' in view) {
                      router.push(`/products/${view.productId}`);
                  }
+                 if (view.page === 'catalog') {
+                     router.push('/products');
+                 }
             }}
             onQuickView={() => {}} // Пустая функция, т.к. не используется на этой странице
             onVirtualStage={() => {}} // Пустая функция

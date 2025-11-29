@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import type { Product, BlogPost, View, ChatMessage, AdminView, Order } from '../types';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { AdminDashboard } from '../components/admin/AdminDashboard';
@@ -44,6 +44,10 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentBlogPosts, setCurrentBlogPosts] = useState(blogPosts);
 
+  useEffect(() => {
+      setCurrentBlogPosts(blogPosts);
+  }, [blogPosts]);
+
   const renderContent = () => {
     switch (adminView) {
       case 'dashboard':
@@ -61,6 +65,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
                   setBlogPosts={setCurrentBlogPosts}
                   onEditPost={setEditingBlogPost}
                   onDeletePost={onDeleteBlogPost}
+                  onUpdatePost={onUpdateBlogPost}
                 />;
       case 'orders':
         return <AdminOrders orders={orders} onUpdateStatus={onUpdateOrderStatus} />;
@@ -118,8 +123,15 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
           onClose={() => setEditingBlogPost(null)}
           onSave={async (updatedPost) => {
             await onUpdateBlogPost(updatedPost);
-            const updatedPosts = currentBlogPosts.map(p => p.id === updatedPost.id ? updatedPost : p);
-            setCurrentBlogPosts(updatedPosts);
+            // We update local state in AdminPage, but AdminBlog also has local state?
+            // Actually AdminBlog receives state via props now? 
+            // In renderContent, we pass 'posts={currentBlogPosts}' and 'setBlogPosts'.
+            // But we also update 'currentBlogPosts' here.
+            // Let's rely on 'blogPosts' prop update from parent (pages/admin.tsx) which updates 'initialBlogPosts' ?
+            // No, pages/admin.tsx has local state 'blogPosts'.
+            // When onUpdateBlogPost is called, pages/admin.tsx updates its state.
+            // And that new state is passed down to AdminPage as 'blogPosts'.
+            // So we need a useEffect to sync props to local state if we keep local state here.
             setEditingBlogPost(null);
           }}
         />

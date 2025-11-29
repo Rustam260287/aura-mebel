@@ -22,10 +22,11 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
 
   useEffect(() => {
     setFormData(post);
-    setRelatedProductsString(post.relatedProducts.join(', '));
+    // Безопасное обращение к relatedProducts для старых постов
+    setRelatedProductsString((post.relatedProducts || []).join(', '));
   }, [post]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -45,10 +46,10 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
         ...prev,
         imageUrl: downloadURL
       }));
-      addToast('Image uploaded successfully', 'success');
+      addToast('Изображение успешно загружено', 'success');
     } catch (error) {
       console.error("Upload error:", error);
-      addToast('Failed to upload image', 'error');
+      addToast('Ошибка загрузки изображения', 'error');
     } finally {
       setIsUploading(false);
     }
@@ -82,11 +83,25 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
         </header>
 
         <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
-          <div>
-            <div className="flex justify-between items-center mb-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">Заголовок</label>
-            </div>
-            <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border" />
+                <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border" />
+              </div>
+              
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700">Статус</label>
+                <select
+                    name="status"
+                    id="status"
+                    value={formData.status || 'published'} // Старые посты считаем опубликованными по умолчанию в UI
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"
+                >
+                    <option value="draft">Черновик</option>
+                    <option value="published">Опубликовано</option>
+                </select>
+              </div>
           </div>
 
           <div>
@@ -117,7 +132,7 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
           
           <div>
             <label htmlFor="content" className="block text-sm font-medium text-gray-700">Содержание (HTML)</label>
-            <textarea name="content" id="content" value={formData.content} onChange={handleChange} rows={8} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border"></textarea>
+            <textarea name="content" id="content" value={formData.content} onChange={handleChange} rows={12} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border font-mono text-sm"></textarea>
           </div>
           
           <div>
@@ -127,7 +142,7 @@ export const BlogEditModal: React.FC<BlogEditModalProps> = memo(({ post, onClose
           
           <div>
             <label htmlFor="imagePrompt" className="block text-sm font-medium text-gray-700">Промпт для изображения (на английском)</label>
-            <input type="text" name="imagePrompt" id="imagePrompt" value={formData.imagePrompt} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border" />
+            <input type="text" name="imagePrompt" id="imagePrompt" value={formData.imagePrompt || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-brown focus:ring-brand-brown p-2 border" />
           </div>
 
         </form>
