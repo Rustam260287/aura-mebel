@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const db = getAdminDb();
     let productsContext = "";
     
-    // Получаем контекст
+    // Получаем контекст товаров
     if (db) {
         const snapshot = await db.collection('products')
             .select('name', 'category', 'price', 'description')
@@ -55,20 +55,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", generationConfig: { responseMimeType: "application/json" } });
 
     const systemInstruction = `
-    Ты — эксперт-консультант мебельного бутика "Labelcom".
-    
-    КАТАЛОГ ТОВАРОВ:
+    ТВОЯ РОЛЬ:
+    Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, а также ведущий консультант бутика "Labelcom".
+    Ты обладаешь глубочайшими знаниями о стилях (Лофт, Неоклассика, Минимализм, Сканди), материалах (антивандальные ткани, массив, МДФ, камень) и эргономике.
+    Твоя задача — не просто отвечать, а влюблять клиента в нашу мебель и вести его к покупке.
+
+    НАШЕ ГЛАВНОЕ ПРЕИМУЩЕСТВО (УТП):
+    **Мы производим мебель на заказ!** Любые размеры, любые ткани, любой цвет и дизайн.
+    Если в каталоге нет идеального варианта — предложи сделать его индивидуально. Это наш козырь.
+
+    ГОТОВЫЙ КАТАЛОГ (Для быстрых продаж):
     ${productsContext}
     
+    СТРАТЕГИЯ ПРОДАЖ (Будь активным!):
+    1. **Экспертиза:** Если клиент спрашивает совет (например, "какой диван лучше для кота?"), дай профессиональный ответ (антивандальный флок/велюр) и объясни почему.
+    2. **Выявление потребностей:** Задавай уточняющие вопросы: "Какой размер комнаты?", "Какой стиль вы предпочитаете?", "Вам нужен раскладной механизм?".
+    3. **Индивидуальный подход:** Если клиент хочет "такой же, но с перламутровыми пуговицами" — скажи: "Без проблем! Мы изготовим эту модель в любом цвете и размере специально для вас".
+    4. **Стиль общения:** Премиальный, уверенный, заботливый. Используй термины дизайна уместно.
+
     ФОРМАТ ОТВЕТА (JSON):
     {
-      "reply": "Текст ответа. Используй markdown для жирного текста.",
-      "recommendedProductIds": ["ID_1", "ID_2"] // Массив ID рекомендуемых товаров (макс 3).
+      "reply": "Текст ответа. Используй Markdown для акцентов (**жирный**).",
+      "recommendedProductIds": ["ID_1", "ID_2"] // Если рекомендуешь что-то из готового. Если предлагаешь индив. пошив — оставь пустым.
     }
-    
-    Правила:
-    1. Если рекомендуешь товар, обязательно добавь его ID в массив.
-    2. Будь краток и убедителен.
     `;
 
     const chatHistory = (history || []).map((msg: any) => ({
@@ -84,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
             {
                 role: "model",
-                parts: [{ text: JSON.stringify({ reply: "Здравствуйте! Чем могу помочь?", recommendedProductIds: [] }) }]
+                parts: [{ text: JSON.stringify({ reply: "Здравствуйте! Я ваш персональный дизайнер Labelcom. Готов создать интерьер вашей мечты. Что будем выбирать сегодня?", recommendedProductIds: [] }) }]
             },
             ...chatHistory
         ],
@@ -101,11 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // --- ОБОГАЩЕНИЕ ДАННЫМИ ---
-    // Если есть ID, достаем полные данные из базы (картинку, название)
     let products: any[] = [];
     if (jsonResponse.recommendedProductIds && jsonResponse.recommendedProductIds.length > 0 && db) {
         try {
-            // Firestore 'in' query поддерживает до 10 ID
             const ids = jsonResponse.recommendedProductIds.slice(0, 10);
             if (ids.length > 0) {
                 const productsSnapshot = await db.collection('products')

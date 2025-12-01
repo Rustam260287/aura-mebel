@@ -28,6 +28,8 @@ export default function PostPage({ post, relatedProducts, error }: PostPageProps
   const handleNavigate = (view: View) => {
     if (view.page === 'product') {
       router.push(`/products/${view.productId}`);
+    } else if (view.page === 'blog-list') {
+      router.push('/blog');
     } else {
       router.push(`/${view.page}`);
     }
@@ -71,15 +73,33 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         }
         const post = { id: postDoc.id, ...postDoc.data() } as BlogPost;
 
+        // --- УМНЫЙ ПОИСК ТОВАРОВ ИЗ ТЕКСТА ---
+        const content = post.content || '';
+        // Ищем теги [PRODUCT: Название]
+        const productMatches = content.match(/\[PRODUCT: (.*?)\]/g);
+        
         let relatedProducts: Product[] = [];
-        if (post.relatedProducts && post.relatedProducts.length > 0) {
-            const productPromises = post.relatedProducts.map(productId => 
-                db.collection('products').doc(productId).get()
-            );
-            const productDocs = await Promise.all(productPromises);
-            relatedProducts = productDocs
-                .filter(doc => doc.exists)
-                .map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        
+        // Получаем товары (оптимизация: кэшировать бы, но это build time)
+        const productsSnapshot = await db.collection('products').limit(100).get();
+        const allProducts = productsSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()} as Product));
+
+        if (productMatches) {
+            const productNames = productMatches.map(m => m.replace('[PRODUCT: ', '').replace(']', '').trim());
+            
+            // Ищем совпадения по названию (нечеткий поиск)
+            relatedProducts = allProducts.filter(p => 
+                productNames.some(name => 
+                    p.name.toLowerCase().includes(name.toLowerCase()) || 
+                    name.toLowerCase().includes(p.name.toLowerCase())
+                )
+            ).slice(0, 4); // Берем до 4 товаров
+        }
+
+        // Если AI не нашел товары или не вставил теги, берем просто товары из той же категории (если бы она была у поста) или рандом
+        if (relatedProducts.length === 0) {
+             // Берем случайные 3
+             relatedProducts = allProducts.sort(() => 0.5 - Math.random()).slice(0, 3);
         }
 
         return {
@@ -87,7 +107,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                 post: JSON.parse(JSON.stringify(post)),
                 relatedProducts: JSON.parse(JSON.stringify(relatedProducts)),
             },
-            revalidate: 60 * 10, // 10 минут
+            revalidate: 60 * 60, // 1 час
         };
     } catch (error) {
         console.error(`Error fetching blog post ${params.id}:`, error);
