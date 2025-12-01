@@ -9,6 +9,8 @@ import { useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { ImageZoomModal } from './ImageZoomModal';
+import { FurnitureTryOnModal } from './FurnitureTryOnModal';
+import { CubeIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
 
@@ -40,6 +42,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
+  const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
   
   const { addToCart } = useCartDispatch();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -101,10 +104,22 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             <h1 className="text-4xl lg:text-5xl font-serif text-brand-brown mb-4">{safeProduct.name}</h1>
             <div className="flex items-center mb-4"><StarRating rating={safeProduct.rating} /><span className="ml-2 text-sm text-gray-600">({currentReviews.length} отзывов)</span></div>
             <p className="text-3xl lg:text-4xl font-serif text-brand-charcoal mb-8">{safeProduct.price.toLocaleString('ru-RU')} ₽</p>
-            <div className="flex items-center gap-4 mb-8">
-                <Button size="lg" onClick={handleAddToCart} className="flex-grow shadow-lg hover:shadow-xl transition-shadow">Добавить в корзину</Button>
-                <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4 shadow-sm hover:shadow-md transition-shadow"><HeartIcon className={`w-6 h-6 ${isWished ? 'text-red-500 fill-current' : ''}`} /></Button>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4 mb-4">
+                <Button size="lg" onClick={handleAddToCart} className="shadow-lg hover:shadow-xl transition-shadow w-full">Добавить в корзину</Button>
+                <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4 shadow-sm hover:shadow-md transition-shadow w-full"><HeartIcon className={`w-6 h-6 ${isWished ? 'text-red-500 fill-current' : ''}`} /></Button>
             </div>
+            
+            <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={() => setIsTryOnModalOpen(true)} 
+                className="mb-8 w-full border-dashed border-2 border-brand-brown/30 text-brand-brown hover:bg-brand-cream/30 hover:border-brand-brown transition-all group"
+            >
+                <CubeIcon className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" />
+                Примерить в комнате
+            </Button>
+
             <div className="w-full">
               <Tab.Group>
                 <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream-dark p-1">
@@ -116,7 +131,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                     <div dangerouslySetInnerHTML={{ __html: mainDesc.replace(/\n/g, '<br />') }} />
                   </Tab.Panel>
                   {techSpecs && <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2">
-                     {/* ИСПРАВЛЕНИЕ: Добавляем font-serif и убираем стили списка по умолчанию */}
                      <div className="font-serif" dangerouslySetInnerHTML={{ __html: techSpecs.replace(/\n/g, '<br />') }} />
                   </Tab.Panel>}
                 </Tab.Panels>
@@ -126,6 +140,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         </div>
         <Reviews reviews={currentReviews} onAddReview={handleAddReview} />
         {isZoomModalOpen && galleryImages.length > 0 && ( <ImageZoomModal isOpen={isZoomModalOpen} onClose={() => setIsZoomModalOpen(false)} imageUrl={galleryImages[currentImageIndex] || ''} productName={safeProduct.name} /> )}
+        
+        {/* Try-On Modal */}
+        <FurnitureTryOnModal 
+            isOpen={isTryOnModalOpen} 
+            onClose={() => setIsTryOnModalOpen(false)} 
+            productImage={galleryImages[currentImageIndex] || ''} 
+            productName={safeProduct.name} 
+        />
       </div>
     </>
   );
