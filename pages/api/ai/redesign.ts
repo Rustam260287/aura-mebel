@@ -32,7 +32,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // Убираем префикс
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
     
     const imagePart = {
@@ -42,44 +41,64 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
     };
 
-    console.log(`🧠 Gemini анализирует интерьер для стиля: ${style}...`);
+    console.log(`🧠 AI-Консультант анализирует интерьер (Стиль: ${style})...`);
 
     const prompt = `
-    Ты — профессиональный дизайнер интерьера.
-    Пользователь загрузил фото своей комнаты и хочет преобразить её в стиле "${style}".
-    
+    Ты — ведущий дизайнер интерьера и эксперт по продажам премиальной мебели бутика "Labelcom".
+    Твоя цель: влюбить клиента в идею преображения его комнаты в стиле "${style}" и убедить, что мебель Labelcom — это лучшее решение.
+
+    Веди себя как дорогой, уверенный в себе консультант. Используй эмоциональные эпитеты ("роскошный", "безупречный", "акцентный").
+    Не просто перечисляй факты, а продавай атмосферу.
+
     Твоя задача:
-    1. Проанализировать текущий интерьер (что на фото).
-    2. Дать 3-4 конкретных совета, что изменить, добавить или убрать, чтобы получить стиль "${style}".
-    3. Предложить цветовую палитру (3-4 цвета).
-    4. Ответь в формате JSON.
-    
-    JSON структура:
+    1.  **Экспертный анализ:** Оцени текущее фото. Найди сильные стороны (свет, пространство) и точки роста.
+    2.  **Видение:** Опиши, как эта комната засияет в стиле "${style}".
+    3.  **Конкретные шаги (Action Plan):** Дай 3 мощных совета по изменению интерьера.
+    4.  **Подбор мебели (Upsell):** Предложи конкретные типы мебели, которые *необходимо* купить в Labelcom, чтобы завершить образ (Диваны, Кресла, Столы, Кровати, Зеркала). Опиши их так, чтобы захотелось купить немедленно.
+    5.  **Палитра:** 4 цвета, которые создадут нужный вайб.
+
+    Ответь ТОЛЬКО в формате JSON:
     {
-      "analysis": "Краткий анализ текущей комнаты (1-2 предложения)",
+      "analysis": "Эмоциональный и профессиональный анализ текущей ситуации.",
+      "vision": "Вдохновляющее описание будущего интерьера в стиле ${style}.",
       "tips": [
-        "Совет 1",
+        "Совет 1 (конкретный и стильный)",
         "Совет 2",
         "Совет 3"
       ],
-      "palette": ["#HexCode1", "#HexCode2", "#HexCode3"],
-      "suggested_furniture": ["Диван", "Кресло", "Журнальный столик"] (что подойдет сюда)
+      "palette": ["#Hex1", "#Hex2", "#Hex3", "#Hex4"],
+      "suggested_furniture": [
+        { "category": "Диваны", "reason": "Для создания центра притяжения в гостиной..." },
+        { "category": "Столы", "reason": "Изящный акцент, объединяющий пространство..." },
+        { "category": "Зеркала", "reason": "Чтобы добавить воздуха и игры света..." }
+      ]
     }
-    
-    Отвечай только JSON, без Markdown.
     `;
 
     const result = await model.generateContent([prompt, imagePart]);
     const text = result.response.text();
     
-    // Чистим JSON от ```json ... ```
-    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const data = JSON.parse(jsonStr);
+    // Надежный поиск JSON в ответе
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    
+    if (!jsonMatch) {
+        console.error("RAW AI RESPONSE (No JSON found):", text);
+        throw new Error("Извините, я задумался. Попробуйте спросить еще раз."); 
+    }
 
-    console.log("✅ Анализ готов!");
+    let data;
+    try {
+        data = JSON.parse(jsonMatch[0]);
+    } catch (e) {
+        console.error("JSON PARSE ERROR:", e);
+        console.error("RAW JSON STRING:", jsonMatch[0]);
+        throw new Error("Ошибка обработки ответа AI. Попробуйте еще раз.");
+    }
+
+    console.log("✅ Консультация готова!");
 
     res.status(200).json({ 
-      isConsultation: true, // Флаг для фронтенда, что это не картинка, а советы
+      isConsultation: true,
       data: data
     });
 
