@@ -1,10 +1,9 @@
 
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import type { View } from '../types';
-// ИСПРАВЛЕНИЕ: Используем разделенные хуки
 import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { Button } from './Button';
-import { CheckCircleIcon } from './Icons';
+import { CheckCircleIcon, SparklesIcon } from './Icons';
 import Image from 'next/image';
 import { useToast } from '../contexts/ToastContext';
 import Link from 'next/link';
@@ -28,6 +27,32 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
     comments: '',
   });
 
+  // Promo Code State
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discountPercent: number } | null>(null);
+
+  const finalTotal = useMemo(() => {
+      if (appliedPromo) {
+          return Math.round(totalPrice * (1 - appliedPromo.discountPercent / 100));
+      }
+      return totalPrice;
+  }, [totalPrice, appliedPromo]);
+
+  const handleApplyPromo = () => {
+      if (promoCode.toUpperCase() === 'LABELCOM5') {
+          setAppliedPromo({ code: 'LABELCOM5', discountPercent: 5 });
+          addToast('Промокод применен! Скидка 5%', 'success');
+      } else {
+          addToast('Неверный промокод', 'error');
+          setAppliedPromo(null);
+      }
+  };
+
+  const handleRemovePromo = () => {
+      setAppliedPromo(null);
+      setPromoCode('');
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -50,7 +75,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
             body: JSON.stringify({
                 customer: formData,
                 items: cartItems,
-                total: totalPrice,
+                subtotal: totalPrice,
+                discount: totalPrice - finalTotal,
+                promoCode: appliedPromo?.code,
+                total: finalTotal,
             }),
         });
 
@@ -131,33 +159,70 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-lg">
+        <div className="bg-white p-8 rounded-lg shadow-lg h-fit">
           <h2 className="text-2xl font-serif text-brand-charcoal mb-6">Ваш заказ</h2>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
             {cartItems.map(item => (
               <div key={item.cartId} className="flex items-center gap-4 border-b pb-4">
-                <Image src={item.imageUrls[0]} alt={item.name} className="w-20 h-20 object-cover rounded-md" width={80} height={80} />
-                <div className="flex-grow">
-                  <h3 className="font-semibold">{item.name}</h3>
+                <Image src={item.imageUrls[0]} alt={item.name} className="w-20 h-20 object-cover rounded-md flex-shrink-0" width={80} height={80} />
+                <div className="flex-grow min-w-0">
+                  <h3 className="font-semibold truncate">{item.name}</h3>
                   <p className="text-sm text-gray-500">
                     {item.quantity} x {item.configuredPrice.toLocaleString('ru-RU')} ₽
                   </p>
                   {item.category === 'Custom' && (
                       <p className="text-xs text-brand-terracotta mt-1 p-1 bg-amber-50 rounded">
-                        <strong>Кастомный товар:</strong> менеджер свяжется с вами для подтверждения.
+                        <strong>Кастомный товар</strong>
                       </p>
                   )}
                 </div>
-                <div className="font-semibold text-brand-charcoal">
+                <div className="font-semibold text-brand-charcoal whitespace-nowrap">
                   {(item.quantity * item.configuredPrice).toLocaleString('ru-RU')} ₽
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6 pt-6 border-t">
-            <div className="flex justify-between items-baseline text-xl">
+
+          {/* Promo Code Section */}
+          <div className="mt-6 pt-4 border-t">
+              {!appliedPromo ? (
+                  <div className="flex gap-2">
+                      <input 
+                          type="text" 
+                          placeholder="Промокод" 
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value)}
+                          className="flex-grow border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand-brown"
+                      />
+                      <Button variant="outline" size="sm" onClick={handleApplyPromo} disabled={!promoCode}>
+                          Применить
+                      </Button>
+                  </div>
+              ) : (
+                  <div className="flex justify-between items-center bg-green-50 p-3 rounded-md border border-green-200">
+                      <div className="flex items-center gap-2">
+                          <SparklesIcon className="w-5 h-5 text-green-600" />
+                          <span className="text-green-800 text-sm font-medium">Промокод {appliedPromo.code} (-{appliedPromo.discountPercent}%)</span>
+                      </div>
+                      <button onClick={handleRemovePromo} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
+                  </div>
+              )}
+          </div>
+
+          <div className="mt-6 pt-6 border-t space-y-2">
+            <div className="flex justify-between items-baseline text-gray-600">
+              <span>Сумма:</span>
+              <span>{totalPrice.toLocaleString('ru-RU')} ₽</span>
+            </div>
+            {appliedPromo && (
+                <div className="flex justify-between items-baseline text-green-600 font-medium">
+                    <span>Скидка:</span>
+                    <span>-{(totalPrice - finalTotal).toLocaleString('ru-RU')} ₽</span>
+                </div>
+            )}
+            <div className="flex justify-between items-baseline text-xl mt-2 pt-2 border-t border-dashed">
               <span className="font-semibold">Итого:</span>
-              <span className="font-serif text-3xl text-brand-brown">{totalPrice.toLocaleString('ru-RU')} ₽</span>
+              <span className="font-serif text-3xl text-brand-brown">{finalTotal.toLocaleString('ru-RU')} ₽</span>
             </div>
             
             <div className="mt-6 mb-4">

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCartState, useCartDispatch } from '../contexts/CartContext'; 
 import { useWishlist } from '../contexts/WishlistContext';
+import { useAuth } from '../contexts/AuthContext';
 import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from './Icons';
 import { Transition } from '@headlessui/react';
 
@@ -23,6 +24,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
   const { cartCount } = useCartState();
   const { toggleCart } = useCartDispatch();
   const { wishlistCount } = useWishlist();
+  const { user } = useAuth(); 
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

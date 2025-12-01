@@ -2,12 +2,20 @@
 import React, { memo, useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+
+// Список email-адресов администраторов
+// В идеале это должно быть в переменных окружения: process.env.NEXT_PUBLIC_ADMIN_EMAILS
+const ADMIN_EMAILS = ['amin8914@gmail.com', 'admin@labelcom.store']; 
 
 const FooterComponent: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(true);
   const { addToast } = useToast();
+  const { user } = useAuth(); // Получаем пользователя
+
+  const isAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +36,14 @@ const FooterComponent: React.FC = () => {
       const data = await res.json();
 
       if (res.ok) {
-        addToast(data.message, 'success');
+        addToast(
+            <div>
+                <p className="font-bold">Спасибо за подписку!</p>
+                <p>Ваш промокод на скидку 5%: <span className="bg-white text-brand-brown px-1 rounded font-mono">LABELCOM5</span></p>
+            </div>, 
+            'success',
+            5000
+        );
         setEmail('');
       } else {
         addToast(data.message || 'Ошибка подписки', 'error');
@@ -56,6 +71,10 @@ const FooterComponent: React.FC = () => {
               <li><Link href="/about" className="text-brand-charcoal/80 hover:text-brand-brown">О нас</Link></li>
               <li><Link href="/contacts" className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</Link></li>
               <li><Link href="/shipping" className="text-brand-charcoal/80 hover:text-brand-brown">Доставка и оплата</Link></li>
+              {/* Показываем ссылку только админам */}
+              {isAdmin && (
+                  <li><Link href="/admin" className="text-red-500 hover:text-red-700 font-bold">Админ-панель</Link></li>
+              )}
             </ul>
           </div>
            <div>
@@ -74,7 +93,7 @@ const FooterComponent: React.FC = () => {
           </div>
           <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Подписка</h4>
-            <p className="text-sm text-brand-charcoal/80 mb-4">Узнавайте о новинках первыми.</p>
+            <p className="text-sm text-brand-charcoal/80 mb-4">Подпишитесь и получите скидку 5% на первый заказ.</p>
              <form className="flex flex-col gap-2" onSubmit={handleSubscribe}>
                 <div className="flex">
                     <input 
