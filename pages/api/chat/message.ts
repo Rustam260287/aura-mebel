@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import dotenv from 'dotenv';
+import admin from 'firebase-admin';
 
 dotenv.config({ path: '.env.local' });
 
@@ -101,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // --- ОБОГАЩЕНИЕ ДАННЫМИ ---
     // Если есть ID, достаем полные данные из базы (картинку, название)
-    let products = [];
+    let products: any[] = [];
     if (jsonResponse.recommendedProductIds && jsonResponse.recommendedProductIds.length > 0 && db) {
         try {
             // Firestore 'in' query поддерживает до 10 ID
@@ -132,6 +133,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ message: error.message || 'Internal Server Error' });
   }
 }
-
-// Нужно импортировать admin для FieldPath, если getAdminDb возвращает инстанс без статики
-import admin from 'firebase-admin';
