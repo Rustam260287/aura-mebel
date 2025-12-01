@@ -6,11 +6,16 @@ import { useToast } from '../contexts/ToastContext';
 const FooterComponent: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(true);
   const { addToast } = useToast();
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    if (!agreed) {
+        addToast('Необходимо согласие на обработку данных', 'error');
+        return;
+    }
 
     setLoading(true);
     try {
@@ -36,7 +41,7 @@ const FooterComponent: React.FC = () => {
   };
 
   return (
-    <footer className="bg-brand-cream-dark mt-auto">
+    <footer className="bg-brand-cream-dark mt-auto border-t border-brand-brown/10">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -45,13 +50,12 @@ const FooterComponent: React.FC = () => {
           </div>
           <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Навигация</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 text-sm">
               <li><Link href="/products" className="text-brand-charcoal/80 hover:text-brand-brown">Каталог</Link></li>
               <li><Link href="/blog" className="text-brand-charcoal/80 hover:text-brand-brown">Блог</Link></li>
               <li><Link href="/about" className="text-brand-charcoal/80 hover:text-brand-brown">О нас</Link></li>
               <li><Link href="/contacts" className="text-brand-charcoal/80 hover:text-brand-brown">Контакты</Link></li>
               <li><Link href="/shipping" className="text-brand-charcoal/80 hover:text-brand-brown">Доставка и оплата</Link></li>
-              <li><Link href="/admin" className="text-brand-charcoal/80 hover:text-brand-brown">Админ-панель</Link></li>
             </ul>
           </div>
            <div>
@@ -71,29 +75,48 @@ const FooterComponent: React.FC = () => {
           <div>
             <h4 className="font-semibold text-brand-charcoal mb-4">Подписка</h4>
             <p className="text-sm text-brand-charcoal/80 mb-4">Узнавайте о новинках первыми.</p>
-             <form className="flex" onSubmit={handleSubscribe}>
-                <input 
-                    type="email" 
-                    placeholder="Email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-white border border-transparent rounded-l-md px-4 py-2 w-full focus:outline-none focus:border-brand-brown" 
-                />
-                <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="bg-brand-brown text-white px-4 py-2 rounded-r-md hover:bg-brand-brown/90 transition-colors disabled:opacity-70"
-                >
-                    {loading ? '...' : 'OK'}
-                </button>
+             <form className="flex flex-col gap-2" onSubmit={handleSubscribe}>
+                <div className="flex">
+                    <input 
+                        type="email" 
+                        placeholder="Email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="bg-white border border-transparent rounded-l-md px-4 py-2 w-full focus:outline-none focus:border-brand-brown text-sm" 
+                    />
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="bg-brand-brown text-white px-4 py-2 rounded-r-md hover:bg-brand-brown/90 transition-colors disabled:opacity-70 text-sm font-medium"
+                    >
+                        {loading ? '...' : 'OK'}
+                    </button>
+                </div>
+                <label className="flex items-start gap-2 cursor-pointer mt-1">
+                    <input 
+                        type="checkbox" 
+                        checked={agreed} 
+                        onChange={(e) => setAgreed(e.target.checked)}
+                        className="mt-1 accent-brand-brown"
+                    />
+                    <span className="text-[10px] text-gray-500 leading-tight">
+                        Нажимая на кнопку, я даю согласие на обработку <Link href="/privacy" className="underline hover:text-brand-brown">персональных данных</Link>
+                    </span>
+                </label>
              </form>
           </div>
         </div>
-        <div className="mt-12 border-t border-brand-brown/20 pt-8 text-center text-sm text-brand-charcoal/60">
-          &copy; {new Date().getFullYear()} Labelcom Мебель. Все права защищены.
-          <br />
-          <span className="text-xs mt-1 block">labelcom.store</span>
+        
+        {/* Footer Bottom Links */}
+        <div className="mt-12 border-t border-brand-brown/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-brand-charcoal/60 gap-4">
+          <div className="text-center md:text-left">
+            &copy; {new Date().getFullYear()} Labelcom Мебель. Все права защищены.
+          </div>
+          <div className="flex gap-6">
+              <Link href="/privacy" className="hover:text-brand-brown transition-colors">Политика конфиденциальности</Link>
+              <Link href="/terms" className="hover:text-brand-brown transition-colors">Публичная оферта</Link>
+          </div>
         </div>
       </div>
     </footer>

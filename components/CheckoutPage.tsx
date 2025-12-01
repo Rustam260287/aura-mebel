@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { CheckCircleIcon } from './Icons';
 import Image from 'next/image';
 import { useToast } from '../contexts/ToastContext';
+import Link from 'next/link';
 
 interface CheckoutPageProps {
   view: { page: 'checkout' } | { page: 'order-success', orderId: string };
@@ -18,6 +19,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
   const { clearCart } = useCartDispatch();
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -33,6 +35,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreed) {
+        addToast('Необходимо согласие на обработку персональных данных', 'error');
+        return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -153,7 +159,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
               <span className="font-semibold">Итого:</span>
               <span className="font-serif text-3xl text-brand-brown">{totalPrice.toLocaleString('ru-RU')} ₽</span>
             </div>
-            <Button size="lg" type="submit" disabled={isSubmitting} className="w-full mt-6">
+            
+            <div className="mt-6 mb-4">
+                <label className="flex items-start gap-2 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        checked={agreed} 
+                        onChange={(e) => setAgreed(e.target.checked)}
+                        className="mt-1 h-4 w-4 text-brand-brown border-gray-300 rounded focus:ring-brand-brown"
+                    />
+                    <span className="text-sm text-gray-600">
+                        Я подтверждаю заказ и соглашаюсь с условиями <Link href="/terms" className="text-brand-brown underline hover:no-underline" target="_blank">Публичной оферты</Link> и <Link href="/privacy" className="text-brand-brown underline hover:no-underline" target="_blank">Политикой обработки персональных данных</Link>.
+                    </span>
+                </label>
+            </div>
+
+            <Button size="lg" type="submit" disabled={isSubmitting || !agreed} className="w-full">
               {isSubmitting ? 'Оформление...' : 'Подтвердить заказ'}
             </Button>
           </div>
