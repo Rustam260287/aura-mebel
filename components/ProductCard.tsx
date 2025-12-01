@@ -6,6 +6,7 @@ import { StarRating } from './StarRating';
 import { HeartIcon, CubeTransparentIcon, ArrowUpTrayIcon } from './Icons';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
+import { useHaptic } from '../hooks/useHaptic'; // Import Haptic
 import Image from 'next/image';
 
 interface ProductCardProps {
@@ -18,6 +19,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProductSelect, onQuickView, onVirtualStage }) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToast } = useToast();
+  const triggerHaptic = useHaptic(); // Use Haptic
   const [isAnimatingHeart, setIsAnimatingHeart] = useState(false);
   const isWished = isInWishlist(product.id);
 
@@ -28,6 +30,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic(15); // Vibrate on like
     if (isWished) {
       removeFromWishlist(product.id);
       addToast(`${product.name} удален из избранного`, 'info');
@@ -37,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
       setIsAnimatingHeart(true);
       setTimeout(() => setIsAnimatingHeart(false), 400);
     }
-  }, [isWished, product.id, product.name, removeFromWishlist, addToWishlist, addToast]);
+  }, [isWished, product.id, product.name, removeFromWishlist, addToWishlist, addToast, triggerHaptic]);
 
   const handleQuickViewClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,6 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
   const handleShareClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic(10);
     const shareData = {
         title: product.name,
         text: `Посмотрите этот товар в Aura Мебель: ${product.name}`,
@@ -71,61 +75,62 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
             addToast('Не удалось скопировать ссылку.', 'error');
         }
     }
-  }, [product.name, addToast]);
+  }, [product.name, addToast, triggerHaptic]);
 
 
   return (
     <div 
-      className="group relative bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-premium-hover border border-transparent hover:border-brand-brown/5 hover:z-10 transform-gpu"
       onClick={() => onProductSelect(product.id)}
     >
       {discount > 0 && (
-        <div className="absolute top-3 left-3 z-10 bg-brand-terracotta text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+        <div className="absolute top-3 left-3 z-20 bg-brand-terracotta text-white text-xs font-medium tracking-wide px-3 py-1 rounded-full shadow-sm">
             -{discount}%
         </div>
       )}
-      <div className="absolute top-3 right-3 z-10 flex flex-col sm:flex-row gap-2">
+      
+      {/* Action Buttons - Top Right */}
+      <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:translate-x-4 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300 ease-out">
         <button
           onClick={handleShareClick}
-          className="p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
+          className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:shadow-md hover:bg-white text-brand-charcoal/70 hover:text-brand-brown transition-all"
           title="Поделиться"
-          aria-label="Поделиться товаром"
         >
-          <ArrowUpTrayIcon className="w-6 h-6 text-gray-600 hover:text-brand-brown transition-colors" />
+          <ArrowUpTrayIcon className="w-5 h-5" />
         </button>
         {onVirtualStage && (
           <button
             onClick={handleVirtualStageClick}
-            className="p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0"
-            style={{ transitionDelay: '50ms' }}
-            title="Примерить в интерьере"
-            aria-label="Примерить в интерьере"
+            className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:shadow-md hover:bg-white text-brand-charcoal/70 hover:text-brand-brown transition-all delay-75"
+            title="Примерить (AR)"
           >
-            <CubeTransparentIcon className="w-6 h-6 text-gray-600 hover:text-brand-brown transition-colors" />
+            <CubeTransparentIcon className="w-5 h-5" />
           </button>
         )}
         <button
           onClick={handleWishlistToggle}
-          className={`p-2 bg-white/70 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 transform sm:opacity-0 sm:group-hover:opacity-100 sm:-translate-x-2 sm:group-hover:translate-x-0 ${isAnimatingHeart ? 'animate-heart-pop' : ''}`}
-          style={{ transitionDelay: '100ms' }}
-          aria-label={isWished ? 'Удалить из избранного' : 'Добавить в избранное'}
+          className={`p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:shadow-md hover:bg-white transition-all delay-100 ${isAnimatingHeart ? 'scale-125' : ''}`}
         >
-          <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-brand-terracotta' : 'text-gray-500 hover:text-brand-terracotta'}`} />
+          <HeartIcon className={`w-5 h-5 transition-colors ${isWished ? 'text-brand-terracotta fill-brand-terracotta' : 'text-brand-charcoal/70 hover:text-brand-terracotta'}`} />
         </button>
       </div>
-      <div className="relative w-full aspect-square overflow-hidden">
+
+      {/* Image Container */}
+      <div className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden isolate">
         <Image 
           src={displayImage} 
           alt={product.name} 
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover w-full h-full transition-transform duration-700 ease-in-out group-hover:scale-105"
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
+        
+        {/* Quick View Overlay (Desktop only) */}
         {onQuickView && (
-           <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+           <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex justify-center bg-gradient-to-t from-black/50 to-transparent pt-16 z-10">
             <Button 
               variant="primary" 
-              className="bg-white/90 !text-brand-brown hover:bg-white backdrop-blur-sm shadow-lg" 
+              className="bg-brand-brown text-white hover:bg-brand-brown/90 border-none shadow-lg px-6 py-2.5 text-sm font-medium transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 w-full" 
               onClick={handleQuickViewClick}
             >
               Быстрый просмотр
@@ -133,19 +138,27 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           </div>
         )}
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-brand-charcoal truncate" title={product.name}>{product.name}</h3>
-        <p className="text-sm text-gray-500">{product.category}</p>
-        <div className="flex justify-between items-center mt-3">
-          <div className="flex items-baseline gap-2">
-            <p className="text-xl font-serif text-brand-brown">{product.price.toLocaleString('ru-RU')} ₽</p>
-            {product.originalPrice && (
-              <p className="text-base text-gray-400 line-through">{product.originalPrice.toLocaleString('ru-RU')} ₽</p>
+
+      {/* Product Details */}
+      <div className="p-5 relative z-20 bg-white">
+        <div className="flex justify-between items-start mb-1">
+            <h3 className="text-base font-medium text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-brown transition-colors" title={product.name}>
+                {product.name}
+            </h3>
+        </div>
+        
+        <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide">{product.category}</p>
+        
+        <div className="flex justify-between items-end border-t border-gray-50 pt-3 mt-1">
+          <div className="flex flex-col">
+             {product.originalPrice && (
+              <span className="text-xs text-gray-400 line-through mb-0.5">{product.originalPrice.toLocaleString('ru-RU')} ₽</span>
             )}
+            <span className="text-lg font-serif text-brand-brown font-medium">{product.price.toLocaleString('ru-RU')} ₽</span>
           </div>
-          <div className="flex items-center">
-            <StarRating rating={product.rating} />
-            <span className="text-xs text-gray-400 ml-1">({product.reviews?.length || 0})</span>
+          
+          <div className="flex items-center gap-1 mb-1">
+            <StarRating rating={product.rating} size="sm" />
           </div>
         </div>
       </div>

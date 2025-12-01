@@ -11,6 +11,7 @@ import { Footer } from '../../components/Footer';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon, ChevronRightIcon, SlidersHorizontalIcon } from '../../components/Icons';
 import { FilterSidebar } from '../../components/FilterSidebar';
+import { useToast } from '../../contexts/ToastContext'; // Import Toast
 
 const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 
@@ -27,6 +28,7 @@ interface CatalogPageProps {
 
 export default function CatalogPage({ products, currentPage, totalPages, globalMaxPrice, error }: CatalogPageProps) {
   const router = useRouter();
+  const { addToast } = useToast(); // Use Toast
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -73,6 +75,10 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
       const query = { ...router.query, page: newPage.toString() };
       router.push({ pathname: '/products', query }, undefined, { scroll: true });
     }
+  };
+
+  const handleVirtualStage = (product: Product) => {
+    addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
   };
 
   if (error) {
@@ -130,7 +136,7 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
                     isLoading={false}
                     onProductSelect={(id) => router.push(`/products/${id}`)}
                     onQuickView={setQuickViewProduct}
-                    onVirtualStage={() => {}}
+                    onVirtualStage={handleVirtualStage} // Pass the handler
                 />
 
                 {/* Pagination */}

@@ -11,6 +11,7 @@ import { Catalog } from '../components/Catalog';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
+import { useToast } from '../contexts/ToastContext'; // Import Toast
 
 // Убираем CartSidebar отсюда
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
@@ -22,6 +23,7 @@ interface HomePageProps {
 
 export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   if (error) {
@@ -42,6 +44,10 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
       }
     }
   };
+
+  const handleVirtualStage = (product: Product) => {
+    addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
+  };
   
   return (
     <>
@@ -55,7 +61,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
           isLoading={router.isFallback}
           onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
-          onVirtualStage={() => {}}
+          onVirtualStage={handleVirtualStage}
           isHomePage
         />
       </main>

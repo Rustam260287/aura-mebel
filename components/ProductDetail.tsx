@@ -114,7 +114,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                 variant="outline" 
                 size="lg" 
                 onClick={() => setIsTryOnModalOpen(true)} 
-                className="mb-8 w-full border-dashed border-2 border-brand-brown/30 text-brand-brown hover:bg-brand-cream/30 hover:border-brand-brown transition-all group"
+                className="mb-8 w-full border-2 border-dashed border-brand-brown text-brand-brown hover:bg-brand-brown hover:text-white transition-all duration-300 group"
             >
                 <CubeIcon className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" />
                 Примерить в комнате

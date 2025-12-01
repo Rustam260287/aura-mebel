@@ -11,31 +11,65 @@
 
 /* Custom scrollbar for better aesthetics */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px; /* Более тонкий скроллбар */
 }
 ::-webkit-scrollbar-track {
-  background: #FBF9F4; /* brand-cream */
+  background: transparent; 
 }
 ::-webkit-scrollbar-thumb {
-  background: #AFA599; /* A muted brown/grey closer to palette */
-  border-radius: 4px;
+  background: #D1C7BD; 
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5D4037; /* brand-brown */
+  background: #A69688; 
 }
 
 body {
-    /* Subtle background texture */
     background-color: #FBF9F4;
-    background-image: radial-gradient(circle at 1px 1px, rgba(93, 64, 55, 0.05) 1px, transparent 0);
-    background-size: 20px 20px;
+    color: #333;
+    /* Убираем шумную текстуру для более чистого "премиум" вида, 
+       оставляем чистый цвет или очень-очень тонкий шум если нужно */
 }
 
-/* Airy headings */
+/* Плавная анимация появления контента */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Эффект "Стекла" (Glassmorphism) для модалок и хедера */
+.glass {
+  background: rgba(251, 249, 244, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(93, 64, 55, 0.05);
+}
+
+/* Премиальные тени */
+.shadow-premium {
+  box-shadow: 0 4px 20px -2px rgba(93, 64, 55, 0.08);
+}
+
+.shadow-premium-hover:hover {
+  box-shadow: 0 10px 30px -4px rgba(93, 64, 55, 0.12);
+}
+
+/* Типографика */
 h1, h2, h3, .font-serif {
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em; /* Чуть плотнее заголовки */
 }
 
-.prose h3 {
-   letter-spacing: normal;
+/* Убираем подсветку тапа на мобильных для ощущения нативного приложения */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
