@@ -44,10 +44,12 @@ export interface BlogPost {
   excerpt: string;
   content: string; // HTML content
   relatedProducts: string[]; // array of product IDs
-  imagePrompt: string;
+  imagePrompt?: string; // Make optional as generated posts might not have it
   imageUrl: string;
   status: 'draft' | 'published'; // Added status field
   createdAt?: string;
+  tags?: string[]; // Added tags
+  author?: string; // Added author
 }
 
 export type View =
