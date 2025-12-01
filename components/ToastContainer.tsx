@@ -16,17 +16,19 @@ export const ToastContainer: React.FC = memo(() => {
   };
 
   return (
-    <div className="fixed top-24 right-6 z-50 space-y-3 w-full max-w-sm">
+    <div className="fixed top-24 right-6 z-50 space-y-3 w-full max-w-sm pointer-events-none">
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className="bg-white rounded-lg shadow-2xl p-4 flex items-start gap-3 animate-fade-in-right"
+          className="bg-white rounded-lg shadow-2xl p-4 flex items-start gap-3 animate-fade-in-right pointer-events-auto border border-gray-100"
           role="alert"
         >
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 mt-0.5">
              {iconMap[toast.type]}
           </div>
-          <p className="flex-grow text-brand-charcoal font-medium">{toast.message}</p>
+          <div className="flex-grow text-brand-charcoal font-medium text-sm">
+            {toast.message}
+          </div>
         </div>
       ))}
     </div>

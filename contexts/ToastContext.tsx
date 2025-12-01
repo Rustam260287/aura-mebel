@@ -1,15 +1,16 @@
+
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
 
 interface ToastMessage {
   id: number;
-  message: string;
+  message: ReactNode; // Разрешаем передавать JSX
   type: ToastType;
 }
 
 interface ToastContextType {
-  addToast: (message: string, type: ToastType) => void;
+  addToast: (message: ReactNode, type: ToastType, duration?: number) => void;
   toasts: ToastMessage[];
 }
 
@@ -22,10 +23,10 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setToasts(currentToasts => currentToasts.filter(toast => toast.id !== id));
   }, []);
 
-  const addToast = useCallback((message: string, type: ToastType) => {
+  const addToast = useCallback((message: ReactNode, type: ToastType, duration: number = 4000) => {
     const id = Date.now();
     setToasts(currentToasts => [...currentToasts, { id, message, type }]);
-    setTimeout(() => removeToast(id), 4000); // Auto-dismiss after 4 seconds
+    setTimeout(() => removeToast(id), duration);
   }, [removeToast]);
 
   const contextValue = useMemo(() => ({ addToast, toasts }), [addToast, toasts]);
