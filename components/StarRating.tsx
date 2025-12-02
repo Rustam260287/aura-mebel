@@ -8,8 +8,11 @@ interface StarRatingProps {
 }
 
 export const StarRating: React.FC<StarRatingProps> = memo(({ rating, maxRating = 5, size = 'md' }) => {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
+  // Валидация: Убедимся, что рейтинг - это число в допустимом диапазоне [0, maxRating]
+  const validRating = Math.max(0, Math.min(Number(rating) || 0, maxRating));
+
+  const fullStars = Math.floor(validRating);
+  const hasHalfStar = validRating % 1 >= 0.5;
   const emptyStars = Math.max(0, maxRating - fullStars - (hasHalfStar ? 1 : 0));
 
   const sizeClasses = {
