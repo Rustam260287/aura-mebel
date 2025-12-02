@@ -11,6 +11,9 @@ const withPWA = withPWAInit({
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  experimental: {
+    scrollRestoration: true,
+  },
   turbopack: {}, // Silences the "using webpack with no turbopack config" error
   images: {
     remotePatterns: [

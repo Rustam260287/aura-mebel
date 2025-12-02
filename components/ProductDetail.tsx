@@ -4,7 +4,7 @@ import type { Product, Review } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { Reviews } from './Reviews';
-import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon } from './Icons';
+import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon, ArrowUpTrayIcon } from './Icons';
 import { useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
@@ -55,8 +55,17 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
 
-  const handleNextImage = useCallback(() => { setCurrentImageIndex(prev => (prev + 1) % galleryImages.length); }, [galleryImages.length]);
-  const handlePrevImage = useCallback(() => { setCurrentImageIndex(prev => (prev - 1 + galleryImages.length) % galleryImages.length); }, [galleryImages.length]);
+  const handleNextImage = useCallback(() => { 
+    if (galleryImages.length > 0) {
+      setCurrentImageIndex(prev => (prev + 1) % galleryImages.length); 
+    }
+  }, [galleryImages.length]);
+
+  const handlePrevImage = useCallback(() => { 
+    if (galleryImages.length > 0) {
+      setCurrentImageIndex(prev => (prev - 1 + galleryImages.length) % galleryImages.length); 
+    }
+  }, [galleryImages.length]);
   
   const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
   
@@ -69,6 +78,30 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   const handleWishlistClick = useCallback(() => { if (isWished) { removeFromWishlist(safeProduct.id); } else { addToWishlist(safeProduct.id); } }, [isWished, safeProduct.id, addToWishlist, removeFromWishlist]);
   const handleAddToCart = useCallback(() => { addToCart(safeProduct); addToast(`${safeProduct.name} добавлен в корзину`, 'success'); }, [addToCart, safeProduct, addToast]);
+
+  const handleShareClick = useCallback(async () => {
+    const productUrl = `${window.location.origin}/products/${safeProduct.id}`;
+    const shareData = {
+        title: safeProduct.name,
+        text: `Посмотрите этот товар в Labelcom Мебель: ${safeProduct.name}`,
+        url: productUrl,
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (err) {
+            console.error('Share failed:', err);
+        }
+    } else {
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            addToast('Ссылка на товар скопирована!', 'info');
+        } catch (err) {
+            addToast('Не удалось скопировать ссылку.', 'error');
+        }
+    }
+  }, [safeProduct.id, safeProduct.name, addToast]);
 
   const handleAddReview = useCallback((newReviewData: Omit<Review, 'date'>) => {
     const newReview: Review = { ...newReviewData, date: new Date().toISOString() };
@@ -89,9 +122,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
               <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50">
                 {galleryImages.length > 0 ? (
                     <>
-                        <div className="flex transition-transform duration-300 ease-in-out h-full" style={{ transform: `translateX(-${currentImageIndex * 100}%)` }} onClick={() => setIsZoomModalOpen(true)}>
+                        <div className="flex transition-transform duration-300 ease-in-out h-full" style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
                             {galleryImages.map((url, index) => (
-                                <div key={index} className="w-full h-full flex-shrink-0 relative cursor-zoom-in">
+                                <div key={index} className="w-full h-full flex-shrink-0 relative cursor-zoom-in" onClick={() => setIsZoomModalOpen(true)}>
                                     <Image src={url} alt={`${safeProduct.name} - изображение ${index + 1}`} className="object-cover" fill sizes="(max-width: 1024px) 100vw, 50vw" />
                                 </div>
                             ))}
@@ -100,7 +133,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                             <>
                                 <button onClick={(e) => { e.stopPropagation(); handlePrevImage(); }} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Предыдущее изображение"><ChevronLeftIcon className="w-6 h-6" /></button>
                                 <button onClick={(e) => { e.stopPropagation(); handleNextImage(); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Следующее изображение"><ChevronRightIcon className="w-6 h-6" /></button>
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">{galleryImages.map((_, idx) => (<div key={idx} className={`w-2 h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50'}`} />))}</div>
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">{galleryImages.map((_, idx) => (<div key={idx} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }} className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50 hover:bg-white'}`} />))}</div>
                             </>
                         )}
                     </>
@@ -116,9 +149,10 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             <div className="flex items-center mb-4"><StarRating rating={safeProduct.rating} /><span className="ml-2 text-sm text-gray-600">({currentReviews.length} отзывов)</span></div>
             <p className="text-3xl lg:text-4xl font-serif text-brand-charcoal mb-8">{safeProduct.price.toLocaleString('ru-RU')} ₽</p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4 mb-4">
-                <Button size="lg" onClick={handleAddToCart} className="shadow-lg hover:shadow-xl transition-shadow w-full">Добавить в корзину</Button>
-                <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4 shadow-sm hover:shadow-md transition-shadow w-full"><HeartIcon className={`w-6 h-6 ${isWished ? 'text-red-500 fill-current' : ''}`} /></Button>
+            <div className="flex items-center gap-2 mb-4">
+                <Button size="lg" onClick={handleAddToCart} className="flex-grow shadow-lg hover:shadow-xl transition-shadow">Добавить в корзину</Button>
+                <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4 shadow-sm hover:shadow-md transition-shadow"><HeartIcon className={`w-6 h-6 ${isWished ? 'text-red-500 fill-current' : ''}`} /></Button>
+                <Button variant="outline" size="lg" onClick={handleShareClick} className="px-4 shadow-sm hover:shadow-md transition-shadow"><ArrowUpTrayIcon className="w-6 h-6" /></Button>
             </div>
             
             <Button 
@@ -150,16 +184,25 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
           </div>
         </div>
         <Reviews reviews={currentReviews} onAddReview={handleAddReview} />
-        {isZoomModalOpen && galleryImages.length > 0 && ( <ImageZoomModal isOpen={isZoomModalOpen} onClose={() => setIsZoomModalOpen(false)} imageUrl={galleryImages[currentImageIndex] || ''} productName={safeProduct.name} /> )}
+      </div>
+      
+      {isZoomModalOpen && galleryImages.length > 0 && ( 
+        <ImageZoomModal 
+            isOpen={isZoomModalOpen} 
+            onClose={() => setIsZoomModalOpen(false)} 
+            imageUrl={galleryImages[currentImageIndex] || ''} 
+            productName={safeProduct.name} 
+        /> 
+      )}
         
-        {/* Try-On Modal */}
+      {isTryOnModalOpen && (
         <FurnitureTryOnModal 
             isOpen={isTryOnModalOpen} 
             onClose={() => setIsTryOnModalOpen(false)} 
             productImage={galleryImages[currentImageIndex] || ''} 
             productName={safeProduct.name} 
         />
-      </div>
+      )}
     </>
   );
 };
