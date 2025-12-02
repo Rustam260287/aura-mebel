@@ -10,6 +10,10 @@ dotenv.config({ path: '.env.local' });
 const ACCESS_KEY_ID = process.env.QWEN_ACCESS_KEY_ID;
 const ACCESS_KEY_SECRET = process.env.QWEN_ACCESS_KEY_SECRET;
 
+if (!ACCESS_KEY_ID || !ACCESS_KEY_SECRET) {
+  throw new Error('Missing QWEN_ACCESS_KEY_ID or QWEN_ACCESS_KEY_SECRET');
+}
+
 const client = new RPCClient({
     accessKeyId: ACCESS_KEY_ID,
     accessKeySecret: ACCESS_KEY_SECRET,
