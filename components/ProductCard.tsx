@@ -55,10 +55,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
   const handleShareClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     triggerHaptic(10);
+    
+    const productUrl = `${window.location.origin}/products/${product.id}`;
+
     const shareData = {
         title: product.name,
-        text: `Посмотрите этот товар в Aura Мебель: ${product.name}`,
-        url: window.location.href,
+        text: `Посмотрите этот товар в Labelcom Мебель: ${product.name}`,
+        url: productUrl,
     };
 
     if (navigator.share) {
@@ -75,7 +78,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
             addToast('Не удалось скопировать ссылку.', 'error');
         }
     }
-  }, [product.name, addToast, triggerHaptic]);
+  }, [product.name, product.id, addToast, triggerHaptic]);
 
 
   return (

@@ -105,6 +105,7 @@ export const ChatWidget: React.FC = () => {
   };
 
   const handleProductClick = (id: string) => {
+      setIsOpen(false);
       router.push(`/products/${id}`);
   };
 

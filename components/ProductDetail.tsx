@@ -1,5 +1,5 @@
 
-import React, { useState, memo, useCallback, useMemo, Fragment } from 'react';
+import React, { useState, memo, useCallback, useMemo, Fragment, TouchEvent } from 'react';
 import type { Product, Review } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
@@ -8,6 +8,7 @@ import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon 
 import { useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
+import { useSwipe } from '../hooks/useSwipe';
 import { ImageZoomModal } from './ImageZoomModal';
 import { FurnitureTryOnModal } from './FurnitureTryOnModal';
 import { CubeIcon } from '@heroicons/react/24/outline';
@@ -56,6 +57,16 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   const handleNextImage = useCallback(() => { setCurrentImageIndex(prev => (prev + 1) % galleryImages.length); }, [galleryImages.length]);
   const handlePrevImage = useCallback(() => { setCurrentImageIndex(prev => (prev - 1 + galleryImages.length) % galleryImages.length); }, [galleryImages.length]);
+  
+  const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
+  
+  const gallerySwipe = useSwipe({ onSwipeLeft: handleNextImage, onSwipeRight: handlePrevImage });
+  const gallerySwipeHandlers = useMemo(() => ({
+    onTouchStart: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchStart(e); },
+    onTouchMove: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchMove(e); },
+    onTouchEnd: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchEnd(); }
+  }), [gallerySwipe]);
+
   const handleWishlistClick = useCallback(() => { if (isWished) { removeFromWishlist(safeProduct.id); } else { addToWishlist(safeProduct.id); } }, [isWished, safeProduct.id, addToWishlist, removeFromWishlist]);
   const handleAddToCart = useCallback(() => { addToCart(safeProduct); addToast(`${safeProduct.name} добавлен в корзину`, 'success'); }, [addToCart, safeProduct, addToast]);
 
@@ -67,14 +78,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   return (
     <>
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 py-12" {...pageSwipeHandlers}>
         <Button variant="ghost" onClick={onBack} className="mb-8 hidden md:inline-flex">
           <ArrowLeftIcon className="w-5 h-5 mr-2" />
           Назад в каталог
         </Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="flex flex-col gap-4">
-            <div className="relative group">
+            <div className="relative group" {...gallerySwipeHandlers}>
               <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50">
                 {galleryImages.length > 0 ? (
                     <>
