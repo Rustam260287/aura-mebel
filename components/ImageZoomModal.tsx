@@ -38,7 +38,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
 
   return (
     <Transition show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-[100]" onClose={onClose}>
+        <Dialog as="div" className="relative z-[100]" onClose={() => {}}>
             {/* Overlay */}
             <Transition.Child
                 as={Fragment}
@@ -49,7 +49,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
             </Transition.Child>
 
             {/* Close Button */}

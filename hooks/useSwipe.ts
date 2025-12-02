@@ -1,3 +1,4 @@
+
 import { useState, TouchEvent, useCallback, useMemo } from 'react';
 
 interface SwipeInput {
@@ -9,6 +10,7 @@ interface SwipeOutput {
   onTouchStart: (e: TouchEvent<HTMLElement>) => void;
   onTouchMove: (e: TouchEvent<HTMLElement>) => void;
   onTouchEnd: () => void;
+  isSwiping: boolean;
 }
 
 const MIN_SWIPE_DISTANCE = 75;
@@ -18,18 +20,30 @@ export const useSwipe = ({ onSwipeRight, onSwipeLeft }: SwipeInput): SwipeOutput
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [touchEndY, setTouchEndY] = useState<number | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const onTouchStart = useCallback((e: TouchEvent<HTMLElement>) => {
     setTouchEndX(null);
     setTouchEndY(null);
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
+    setIsSwiping(false);
   }, []);
 
   const onTouchMove = useCallback((e: TouchEvent<HTMLElement>) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-    setTouchEndY(e.targetTouches[0].clientY);
-  }, []);
+    const currentX = e.targetTouches[0].clientX;
+    const currentY = e.targetTouches[0].clientY;
+    
+    if (touchStartX !== null && touchStartY !== null) {
+      const distanceX = Math.abs(currentX - touchStartX);
+      if (distanceX > 10) { // Threshold to start considering it a swipe
+        setIsSwiping(true);
+      }
+    }
+
+    setTouchEndX(currentX);
+    setTouchEndY(currentY);
+  }, [touchStartX, touchStartY]);
 
   const onTouchEnd = useCallback(() => {
     if (!touchStartX || !touchEndX || !touchStartY || !touchEndY) return;
@@ -53,11 +67,14 @@ export const useSwipe = ({ onSwipeRight, onSwipeLeft }: SwipeInput): SwipeOutput
     setTouchEndX(null);
     setTouchStartY(null);
     setTouchEndY(null);
+    
+    setTimeout(() => setIsSwiping(false), 0);
   }, [touchStartX, touchEndX, touchStartY, touchEndY, onSwipeRight, onSwipeLeft]);
 
   return useMemo(() => ({
     onTouchStart,
     onTouchMove,
     onTouchEnd,
-  }), [onTouchStart, onTouchMove, onTouchEnd]);
+    isSwiping,
+  }), [onTouchStart, onTouchMove, onTouchEnd, isSwiping]);
 };

@@ -8,6 +8,7 @@ import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { useHaptic } from '../hooks/useHaptic';
 import Image from 'next/image';
+import { useSwipe } from '../hooks/useSwipe';
 
 interface ProductCardProps {
   product: Product;
@@ -22,11 +23,26 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
   const { addToast } = useToast();
   const triggerHaptic = useHaptic();
   const [isAnimatingHeart, setIsAnimatingHeart] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isWished = isInWishlist(product.id);
 
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
   
-  const displayImage = (product.imageUrls && product.imageUrls[0]) || '/placeholder.svg';
+  const handleSwipeLeft = useCallback(() => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === (product.imageUrls?.length ?? 1) - 1 ? 0 : prevIndex + 1
+    );
+  }, [product.imageUrls]);
+
+  const handleSwipeRight = useCallback(() => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? (product.imageUrls?.length ?? 1) - 1 : prevIndex - 1
+    );
+  }, [product.imageUrls]);
+
+  const { isSwiping, ...swipeHandlers } = useSwipe({ onSwipeLeft: handleSwipeLeft, onSwipeRight: handleSwipeRight });
+  
+  const displayImage = (product.imageUrls && product.imageUrls[currentImageIndex]) || '/placeholder.svg';
 
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
@@ -81,18 +97,17 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
     }
   }, [product.name, product.id, addToast, triggerHaptic]);
   
-  const handleImageContainerClick = (e: React.MouseEvent) => {
-    if (onImageClick) {
-        e.stopPropagation();
-        onImageClick(product, 0);
+  const handleCardClick = () => {
+    if (!isSwiping) {
+        onProductSelect(product.id);
     }
-  }
+  };
 
 
   return (
     <div 
       className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-premium-hover border border-transparent hover:border-brand-brown/5 hover:z-10 transform-gpu"
-      onClick={() => onProductSelect(product.id)}
+      onClick={handleCardClick}
     >
       {discount > 0 && (
         <div className="absolute top-3 left-3 z-20 bg-brand-terracotta text-white text-xs font-medium tracking-wide px-3 py-1 rounded-full shadow-sm">
@@ -127,7 +142,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
       <div 
         className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden isolate"
-        onClick={handleImageContainerClick}
+        {...swipeHandlers}
         >
         <Image 
           src={displayImage} 
@@ -136,6 +151,24 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
+
+        {product.imageUrls && product.imageUrls.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                {product.imageUrls.map((_, index) => (
+                    <button
+                        key={index}
+                        data-swipe-indicator="true"
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                            index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(index);
+                        }}
+                    />
+                ))}
+            </div>
+        )}
         
         {onQuickView && (
            <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex justify-center bg-gradient-to-t from-black/50 to-transparent pt-16 z-10">
