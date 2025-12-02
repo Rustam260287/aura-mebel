@@ -21,6 +21,16 @@ const client = new RPCClient({
     apiVersion: '2023-03-30',
 });
 
+interface QwenResponse {
+    output: {
+        choices: Array<{
+            message: {
+                content: string;
+            };
+        }>;
+    };
+}
+
 function cleanText(text: string): string {
     if (!text) return '';
     return text
@@ -120,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         formatParams: false,
     };
 
-    const result = await client.request('MultimodalConversation', params, requestOption)
+    const result = await client.request('MultimodalConversation', params, requestOption) as QwenResponse;
     const responseText = result.output.choices[0].message.content;
     
     let jsonResponse;
