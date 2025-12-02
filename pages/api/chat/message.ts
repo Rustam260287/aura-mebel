@@ -1,11 +1,21 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import RPCClient from '@alicloud/pop-core';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import dotenv from 'dotenv';
 import admin from 'firebase-admin';
 
 dotenv.config({ path: '.env.local' });
+
+const ACCESS_KEY_ID = process.env.QWEN_ACCESS_KEY_ID;
+const ACCESS_KEY_SECRET = process.env.QWEN_ACCESS_KEY_SECRET;
+
+const client = new RPCClient({
+    accessKeyId: ACCESS_KEY_ID,
+    accessKeySecret: ACCESS_KEY_SECRET,
+    endpoint: 'https://dashscope.aliyuncs.com',
+    apiVersion: '2023-03-30',
+});
 
 function cleanText(text: string): string {
     if (!text) return '';
@@ -28,8 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    if (!ACCESS_KEY_ID || !ACCESS_KEY_SECRET) {
       return res.status(500).json({ message: 'API key not configured' });
     }
 
@@ -50,9 +59,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }).join('\n');
         productsContext = products;
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", generationConfig: { responseMimeType: "application/json" } });
 
     const systemInstruction = `
     ТВОЯ РОЛЬ:
@@ -82,25 +88,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const chatHistory = (history || []).map((msg: any) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }] 
+        content: msg.content
     }));
 
-    const chat = model.startChat({
-        history: [
-            {
-                role: "user",
-                parts: [{ text: "System Instruction: " + systemInstruction }]
-            },
-            {
-                role: "model",
-                parts: [{ text: JSON.stringify({ reply: "Здравствуйте! Я ваш персональный дизайнер Labelcom. Готов создать интерьер вашей мечты. Что будем выбирать сегодня?", recommendedProductIds: [] }) }]
-            },
-            ...chatHistory
-        ],
-    });
+    const params = {
+        "model": "qwen-vl-plus",
+        "input": {
+            "messages": [
+                {
+                    "role": "system",
+                    "content": systemInstruction
+                },
+                ...chatHistory,
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ]
+        },
+        "parameters": {
+            "result_format": "message"
+        }
+    }
 
-    const result = await chat.sendMessage(message);
-    const responseText = result.response.text();
+    const requestOption = {
+        method: 'POST',
+        formatParams: false,
+    };
+
+    const result = await client.request('MultimodalConversation', params, requestOption)
+    const responseText = result.output.choices[0].message.content;
     
     let jsonResponse;
     try {

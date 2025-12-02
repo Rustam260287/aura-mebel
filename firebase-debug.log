@@ -150,3 +150,26 @@
 [error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
 [debug] [2025-12-02T04:28:57.826Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
 [debug] [2025-12-02T04:28:57.827Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-02T07:30:42.654Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-02T07:30:42.656Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-02T07:30:42.665Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-02T07:30:42.666Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-02T07:30:42.695Z] Checked if tokens are valid: false, expires at: 1764653335975
+[debug] [2025-12-02T07:30:42.699Z] Checked if tokens are valid: false, expires at: 1764653335975
+[debug] [2025-12-02T07:30:42.699Z] > refreshing access token with scopes: []
+[debug] [2025-12-02T07:30:42.708Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-02T07:30:42.708Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-02T07:30:42.808Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-02T07:30:42.808Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-02T07:30:42.848Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps pageSize=100
+[debug] [2025-12-02T07:30:43.071Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps 200
+[debug] [2025-12-02T07:30:43.072Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96/webApps {"apps":[{"name":"projects/aura-mebel-7ec96/webApps/1:149768023865:web:7e9fbd950241375d6a02e8","appId":"1:149768023865:web:7e9fbd950241375d6a02e8","displayName":"aura-mebel","projectId":"aura-mebel-7ec96","webId":"NzdmZTBlOTYtODljZS00ZGUxLTgxZmEtMTIwYzM3Zjg4Mjcz","apiKeyId":"0314c4cc-42d7-4ee0-8248-966aea04154e","state":"ACTIVE","expireTime":"1970-01-01T00:00:00Z","etag":"1_ae894bec-353d-48aa-b446-3cca8fb217a8"}]}
+[debug] [2025-12-02T07:30:43.081Z] Checked if tokens are valid: true, expires at: 1764664241809
+[debug] [2025-12-02T07:30:43.081Z] Checked if tokens are valid: true, expires at: 1764664241809
+[debug] [2025-12-02T07:30:43.081Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config [none]
+[debug] [2025-12-02T07:30:43.678Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config 200
+[debug] [2025-12-02T07:30:43.679Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config {"projectId":"aura-mebel-7ec96","appId":"1:149768023865:web:7e9fbd950241375d6a02e8","storageBucket":"aura-mebel-7ec96.firebasestorage.app","apiKey":"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y","authDomain":"aura-mebel-7ec96.firebaseapp.com","messagingSenderId":"149768023865","measurementId":"G-5YG8EC89CY","projectNumber":"149768023865","version":"2"}

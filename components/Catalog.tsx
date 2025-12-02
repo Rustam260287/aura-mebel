@@ -17,6 +17,7 @@ interface CatalogProps {
   onProductSelect: (productId: string) => void;
   onQuickView: (product: Product) => void;
   onVirtualStage: (product: Product) => void;
+  onImageClick: (product: Product, index: number) => void;
   isHomePage?: boolean;
 }
 
@@ -26,6 +27,7 @@ const CatalogComponent: React.FC<CatalogProps> = ({
   onProductSelect,
   onQuickView,
   onVirtualStage,
+  onImageClick,
   isHomePage = false
 }) => {
   
@@ -39,7 +41,7 @@ const CatalogComponent: React.FC<CatalogProps> = ({
             {isLoading 
               ? renderSkeletons(4) 
               : allProducts.map(product => (
-                  <ProductCard key={product.id} product={product} onProductSelect={onProductSelect} onQuickView={onQuickView} onVirtualStage={onVirtualStage} />
+                  <ProductCard key={product.id} product={product} onProductSelect={onProductSelect} onQuickView={onQuickView} onVirtualStage={onVirtualStage} onImageClick={onImageClick} />
                 ))}
           </div>
         </div>
@@ -62,6 +64,7 @@ const CatalogComponent: React.FC<CatalogProps> = ({
               onProductSelect={onProductSelect} 
               onQuickView={onQuickView}
               onVirtualStage={onVirtualStage}
+              onImageClick={onImageClick}
             />
           ))}
         </div>

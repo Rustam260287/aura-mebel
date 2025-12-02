@@ -6,7 +6,7 @@ import { StarRating } from './StarRating';
 import { HeartIcon, CubeTransparentIcon, ArrowUpTrayIcon } from './Icons';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
-import { useHaptic } from '../hooks/useHaptic'; // Import Haptic
+import { useHaptic } from '../hooks/useHaptic';
 import Image from 'next/image';
 
 interface ProductCardProps {
@@ -14,12 +14,13 @@ interface ProductCardProps {
   onProductSelect: (productId: string) => void;
   onQuickView?: (product: Product) => void;
   onVirtualStage?: (product: Product) => void;
+  onImageClick?: (product: Product, index: number) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProductSelect, onQuickView, onVirtualStage }) => {
+export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProductSelect, onQuickView, onVirtualStage, onImageClick }) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToast } = useToast();
-  const triggerHaptic = useHaptic(); // Use Haptic
+  const triggerHaptic = useHaptic();
   const [isAnimatingHeart, setIsAnimatingHeart] = useState(false);
   const isWished = isInWishlist(product.id);
 
@@ -30,7 +31,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    triggerHaptic(15); // Vibrate on like
+    triggerHaptic(15);
     if (isWished) {
       removeFromWishlist(product.id);
       addToast(`${product.name} удален из избранного`, 'info');
@@ -79,6 +80,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         }
     }
   }, [product.name, product.id, addToast, triggerHaptic]);
+  
+  const handleImageContainerClick = (e: React.MouseEvent) => {
+    if (onImageClick) {
+        e.stopPropagation();
+        onImageClick(product, 0);
+    }
+  }
 
 
   return (
@@ -92,7 +100,6 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         </div>
       )}
       
-      {/* Action Buttons - Top Right */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:translate-x-4 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300 ease-out">
         <button
           onClick={handleShareClick}
@@ -118,8 +125,10 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         </button>
       </div>
 
-      {/* Image Container */}
-      <div className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden isolate">
+      <div 
+        className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden isolate"
+        onClick={handleImageContainerClick}
+        >
         <Image 
           src={displayImage} 
           alt={product.name} 
@@ -128,7 +137,6 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         
-        {/* Quick View Overlay (Desktop only) */}
         {onQuickView && (
            <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex justify-center bg-gradient-to-t from-black/50 to-transparent pt-16 z-10">
             <Button 
@@ -142,7 +150,6 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         )}
       </div>
 
-      {/* Product Details */}
       <div className="p-5 relative z-20 bg-white">
         <div className="flex justify-between items-start mb-1">
             <h3 className="text-base font-medium text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-brown transition-colors" title={product.name}>

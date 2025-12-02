@@ -14,6 +14,8 @@ import { FilterSidebar } from '../../components/FilterSidebar';
 import { useToast } from '../../contexts/ToastContext'; // Import Toast
 
 const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
+const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
+
 
 const ITEMS_PER_PAGE = 12;
 const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
@@ -31,6 +33,13 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
   const { addToast } = useToast(); // Use Toast
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const [imageModalState, setImageModalState] = useState({
+    isOpen: false,
+    images: [] as string[],
+    initialIndex: 0,
+    productName: ''
+  });
 
   // Filter State from URL
   const { category, minPrice, maxPrice, sort } = router.query;
@@ -80,6 +89,20 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
   const handleVirtualStage = (product: Product) => {
     addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
   };
+  
+  const handleImageClick = (product: Product, index: number) => {
+    setImageModalState({
+        isOpen: true,
+        images: product.imageUrls || [],
+        initialIndex: index,
+        productName: product.name
+    })
+  }
+  
+  const closeImageModal = () => {
+    setImageModalState(prev => ({ ...prev, isOpen: false }));
+  }
+
 
   if (error) {
     return (
@@ -137,6 +160,7 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
                     onProductSelect={(id) => router.push(`/products/${id}`)}
                     onQuickView={setQuickViewProduct}
                     onVirtualStage={handleVirtualStage} // Pass the handler
+                    onImageClick={handleImageClick}
                 />
 
                 {/* Pagination */}
@@ -169,6 +193,13 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
       <Footer />
 
       {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
+      <ImageZoomModal 
+        isOpen={imageModalState.isOpen}
+        images={imageModalState.images}
+        initialIndex={imageModalState.initialIndex}
+        productName={imageModalState.productName}
+        onClose={closeImageModal}
+      />
     </>
   );
 }

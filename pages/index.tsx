@@ -11,10 +11,10 @@ import { Catalog } from '../components/Catalog';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
-import { useToast } from '../contexts/ToastContext'; // Import Toast
+import { useToast } from '../contexts/ToastContext';
 
-// Убираем CartSidebar отсюда
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
+const ImageZoomModal = dynamic(() => import('../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
 interface HomePageProps {
   popularProducts: Product[];
@@ -25,6 +25,12 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [imageModalState, setImageModalState] = useState({
+    isOpen: false,
+    images: [] as string[],
+    initialIndex: 0,
+    productName: ''
+  });
 
   if (error) {
     return (
@@ -48,6 +54,19 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   const handleVirtualStage = (product: Product) => {
     addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
   };
+
+  const handleImageClick = (product: Product, index: number) => {
+    setImageModalState({
+        isOpen: true,
+        images: product.imageUrls || [],
+        initialIndex: index,
+        productName: product.name
+    })
+  }
+  
+  const closeImageModal = () => {
+    setImageModalState(prev => ({ ...prev, isOpen: false }));
+  }
   
   return (
     <>
@@ -62,12 +81,19 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
           onProductSelect={(id) => router.push(`/products/${id}`)}
           onQuickView={setQuickViewProduct}
           onVirtualStage={handleVirtualStage}
+          onImageClick={handleImageClick}
           isHomePage
         />
       </main>
       <Footer />
-      {/* CartSidebar был здесь, но теперь он глобальный */}
       {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
+      <ImageZoomModal 
+        isOpen={imageModalState.isOpen}
+        images={imageModalState.images}
+        initialIndex={imageModalState.initialIndex}
+        productName={imageModalState.productName}
+        onClose={closeImageModal}
+      />
     </>
   );
 }

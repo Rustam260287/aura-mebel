@@ -190,7 +190,8 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         <ImageZoomModal 
             isOpen={isZoomModalOpen} 
             onClose={() => setIsZoomModalOpen(false)} 
-            imageUrl={galleryImages[currentImageIndex] || ''} 
+            images={galleryImages} 
+            initialIndex={currentImageIndex}
             productName={safeProduct.name} 
         /> 
       )}
