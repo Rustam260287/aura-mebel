@@ -1,35 +1,18 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import RPCClient from '@alicloud/pop-core';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
-import dotenv from 'dotenv';
 import admin from 'firebase-admin';
 
-dotenv.config({ path: '.env.local' });
+// Используем переменную окружения для ключа API
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const ACCESS_KEY_ID = process.env.QWEN_ACCESS_KEY_ID;
-const ACCESS_KEY_SECRET = process.env.QWEN_ACCESS_KEY_SECRET;
-
-if (!ACCESS_KEY_ID || !ACCESS_KEY_SECRET) {
-  throw new Error('Missing QWEN_ACCESS_KEY_ID or QWEN_ACCESS_KEY_SECRET');
+if (!GEMINI_API_KEY) {
+  throw new Error('Missing GEMINI_API_KEY in environment variables.');
 }
 
-const client = new RPCClient({
-    accessKeyId: ACCESS_KEY_ID,
-    accessKeySecret: ACCESS_KEY_SECRET,
-    endpoint: 'https://dashscope.aliyuncs.com',
-    apiVersion: '2023-03-30',
-});
-
-interface QwenResponse {
-    output: {
-        choices: Array<{
-            message: {
-                content: string;
-            };
-        }>;
-    };
-}
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 function cleanText(text: string): string {
     if (!text) return '';
@@ -52,23 +35,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    if (!ACCESS_KEY_ID || !ACCESS_KEY_SECRET) {
-      return res.status(500).json({ message: 'API key not configured' });
-    }
-
     const db = getAdminDb();
     let productsContext = "";
     
-    // Получаем контекст товаров
     if (db) {
         const snapshot = await db.collection('products')
-            .select('name', 'category', 'price', 'description')
-            .limit(60) 
+            .select('name', 'category', 'price', 'description_main')
+            .limit(100) 
             .get();
             
         const products = snapshot.docs.map(doc => {
             const d = doc.data();
-            const cleanDesc = cleanText(d.description || '');
+            const cleanDesc = cleanText(d.description_main || '');
             return `[ID: ${doc.id}] ${d.name} (${d.category}): ${d.price} руб. ${cleanDesc.substring(0, 100)}...`;
         }).join('\n');
         productsContext = products;
@@ -76,72 +54,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const systemInstruction = `
     ТВОЯ РОЛЬ:
-    Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, а также ведущий консультант бутика "Labelcom".
-    Ты обладаешь глубочайшими знаниями о стилях (Лофт, Неоклассика, Минимализм, Сканди), материалах (антивандальные ткани, массив, МДФ, камень) и эргономике.
-    Твоя задача — не просто отвечать, а влюблять клиента в нашу мебель и вести его к покупке.
+    Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, а также ведущий консультант бутика "Aura Mebel".
+    Твоя задача — влюблять клиента в нашу мебель и вести его к покупке.
 
     НАШЕ ГЛАВНОЕ ПРЕИМУЩЕСТВО (УТП):
-    **Мы производим мебель на заказ!** Любые размеры, любые ткани, любой цвет и дизайн.
-    Если в каталоге нет идеального варианта — предложи сделать его индивидуально. Это наш козырь.
+    **Мы производим мебель на заказ!** Любые размеры, ткани, цвет и дизайн.
+    Если в каталоге нет идеального варианта — предложи сделать его индивидуально.
 
     ГОТОВЫЙ КАТАЛОГ (Для быстрых продаж):
     ${productsContext}
     
     СТРАТЕГИЯ ПРОДАЖ (Будь активным!):
-    1. **Экспертиза:** Если клиент спрашивает совет (например, "какой диван лучше для кота?"), дай профессиональный ответ (антивандальный флок/велюр) и объясни почему.
-    2. **Выявление потребностей:** Задавай уточняющие вопросы: "Какой размер комнаты?", "Какой стиль вы предпочитаете?", "Вам нужен раскладной механизм?".
-    3. **Индивидуальный подход:** Если клиент хочет "такой же, но с перламутровыми пуговицами" — скажи: "Без проблем! Мы изготовим эту модель в любом цвете и размере специально для вас".
-    4. **Стиль общения:** Премиальный, уверенный, заботливый. Используй термины дизайна уместно.
+    1. **Экспертиза:** Если клиент спрашивает совет ("какой диван лучше для кота?"), дай профессиональный ответ (антивандальный флок/велюр) и объясни почему.
+    2. **Выявление потребностей:** Задавай уточняющие вопросы: "Какой размер комнаты?", "Какой стиль вы предпочитаете?".
+    3. **Индивидуальный подход:** Если клиент хочет "такой же, но другого цвета" — скажи: "Без проблем! Мы изготовим эту модель в любом цвете и размере специально для вас".
+    4. **Стиль общения:** Премиальный, уверенный, заботливый.
 
     ФОРМАТ ОТВЕТА (JSON):
     {
       "reply": "Текст ответа. Используй Markdown для акцентов (**жирный**).",
-      "recommendedProductIds": ["ID_1", "ID_2"] // Если рекомендуешь что-то из готового. Если предлагаешь индив. пошив — оставь пустым.
+      "recommendedProductIds": ["ID_1", "ID_2"]
     }
     `;
 
-    const chatHistory = (history || []).map((msg: any) => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        content: msg.content
-    }));
-
-    const params = {
-        "model": "qwen-vl-plus",
-        "input": {
-            "messages": [
-                {
-                    "role": "system",
-                    "content": systemInstruction
-                },
-                ...chatHistory,
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
+    const chat = model.startChat({
+        history: [
+            { role: "user", parts: [{ text: systemInstruction }] },
+            { role: "model", parts: [{ text: "Здравствуйте! Я ваш персональный стилист по мебели. Чем могу помочь?" }] },
+            ...history.map((msg: any) => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+            }))
+        ],
+        generationConfig: {
+            maxOutputTokens: 2048,
         },
-        "parameters": {
-            "result_format": "message"
-        }
-    }
+    });
 
-    const requestOption = {
-        method: 'POST',
-        formatParams: false,
-    };
-
-    const result = await client.request('MultimodalConversation', params, requestOption) as QwenResponse;
-    const responseText = result.output.choices[0].message.content;
+    const result = await chat.sendMessage(message);
+    const responseText = result.response.text();
     
     let jsonResponse;
     try {
-        jsonResponse = JSON.parse(responseText);
+        const jsonString = responseText.match(/```json\n([\s\S]*?)\n```/)[1];
+        jsonResponse = JSON.parse(jsonString);
     } catch (e) {
-        jsonResponse = { reply: responseText, recommendedProductIds: [] };
+        jsonResponse = { reply: responseText.replace(/```json\n|```/g, ''), recommendedProductIds: [] };
     }
 
-    // --- ОБОГАЩЕНИЕ ДАННЫМИ ---
-    let products: any[] = [];
+    let products = [];
     if (jsonResponse.recommendedProductIds && jsonResponse.recommendedProductIds.length > 0 && db) {
         try {
             const ids = jsonResponse.recommendedProductIds.slice(0, 10);
