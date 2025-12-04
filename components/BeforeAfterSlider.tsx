@@ -1,12 +1,19 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+
+import React, { useState, useRef, useCallback, MouseEvent, TouchEvent } from 'react';
 import Image from 'next/image';
+import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
 interface BeforeAfterSliderProps {
-  beforeImage: string;
-  afterImage: string;
+  before: string;
+  after: string;
 }
 
-export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = memo(({ beforeImage, afterImage }) => {
+export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) => {
+  // --- ЗАЩИТА: Не рендерим компонент, если нет изображений ---
+  if (!before || !after) {
+    return null;
+  }
+
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -19,101 +26,67 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = memo(({ befor
     setSliderPosition(percent);
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: MouseEvent) => {
     e.preventDefault();
     isDragging.current = true;
   };
 
-  const handleTouchStart = () => {
-    isDragging.current = true;
+  const handleMouseUp = (e: MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = false;
   };
 
-  const handleMouseUp = () => {
-    isDragging.current = false;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current) return;
+    handleMove(e.clientX);
+  };
+  
+  const handleTouchStart = (e: TouchEvent) => {
+      isDragging.current = true;
+  };
+  
+  const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current) return;
+      handleMove(e.touches[0].clientX);
   };
   
   const handleTouchEnd = () => {
-    isDragging.current = false;
+      isDragging.current = false;
   };
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isDragging.current) {
-      handleMove(e.clientX);
-    }
-  }, [handleMove]);
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (isDragging.current) {
-      handleMove(e.touches[0].clientX);
-    }
-  }, [handleMove]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleMouseMoveTyped = (e: Event) => handleMouseMove(e as unknown as MouseEvent);
-    const handleTouchMoveTyped = (e: Event) => handleTouchMove(e as unknown as TouchEvent);
-    const handleMouseUpTyped = () => handleMouseUp();
-    const handleTouchEndTyped = () => handleTouchEnd();
-
-    window.addEventListener('mousemove', handleMouseMoveTyped);
-    window.addEventListener('touchmove', handleTouchMoveTyped);
-    window.addEventListener('mouseup', handleMouseUpTyped);
-    window.addEventListener('touchend', handleTouchEndTyped);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMoveTyped);
-      window.removeEventListener('touchmove', handleTouchMoveTyped);
-      window.removeEventListener('mouseup', handleMouseUpTyped);
-      window.removeEventListener('touchend', handleTouchEndTyped);
-    };
-  }, [handleMouseMove, handleTouchMove]);
-
   return (
-    <div
+    <div 
+      className="relative w-full aspect-square max-w-full mx-auto select-none overflow-hidden rounded-xl shadow-lg"
       ref={containerRef}
-      className="relative w-full aspect-video rounded-lg overflow-hidden select-none cursor-ew-resize shadow-lg"
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onTouchMove={handleTouchMove}
     >
-      <Image
-        src={afterImage}
-        alt="After"
-        className="object-cover"
-        fill
-        sizes="100vw"
-      />
-      <div
-        className="absolute top-0 left-0 w-full h-full object-cover overflow-hidden"
-        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-      >
-        <Image
-          src={beforeImage}
-          alt="Before"
-          className="object-cover"
-          fill
-          sizes="100vw"
-        />
+      <div className="relative w-full h-full">
+        <Image src={before} alt="Интерьер до редизайна" className="object-cover" fill priority />
+        
+        <div 
+          className="absolute top-0 left-0 h-full w-full overflow-hidden" 
+          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+        >
+          <Image src={after} alt="Интерьер после редизайна" className="object-cover" fill priority />
+        </div>
       </div>
-       <div className="absolute top-0 left-0 bottom-0 flex items-center justify-center bg-brand-cream-dark/50 text-brand-charcoal text-sm font-semibold px-2 py-1 rounded-r-md">
-        До
-      </div>
-      <div className="absolute top-0 right-0 bottom-0 flex items-center justify-center bg-brand-brown/50 text-white text-sm font-semibold px-2 py-1 rounded-l-md">
-        После
-      </div>
-      <div
-        className="absolute top-0 h-full w-1 bg-white cursor-ew-resize"
+      
+      <div 
+        className="absolute top-0 h-full cursor-ew-resize"
         style={{ left: `calc(${sliderPosition}% - 2px)` }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
       >
-        <div className="absolute top-1/2 -translate-y-1/2 -left-4 w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center pointer-events-none">
-          <svg className="w-5 h-5 text-brand-brown" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-          </svg>
+        <div className="w-1 h-full bg-white opacity-75" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing">
+            <ArrowsRightLeftIcon className="w-6 h-6 text-brand-brown" />
         </div>
       </div>
     </div>
   );
-});
-
-BeforeAfterSlider.displayName = 'BeforeAfterSlider';
+};

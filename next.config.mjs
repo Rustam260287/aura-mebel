@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 import withPWAInit from 'next-pwa';
 
@@ -14,50 +15,20 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
-  turbopack: {}, // Silences the "using webpack with no turbopack config" error
+  turbopack: {},
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'storage.googleapis.com', // Added for Admin SDK uploaded images
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'aura-mebel-7ec96.firebasestorage.app', // Added for safety
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'label-com.ru',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'image.pollinations.ai',
-        port: '',
-        pathname: '/**',
-      },
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'storage.googleapis.com' },
+      { protocol: 'https', hostname: 'label-com.ru' },
+      { protocol: 'https', hostname: 'image.pollinations.ai' },
+      // --- ДОБАВЛЕНО: Разрешаем домен DALL-E 3 ---
+      { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
     ],
   },
   devIndicators: {
     buildActivity: true,
-    // allowedDevOrigins is dynamically managed in some environments, but we keep it here
   }
 };
 

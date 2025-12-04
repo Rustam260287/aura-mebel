@@ -19,3 +19,5 @@ env:
     value: amin8914@gmail.com
   - variable: OPENAI_API_KEY
     value: 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
+  - variable: REPLICATE_API_TOKEN
+    value: r8_bKnvFylXfsoYCKTc8ivvHm4FCX1clqS2xLHrM
