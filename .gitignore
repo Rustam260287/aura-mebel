@@ -34,6 +34,10 @@ ts-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# firebase admin credentials (keep local only)
+serviceAccountKey.json
+service-account-key.json
+
 # PWA
 public/sw.js
 public/workbox-*.js

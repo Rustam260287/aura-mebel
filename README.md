@@ -10,15 +10,24 @@ First, install the dependencies:
 npm install
 ```
 
-Next, create a `.env.local` file in the root of your project and add your Firebase and Gemini API credentials:
+Next, create a `.env.local` file in the root of your project with the public Firebase config and any client-side keys you need:
 
 ```
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL=your-client-email
-NEXT_PUBLIC_FIREBASE_PRIVATE_KEY=your-private-key
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+NEXT_PUBLIC_FIREBASE_API_KEY=your-web-api-key
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 NEXT_PUBLIC_GEMINI_API_KEY=your-gemini-api-key
 ```
+
+Server-side credentials stay private. For Firebase Admin, set the following environment variables (via `.env.local` for local dev, and secret manager/CI for production):
+
+```
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account", ...}
+ADMIN_EMAILS=admin1@example.com,admin2@example.com
+```
+
+Alternatively you can place a `serviceAccountKey.json` file in the project root for local development (it is git-ignored by default). **Never commit this file or expose your private key via `NEXT_PUBLIC_*` variables.**
 
 Then, run the development server:
 
