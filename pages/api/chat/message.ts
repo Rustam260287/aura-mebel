@@ -1,28 +1,16 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import admin from 'firebase-admin';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-if (!GEMINI_API_KEY) {
-  throw new Error('Missing GEMINI_API_KEY in environment variables.');
-}
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-// Возвращаемся к gemini-pro, так как у вас теперь есть доступ
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 function cleanText(text: string): string {
     if (!text) return '';
-    return text
-        .replace(/<\/?[^>]+(>|$)/g, "")
-        .replace(/\n+/g, " ")
-        .replace(/\s+/g, " ")
-        .replace(/Техническая информация:/i, "")
-        .replace(/Описание/i, "")
-        .trim();
+    return text.replace(/<\/?[^>]+(>|$)/g, "").replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,87 +18,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { message, history } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ message: 'Message is required' });
-    }
+    if (!message) return res.status(400).json({ message: 'Message is required' });
 
     const db = getAdminDb();
     let productsContext = "";
-    
     if (db) {
-        const snapshot = await db.collection('products')
-            .select('name', 'category', 'price', 'description_main')
-            .limit(100) 
-            .get();
-            
-        const products = snapshot.docs.map(doc => {
+        const snapshot = await db.collection('products').select('name', 'category', 'price', 'description_main').limit(100).get();
+        productsContext = snapshot.docs.map(doc => {
             const d = doc.data();
-            const cleanDesc = cleanText(d.description_main || '');
-            return `[ID: ${doc.id}] ${d.name} (${d.category}): ${d.price} руб. ${cleanDesc.substring(0, 100)}...`;
+            return `[ID: ${doc.id}] ${d.name} (${d.category}): ${d.price} руб. ${cleanText(d.description_main || '').substring(0, 100)}...`;
         }).join('\n');
-        productsContext = products;
     }
 
     const systemInstruction = `
-    ТВОЯ РОЛЬ:
-    Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, а также ведущий консультант бутика "Aura Mebel".
-    Твоя задача — влюблять клиента в нашу мебель и вести его к покупке. Отвечай всегда на русском языке.
+    ТВОЯ РОЛЬ: Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, консультант бутика "Aura Mebel".
+    Твоя задача — влюблять клиента в нашу мебель. Отвечай всегда на русском языке.
 
-    НАШЕ ГЛАВНОЕ ПРЕИМУЩЕСТВО (УТП):
-    **Мы производим мебель на заказ!** Любые размеры, ткани, цвет и дизайн.
-    Если в каталоге нет идеального варианта — предложи сделать его индивидуально.
-
-    ГОТОВЫЙ КАТАЛОГ (Для быстрых продаж):
+    ГОТОВЫЙ КАТАЛОГ:
     ${productsContext}
-    
-    СТРАТЕГИЯ ПРОДАЖ (Будь активным!):
-    1. **Приветствие**: Если пользователь просто здоровается, ответь дружелюбно и спроси, чем можешь помочь.
-    2. **Экспертиза:** Если клиент спрашивает совет ("какой диван лучше для кота?"), дай профессиональный ответ (антивандальный флок/велюр) и объясни почему.
-    3. **Выявление потребностей:** Задавай уточняющие вопросы: "Какой размер комнаты?", "Какой стиль вы предпочитаете?".
-    4. **Индивидуальный подход:** Если клиент хочет "такой же, но другого цвета" — скажи: "Без проблем! Мы изготовим эту модель в любом цвете и размере специально для вас".
-    5. **Стиль общения:** Премиальный, уверенный, заботливый.
 
+    СТРАТЕГИЯ ПРОДАЖ:
+    1. **Приветствие**: Если пользователь просто здоровается, ответь дружелюбно и спроси, чем можешь помочь.
+    2. **Экспертиза:** Давай профессиональные советы.
+    3. **Выявление потребностей:** Задавай уточняющие вопросы.
+
+    ВАЖНОЕ ПРАВИЛО: Твой ответ **всегда** должен быть в формате JSON. Обязательно включи слово 'json' в свой ответ.
     ФОРМАТ ОТВЕТА (JSON):
-    Всегда отвечай в формате JSON. Даже для простого приветствия.
     {
-      "reply": "Текст твоего ответа. Используй Markdown для акцентов (**жирный**).",
-      "recommendedProductIds": ["ID_товара_1", "ID_товара_2"] // Пустой массив, если нет рекомендаций.
+      "reply": "Текст твоего ответа.",
+      "recommendedProductIds": ["ID_товара_1", "ID_товара_2"]
     }
     `;
+    
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        { role: "system", content: systemInstruction },
+        ...history.map((msg: any) => ({
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            content: msg.content,
+        })),
+        { role: "user", content: message },
+    ];
 
-    const chat = model.startChat({
-        history: [
-            { role: "user", parts: [{ text: systemInstruction }] },
-            { role: "model", parts: [{ text: "{\"reply\": \"Здравствуйте! Я ваш персональный стилист по мебели. Чем могу помочь?\", \"recommendedProductIds\": []}" }] },
-            ...history.map((msg: any) => ({
-                role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }]
-            }))
-        ],
-        generationConfig: {
-            maxOutputTokens: 2048,
-        },
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: messages,
+      response_format: { type: "json_object" },
     });
 
-    const result = await chat.sendMessage(message);
-    const responseText = result.response.text();
+    const responseText = completion.choices[0].message.content;
     
     let jsonResponse;
     try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            jsonResponse = JSON.parse(jsonMatch[0]);
-        } else {
-            throw new Error("No JSON found in response");
-        }
+        if (!responseText) throw new Error("Empty response from OpenAI");
+        jsonResponse = JSON.parse(responseText);
     } catch (e) {
-        console.warn("Could not parse JSON from model response, falling back to text.");
-        jsonResponse = { reply: responseText.replace(/```json\n|```/g, ''), recommendedProductIds: [] };
+        console.error("Could not parse JSON from OpenAI, response was:", responseText);
+        jsonResponse = { reply: "Простите, я не смог обработать ваш запрос. Попробуйте переформулировать.", recommendedProductIds: [] };
     }
 
     let products = [];
-    if (jsonResponse.recommendedProductIds && jsonResponse.recommendedProductIds.length > 0 && db) {
+    if (jsonResponse.recommendedProductIds?.length > 0 && db) {
         try {
             const ids = jsonResponse.recommendedProductIds.slice(0, 10);
             if (ids.length > 0) {
@@ -122,10 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     }
 
-    res.status(200).json({ 
-        reply: jsonResponse.reply, 
-        products: products 
-    });
+    res.status(200).json({ reply: jsonResponse.reply, products });
 
   } catch (error: any) {
     console.error("Chat API Error:", error);
