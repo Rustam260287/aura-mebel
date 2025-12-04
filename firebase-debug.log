@@ -815,3 +815,21 @@
 [debug] [2025-12-04T20:24:17.078Z] > authorizing via signed-in user (amin8914@gmail.com)
 [debug] [2025-12-04T20:24:17.089Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
 [debug] [2025-12-04T20:24:17.089Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-04T21:06:21.993Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-04T21:06:21.994Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-04T21:06:22.011Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-04T21:06:22.013Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-04T21:06:22.023Z] Checked if tokens are valid: true, expires at: 1764883455270
+[debug] [2025-12-04T21:06:22.025Z] Checked if tokens are valid: true, expires at: 1764883455270
+[debug] [2025-12-04T21:06:22.028Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96:searchApps pageSize=100
+[debug] [2025-12-04T21:06:22.296Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96:searchApps 200
+[debug] [2025-12-04T21:06:22.297Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/aura-mebel-7ec96:searchApps {"apps":[{"name":"projects/aura-mebel-7ec96/webApps/1:149768023865:web:7e9fbd950241375d6a02e8","displayName":"aura-mebel","platform":"WEB","appId":"1:149768023865:web:7e9fbd950241375d6a02e8","namespace":"NzdmZTBlOTYtODljZS00ZGUxLTgxZmEtMTIwYzM3Zjg4Mjcz","apiKeyId":"0314c4cc-42d7-4ee0-8248-966aea04154e","state":"ACTIVE","expireTime":"1970-01-01T00:00:00Z"}]}
+[debug] [2025-12-04T21:06:22.298Z] Checked if tokens are valid: true, expires at: 1764883455270
+[debug] [2025-12-04T21:06:22.298Z] Checked if tokens are valid: true, expires at: 1764883455270
+[debug] [2025-12-04T21:06:22.298Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config [none]
+[debug] [2025-12-04T21:06:23.170Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config 200
+[debug] [2025-12-04T21:06:23.172Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:149768023865:web:7e9fbd950241375d6a02e8/config {"projectId":"aura-mebel-7ec96","appId":"1:149768023865:web:7e9fbd950241375d6a02e8","storageBucket":"aura-mebel-7ec96.firebasestorage.app","apiKey":"AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y","authDomain":"aura-mebel-7ec96.firebaseapp.com","messagingSenderId":"149768023865","measurementId":"G-5YG8EC89CY","projectNumber":"149768023865","version":"2"}

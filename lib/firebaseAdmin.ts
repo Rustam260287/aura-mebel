@@ -3,7 +3,8 @@ import admin from 'firebase-admin';
 import path from 'path';
 import fs from 'fs';
 
-const BUCKET_NAME = 'aura-mebel-7ec96.appspot.com';
+// --- ИСПРАВЛЕНО: Используем правильное имя бакета ---
+const BUCKET_NAME = 'aura-mebel-7ec96.firebasestorage.app';
 
 export const initializeFirebaseAdmin = () => {
   if (admin.apps.length > 0) {
@@ -27,7 +28,6 @@ export const initializeFirebaseAdmin = () => {
       if (!fs.existsSync(serviceAccountPath)) {
         throw new Error("Файл serviceAccountKey.json не найден в корне проекта.");
       }
-      // --- ИСПРАВЛЕНО: Читаем файл по правильному пути ---
       const serviceAccountFile = fs.readFileSync(serviceAccountPath, 'utf8');
       serviceAccount = JSON.parse(serviceAccountFile);
     } catch (error: any) {
@@ -42,17 +42,9 @@ export const initializeFirebaseAdmin = () => {
   });
 };
 
-const ensureAdminApp = () => {
+export const getAdminDb = () => {
   if (admin.apps.length === 0) {
     initializeFirebaseAdmin();
   }
-  return admin.app();
-};
-
-export const getAdminDb = () => {
-  return ensureAdminApp().firestore();
-};
-
-export const getAdminStorage = () => {
-  return ensureAdminApp().storage();
+  return admin.firestore();
 };
