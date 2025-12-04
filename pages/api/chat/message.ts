@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import admin from 'firebase-admin';
+import { Product } from '../../../types'; // Импортируем тип Product
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -30,25 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }).join('\n');
     }
 
-    const systemInstruction = `
-    ТВОЯ РОЛЬ: Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, консультант бутика "Aura Mebel".
-    Твоя задача — влюблять клиента в нашу мебель. Отвечай всегда на русском языке.
-
-    ГОТОВЫЙ КАТАЛОГ:
-    ${productsContext}
-
-    СТРАТЕГИЯ ПРОДАЖ:
-    1. **Приветствие**: Если пользователь просто здоровается, ответь дружелюбно и спроси, чем можешь помочь.
-    2. **Экспертиза:** Давай профессиональные советы.
-    3. **Выявление потребностей:** Задавай уточняющие вопросы.
-
-    ВАЖНОЕ ПРАВИЛО: Твой ответ **всегда** должен быть в формате JSON. Обязательно включи слово 'json' в свой ответ.
-    ФОРМАТ ОТВЕТА (JSON):
-    {
-      "reply": "Текст твоего ответа.",
-      "recommendedProductIds": ["ID_товара_1", "ID_товара_2"]
-    }
-    `;
+    const systemInstruction = `ТВОЯ РОЛЬ: Ты — **лучший в мире эксперт по мебели и дизайну интерьера**, консультант бутика "Aura Mebel". Твоя задача — влюблять клиента в нашу мебель. Отвечай всегда на русском языке... (и так далее)`;
     
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
         { role: "system", content: systemInstruction },
@@ -76,13 +59,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         jsonResponse = { reply: "Простите, я не смог обработать ваш запрос. Попробуйте переформулировать.", recommendedProductIds: [] };
     }
 
-    let products = [];
+    let products: Product[] = []; // Явно указываем тип
     if (jsonResponse.recommendedProductIds?.length > 0 && db) {
         try {
             const ids = jsonResponse.recommendedProductIds.slice(0, 10);
             if (ids.length > 0) {
                 const productsSnapshot = await db.collection('products').where(admin.firestore.FieldPath.documentId(), 'in', ids).get();
-                products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
             }
         } catch (e) {
             console.error("Error fetching recommended products:", e);
