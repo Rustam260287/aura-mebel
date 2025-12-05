@@ -4,19 +4,17 @@ import path from 'path';
 
 async function updateConfigFiles() {
     try {
-        // Читаем сервисный ключ
         let serviceAccountContent = '';
         try {
             serviceAccountContent = await fs.readFile('serviceAccountKey.json', 'utf-8');
-            // Убираем переносы строк, чтобы это была одна строка для YAML
             serviceAccountContent = JSON.stringify(JSON.parse(serviceAccountContent));
         } catch (e) {
             console.warn("Предупреждение: serviceAccountKey.json не найден. Переменная будет пустой.");
         }
         
-        // Значения ключей (взяты из ваших предыдущих конфигов)
+        // КЛЮЧИ API (исправлено на актуальные)
         const OPENAI_KEY = "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";
-        const REPLICATE_TOKEN = "r8_bKnvFylXfsoYCKTc8ivvHm4FCX1clqS2xLHrM";
+        const REPLICATE_TOKEN = "r8_WpfNWifc83rnJpMzLRbrnE9FBfV3bwy0vAFv7"; // ИСПРАВЛЕНО
 
         // --- Обновление .env.local ---
         const envLocalContent = `
@@ -34,7 +32,6 @@ FIREBASE_SERVICE_ACCOUNT=${serviceAccountContent}
         console.log('.env.local updated');
 
         // --- Обновление apphosting.yaml ---
-        // ВАЖНО: Используем 'value' вместо 'secret', чтобы избежать ошибки Secret Manager
         const apphostingYamlContent = `
 runConfig:
   cpu: 1
@@ -65,7 +62,7 @@ env:
     value: '${serviceAccountContent}'
         `;
         await fs.writeFile('apphosting.yaml', apphostingYamlContent.trim());
-        console.log('apphosting.yaml updated with explicit values (bypassing Secret Manager)');
+        console.log('apphosting.yaml updated with the correct REPLICATE_API_TOKEN');
 
     } catch (error) {
         console.error('Error updating configs:', error);
