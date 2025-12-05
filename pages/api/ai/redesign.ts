@@ -2,10 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from 'replicate';
 
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
-
 const MOCK_MODE = false; 
 
 type ResponseData = {
@@ -39,18 +35,19 @@ async function runWithRetry(fn: () => Promise<any>, retries = 1, delay = 10000) 
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<ResponseData> // Убеждаемся, что тип здесь
 ) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).end('Method Not Allowed');
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end();
   }
 
   try {
     const { imageUrl, prompt, style } = req.body;
 
     if (!imageUrl) {
-      return res.status(400).json({ error: 'Image URL is required' });
+      // ИСПРАВЛЕНО: Добавляем null значения для соответствия типу
+      return res.status(400).json({ original: null, redesigned: null, error: 'Image URL is required' });
     }
 
     let output;
@@ -58,7 +55,6 @@ export default async function handler(
 
     try {
         console.log("Attempting Adirik Interior Design model...");
-        // Специализированная модель для интерьеров
         const model = "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38";
         
         const input = {
@@ -66,7 +62,7 @@ export default async function handler(
             prompt: `Interior design of a room, ${style} style, ${prompt || ''}, keep ceiling shape, preserve architecture, new furniture, photorealistic, 8k, interior magazine`,
             negative_prompt: "distorted ceiling, distorted walls, changing room layout, lowres, bad anatomy, worst quality, low quality, watermark",
             guidance_scale: 7.5,
-            condition_scale: 0.8, // Пытаемся сохранить структуру
+            condition_scale: 0.8,
             num_inference_steps: 30
         };
         
@@ -88,7 +84,6 @@ export default async function handler(
             image: imageUrl,
             prompt: `Interior design of a room, ${style} style, ${prompt || ''}, preserve ceiling shape, keep walls and windows exact, new furniture, high quality, photorealistic`,
             negative_prompt: "distorted ceiling, distorted walls, changing room layout, lowres, worst quality",
-            // Снижаем prompt_strength до 0.55 для сохранения сложной геометрии (мансарды)
             prompt_strength: 0.55, 
             num_inference_steps: 40,
             guidance_scale: 7.5,
@@ -126,6 +121,7 @@ export default async function handler(
     const errorMessage = error.message || 'Error';
     console.error('API Error:', error);
     const status = error.response?.status || error.status || 500;
-    res.status(status).json({ error: errorMessage });
+    // ИСПРАВЛЕНО: Добавляем null значения и здесь
+    res.status(status).json({ original: null, redesigned: null, error: errorMessage });
   }
 }

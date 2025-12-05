@@ -1,0 +1,891 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+
+    <base href="https://label-com.ru/404.html" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="robots" content="noindex, nofollow" />
+	<meta name="author" content="Super User" />
+	<meta name="generator" content="Joomla! - Open Source Content Management" />
+	<title>404-Страница не найдена</title>
+	<link href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+	<link href="/components/com_virtuemart/assets/css/vm-ltr-common.css?vmver=a1dc3ff9" rel="stylesheet" type="text/css" />
+	<link href="/components/com_virtuemart/assets/css/vm-ltr-site.css?vmver=a1dc3ff9" rel="stylesheet" type="text/css" />
+	<link href="/components/com_virtuemart/assets/css/vm-ltr-reviews.css?vmver=a1dc3ff9" rel="stylesheet" type="text/css" />
+	<link href="https://label-com.ru//modules/mod_vm_cart/assets/css/style.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+.vmCartModule svg {fill:#444}
+.cart_top .total_products,
+.cart_content .show_cart a {
+	background:#444;
+}
+.vmCartModule {
+	border-color:#444;
+}
+.vmCartModule a,
+.vmCartModule a:hover,
+.vmCartModule .product_name a,
+.vmCartModule .product_name a:hover,
+.cart_top .total strong,
+.cart_top .total strong:hover {
+	color:#444;
+}
+	</style>
+	<script src="/media/jui/js/jquery.min.js?fa7b42c2db121b8a464dffee425b7522" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-noconflict.js?fa7b42c2db121b8a464dffee425b7522" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-migrate.min.js?fa7b42c2db121b8a464dffee425b7522" type="text/javascript"></script>
+	<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" type="text/javascript"></script>
+	<script src="https://label-com.ru//modules/mod_vm_cart/assets/js/update_cart.js" type="text/javascript"></script>
+	<script src="/components/com_virtuemart/assets/js/jquery-ui.min.js?vmver=1.9.2" type="text/javascript"></script>
+	<script src="/components/com_virtuemart/assets/js/jquery.ui.autocomplete.html.js" type="text/javascript"></script>
+	<script src="/components/com_virtuemart/assets/js/jquery.noconflict.js" type="text/javascript" async="async"></script>
+	<script src="/components/com_virtuemart/assets/js/vmsite.js?vmver=a1dc3ff9" type="text/javascript"></script>
+	<script src="/templates/jblank/js/vmprices.js?vmver=a1dc3ff9" type="text/javascript"></script>
+	<script type="text/javascript">
+//<![CDATA[ 
+if (typeof Virtuemart === "undefined"){
+	var Virtuemart = {};}
+var vmSiteurl = 'https://label-com.ru/' ;
+Virtuemart.vmSiteurl = vmSiteurl;
+var vmLang = '&lang=ru';
+Virtuemart.vmLang = vmLang; 
+var vmLangTag = 'ru';
+Virtuemart.vmLangTag = vmLangTag;
+var Itemid = '&Itemid=194';
+Virtuemart.addtocart_popup = "1" ; 
+var usefancy = true; //]]>
+
+	</script>
+
+
+        <script src="/templates/jblank/js/modernizr-2.8.3.min.js"></script>
+    <meta name='viewport' content='width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <script src="/templates/jblank/js/bootstrap.min.js"></script>
+    <script src="/templates/jblank/js/jquery.scrollUp.min.js"></script>
+    <script src="/templates/jblank/js/wow.min.js"></script>
+    <script src="/templates/jblank/js/jquery.counterup.min.js"></script>
+    <script src="/templates/jblank/js/jquery.elevateZoom-3.0.8.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js'></script>
+    <script src="/templates/jblank/js/main.js?s=02">
+    </script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/templates/jblank/css/bootstrap.min.css">
+    <!-- Fontawsome CSS  - Шрифт иконками
+        ============================================ -->
+    <link rel="stylesheet" href="/templates/jblank/css/font-awesome.min.css">
+    <!-- animate CSS ============================================ -->
+    <link rel="stylesheet" href="/templates/jblank/css/animate.css">
+    <link rel="stylesheet" href="/templates/jblank/css/animate-menu.css">
+    <!-- Owl Stylesheets 
+        ============================================ -->
+    <link rel="stylesheet" href="/templates/jblank/lib/owl/owl.carousel.css">
+    <link rel="stylesheet" href="/templates/jblank/lib/owl/owl.theme.default.css">
+    <link rel="stylesheet" href="/templates/jblank/css/jquery-ui.css">
+    <!-- owl.carousel JS
+        ============================================ -->
+    <script src="/templates/jblank/lib/owl/owl.carousel.js"></script>
+    <!-- FormStyler 
+        ============================================ -->
+    <link rel="stylesheet" href="/templates/jblank/lib/formstyler/jquery.formstyler.css">
+    <link rel="stylesheet" href="/templates/jblank/lib/formstyler/jquery.formstyler.theme.css">
+    <!-- FormStyler JS
+        ============================================ -->
+    <script src="/templates/jblank/lib/formstyler/jquery.formstyler.js"></script>
+    <!-- inputmask JS  
+        ============================================-->
+    <script type="text/javascript" src="/templates/jblank/lib/inputmask/jquery.inputmask.bundle.js"></script>
+    <link rel="stylesheet" type="text/css" href="/templates/jblank/lib/inputmask/inputmask.css" media="screen" />
+    <!-- style CSS -->
+    <link rel="stylesheet" href="/templates/jblank/css/style.css?s=02">
+    <link rel="stylesheet" href="/templates/jblank/css/responsive.css?s=02">
+    <link rel="stylesheet" href="/templates/jblank/css/icons.css?s=02">
+    <!-- Анимация меню CSS ============================================ -->
+    <link rel="stylesheet" href="/templates/jblank/css/animate-menu.css">
+    <!-- Mmenu JS внизу ещё есть HTML для этого меню!!!
+        ============================================ -->
+
+    <link rel="stylesheet" href="/templates/jblank/lib/mmenu/mmenu.css">
+    <link rel="stylesheet" href="/templates/jblank/lib/mmenu/hamburgers.css">
+
+    <script src="/templates/jblank/lib/mmenu/mmenu.polyfills.js"></script>
+    <script src="/templates/jblank/lib/mmenu/mmenu.js"></script>
+
+
+
+
+
+    <link rel='stylesheet' id='font-awesome-css-css' href='/templates/jblank/css/mystickyelements/font-awesome.min.css?ver=2.0.7' media='all' />
+    <link rel='stylesheet' id='mystickyelements-front-css-css' href='/templates/jblank/css/mystickyelements/mystickyelements-front.min.css?ver=2.0.7' media='all' />
+    <link rel='stylesheet' id='intl-tel-input-css' href='/templates/jblank/css/mystickyelements/intlTelInput.css?ver=2.0.7' media='all' />
+
+    <!-- istmedia css-->
+        <!-- .css/ext/*.css -->
+    <!-- /istmedia css-->
+    <!-- /style CSS   -->
+</head>
+
+<body>
+
+
+
+    <div class="mystickyelements-fixed mystickyelements-fixed-widget-0 mystickyelements-position-screen-center mystickyelements-position-mobile-left mystickyelements-on-hover mystickyelements-size-medium mystickyelements-mobile-size-medium mystickyelements-position-left mystickyelements-templates-default mystickyelements-entry-effect-slide-in entry-effect" data-custom-position="" data-custom-position-mobile="" data-mystickyelement-widget="0" data-widget-time-delay="0" id="mystickyelement-widget-0" data-istimedelay="0">
+        <div class="mystickyelement-lists-wrap">
+            <ul class="mystickyelements-lists mysticky" data-mystickyelement-widget="0">
+                <li class="mystickyelements-minimize" data-mystickyelement-widget="0">
+                    <span class="mystickyelements-minimize minimize-position-left minimize-position-mobile-left" style="background: #000000">
+                        ← </span>
+                </li>
+
+                <li id="mystickyelements-contact-form" class="mystickyelements-contact-form element-desktop-on element-mobile-on" data-tab-opt="hover" data-isphone-formate="0">
+                    <span class="mystickyelements-social-icon " data-tab-setting="hover" data-mobile-behavior="disable" data-click="0" data-flyout="disable" style="background-color: #7761DF; color: #FFFFFF;" data-mystickyelement-widget="0"><i class="far fa-envelope"></i>Написать нам</span>
+
+
+                    <div class="element-contact-form" style="background-color: #ffffff">
+                        <h3 style="color: #7761DF;background-color:#ffffff">
+                            Сообщение <a href="javascript:void(0);" class="element-contact-close" data-mystickyelement-widget="0"><i class="fas fa-times"></i></a>
+                        </h3>
+              
+
+                        <form id="form2" action="/" method="post" class="fz152" autocomplete="off" enctype="multipart/form-data" data-mystickyelement-widget="0" data-close-after="3">
+                            <div class="form-group">
+                             
+                           
+                                <input name="contact-form-name" placeholder="Ваше имя*" required autocomplete="off" value="" aria-required="true" type="text" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <input name="contact-form-phone" placeholder="Телефон*" required aria-required="true" type="text" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <input name="contact-form-email" placeholder="E-mail*" required aria-required="true" type="text" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <textarea name="contact-form-text" placeholder="Сообщение" class="form-control"></textarea>
+                            </div>
+                            <label class='agreement_label'>
+                                <input name="f_Agreement" required checked="checked" class="confirm-agreement" type="checkbox">
+                                Согласен с <a href="/privacy/" target="_blank">условиями</a> обработки
+                                персональных данных
+                            </label>
+                            <div class="submit-form form-group submit-review">
+                                <input type="hidden" name="sended" value="2">
+                                <input class="submit-form-input floatleft button-animate" value="Отправить" type="submit">
+                            </div>
+
+                        </form>
+                    </div>
+                </li>
+                <li id="mystickyelements-social-phone" class="mystickyelements-social-icon-li mystickyelements-social-phone element-desktop-on element-mobile-on">
+                    <style>
+                    </style>
+                    <span class="mystickyelements-social-icon social-phone social-custom" data-tab-setting="hover" data-mobile-behavior="disable" data-click="0" data-flyout="disable" style="background: #26D37C">
+                        <a href="https://api.whatsapp.com/send/?phone=79585322222&text&type=phone_number&app_absent=0" target="_blank" data-url="https://api.whatsapp.com/send/?phone=79585322222&text&type=phone_number&app_absent=0" data-tab-setting="hover" data-mobile-behavior="disable" data-flyout="disable">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </span>
+
+                    <span class="mystickyelements-social-text " style="background: #26D37C;" data-flyout="disable">
+                        <a href="https://api.whatsapp.com/send/?phone=79585322222&text&type=phone_number&app_absent=0" target="_blank" data-flyout="disable">
+                            whatsapp </a>
+                    </span>
+
+                </li>
+
+                <li id="mystickyelements-social-telegram" class="mystickyelements-social-icon-li mystickyelements-social-telegram element-desktop-on element-mobile-on">
+                    <style>
+                    </style>
+                    <span class="mystickyelements-social-icon social-telegram social-custom" data-tab-setting="hover" data-mobile-behavior="disable" data-click="0" data-flyout="disable" style="background: rgb(44, 165, 224); border-bottom-right-radius: 10px;">
+                        <a href="https://t.me/Labelcom777" data-url="https://t.me/Labelcom777" target="_blank" data-tab-setting="hover" data-mobile-behavior="disable" data-flyout="disable">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                    </span>
+
+                    <span class="mystickyelements-social-text " style="background: #2CA5E0;" data-flyout="disable">
+                        <a href="https://t.me/Labelcom777" target="_blank" data-flyout="disable">
+                            Telegram </a>
+                    </span>
+
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="hamburger" class="mmenu-bg-block">
+        <div class="container-fluid">
+            <div class='row'>
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
+                    <a href="#mmenu" class='hamburger-for-mmenu'>
+                        <button class="hamburger hamburger--elastic" type="button">
+                            <span class="hamburger-box">
+                                <span class="hamburger-inner"></span>
+                            </span>
+                        </button>
+                    </a>
+
+                </div>
+                <!-- выводить по требование возможно вместо лого -->
+                <div class="logo-mobile col-lg-4 col-md-4 col-sm-9 col-xs-9 hidden">
+                    <a href="/">
+                        <img src="/images/logo2.png" alt="На главную">
+                    </a>
+                </div>
+
+                <div class="col-lg-4 col-md-4 col-sm-9 col-xs-9">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='page'>
+        <!-- нужен для вызова mmenu -->
+
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">Вы используете <strong>устаревший</strong> браузер. Пожалуйста <a href="https://browsehappy.com/">обновите свой браузер</a> до последней версии .</p>
+        <![endif]-->
+
+
+        <div class='block-header-promo'>
+                                <header class="inner">
+                                        <div class='wrap-header'>
+                        <div class="container-fluid">
+                            <div class="d-flex nowrap">
+                                <div class="col-fl-1">
+                                    <div class="logo">
+                                        <a href="/"><img src="/images/logo.png" alt="На главную"></a>
+                                    </div>
+                                </div>
+                                <div class="listing-menu main-menu effect-2 hidden-sm hidden-xs">
+                                    
+<ul class="menu">
+<li class="item-256 count_li1"><a  href="/" >Главная</a></li><li class="item-257 count_li2 submenu_to_left"><a  href="/katalog.html" >Каталог</a></li><li class="item-259 count_li3 submenu_to_left"><a  href="#forms" >Контакты</a></li></ul>
+
+                                </div>
+
+                                <div class="col-fl-3">
+
+
+                                    <div class="block-contact">
+                                        <span class="gr hidden">
+                                            		<p><span style="font-size: 14pt;"><strong>24/7</strong></span></p>			
+
+                                        </span>
+                                        <span class="phone">
+                                            <div class='wrap-flex-block'>
+                                                <!-- <img src='/templates/jblank/img/whatsapp.png'> -->
+                                                <!-- <img src='/templates/jblank/img/telegram.png'> -->
+                                                <div class='right-block-phone'>
+                                                    					<p><strong>Бесплатный номер по всей России: </strong></p>
+<p><strong><a href="tel:88007004204">8 (800) 700-42-04</a></strong></p>
+
+                                                </div>
+                                            </div>
+                                        </span>
+
+
+                                    </div>
+
+                                </div>
+                                <div class="branch">
+                                    
+<!-- Virtuemart 2 Ajax Card -->
+<div class="vmCartModule " id="vmCartModule">
+	<a href="/katalog/cart.html" rel="nofollow" >
+	
+	<div class="cart_top">
+
+		            <div class='over-branch'>
+                <img src='/templates/jblank/img/cart.svg'>
+    			<div class="total_products">
+    			0    			</div>
+            </div>
+            <div class='header-cart'>Корзина</div>
+       
+		<div class="total hidden">	
+    					<span class="cart_empty">Нет товаров</span>		</div>
+	</div>
+	</a>
+	</div>
+<script>
+jQuery(document).ready(function($){
+    $('#vmCartModule').hover(
+        function(){
+            $('.wrap-cart-content').stop().addClass('open'); 
+        },
+        function(){
+            $('.wrap-cart-content').stop().removeClass('open');  
+        } 
+    )
+});
+</script>
+<script id="ready.vmprices_js" type="text/javascript">//<![CDATA[ 
+jQuery(document).ready(function($) {
+
+		Virtuemart.product($("form.product"));
+}); //]]>
+</script><script id="vm.CartModule.UpdateModule_js" type="text/javascript">//<![CDATA[ 
+jQuery(document).ready(function(){
+    jQuery("body").live("updateVirtueMartCartModule", function(e) {
+        jQuery("#vmCartModule").updateVirtueMartCartModule();
+    });
+}); //]]>
+</script>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    
+                    </header>
+
+
+        </div>
+
+                        <div class="wrap">
+                    <div class="inner-block">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12 floatright right-column">
+                                    <div class="block-content-inner">
+                                        <!-- Убираем заголовок с 404 стр -->
+                                                                                
+                                        
+                                            
+<div class="item-page">
+     
+    
+
+
+
+
+	<div class="sorry404">404</div>
+<div class="sorry">Тортик?</div>
+<div class="text-sorry">Данная странице не существует.</div>   
+	</div>
+
+                                                                            </div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-3 floatleft left-column">
+                                    <!-- class='left-menu-down' - выпадающее меню на активных разделах  -->
+                                    <!-- class='left-menu-right' - выпадающее меню по наведению -->
+                                    <div class="inner-menu left-menu-right hidden-sm hidden-xs">
+                                        
+                                    </div>
+
+                                    <div class='inner-menu left-menu-down hidden-sm hidden-xs'>
+                                        
+<ul class="menu" >
+
+
+<li class=''>
+	
+		<a href="/katalog/spalni.html" >Спальни</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/kukhni-1.html" >Кухни</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/myagkaya-mebel.html" >Мягкая мебель</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/gostinaya.html" >Гостиная</a>     
+</li>
+</ul>
+
+                                    </div>
+
+                                                                        <div class="block-news-inner hidden">
+                                        <h2 class='header-news'>Новости</h2>
+                                        <div class="news">
+</div>
+                  
+                                        <a href='/allnews.html' class='all-news'>Все новости <i class="fa fa-arrow-circle-right" aria-hidden="true"></i></a>
+                                    </div>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                                <div class='bg-formblock str-inner'>
+                    <div class='center-banner'>
+                        <img src='/images/4444.png'>
+                    </div>
+                    
+                    <div class="form-block">
+                        <a name='forms'></a>
+                        <div class="container-fluid">
+
+                            <div class='row flex'>
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                    <h2 class='footers-contact'>Контакты</h2>
+                                    <div class='block-footer-contacts'>
+                                        <div class="block-contact">
+                                            <span class="phone">
+                                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                                <div class='wrap-flex-block'>
+
+                                                    <div class='right-block-phone'>
+                                                        	<p><strong>Москва.</strong> <a href="tel:+74991304204">+7 (499) 130-42-04</a></p>
+<p><strong>Ставрополь.</strong> <a href="tel:+78652693304">+7 (8652) 69-33-04</a></p>
+<p><strong>Астрахань.</strong> <a href="tel:+78512690204">+7 (8512) 69-02-04</a></p>
+<p><strong>Нижний Новгород.</strong> <a href="tel:+78314141004">+7 (831) 414-10-04</a></p>
+
+                                                    </div>
+                                                    <div class='wrap-img-block hidden'>
+                                                        <img src='/templates/jblank/img/whatsapp.png'>
+                                                        <img src='/templates/jblank/img/telegram.png'>
+                                                    </div>
+                                                </div>
+
+                                            </span><br />
+                                            <span class="address hidden"><i class="fa fa-map-marker" aria-hidden="true"></i>
+                                                			<p><strong>Офис продаж: г. Минеральные воды, ул. Новоселов, 10в</strong></p>		
+
+                                            </span>
+                                            <span class="graph hidden"><i class="fa fa-clock-o" aria-hidden="true"></i>
+                                                		<p><span style="font-size: 14pt;"><strong>24/7</strong></span></p>			
+
+                                            </span>
+                                            <span class="email"><i class="fa fa-envelope" aria-hidden="true"></i>
+                                                				<a href='mailto:<strong>ooolabelcom@gmail.com</strong>'><strong>ooolabelcom@gmail.com</strong></a>	
+
+                                            </span>
+                                            <div class='dop-info'>
+                                            ИНН 5001155292 <br />
+                                            ООО "Лэйблком"
+                                            <p>
+                                            Юр.адрес: 143912, Московская область, г.о.Балашиха, г.Балашиха, ул.Победы, д.2, помещ.44</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="logo2">
+                                            <img src="/images/logo.png">
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                    <form id="form1" action="/" method="post" class="fz152" enctype="multipart/form-data">
+
+                                        <div class="bg-form-block">
+                                            <h2 class='header-form'>Оставить заявку</h2>
+                                            <div class="form-group">
+                                                <input name="name" type="text" placeholder="Имя" value="" aria-required="true" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <input name="phone" type="text" placeholder="Телефон" value="" required aria-required="true" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <input name="email" type="text" placeholder="Email" value="" aria-required="true" class="form-control">
+                                            </div>
+                                            <div class="form-group hidden">
+                                                <input name="file" type="file" value="" class="form-control">
+                                            </div>
+                                            <div class="form-group hidden">
+                                                <input name="file2" type="file" value="" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <textarea name="text" placeholder="Сообщение" class="form-control"></textarea>
+                                            </div>
+                                            <div class="blocks-buttons">
+                                                <input type="hidden" name="sended" value="1">
+                                                <input class="submit-form floatleft" value="Отправить" type="submit">
+
+                                                <label class='agreement_label'>
+                                                    <input name="f_Agreement" required checked="checked" id="confirm-agreement" type="checkbox">
+                                                    Согласен с <a href="/privacy/" target="_blank">условиями</a> обработки
+                                                    персональных данных
+                                                </label>
+                                                <div class='O_O'></div>
+                                            </div>
+
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+
+
+                <footer>
+
+                    <div class="container-fluid">
+
+                        <div class='row'>
+
+                            <div class="copy2">
+                                © 2025. Все права защищены
+
+                                <div class="livec">
+                                    <!--LiveInternet counter-->
+                                    <script type="text/javascript">
+                                        <!--
+                                        document.write("<a href='https://www.liveinternet.ru/click' " +
+                                            "target=_blank><img src='//counter.yadro.ru/hit?t11.2;r" +
+                                            escape(document.referrer) + ((typeof(screen) == "undefined") ? "" :
+                                                ";s" + screen.width + "*" + screen.height + "*" + (screen.colorDepth ?
+                                                    screen.colorDepth : screen.pixelDepth)) + ";u" + escape(document.URL) +
+                                            ";" + Math.random() +
+                                            "' alt='' title='LiveInternet: показано число просмотров за 24" +
+                                            " часа, посетителей за 24 часа и за сегодня' " +
+                                            "border='0' width='88' height='31'><\/a>")
+                                        //
+                                        -->
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="menu2 listing-menu main-menu menu2 effect-2 hidden-sm hidden-xs">
+                                
+<ul class="menu">
+<li class="item-256 count_li1"><a  href="/" >Главная</a></li><li class="item-257 count_li2 submenu_to_left"><a  href="/katalog.html" >Каталог</a></li><li class="item-259 count_li3 submenu_to_left"><a  href="#forms" >Контакты</a></li></ul>
+
+                            </div>
+                            <div class="copy">
+                                <div class="isite">
+
+                                    <div class="full-logo">
+                                        <div class="img-logo">
+                                            <a href="https://isite.ru">
+                                                <img src="/templates/jblank/img/isite/triangle_t.png" class="triangle_t">
+                                                <img src="/templates/jblank/img/isite/triangle1.png" class="triangle">
+                                                <img src="/templates/jblank/img/isite/triangle_b_l.png" class="triangle_b_l">
+                                                <img src="/templates/jblank/img/isite/triangle_b_r.png" class="triangle_b_r">
+                                                <img src="/templates/jblank/img/isite/triangle_l.png" class="triangle_l">
+                                                <img src="/templates/jblank/img/isite/triangle_r.png" class="triangle_r">
+                                            </a>
+                                        </div>
+                                        <div class='text-logo'>
+                                            <a href="https://isite.ru">
+                                                Разработка сайта под ключ iSite.ru
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class='O_O'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+                </div>
+                <div class="mobile-mmenu">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12">
+                                <nav id="mmenu">
+                                    <ul class='menu'>
+                                        <!-- заказментить не нужные меню -->
+                                        
+
+<li class="item-256 count_li1"><a  href="/" >Главная</a></li><li class="item-257 count_li2 submenu_to_left"><a  href="/katalog.html" >Каталог</a></li><li class="item-259 count_li3 submenu_to_left"><a  href="#forms" >Контакты</a></li>
+                                        <li class='mm-divider'>Каталог</li>
+                                        
+
+
+
+<li class=''>
+	
+		<a href="/katalog/spalni.html" >Спальни</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/kukhni-1.html" >Кухни</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/myagkaya-mebel.html" >Мягкая мебель</a>     
+</li>
+
+<li class=''>
+	
+		<a href="/katalog/gostinaya.html" >Гостиная</a>     
+</li>
+
+
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- div.mobile-mmenu -->
+
+                <div id="quickview-wrapper">
+                                        <!-- Modal-phone -->
+                    <div class="modal animated fadeIn" id="modalCall" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2>Заказать обратный звонок</h2>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="modal-product">
+                                        <div class="contact-form">
+                                            <form id="form2" action="/" method="post" class="fz152" enctype="multipart/form-data">
+                                                <div class="form-group">
+                                                    <input name="name" placeholder="Имя" required aria-required="true" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input name="phone" placeholder="Телефон" required aria-required="true" type="text" class="form-control">
+                                                </div>
+                                                <div class="submit-form form-group submit-review">
+                                                    <input type="hidden" name="sended" value="2">
+                                                    <input class="submit-form-input floatleft button-animate" value="Отправить" type="submit">
+                                                </div>
+                                                <label class='agreement_label'>
+                                                    <input name="f_Agreement" required checked="checked" class="confirm-agreement" type="checkbox">
+                                                    Согласен с <a href="/privacy/" target="_blank">условиями</a> обработки
+                                                    персональных данных
+                                                </label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Modal-phone -->
+                    <!-- Modal-clip -->
+                    <div class="modal animated fadeIn" id="modalClip" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2 class='text-center'>Заполните заявку</h2>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="modal-product">
+                                        <div class="contact-form">
+                                            <form id="form3" action="/" method="post" enctype="multipart/form-data">
+                                                <div class="form-group">
+                                                    <input name="name" placeholder="Имя" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input name="phone" placeholder="Телефон" required aria-required="true" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input name="email" placeholder="Email" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <textarea name="text" placeholder="Сообщение" class="form-control"></textarea>
+                                                </div>
+                                                <div class="form-group text-center submit-review">
+                                                    <input type='hidden' id='name_header' name='header' value=''>
+                                                    <input type="hidden" name="sended" value="3">
+                                                    <input class="submit-form-input button-animate" value="Отправить" type="submit">
+                                                </div>
+                                                <label class='agreement_label'>
+                                                    <input name="f_Agreement" required checked="checked" class="confirm-agreement" type="checkbox">
+                                                    Согласен с <a href="/privacy/" target="_blank">условиями</a> обработки
+                                                    персональных данных
+                                                </label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal animated fadeIn" id="modalOrderClick" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2 class='text-center'>Заполните заявку</h2>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="modal-product">
+                                        <div class="contact-form">
+                                            <form id="form4" action="/" method="post" enctype="multipart/form-data">
+                                                <div class="form-group">
+                                                    <input name="name" placeholder="Имя" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input name="phone" placeholder="Телефон" required aria-required="true" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input name="email" placeholder="Email" type="text" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <textarea name="text" placeholder="Сообщение" class="form-control"></textarea>
+                                                </div>
+                                                <div class="form-group text-center submit-review">
+                                                    <input type='hidden' id='name_header_order_click' name='header' value=''>
+                                                    <input type="hidden" name="sended" value="4">
+                                                    <input class="submit-form-input button-animate" value="Отправить" type="submit">
+                                                </div>
+                                                <label class='agreement_label'>
+                                                    <input name="f_Agreement" required checked="checked" class="confirm-agreement" type="checkbox">
+                                                    Согласен с <a href="/privacy/" target="_blank">условиями</a> обработки
+                                                    персональных данных
+                                                </label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Modal-phone -->
+                </div>
+                <script src="/templates/jblank/js/jquery.cookie.js?ver=2.0.7" id="mystickyelements-cookie-js-js"></script>
+                <script src="/templates/jblank/js/mystickyelements-fronted.min.js?ver=2.0.7" id="mystickyelements-fronted-js-js"></script>
+                <script id="mystickyelements-fronted-js-js-extra">
+                    var mystickyelements = {
+                        "ajaxurl": "",
+                        "ajax_nonce": "",
+                        "google_analytics": ""
+                    };
+                </script>
+		<script type="text/javascript">
+			//<![CDATA[
+			function isFunction(functionToCheck) {
+          return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+      } 
+      //rzd
+      if ( typeof(Virtuemart) !== 'undefined' && isFunction(Virtuemart.updateImageEventListeners) == null ) Virtuemart.updateImageEventListeners = function() {
+              if ( jQuery("a[rel=vm-additional-images]").length > 0  ){
+                  jQuery("a[rel=vm-additional-images]").fancybox({
+                  		"titlePosition" 	: "inside",
+                  		"transitionIn"	:	"elastic",
+                  		"transitionOut"	:	"elastic"
+                  	});
+              }          
+      }
+      if ( typeof(Virtuemart) !== 'undefined' && isFunction(Virtuemart.updateDynamicUpdateListeners) == null ) Virtuemart.updateDynamicUpdateListeners = function() {
+        if(jQuery('*[data-dynamic-update=1]').length > 0){
+	        jQuery('*[data-dynamic-update=1]').each(function(i, el) {
+	            var nodeName = el.nodeName;
+	            el = jQuery(el);
+	            //console.log('updateDynamicUpdateListeners '+nodeName, el);
+	            switch (nodeName) {
+	                case 'A':
+						el[0].onclick = null;
+	                    el.off('click',Virtuemart.updL);
+	                    el.on('click',Virtuemart.updL);
+	                    break;
+	                default:
+						el[0].onchange = null;
+	                    el.off('change',Virtuemart.upd);
+	                    el.on('change',Virtuemart.upd);
+	            }
+	        });
+	    }
+    }
+      // /rzd         
+      if(typeof  Virtuemart !== 'undefined')
+			{
+				//Virtuemart.updateImageEventListeners = function() {}
+			}
+			jQuery(document).ready(function ($) {
+				function _SJQuickView(){
+					var $item_class = $('.productQuick, .product .single-product-item, .products-grid li.item, .products-list li.item .f-fix, .product.vm-col');
+					if ($item_class.length > 0) {
+						for (var i = 0; i < $item_class.length; i++) {
+							if($($item_class[i]).find('.sj_quickview_handler').length <= 0){
+								var producturlpath = $($item_class[i]).find('a', $(this)).attr('href');
+                                if(typeof producturlpath !== 'undefined' && producturlpath.length > 0 ){
+									producturlpath = ( producturlpath.indexOf('?')  >= 0 ) ? producturlpath + '&tmpl=component' : producturlpath + '?tmpl=component' ;
+									var _quickviewbutton = "<a  class='sj_quickview_handler' href='" + producturlpath + "'>Быстрый просмотр</a>";
+									$($item_class[i]).append(_quickviewbutton);
+								}
+							}
+						}
+					}
+				}	
+				jQuery('.sj_quickview_handler')._fancybox({
+					width: '70%',
+					height: 'auto',
+					autoSize:  0,
+					scrolling: 'auto',
+					type: 'ajax',
+					openEffect: 'fade',
+					closeEffect: 'fade',
+					helpers: {
+												    overlay: {
+							showEarly: true
+						}
+											},
+					ajax:{
+						type:'POST',
+						data:{
+							option:'com_virtuemart',
+							view:'productdetails',
+							tmpl:'component',
+							quickview:'showpoup',
+							isajax_qv:1
+						},
+						dataType:'html'
+						
+					},
+					beforeLoad: function (){
+
+					},
+					afterLoad :function() {
+
+					},
+					beforeShow: function (){
+
+						var $_price_on_qv = $('#sj_quickview').find(".product-price"),
+							_id_price = $_price_on_qv.attr('id') ;
+							$_price_on_qv.addClass('price-on-qv');
+						$('.product-price').each(function(){
+							var $this = $(this);
+							if(!$this.hasClass('price-on-qv')){
+								if($this.attr('id') == _id_price){
+									$this.attr('data-idprice',_id_price);
+									$this.attr('id',_id_price+'_clone');
+								}
+							}
+						});
+						
+					},
+					afterShow: function () {
+						 if(typeof  Virtuemart !== 'undefined'){
+							var $_form = $("form.product",$('#sj_quickview'));
+							Virtuemart.product($_form);
+							$("form.js-recalculate").each(function(){
+								var _cart = $(this);
+								if ($(this).find(".product-fields").length && !$(this).find(".no-vm-bind").length) {
+									var id= $(this).find('input[name="virtuemart_product_id[]"]').val();
+									Virtuemart.setproducttype($(this),id);
+								}
+							});
+						 }
+					},
+					afterClose: function (){
+						$('.product-price').each(function(){
+							var $this = $(this), _id_price = $this.attr('data-idprice') ;
+								if($this.attr('data-idprice') != '') {
+									$this.removeAttr('data-idprice');
+									$this.attr('id',_id_price);
+								}
+						});
+					}
+				});
+				setInterval(function(){ _SJQuickView(); } ,1000);
+			});
+			//]]>
+		</script>
+		</body>
+
+</html>
