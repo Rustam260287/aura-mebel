@@ -3,7 +3,7 @@ import React, { useState, memo, useMemo } from 'react';
 import type { View } from '../types';
 import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { Button } from './Button';
-import { CheckCircleIcon, SparklesIcon, WhatsAppIcon } from './Icons'; // Добавил WhatsAppIcon
+import { CheckCircleIcon, SparklesIcon } from './Icons'; // Убрал WhatsAppIcon из импорта
 import Image from 'next/image';
 import { useToast } from '../contexts/ToastContext';
 import Link from 'next/link';
@@ -113,15 +113,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
                     <Button size="lg" onClick={() => onNavigate({ page: 'home' })}>
                         Вернуться на главную
                     </Button>
-                    <a 
-                        href={`https://wa.me/79999999999?text=Здравствуйте, я оформил заказ №${view.orderId}, хотел бы уточнить детали.`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                        <WhatsAppIcon className="w-5 h-5 mr-2 text-green-500" />
-                        Написать менеджеру
-                    </a>
+                    {/* Кнопка WhatsApp временно убрана по требованию */}
                 </div>
             </div>
         </div>
@@ -196,6 +188,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
             ))}
           </div>
 
+          {/* Promo Code Section */}
           <div className="mt-6 pt-4 border-t">
               {!appliedPromo ? (
                   <div className="flex gap-2">

@@ -8,12 +8,11 @@ import { ProductCard } from '@/components/ProductCard';
 import type { Product } from '@/types';
 import { useRouter } from 'next/router';
 import { 
-  CloudArrowUpIcon, 
   PhotoIcon, 
   SparklesIcon, 
-  ArrowDownTrayIcon 
 } from '@/components/Icons'; 
 
+// Опции стилей
 const styleOptions = [
   { value: "Modern", label: "Современный" },
   { value: "Minimalist", label: "Минимализм" },
@@ -39,7 +38,6 @@ const AIRoomMakeoverPage: React.FC = () => {
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Сжатие изображения
   const resizeImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -120,7 +118,6 @@ const AIRoomMakeoverPage: React.FC = () => {
         if (resultSection) resultSection.scrollIntoView({ behavior: 'smooth' });
     }, 100);
 
-    // Более премиальный текст загрузки
     const toastId = toast.loading('Разрабатываем концепцию вашего нового интерьера...');
 
     try {
@@ -164,7 +161,6 @@ const AIRoomMakeoverPage: React.FC = () => {
   return (
     <div className="bg-[#FAF9F6] min-h-screen pb-20"> 
       
-      {/* Hero Section */}
       <div className="relative bg-brand-brown text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/pattern-bg.png')] mix-blend-overlay"></div> 
         <div className="container mx-auto px-4 relative z-10 text-center">
@@ -187,7 +183,6 @@ const AIRoomMakeoverPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="p-8 md:p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     
-                    {/* Левая колонка: Загрузка */}
                     <div className="lg:col-span-5 flex flex-col">
                         <label className="block text-sm font-bold text-brand-charcoal uppercase tracking-wider mb-4 flex items-center">
                             <span className="bg-brand-brown text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>
@@ -222,7 +217,7 @@ const AIRoomMakeoverPage: React.FC = () => {
                             ) : (
                                 <div className="text-center p-6">
                                     <div className="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-4 text-brand-brown">
-                                        <CloudArrowUpIcon className="w-8 h-8" />
+                                        <PhotoIcon className="w-8 h-8" />
                                     </div>
                                     <p className="text-brand-charcoal font-medium text-lg mb-1">Нажмите или перетащите фото</p>
                                     <p className="text-gray-400 text-sm">Поддерживаются JPG, PNG</p>
@@ -231,7 +226,6 @@ const AIRoomMakeoverPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Правая колонка: Настройки */}
                     <div className="lg:col-span-7 flex flex-col justify-between">
                         <div>
                             <div className="mb-8">
@@ -300,12 +294,10 @@ const AIRoomMakeoverPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Результаты */}
       <div id="result-section" className="container mx-auto px-4 mt-16 scroll-mt-24">
         {redesignedImage && originalImage && (
             <div className="animate-fade-in-up space-y-16">
                 
-                {/* Слайдер */}
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-10">
                         <span className="text-brand-brown font-medium tracking-widest text-sm uppercase mb-2 block">Результат трансформации</span>
@@ -324,14 +316,14 @@ const AIRoomMakeoverPage: React.FC = () => {
                                     rel="noopener noreferrer"
                                     className="flex items-center bg-white/90 backdrop-blur text-brand-charcoal px-4 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-white transition-all"
                                 >
-                                    <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Скачать
+                                    {/* Убрал иконку ArrowDownTrayIcon, заменил на текст, чтобы не было ошибок импорта */}
+                                    Скачать
                                 </a>
                              </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Рекомендации */}
                 <div className="max-w-7xl mx-auto">
                      <div className="flex flex-col items-center mb-12">
                          <div className="h-px w-24 bg-brand-brown/30 mb-6"></div>
