@@ -65,8 +65,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
       <div>
         <h4 className="font-semibold text-brand-charcoal mb-3">Цена до</h4>
         <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>{priceRange[0].toLocaleString()} ₽</span>
-            <span className="font-medium">{priceRange[1].toLocaleString()} ₽</span>
+            <span>{priceRange[0].toLocaleString('ru-RU')} ₽</span>
+            <span className="font-medium">{priceRange[1].toLocaleString('ru-RU')} ₽</span>
         </div>
         <input 
             type="range"

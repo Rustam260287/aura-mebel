@@ -3,7 +3,7 @@ import React, { useState, memo, useMemo } from 'react';
 import type { View } from '../types';
 import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { Button } from './Button';
-import { CheckCircleIcon, SparklesIcon } from './Icons';
+import { CheckCircleIcon, SparklesIcon, WhatsAppIcon } from './Icons'; // Добавил WhatsAppIcon
 import Image from 'next/image';
 import { useToast } from '../contexts/ToastContext';
 import Link from 'next/link';
@@ -27,7 +27,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
     comments: '',
   });
 
-  // Promo Code State
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; discountPercent: number } | null>(null);
 
@@ -103,13 +102,27 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
     return (
         <div className="container mx-auto px-6 py-12 text-center">
             <div className="max-w-2xl mx-auto bg-white p-12 rounded-lg shadow-lg animate-scale-in">
-                <CheckCircleIcon className="w-20 h-20 text-green-500 mx-auto mb-6" />
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircleIcon className="w-12 h-12 text-green-600" />
+                </div>
                 <h1 className="text-4xl font-serif text-brand-brown mb-4">Спасибо за ваш заказ!</h1>
-                <p className="text-lg text-brand-charcoal">Ваш заказ <strong className="text-brand-brown">№{view.orderId}</strong> успешно оформлен.</p>
-                <p className="text-brand-charcoal/80 mt-2">Мы свяжемся с вами в ближайшее время для подтверждения деталей.</p>
-                <Button size="lg" className="mt-8" onClick={() => onNavigate({ page: 'home' })}>
-                    Вернуться на главную
-                </Button>
+                <p className="text-lg text-brand-charcoal mb-2">Ваш заказ <strong className="text-brand-brown">№{view.orderId}</strong> успешно принят в обработку.</p>
+                <p className="text-gray-500 mb-8">Менеджер свяжется с вами в ближайшее время для подтверждения деталей доставки.</p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button size="lg" onClick={() => onNavigate({ page: 'home' })}>
+                        Вернуться на главную
+                    </Button>
+                    <a 
+                        href={`https://wa.me/79999999999?text=Здравствуйте, я оформил заказ №${view.orderId}, хотел бы уточнить детали.`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <WhatsAppIcon className="w-5 h-5 mr-2 text-green-500" />
+                        Написать менеджеру
+                    </a>
+                </div>
             </div>
         </div>
     )
@@ -183,7 +196,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = memo(({ view, onNavigat
             ))}
           </div>
 
-          {/* Promo Code Section */}
           <div className="mt-6 pt-4 border-t">
               {!appliedPromo ? (
                   <div className="flex gap-2">

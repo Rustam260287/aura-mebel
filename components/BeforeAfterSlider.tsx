@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
+// import Image from 'next/image'; // Заменяем на обычный img для избежания проблем с доменами и src
 
 interface BeforeAfterSliderProps {
   before: string;
@@ -49,36 +49,49 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) 
     };
   }, []);
 
+  // Если URL отсутствуют, не рендерим (защита от краша)
+  if (!before || !after) return null;
+
   return (
     <div 
       ref={containerRef}
-      className="relative w-full max-w-4xl mx-auto aspect-[4/3] overflow-hidden rounded-lg shadow-2xl cursor-ew-resize select-none"
+      className="relative w-full max-w-4xl mx-auto aspect-[4/3] overflow-hidden rounded-lg shadow-2xl cursor-ew-resize select-none bg-gray-100"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
       onTouchMove={handleTouchMove}
     >
-      {/* After Image */}
+      {/* After Image (Background) */}
       <div className="absolute top-0 left-0 w-full h-full">
-        <Image src={after} alt="After" layout="fill" objectFit="cover" className="pointer-events-none" />
+        <img 
+            src={after} 
+            alt="After Redesign" 
+            className="w-full h-full object-cover pointer-events-none" 
+        />
       </div>
 
-      {/* Before Image */}
+      {/* Before Image (Foreground with clip-path) */}
       <div 
         className="absolute top-0 left-0 h-full w-full overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <Image src={before} alt="Before" layout="fill" objectFit="cover" className="pointer-events-none"/>
+        <img 
+            src={before} 
+            alt="Original Room" 
+            className="w-full h-full object-cover pointer-events-none" 
+        />
       </div>
 
       {/* Slider Handle */}
       <div
-        className="absolute top-0 bottom-0 w-1 bg-white/80 backdrop-blur-sm shadow-md cursor-ew-resize"
+        className="absolute top-0 bottom-0 w-1 bg-white/80 backdrop-blur-sm shadow-md cursor-ew-resize z-10"
         style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
       >
         <div className="absolute top-1/2 -translate-y-1/2 -left-4 w-9 h-9 bg-white/80 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
-          <svg className="w-5 h-5 text-gray-700" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
+          <svg className="w-5 h-5 text-gray-700 transform rotate-90" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
+          </svg>
         </div>
       </div>
     </div>

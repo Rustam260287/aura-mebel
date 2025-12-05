@@ -5,7 +5,8 @@ export default function Document() {
   return (
     <Html lang="ru">
       <Head>
-        <link rel="manifest" href="/manifest.json" />
+        {/* FIX: Добавлен crossOrigin="use-credentials" для исправления CORS ошибки в Cloud Workstations */}
+        <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
         <meta name="theme-color" content="#5D4037" />
         <meta name="application-name" content="Labelcom Мебель" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

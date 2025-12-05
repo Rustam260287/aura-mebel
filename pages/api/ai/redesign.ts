@@ -6,13 +6,13 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
+const MOCK_MODE = false; 
+
 type ResponseData = {
   original: string | null;
   redesigned: string | null;
   error?: string;
 };
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const config = {
   api: {
@@ -21,6 +21,21 @@ export const config = {
     },
   },
 };
+
+async function runWithRetry(fn: () => Promise<any>, retries = 1, delay = 10000) {
+    try {
+        return await fn();
+    } catch (error: any) {
+        const isRateLimit = error.response?.status === 429 || error.status === 429 || (error.message && error.message.includes('429'));
+        
+        if (retries > 0 && isRateLimit) {
+            console.log(`Replicate Rate limit hit (429). Retrying in ${delay/1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return runWithRetry(fn, retries - 1, delay);
+        }
+        throw error;
+    }
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,44 +53,79 @@ export default async function handler(
       return res.status(400).json({ error: 'Image URL is required' });
     }
 
-    // ЧЕТВЕРТАЯ ПОПЫТКА: Используем фундаментальную модель instruct-pix2pix от самого Replicate.
-    const model = "replicate/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b981b4620b";
-    
-    // Эта модель использует общий параметр 'prompt' для инструкций.
-    const instruction = `Redesign this room in a ${style} style${prompt ? `, ${prompt}` : ''}`;
-    
-    const input = {
-      image: imageUrl,
-      prompt: instruction,
-    };
+    let output;
+    let usedModel = 'Adirik/Interior';
 
-    let prediction = await replicate.predictions.create({
-      model: model,
-      input: input,
-    });
-    
-    // Этой модели может потребоваться больше времени, дадим ей до 2-3 секунд между проверками.
-    while (prediction.status !== 'succeeded' && prediction.status !== 'failed') {
-      await sleep(2500);
-      prediction = await replicate.predictions.get(prediction.id);
+    try {
+        console.log("Attempting Adirik Interior Design model...");
+        // Специализированная модель для интерьеров
+        const model = "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38";
+        
+        const input = {
+            image: imageUrl,
+            prompt: `Interior design of a room, ${style} style, ${prompt || ''}, keep ceiling shape, preserve architecture, new furniture, photorealistic, 8k, interior magazine`,
+            negative_prompt: "distorted ceiling, distorted walls, changing room layout, lowres, bad anatomy, worst quality, low quality, watermark",
+            guidance_scale: 7.5,
+            condition_scale: 0.8, // Пытаемся сохранить структуру
+            num_inference_steps: 30
+        };
+        
+        output = await runWithRetry(() => replicate.run(model, { input }));
+        
+        if (Array.isArray(output) && output.length > 1) output = output[1];
+        else if (Array.isArray(output)) output = output[0];
+
+    } catch (primaryError: any) {
+        const isRateLimit = primaryError.response?.status === 429 || primaryError.status === 429;
+        if (isRateLimit) throw primaryError;
+
+        console.warn("Adirik model failed, falling back to SDXL (Conservative Mode).", primaryError.message);
+        usedModel = 'SDXL-Safe';
+        
+        const sdxlModel = "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b";
+        
+        const sdxlInput = {
+            image: imageUrl,
+            prompt: `Interior design of a room, ${style} style, ${prompt || ''}, preserve ceiling shape, keep walls and windows exact, new furniture, high quality, photorealistic`,
+            negative_prompt: "distorted ceiling, distorted walls, changing room layout, lowres, worst quality",
+            // Снижаем prompt_strength до 0.55 для сохранения сложной геометрии (мансарды)
+            prompt_strength: 0.55, 
+            num_inference_steps: 40,
+            guidance_scale: 7.5,
+            refine: "expert_ensemble_refiner",
+        };
+        
+        output = await runWithRetry(() => replicate.run(sdxlModel, { input: sdxlInput }));
+        if (Array.isArray(output)) output = output[0];
     }
 
-    if (prediction.status === 'failed') {
-      const errorMessage = prediction.error?.detail || 'Failed to redesign image.';
-      console.error('Replicate prediction failed:', prediction.error);
-      return res.status(500).json({ error: errorMessage });
+    console.log(`Replicate run finished (${usedModel}).`);
+
+    if (!output) throw new Error("Replicate returned empty output");
+
+    let redesignedImageUrl: string;
+    const resultItem = Array.isArray(output) ? output[0] : output;
+
+    if (typeof resultItem === 'string') {
+        redesignedImageUrl = resultItem;
+    } else if (resultItem && typeof resultItem === 'object') {
+        const arrayBuffer = await new Response(resultItem).arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const base64 = buffer.toString('base64');
+        redesignedImageUrl = `data:image/png;base64,${base64}`;
+    } else {
+        throw new Error("Unknown output format");
     }
-    
-    const redesignedImageUrl = Array.isArray(prediction.output) ? prediction.output.pop() : prediction.output;
 
     res.status(200).json({ 
         original: imageUrl, 
-        redesigned: redesignedImageUrl 
+        redesigned: redesignedImageUrl
     });
 
   } catch (error: any) {
-    const errorMessage = error.message || 'An unexpected error occurred.';
-    console.error('Error calling Replicate API:', error);
-    res.status(500).json({ error: errorMessage });
+    const errorMessage = error.message || 'Error';
+    console.error('API Error:', error);
+    const status = error.response?.status || error.status || 500;
+    res.status(status).json({ error: errorMessage });
   }
 }

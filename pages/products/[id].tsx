@@ -18,30 +18,45 @@ export default function ProductPage({ product, error }: ProductPageProps) {
   const router = useRouter();
 
   if (router.isFallback) {
-    return <div>Загрузка...</div>;
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown"></div>
+        </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl font-bold text-red-600">Ошибка загрузки товара</h1>
-        <p>{error}</p>
-        <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">На главную</button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Header />
+        <div className="text-center py-20 px-4">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки товара</h1>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button onClick={() => router.push('/products')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
+                Вернуться в каталог
+            </button>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (!product) {
      return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl font-bold">Товар не найден</h1>
-        <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">На главную</button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Header />
+        <div className="text-center py-20 px-4">
+            <h1 className="text-3xl font-serif text-brand-charcoal mb-4">Товар не найден</h1>
+            <p className="text-gray-500 mb-8">К сожалению, запрашиваемый товар не существует или был удален.</p>
+            <button onClick={() => router.push('/products')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
+                Перейти в каталог
+            </button>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  // Формируем SEO данные
-  // Если есть специальное seoDescription, используем его. Иначе берем начало обычного описания.
   const descriptionText = product.seoDescription || product.description || '';
   const seoDescription = descriptionText.length > 160 
     ? descriptionText.substring(0, 157) + '...' 
@@ -60,7 +75,7 @@ export default function ProductPage({ product, error }: ProductPageProps) {
         url={`/products/${product.id}`}
       />
       <Header />
-      <main>
+      <main className="bg-white min-h-screen">
         <ProductDetail 
           product={product} 
           onBack={() => router.back()}
@@ -74,13 +89,20 @@ export default function ProductPage({ product, error }: ProductPageProps) {
 export const getStaticPaths: GetStaticPaths = async () => {
     const adminDb = getAdminDb();
     if (!adminDb) {
-        return { paths: [], fallback: true }; // Используем fallback: true
+        return { paths: [], fallback: 'blocking' };
     }
-    const productsSnapshot = await adminDb.collection('products').get();
-    const paths = productsSnapshot.docs.map(doc => ({
-        params: { id: doc.id },
-    }));
-    return { paths, fallback: true };
+    
+    try {
+        const productsSnapshot = await adminDb.collection('products').select().get();
+        const paths = productsSnapshot.docs.map(doc => ({
+            params: { id: doc.id },
+        }));
+        
+        return { paths, fallback: 'blocking' };
+    } catch (e) {
+        console.error("Error generating paths:", e);
+        return { paths: [], fallback: 'blocking' };
+    }
 };
 
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -89,6 +111,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
     return { props: { error: "Product ID not found." } };
   }
   const { id } = params;
+  
+  // Разрешаем любые ID, так как теперь мы ищем и по slug
   const adminDb = getAdminDb();
   const adminStorage = getAdminStorage();
 
@@ -97,14 +121,37 @@ export const getStaticProps: GetStaticProps = async (context) => {
   }
 
   try {
-    const productDoc = await adminDb.collection('products').doc(id as string).get();
+    let productDocSnapshot;
+    let productId = id as string;
 
-    if (!productDoc.exists) {
+    // 1. Попытка найти по ID документа (стандартный Firestore ID)
+    const docRef = adminDb.collection('products').doc(productId);
+    productDocSnapshot = await docRef.get();
+
+    // 2. Если не найдено, пробуем найти по полю 'id' (slug из старого импорта)
+    if (!productDocSnapshot.exists) {
+        console.log(`Product with doc ID ${productId} not found. Searching by 'id' field...`);
+        const querySnapshot = await adminDb.collection('products').where('id', '==', productId).limit(1).get();
+        
+        if (!querySnapshot.empty) {
+            productDocSnapshot = querySnapshot.docs[0];
+            // Важно: используем реальный ID документа для дальнейшей работы, 
+            // но в объект продукта запишем тот ID, который ожидает клиент (или реальный)
+            // Лучше использовать реальный ID документа как основной.
+        }
+    }
+
+    if (!productDocSnapshot || !productDocSnapshot.exists) {
       return { notFound: true };
     }
 
-    const productData = { id: productDoc.id, ...productDoc.data() } as Product;
+    // Собираем данные. Приоритет ID: реальный ключ документа
+    const productData = { 
+        ...productDocSnapshot.data(), 
+        id: productDocSnapshot.id // Перезаписываем id, чтобы он всегда был ключом документа
+    } as Product;
 
+    // Обработка картинок
     if (Array.isArray(productData.imageUrls)) {
         const bucket = adminStorage.bucket();
         productData.imageUrls = await Promise.all(productData.imageUrls.map(async (url) => {
@@ -135,8 +182,9 @@ export const getStaticProps: GetStaticProps = async (context) => {
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    console.error(`Error fetching product ${id}:`, errorMessage);
     return {
-      props: { error: `Failed to fetch product data: ${errorMessage}` },
+      props: { error: `Не удалось загрузить товар. Возможно, он был удален.` },
     };
   }
 };

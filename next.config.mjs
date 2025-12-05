@@ -23,8 +23,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'storage.googleapis.com' },
       { protocol: 'https', hostname: 'label-com.ru' },
       { protocol: 'https', hostname: 'image.pollinations.ai' },
-      // --- ДОБАВЛЕНО: Разрешаем домен DALL-E 3 ---
       { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'replicate.delivery' },
     ],
   },
   devIndicators: {
@@ -32,4 +33,5 @@ const nextConfig = {
   }
 };
 
+// Force restart to clear cache
 export default withPWA(nextConfig);

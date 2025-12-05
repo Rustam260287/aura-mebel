@@ -1,137 +1,83 @@
 
-// ... (предыдущий код без изменений до parseProductPage)
+import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
-import fs from 'fs';
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-// Если вы хотите сразу загружать в БД, раскомментируйте и настройте serviceAccount
-// const serviceAccount = require('./serviceAccountKey.json');
-// initializeApp({ credential: cert(serviceAccount) });
-// const db = getFirestore();
+import fs from 'fs/promises';
 
 const BASE_URL = 'https://label-com.ru';
-const CATALOG_URL = `${BASE_URL}/katalog.html`;
+// Использование прокси для обхода блокировки
+const PROXY_URL = 'https://proxy.scrapeops.io/v1/?api_key=YOUR_API_KEY&url='; // Замените YOUR_API_KEY на ключ, если потребуется
 
-// ... fetchPage, getCategoryLinks, getProductLinksFromCategory (без изменений) ...
-async function fetchPage(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
-    return await response.text();
-  } catch (error) {
-    console.error(`Error fetching ${url}:`, error.message);
-    return null;
-  }
+function getProxiedUrl(url) {
+    return `${PROXY_URL}${encodeURIComponent(url)}`;
 }
 
-async function getCategoryLinks() {
-  console.log('--- Scanning Categories ---');
-  const html = await fetchPage(CATALOG_URL);
-  if (!html) return [];
-  const $ = cheerio.load(html);
-  const links = new Set();
-  $('a[href^="/katalog/"]').each((i, el) => {
-      const href = $(el).attr('href');
-      if (href && !href.includes('-detail') && !href.includes('cart') && href !== '/katalog.html') {
-          links.add(BASE_URL + href);
-      }
-  });
-  return Array.from(links);
-}
-
-async function getProductLinksFromCategory(categoryUrl) {
-    console.log(`Scanning category: ${categoryUrl}`);
-    const html = await fetchPage(categoryUrl);
-    if (!html) return [];
-    const $ = cheerio.load(html);
-    const productLinks = new Set();
-    $('a[href*="-detail"]').each((i, el) => {
-        let href = $(el).attr('href');
-        if (href) {
-            productLinks.add(BASE_URL + href);
-        }
-    });
-    return Array.from(productLinks);
-}
-
-async function parseProductPage(url) {
-    const html = await fetchPage(url);
-    if (!html) return null;
-    const $ = cheerio.load(html);
-
-    let name = $('h1').first().text().trim();
-    let price = 0;
-    let imageUrl = '';
-    let description = '';
-    let category = 'Каталог';
-
-    // CSS селекторы
-    const priceContainer = $('.product-price .PricesalesPrice').last();
-    const priceText = priceContainer.text().replace('Цена', '').trim();
-    price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
-
-    imageUrl = $('.main-image img').attr('src');
-    if (imageUrl && !imageUrl.startsWith('http')) {
-        imageUrl = BASE_URL + imageUrl;
-    }
-
-    description = $('.product-description').text().trim();
-
-    // Улучшенное определение категории и названия
-    // Если название вида "Категория : Товар", разбиваем его
-    if (name.includes(':')) {
-        const parts = name.split(':');
-        if (parts.length > 1) {
-            category = parts[0].trim();
-            name = parts.slice(1).join(':').trim(); // Остальное - имя
+async function getAllProductLinks() {
+    const allLinks = new Set();
+    for (let i = 1; i <= 20; i++) {
+        const url = `${BASE_URL}/katalog?start=${(i - 1) * 20}`;
+        try {
+            const response = await fetch(getProxiedUrl(url)); // Используем прокси
+            if (!response.ok) {
+                console.log(`Page ${i} not found or error, stopping.`);
+                break;
+            }
+            const body = await response.text();
+            const $ = cheerio.load(body);
+            const linksOnPage = $('.item .product-image-link').map((_, el) => $(el).attr('href')).get();
+            
+            if (linksOnPage.length === 0) {
+                console.log(`No products found on page ${i}, assuming end of catalog.`);
+                break;
+            }
+            
+            linksOnPage.forEach(link => allLinks.add(BASE_URL + link));
+            console.log(`Found ${linksOnPage.length} links on page ${i}. Total unique links: ${allLinks.size}`);
+        } catch (error) {
+            console.error(`Error fetching page ${i}:`, error);
+            break;
         }
     }
-
-    if (!name) return null;
-
-    return {
-        name,
-        price,
-        description,
-        imageUrls: [imageUrl], // Массив для совместимости с вашей БД
-        category,
-        originalUrl: url
-    };
+    return Array.from(allLinks);
 }
 
-async function run() {
-    const categoryLinks = await getCategoryLinks();
-    let allProductLinks = [];
+async function getProductDetails(url) {
+    try {
+        const response = await fetch(getProxiedUrl(url)); // Используем прокси
+        const body = await response.text();
+        const $ = cheerio.load(body);
 
-    // Сканируем ВСЕ категории
-    for (const catLink of categoryLinks) {
-        const prodLinks = await getProductLinksFromCategory(catLink);
-        allProductLinks = [...allProductLinks, ...prodLinks];
+        const name = $('h1.product-title').text().trim();
+        const priceText = $('.product-price .PricesalesPrice').text().trim() || $('.product-price .PricebasePrice').text().trim();
+        const price = parseInt(priceText.replace(/\s/g, ''), 10);
+        const description = $('.product-description').text().trim();
+        const category = $('.breadcrumb .pathway a').eq(1).text().trim();
+        const mainImageUrl = $('a.main-image.modal').attr('href');
+        const imageUrls = mainImageUrl ? [BASE_URL + mainImageUrl] : [];
+
+        console.log(`- Parsed: ${name}`);
+        return { name, price, description, imageUrls, category, originalUrl: url };
+    } catch (error) {
+        console.error(`Error fetching product details for ${url}:`, error);
+        return null;
     }
+}
 
-    // Удаляем дубликаты ссылок
-    allProductLinks = [...new Set(allProductLinks)];
-    console.log(`Total unique products found: ${allProductLinks.length}`);
+async function main() {
+    console.log('Starting product import via proxy to avoid blocking...');
+    const productLinks = await getAllProductLinks();
     
-    const resultProducts = [];
-    
-    // Парсим товары партиями, чтобы не перегрузить сайт
-    // Но для скорости сейчас сделаем последовательно
-    for (let i = 0; i < allProductLinks.length; i++) {
-        const link = allProductLinks[i];
-        console.log(`[${i+1}/${allProductLinks.length}] Parsing ${link}...`);
-        const product = await parseProductPage(link);
-        if (product) {
-            resultProducts.push(product);
+    const allProducts = [];
+    for (const link of productLinks) {
+        const product = await getProductDetails(link);
+        if (product && product.imageUrls.length > 0 && !isNaN(product.price)) {
+            allProducts.push(product);
+        } else {
+            console.log(`- Skipping product with missing data: ${product ? product.name : link}`);
         }
-        // Небольшая задержка, чтобы быть вежливым к серверу
-        // await new Promise(r => setTimeout(r, 100)); 
     }
-
-    fs.writeFileSync('all_products.json', JSON.stringify(resultProducts, null, 2));
-    console.log(`Successfully parsed ${resultProducts.length} products.`);
-    console.log('Saved to all_products.json');
+    
+    await fs.writeFile('all_products_final.json', JSON.stringify(allProducts, null, 2));
+    console.log(`Successfully parsed ${allProducts.length} products and saved to all_products_final.json`);
 }
 
-run();
+main();

@@ -13,26 +13,31 @@ export const initializeFirebaseAdmin = () => {
 
   let serviceAccount;
 
-  if (process.env.NODE_ENV === 'production' && process.env.FIREBASE_SERVICE_ACCOUNT) {
-    console.log("Firebase Admin SDK инициализируется из переменной окружения (Production)...");
+  // 1. Сначала пробуем получить ключ из переменной окружения (работает и в Prod, и в Dev)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log("Firebase Admin SDK: Инициализация из переменной окружения FIREBASE_SERVICE_ACCOUNT...");
     try {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     } catch (e) {
       console.error("Критическая ошибка: не удалось распарсить FIREBASE_SERVICE_ACCOUNT.", e);
       throw new Error("Переменная FIREBASE_SERVICE_ACCOUNT содержит некорректный JSON.");
     }
-  } else {
-    console.log("Firebase Admin SDK инициализируется из файла serviceAccountKey.json (Development)...");
+  } 
+  // 2. Если переменной нет, ищем файл serviceAccountKey.json (обычно в Dev)
+  else {
+    console.log("Firebase Admin SDK: Инициализация из файла serviceAccountKey.json...");
     try {
       const serviceAccountPath = path.join(process.cwd(), 'serviceAccountKey.json');
       if (!fs.existsSync(serviceAccountPath)) {
-        throw new Error("Файл serviceAccountKey.json не найден в корне проекта.");
+        console.error(`Файл не найден по пути: ${serviceAccountPath}`);
+        throw new Error("Файл serviceAccountKey.json не найден в корне проекта. Пожалуйста, скачайте его из Firebase Console -> Project Settings -> Service Accounts и положите в корень проекта.");
       }
       const serviceAccountFile = fs.readFileSync(serviceAccountPath, 'utf8');
       serviceAccount = JSON.parse(serviceAccountFile);
     } catch (error: any) {
-      console.error('Критическая ошибка: не удалось прочитать serviceAccountKey.json.', error.message);
-      throw new Error("Не удалось инициализировать Firebase Admin SDK для локальной разработки.");
+      console.error('Критическая ошибка при чтении ключа:', error.message);
+      // Пробрасываем ошибку дальше, чтобы Next.js показал её
+      throw error; 
     }
   }
 
@@ -47,4 +52,11 @@ export const getAdminDb = () => {
     initializeFirebaseAdmin();
   }
   return admin.firestore();
+};
+
+export const getAdminStorage = () => {
+  if (admin.apps.length === 0) {
+    initializeFirebaseAdmin();
+  }
+  return admin.storage();
 };
