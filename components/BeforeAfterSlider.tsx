@@ -1,92 +1,88 @@
+'use client';
 
-import React, { useState, useRef, useCallback, MouseEvent, TouchEvent } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 
 interface BeforeAfterSliderProps {
   before: string;
   after: string;
 }
 
-export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) => {
-  // --- ЗАЩИТА: Не рендерим компонент, если нет изображений ---
-  if (!before || !after) {
-    return null;
-  }
-
+const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
-  const handleMove = useCallback((clientX: number) => {
+  const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
     const percent = (x / rect.width) * 100;
     setSliderPosition(percent);
-  }, []);
+  };
 
-  const handleMouseDown = (e: MouseEvent) => {
-    e.preventDefault();
+  const handleMouseDown = () => {
     isDragging.current = true;
   };
 
-  const handleMouseUp = (e: MouseEvent) => {
-    e.preventDefault();
+  const handleMouseUp = () => {
     isDragging.current = false;
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
     handleMove(e.clientX);
   };
-  
-  const handleTouchStart = (e: TouchEvent) => {
-      isDragging.current = true;
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    handleMove(e.touches[0].clientX);
   };
-  
-  const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current) return;
-      handleMove(e.touches[0].clientX);
-  };
-  
-  const handleTouchEnd = () => {
-      isDragging.current = false;
-  };
+
+  useEffect(() => {
+    const upHandler = () => handleMouseUp();
+    window.addEventListener('mouseup', upHandler);
+    window.addEventListener('touchend', upHandler);
+    return () => {
+      window.removeEventListener('mouseup', upHandler);
+      window.removeEventListener('touchend', upHandler);
+    };
+  }, []);
 
   return (
     <div 
-      className="relative w-full aspect-square max-w-full mx-auto select-none overflow-hidden rounded-xl shadow-lg"
       ref={containerRef}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      className="relative w-full max-w-4xl mx-auto aspect-[4/3] overflow-hidden rounded-lg shadow-2xl cursor-ew-resize select-none"
       onMouseMove={handleMouseMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+      onMouseLeave={handleMouseUp}
       onTouchMove={handleTouchMove}
     >
-      <div className="relative w-full h-full">
-        <Image src={before} alt="Интерьер до редизайна" className="object-cover" fill priority />
-        
-        <div 
-          className="absolute top-0 left-0 h-full w-full overflow-hidden" 
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-        >
-          <Image src={after} alt="Интерьер после редизайна" className="object-cover" fill priority />
-        </div>
+      {/* After Image */}
+      <div className="absolute top-0 left-0 w-full h-full">
+        <Image src={after} alt="After" layout="fill" objectFit="cover" className="pointer-events-none" />
       </div>
-      
+
+      {/* Before Image */}
       <div 
-        className="absolute top-0 h-full cursor-ew-resize"
-        style={{ left: `calc(${sliderPosition}% - 2px)` }}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
+        className="absolute top-0 left-0 h-full w-full overflow-hidden"
+        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <div className="w-1 h-full bg-white opacity-75" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing">
-            <ArrowsRightLeftIcon className="w-6 h-6 text-brand-brown" />
+        <Image src={before} alt="Before" layout="fill" objectFit="cover" className="pointer-events-none"/>
+      </div>
+
+      {/* Slider Handle */}
+      <div
+        className="absolute top-0 bottom-0 w-1 bg-white/80 backdrop-blur-sm shadow-md cursor-ew-resize"
+        style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
+      >
+        <div className="absolute top-1/2 -translate-y-1/2 -left-4 w-9 h-9 bg-white/80 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+          <svg className="w-5 h-5 text-gray-700" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
         </div>
       </div>
     </div>
   );
 };
+
+export default BeforeAfterSlider;

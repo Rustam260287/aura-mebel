@@ -14,6 +14,7 @@
   "dependencies": {
     "@alicloud/pop-core": "^1.8.0",
     "@google/generative-ai": "^0.24.1",
+    "@google/model-viewer": "^4.1.0",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@huggingface/inference": "^4.13.3",
@@ -28,6 +29,7 @@
     "openai": "^6.9.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hot-toast": "^2.6.0",
     "replicate": "^1.4.0"
   },
   "devDependencies": {
