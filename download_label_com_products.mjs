@@ -84,35 +84,6 @@ function extractImages($, pageUrl) {
   return Array.from(images);
 }
 
-function addNumberedGuesses(imageUrls) {
-  if (imageUrls.length === 0) return imageUrls;
-
-  const urls = new Set(imageUrls);
-  const first = imageUrls[0];
-
-  // Пытаемся угадать серию вида .../niza.png -> niza1.png, niza2.png...
-  const match = first.match(/^(.*\/)(.*?)(\d+)?(\.[a-z0-9]+)$/i);
-  if (!match) return imageUrls;
-
-  const [_, baseUrl, baseName, numberPart, ext] = match;
-
-  // Собираем существующие номера, чтобы не дублировать
-  const existingNumbers = new Set();
-  imageUrls.forEach((url) => {
-    const m = url.match(/^(.*\/)(.*?)(\d+)(\.[a-z0-9]+)$/i);
-    if (m && m[3]) existingNumbers.add(Number(m[3]));
-  });
-
-  for (let i = 1; i <= 7; i++) {
-    if (numberPart && Number(numberPart) === i) continue;
-    if (existingNumbers.has(i)) continue;
-    const candidate = `${baseUrl}${baseName}${i}${ext}`;
-    urls.add(candidate);
-  }
-
-  return Array.from(urls);
-}
-
 async function downloadImages(slug, urls) {
   const folder = path.join(IMAGES_ROOT, slug);
   await fs.mkdir(folder, { recursive: true });
@@ -198,7 +169,7 @@ async function parseProduct(url, index) {
   const price = Number.parseInt(priceText, 10) || 0;
   const category = $('.breadcrumb .pathway a').eq(1).text().trim() || 'Каталог';
   const description = $('.product-description').text().trim();
-  const images = addNumberedGuesses(extractImages($, url));
+  const images = extractImages($, url);
   const slug = slugify(url, name, index);
 
   if (images.length === 0) {
