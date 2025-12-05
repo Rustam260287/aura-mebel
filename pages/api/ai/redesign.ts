@@ -2,6 +2,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from 'replicate';
 
+// ВОССТАНОВЛЕНО: Объявление экземпляра Replicate
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
+
 const MOCK_MODE = false; 
 
 type ResponseData = {
@@ -35,7 +40,7 @@ async function runWithRetry(fn: () => Promise<any>, retries = 1, delay = 10000) 
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData> // Убеждаемся, что тип здесь
+  res: NextApiResponse<ResponseData> 
 ) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
@@ -46,7 +51,6 @@ export default async function handler(
     const { imageUrl, prompt, style } = req.body;
 
     if (!imageUrl) {
-      // ИСПРАВЛЕНО: Добавляем null значения для соответствия типу
       return res.status(400).json({ original: null, redesigned: null, error: 'Image URL is required' });
     }
 
@@ -121,7 +125,6 @@ export default async function handler(
     const errorMessage = error.message || 'Error';
     console.error('API Error:', error);
     const status = error.response?.status || error.status || 500;
-    // ИСПРАВЛЕНО: Добавляем null значения и здесь
     res.status(status).json({ original: null, redesigned: null, error: errorMessage });
   }
 }
