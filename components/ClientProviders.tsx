@@ -9,8 +9,8 @@ import { CartSidebar } from './CartSidebar';
 import { ToastContainer } from './ToastContainer';
 import dynamic from 'next/dynamic';
 import React from 'react';
+import { useRouter } from 'next/navigation'; // Используем next/navigation для App Router
 
-// Динамический импорт ChatWidget внутри клиентского компонента
 const ChatWidget = dynamic(
   () => import('./ChatWidget').then(mod => mod.ChatWidget),
   {
@@ -20,6 +20,13 @@ const ChatWidget = dynamic(
 );
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  // Функция для навигации, которую ожидает CartSidebar
+  const handleNavigate = (path: string) => {
+    router.push(path);
+  };
+
   return (
     <AuthProvider>
       <ToastProvider>
@@ -28,7 +35,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             
             {children}
 
-            <CartSidebar />
+            <CartSidebar onNavigate={handleNavigate} />
             <ToastContainer />
             <ChatWidget />
 
