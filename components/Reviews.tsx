@@ -5,6 +5,7 @@ import { StarIcon } from './Icons';
 import { Button } from './Button';
 
 interface ReviewsProps {
+  productId: string; // <-- ДОБАВЛЕНО
   reviews: Review[];
   onAddReview: (review: Omit<Review, 'date'>) => void;
 }
