@@ -217,7 +217,7 @@ const AIRoomMakeoverPage: React.FC = () => {
       
       <div className="relative bg-brand-brown text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/pattern-bg.png')] mix-blend-overlay"></div> 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 relative z-10 pt-16 md:pt-20">
             {/* Кнопка Назад */}
             <button 
                 onClick={() => router.push('/')}
@@ -227,7 +227,7 @@ const AIRoomMakeoverPage: React.FC = () => {
                 На главную
             </button>
 
-            <div className="text-center mt-14 md:mt-8">
+            <div className="text-center mt-2 md:mt-4">
                 <div className="inline-flex items-center justify-center p-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20">
                     <SparklesIcon className="w-5 h-5 text-yellow-300 mr-2" />
                     <span className="text-sm font-medium tracking-wide uppercase">Premium Interior AI</span>
