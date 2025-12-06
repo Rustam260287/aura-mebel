@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 
-type ButtonVariant = 'primary' | 'outline' | 'ghost';
+// Добавил 'text' в варианты
+type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'text';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -22,6 +23,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     primary: 'bg-brand-brown text-white hover:bg-brand-charcoal focus:ring-brand-brown',
     outline: 'border border-brand-brown/50 text-brand-brown hover:bg-brand-brown hover:text-white focus:ring-brand-brown',
     ghost: 'text-brand-charcoal hover:bg-brand-cream-dark focus:ring-brand-brown',
+    // Добавил стили для варианта 'text'
+    text: 'text-brand-charcoal hover:text-brand-brown focus:ring-brand-brown px-0 py-0 hover:bg-transparent',
   };
 
   const sizeClasses = {
@@ -30,10 +33,13 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     lg: 'px-8 py-3 text-lg',
   };
 
+  // Для 'text' не применяем padding из sizeClasses
+  const finalSizeClasses = variant === 'text' ? '' : sizeClasses[size];
+
   const classes = [
     baseClasses,
     variantClasses[variant],
-    sizeClasses[size],
+    finalSizeClasses, // Используем скорректированные классы размера
     className
   ].join(' ');
 
