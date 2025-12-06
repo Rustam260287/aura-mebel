@@ -1,17 +1,16 @@
 
-import React, { useState, memo, useCallback, useMemo, Fragment, TouchEvent } from 'react';
+import React, { useState, memo, useMemo, Fragment, TouchEvent, useCallback } from 'react';
 import type { Product, Review } from '../types';
 import { Button } from './Button';
 import { StarRating } from './StarRating';
 import { Reviews } from './Reviews';
-import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon, ArrowUpTrayIcon } from './Icons';
+import { ArrowLeftIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, PhotoIcon, ArrowUpTrayIcon, CubeIcon } from './Icons';
 import { useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSwipe } from '../hooks/useSwipe';
 import { ImageZoomModal } from './ImageZoomModal';
 import { FurnitureTryOnModal } from './FurnitureTryOnModal';
-import { CubeIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
 
@@ -20,17 +19,36 @@ interface ProductDetailProps {
   onBack: () => void;
 }
 
+// Умный парсер описания
 const parseDescription = (description: string) => {
     if (!description) {
-        return { mainDesc: '', techSpecs: '' };
+        return { mainDesc: 'Подробное описание товара готовится к публикации.', techSpecs: '' };
     }
-    const separator = 'Техническая информация:';
-    const separatorIndex = description.indexOf(separator);
+    
+    // Ключевые слова, обозначающие начало блока характеристик
+    const keywords = [
+        'Размеры:', 'Шкаф:', 'Кровать:', 'Тумба:', 'Трельяж:', 
+        'Длина:', 'Ширина:', 'Высота:', 'Глубина:', 'В комплект входят:'
+    ];
+    
+    const lines = description.split('\n').map(line => line.trim()).filter(line => line);
+    
+    let separatorIndex = -1;
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (keywords.some(keyword => line.startsWith(keyword))) {
+            separatorIndex = i;
+            break;
+        }
+    }
 
     if (separatorIndex !== -1) {
-        const mainDesc = description.substring(0, separatorIndex).trim();
-        const techSpecs = description.substring(separatorIndex + separator.length).trim();
-        return { mainDesc, techSpecs };
+        const mainDesc = lines.slice(0, separatorIndex).join('\n').trim();
+        const techSpecs = lines.slice(separatorIndex).join('\n').trim();
+        return { 
+            mainDesc: mainDesc || 'Описание товара скоро будет добавлено.', 
+            techSpecs 
+        };
     }
 
     return { mainDesc: description.trim(), techSpecs: '' };
@@ -176,7 +194,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                     <div dangerouslySetInnerHTML={{ __html: mainDesc.replace(/\n/g, '<br />') }} />
                   </Tab.Panel>
                   {techSpecs && <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2">
-                     <div className="font-serif" dangerouslySetInnerHTML={{ __html: techSpecs.replace(/\n/g, '<br />') }} />
+                     <div className="whitespace-pre-line font-mono text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: techSpecs }} />
                   </Tab.Panel>}
                 </Tab.Panels>
               </Tab.Group>

@@ -8,14 +8,26 @@ import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
 import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from './Icons';
-import { Transition } from '@headlessui/react';
+import { Transition, Dialog } from '@headlessui/react'; // ИСПРАВЛЕНО: Добавлен импорт Dialog
 
 interface HeaderProps {}
 
 const NavLink: React.FC<{ href: string; children: React.ReactNode; isMobile?: boolean; onClick?: () => void }> = ({ href, children, isMobile, onClick }) => {
+  const router = useRouter();
+  const isActive = router.pathname === href;
+
+  if (isMobile) {
+    return (
+      <Link href={href} onClick={onClick} className={`block px-4 py-3 text-lg rounded-md transition-colors ${isActive ? 'bg-brand-brown/10 text-brand-brown font-semibold' : 'text-brand-charcoal hover:bg-brand-cream-dark'}`}>
+          {children}
+      </Link>
+    );
+  }
+
   return (
-    <Link href={href} onClick={onClick} className={isMobile ? 'block px-4 py-2 text-lg text-brand-charcoal hover:bg-brand-cream-dark rounded-md' : 'text-brand-charcoal/80 hover:text-brand-brown transition-colors font-medium'}>
-        {children}
+    <Link href={href} onClick={onClick} className={`relative text-brand-charcoal/80 hover:text-brand-brown transition-colors font-medium group py-2`}>
+        <span>{children}</span>
+        <span className={`absolute bottom-0 left-0 h-0.5 bg-brand-brown transition-all duration-300 ease-out ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
     </Link>
   );
 };
@@ -47,6 +59,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
     if (searchQuery.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
+      setSearchQuery('');
       closeMobileMenu();
     }
   };
@@ -57,12 +70,20 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
     }
   }, [isSearchOpen]);
 
+  useEffect(() => {
+    router.events.on('routeChangeStart', closeMobileMenu);
+    return () => {
+      router.events.off('routeChangeStart', closeMobileMenu);
+    };
+  }, [router.events]);
+
+
   return (
     <>
-      <header className="sticky top-0 bg-brand-cream/80 backdrop-blur-md z-30 shadow-sm transition-all duration-300">
+      <header className="sticky top-0 bg-brand-cream/80 backdrop-blur-lg z-30 shadow-sm transition-all duration-300 border-b border-black/5">
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
-            <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider mr-8">
+            <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider mr-8 transform hover:scale-105 transition-transform">
               Labelcom
             </Link>
 
@@ -83,7 +104,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                         <input
                             ref={searchInputRef}
                             type="text"
-                            placeholder="Поиск..."
+                            placeholder="Поиск по каталогу..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onBlur={() => !searchQuery && setIsSearchOpen(false)}
@@ -102,23 +123,25 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
               <Link href="/wishlist" className="relative text-brand-charcoal/80 hover:text-brand-brown transition-colors p-2 rounded-full hover:bg-brand-cream-dark" aria-label={`Избранное, ${wishlistCount} товаров`}>
                 <HeartIcon className="w-7 h-7" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{wishlistCount}</span>
+                  <span className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-scale-in">{wishlistCount}</span>
                 )}
               </Link>
               <button onClick={toggleCart} className="relative text-brand-charcoal/80 hover:text-brand-brown transition-colors p-2 rounded-full hover:bg-brand-cream-dark" aria-label={`Корзина, ${cartCount} товаров`}>
                 <ShoppingCartIcon className="w-7 h-7" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
+                  <span className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-scale-in">{cartCount}</span>
                 )}
               </button>
-              <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}><Bars3Icon className="w-8 h-8" /></button>
+              <button className="md:hidden ml-2 text-brand-charcoal" onClick={() => setIsMobileMenuOpen(true)}><Bars3Icon className="w-8 h-8" /></button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Mobile Menu Overlay */}
       <Transition show={isMobileMenuOpen} as={Fragment}>
-        <div className="md:hidden fixed inset-0 z-40">
+        <Dialog as="div" className="md:hidden fixed inset-0 z-40" onClose={closeMobileMenu}>
+          {/* Backdrop */}
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -128,8 +151,10 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="absolute inset-0 bg-black/30" onClick={closeMobileMenu} />
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           </Transition.Child>
+          
+          {/* Panel */}
           <Transition.Child
             as="div"
             className="fixed top-0 right-0 h-full w-full max-w-sm bg-brand-cream shadow-xl"
@@ -140,7 +165,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <div className="p-5 flex flex-col h-full">
+            <Dialog.Panel className="p-5 flex flex-col h-full">
               <div className="flex justify-between items-center mb-6">
                 <span className="text-3xl font-serif text-brand-brown">Labelcom</span>
                 <button onClick={closeMobileMenu}>
@@ -155,7 +180,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                             placeholder="Поиск товаров..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-brand-cream-dark border border-transparent focus:border-brand-brown rounded-md py-2 pl-4 pr-10 outline-none transition-colors"
+                            className="w-full bg-white border-gray-200 focus:border-brand-brown rounded-md py-2.5 pl-4 pr-10 outline-none focus:ring-2 focus:ring-brand-brown/20 transition-all"
                         />
                         <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 text-brand-charcoal/50 hover:text-brand-brown">
                             <MagnifyingGlassIcon className="w-5 h-5" />
@@ -163,16 +188,16 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                     </div>
                </form>
 
-              <nav className="flex flex-col gap-4">
+              <nav className="flex flex-col gap-2">
                 {navLinks.map(link => (
-                  <NavLink key={link.label} href={link.href} isMobile onClick={closeMobileMenu}>
+                  <NavLink key={link.label} href={link.href} isMobile>
                     {link.label}
                   </NavLink>
                 ))}
               </nav>
-            </div>
+            </Dialog.Panel>
           </Transition.Child>
-        </div>
+        </Dialog>
       </Transition>
     </>
   );

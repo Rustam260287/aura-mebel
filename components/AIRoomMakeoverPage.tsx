@@ -1,18 +1,20 @@
+
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import { Spinner } from '@/components/Spinner';
 import { ProductCard } from '@/components/ProductCard';
+import { Button } from '@/components/Button'; 
 import type { Product } from '@/types';
 import { useRouter } from 'next/router';
 import { 
   PhotoIcon, 
   SparklesIcon, 
+  ChatBubbleLeftRightIcon,
 } from '@/components/Icons'; 
 
-// Опции стилей
 const styleOptions = [
   { value: "Modern", label: "Современный" },
   { value: "Minimalist", label: "Минимализм" },
@@ -28,9 +30,17 @@ const AIRoomMakeoverPage: React.FC = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [redesignedImage, setRedesignedImage] = useState<string | null>(null);
+  const [shareableUrl, setShareableUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [style, setStyle] = useState('Modern');
   
@@ -84,6 +94,7 @@ const AIRoomMakeoverPage: React.FC = () => {
         setOriginalImage(resized);
         setRedesignedImage(null);
         setRecommendedProducts([]);
+        setShareableUrl(null);
     } catch (error) {
         console.error("Ошибка обработки:", error);
         toast.error("Не удалось обработать изображение");
@@ -100,6 +111,46 @@ const AIRoomMakeoverPage: React.FC = () => {
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file) processFile(file);
+  };
+
+  const uploadImageForSharing = async (image: string): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+        const response = await fetch('/api/ai/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Upload failed');
+        setShareableUrl(data.url);
+        return data.url;
+    } catch (error) {
+        toast.error('Не удалось загрузить изображение для шеринга.');
+        return null;
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
+  const handleDiscussWithStylist = async () => {
+    if (!redesignedImage) return;
+
+    let url = shareableUrl;
+    if (!url) {
+        url = await uploadImageForSharing(redesignedImage);
+    }
+
+    if (url) {
+        const event = new CustomEvent('startChatWithImage', {
+            detail: {
+                imageUrl: url,
+                text: `Здравствуйте! Мне понравился этот дизайн, который я создал с помощью вашего AI. Можете помочь подобрать мебель в стиле ${style}?`
+            }
+        });
+        window.dispatchEvent(event);
+        toast.success('Чат со стилистом открыт!', { icon: '💬' });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,6 +208,8 @@ const AIRoomMakeoverPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="bg-[#FAF9F6] min-h-screen pb-20"> 
@@ -269,20 +322,22 @@ const AIRoomMakeoverPage: React.FC = () => {
                              <button 
                                 type="submit" 
                                 disabled={isLoading || !originalImage} 
-                                className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 flex items-center justify-center
+                                className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-all duration-300 flex items-center justify-center overflow-hidden relative group
                                     ${isLoading || !originalImage 
                                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
                                         : 'bg-brand-brown text-white hover:bg-brand-charcoal hover:scale-[1.02] hover:shadow-xl'}`}
                             >
+                                <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
+                                
                                 {isLoading ? (
                                     <>
                                         <Spinner className="w-6 h-6 mr-3 text-white" />
-                                        <span>Создаем ваш дизайн-проект...</span>
+                                        <span className="relative z-20">Создаем ваш дизайн-проект...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <SparklesIcon className="w-6 h-6 mr-2" />
-                                        <span>Преобразить комнату</span>
+                                        <SparklesIcon className="w-6 h-6 mr-2 relative z-20" />
+                                        <span className="relative z-20">Преобразить комнату</span>
                                     </>
                                 )}
                             </button>
@@ -307,20 +362,26 @@ const AIRoomMakeoverPage: React.FC = () => {
                     <div className="bg-white p-2 rounded-2xl shadow-2xl border border-gray-100">
                         <div className="rounded-xl overflow-hidden relative">
                              <BeforeAfterSlider before={originalImage} after={redesignedImage} />
-                             
-                             <div className="absolute top-4 right-4 z-10">
-                                <a 
-                                    href={redesignedImage} 
-                                    download="labelcom-design.png" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center bg-white/90 backdrop-blur text-brand-charcoal px-4 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-white transition-all"
-                                >
-                                    {/* Убрал иконку ArrowDownTrayIcon, заменил на текст, чтобы не было ошибок импорта */}
-                                    Скачать
-                                </a>
-                             </div>
                         </div>
+                    </div>
+
+                    <div className="mt-8 text-center flex justify-center">
+                        <button
+                            onClick={handleDiscussWithStylist}
+                            disabled={isUploading}
+                            className="group relative inline-flex items-center justify-center px-8 py-4 font-serif text-lg text-white transition-all duration-300 bg-gradient-to-r from-brand-brown to-[#7D5A50] rounded-full hover:scale-105 hover:shadow-2xl hover:shadow-brand-brown/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-brown disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden"
+                        >
+                            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                            
+                            {/* ИСПОЛЬЗУЕМ SparklesIcon ВМЕСТО "очков" */}
+                            <div className="relative mr-3 p-1 bg-white/20 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform">
+                                <SparklesIcon className="w-6 h-6 animate-pulse" />
+                            </div>
+                            
+                            <span className="relative font-medium tracking-wide">
+                                {isUploading ? 'Подготовка...' : 'Обсудить с AI-стилистом'}
+                            </span>
+                        </button>
                     </div>
                 </div>
 
