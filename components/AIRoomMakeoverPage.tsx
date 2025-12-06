@@ -221,13 +221,13 @@ const AIRoomMakeoverPage: React.FC = () => {
             {/* Кнопка Назад */}
             <button 
                 onClick={() => router.push('/')}
-                className="absolute top-0 left-4 md:left-10 mt-6 flex items-center text-white/70 hover:text-white transition-colors group"
+                className="absolute top-4 left-4 md:top-6 md:left-10 flex items-center text-white/70 hover:text-white transition-colors group z-20 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 border border-white/20"
             >
                 <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
                 На главную
             </button>
 
-            <div className="text-center mt-8">
+            <div className="text-center mt-14 md:mt-8">
                 <div className="inline-flex items-center justify-center p-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20">
                     <SparklesIcon className="w-5 h-5 text-yellow-300 mr-2" />
                     <span className="text-sm font-medium tracking-wide uppercase">Premium Interior AI</span>
