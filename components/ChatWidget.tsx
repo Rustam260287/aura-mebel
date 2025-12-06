@@ -189,6 +189,17 @@ export const ChatWidget: React.FC = () => {
     return () => window.removeEventListener('openStylistChat', handleOpenChat as EventListener);
   }, [mounted, sendToAi]);
 
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (!chatContainerRef.current) return;
+    chatContainerRef.current.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // При открытии всегда в конец
+    scrollToBottom('auto');
+  }, [isOpen, scrollToBottom]);
+
   useEffect(() => {
     if (!isOpen || !chatContainerRef.current) return;
 
@@ -200,7 +211,7 @@ export const ChatWidget: React.FC = () => {
     if (isAtBottom) {
         container.scrollTo({ top: container.scrollHeight, behavior });
     }
-  }, [messages, isOpen, previewUrl]);
+  }, [messages, isOpen, previewUrl, scrollToBottom]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
@@ -376,7 +387,7 @@ export const ChatWidget: React.FC = () => {
               </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-2 bg-white border-t border-gray-100 flex gap-2 items-center flex-shrink-0">
+          <form onSubmit={handleSubmit} className="p-2 pb-[env(safe-area-inset-bottom,0px)] bg-white border-t border-gray-100 flex gap-2 items-center flex-shrink-0">
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
