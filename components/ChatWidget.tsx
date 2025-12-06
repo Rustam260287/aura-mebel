@@ -191,25 +191,29 @@ export const ChatWidget: React.FC = () => {
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     if (!chatContainerRef.current) return;
-    chatContainerRef.current.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior });
+    requestAnimationFrame(() => {
+      const node = chatContainerRef.current;
+      if (!node) return;
+      node.scrollTo({ top: node.scrollHeight, behavior });
+    });
   }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     // При открытии всегда в конец
-    scrollToBottom('auto');
+    const timer = setTimeout(() => scrollToBottom('auto'), 0);
+    return () => clearTimeout(timer);
   }, [isOpen, scrollToBottom]);
 
   useEffect(() => {
     if (!isOpen || !chatContainerRef.current) return;
-
     const container = chatContainerRef.current;
     const isTyping = messages.length > 0 && messages[messages.length - 1].isTyping;
     const behavior = isTyping ? 'auto' : 'smooth';
-    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 150;
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 180;
 
     if (isAtBottom) {
-        container.scrollTo({ top: container.scrollHeight, behavior });
+        scrollToBottom(behavior);
     }
   }, [messages, isOpen, previewUrl, scrollToBottom]);
 
@@ -290,9 +294,9 @@ export const ChatWidget: React.FC = () => {
   if (!mounted) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end">
       <Transition show={isOpen} enter="transition ease-out duration-300" enterFrom="opacity-0 translate-y-10 scale-95" enterTo="opacity-100 translate-y-0 scale-100" leave="transition ease-in duration-200" leaveFrom="opacity-100 translate-y-0 scale-100" leaveTo="opacity-0 translate-y-10 scale-95">
-        <div className="bg-white w-80 md:w-96 max-h-[80vh] h-[600px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right">
+        <div className="bg-white w-80 md:w-96 h-[75vh] max-h-[90vh] md:h-[640px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right">
           <div className="bg-gradient-to-r from-brand-brown to-[#7D5A50] text-white p-4 flex justify-between items-center shadow-md z-10 flex-shrink-0">
             <div className="flex items-center gap-3">
                 <div className="relative w-8 h-8 flex items-center justify-center bg-white/20 rounded-full backdrop-blur-sm">
@@ -315,7 +319,7 @@ export const ChatWidget: React.FC = () => {
           
           <div 
             ref={chatContainerRef} 
-            className="flex-1 overflow-y-auto p-4 space-y-6 bg-[#FBF9F4] min-h-0 custom-scrollbar"
+            className="flex-1 overflow-y-auto p-4 pb-16 space-y-6 bg-[#FBF9F4] min-h-0 custom-scrollbar"
           >
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -387,7 +391,11 @@ export const ChatWidget: React.FC = () => {
               </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-2 pb-[env(safe-area-inset-bottom,0px)] bg-white border-t border-gray-100 flex gap-2 items-center flex-shrink-0">
+          <form
+            onSubmit={handleSubmit}
+            className="p-2 bg-white border-t border-gray-100 flex gap-2 items-center flex-shrink-0"
+            style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}
+          >
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
