@@ -21,7 +21,6 @@ interface ProductDetailProps {
   onBack: () => void;
 }
 
-// Определяем тип для элементов галереи
 type GalleryItem = {
   type: 'image' | 'video';
   url: string;
@@ -117,6 +116,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   }, [addToast]);
 
   const currentItem = galleryItems[currentIndex];
+  const imageItems = useMemo(() => galleryItems.filter(item => item.type === 'image').map(item => item.url), [galleryItems]);
 
   return (
     <>
@@ -236,7 +236,13 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
           </div>
         </div>
       </div>
-      <ImageZoomModal isOpen={isZoomModalOpen} onClose={() => setIsZoomModalOpen(false)} imageUrl={currentItem?.type === 'image' ? currentItem.url : imageUrls[0]} />
+      <ImageZoomModal 
+        isOpen={isZoomModalOpen} 
+        onClose={() => setIsZoomModalOpen(false)} 
+        images={imageItems} 
+        initialIndex={imageItems.indexOf(currentItem?.url)} 
+        productName={safeProduct.name}
+      />
       <FurnitureTryOnModal isOpen={isTryOnModalOpen} onClose={() => setIsTryOnModalOpen(false)} product={safeProduct} />
     </>
   );
