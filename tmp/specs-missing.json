@@ -1,0 +1,444 @@
+[
+  {
+    "id": "-2406",
+    "name": "Комфорт",
+    "reason": "no_dims_in_catalog",
+    "match": "Комфорт",
+    "score": 1
+  },
+  {
+    "id": "-50bc",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "-858e",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "-9d6b",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "-c7d2",
+    "name": "Армада",
+    "reason": "no_dims_in_catalog",
+    "match": "Армада",
+    "score": 1
+  },
+  {
+    "id": "-f689",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "0VoJP0MP01AAzhCjoA6Y",
+    "name": "Венеция",
+    "reason": "no_dims_in_catalog",
+    "match": "Венеция",
+    "score": 1
+  },
+  {
+    "id": "146Sl0db4YHoRdKUIefI",
+    "name": "Стул Милана",
+    "reason": "no_dims_in_catalog",
+    "match": "Стул Милана",
+    "score": 1
+  },
+  {
+    "id": "2-a6a2",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "2-b7d3",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "2GYdMJx2prnoUgpfy8s1",
+    "name": "Оливия",
+    "reason": "no_dims_in_catalog",
+    "match": "Оливия",
+    "score": 1
+  },
+  {
+    "id": "2yPiwzIoXmEbuct1nj1E",
+    "name": "Стол Голд",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Голд",
+    "score": 1
+  },
+  {
+    "id": "5-318e",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "6-39f0",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "6-929a",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "8rnQstRH9eBxJ6N35YL1",
+    "name": "Стол Рим 2",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Рим 2",
+    "score": 1
+  },
+  {
+    "id": "AnLlD8h3QoALiadsyvq8",
+    "name": "Елена",
+    "reason": "no_dims_in_catalog",
+    "match": "Елена",
+    "score": 1
+  },
+  {
+    "id": "BJBlTTIjYBQtrz884Qb5",
+    "name": "Стол Голд",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Голд",
+    "score": 1
+  },
+  {
+    "id": "BOF7CZk9s7gd2aLRqLZ8",
+    "name": "Комфорт",
+    "reason": "no_dims_in_catalog",
+    "match": "Комфорт",
+    "score": 1
+  },
+  {
+    "id": "C7RtSBtpeNOF0j98tstR",
+    "name": "Армада",
+    "reason": "no_dims_in_catalog",
+    "match": "Армада",
+    "score": 1
+  },
+  {
+    "id": "ECvSTlGAvwc0p2zvdAJy",
+    "name": "Адалия",
+    "reason": "no_dims_in_catalog",
+    "match": "Адалия",
+    "score": 1
+  },
+  {
+    "id": "ErZ0DYeDiayruj5VEJno",
+    "name": "Адалия",
+    "reason": "no_dims_in_catalog",
+    "match": "Адалия",
+    "score": 1
+  },
+  {
+    "id": "FvMBffbHJVcjhSQF2p45",
+    "name": "Анжелика",
+    "reason": "no_dims_in_catalog",
+    "match": "Анжелика",
+    "score": 1
+  },
+  {
+    "id": "GIROp7EHT8kGhfazMra4",
+    "name": "комплект ДИВАН И 2 КРЕСЛА",
+    "reason": "no_dims_in_catalog",
+    "match": "комплект ДИВАН И 2 КРЕСЛА",
+    "score": 1
+  },
+  {
+    "id": "GpvbOFJCikN042E0x5Y8",
+    "name": "Оливия",
+    "reason": "no_dims_in_catalog",
+    "match": "Оливия",
+    "score": 1
+  },
+  {
+    "id": "HKjfbxXeVJMafj7lF7Ua",
+    "name": "Rolex",
+    "reason": "no_dims_in_catalog",
+    "match": "Rolex",
+    "score": 1
+  },
+  {
+    "id": "I1nLBKQYIZXvAvAH4gmJ",
+    "name": "Мария",
+    "reason": "no_dims_in_catalog",
+    "match": "Мария",
+    "score": 1
+  },
+  {
+    "id": "IUngRDhmOJ97tbp5gsXs",
+    "name": "Эдель",
+    "reason": "no_dims_in_catalog",
+    "match": "Эдель",
+    "score": 1
+  },
+  {
+    "id": "IpS1akB8yI0PRYJaJg5x",
+    "name": "Наоми",
+    "reason": "no_dims_in_catalog",
+    "match": "Наоми",
+    "score": 1
+  },
+  {
+    "id": "JVBV5H9tblb9CtKcXcFn",
+    "name": "Мария",
+    "reason": "no_dims_in_catalog",
+    "match": "Мария",
+    "score": 1
+  },
+  {
+    "id": "Kj18E6rSVnwmud6ed8IK",
+    "name": "Ариэль",
+    "reason": "no_dims_in_catalog",
+    "match": "Ариэль",
+    "score": 1
+  },
+  {
+    "id": "LAc7nHaPdpmU0PoPpOpx",
+    "name": "Мария",
+    "reason": "no_dims_in_catalog",
+    "match": "Мария",
+    "score": 1
+  },
+  {
+    "id": "NXj6kRVLWorEwuromEA7",
+    "name": "Борнео",
+    "reason": "no_dims_in_catalog",
+    "match": "Борнео",
+    "score": 1
+  },
+  {
+    "id": "RM0JlUn67TMNHYOhWgId",
+    "name": "Стол Голд",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Голд",
+    "score": 1
+  },
+  {
+    "id": "ROahbrHtiiMFyLqjSwEo",
+    "name": "Гравита",
+    "reason": "no_dims_in_catalog",
+    "match": "Гравита",
+    "score": 1
+  },
+  {
+    "id": "RzNl1jtZOvxV7CJYtO7n",
+    "name": "Стол Лапка",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Лапка",
+    "score": 1
+  },
+  {
+    "id": "STSS036OczaIdemblEKW",
+    "name": "Стол Милан",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Милан",
+    "score": 1
+  },
+  {
+    "id": "Vfpvy3clNXCcZAycEup4",
+    "name": "Стол Милан",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Милан",
+    "score": 1
+  },
+  {
+    "id": "XQUQeZWWnFKdURLk7Bpz",
+    "name": "Мария угловая",
+    "reason": "no_dims_in_catalog",
+    "match": "Мария угловая",
+    "score": 1
+  },
+  {
+    "id": "YC02lE4m6BmSN84bIEHt",
+    "name": "Стол Рим",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Рим",
+    "score": 1
+  },
+  {
+    "id": "Z2Z1qwAlrc8uJRaYtFTS",
+    "name": "Анжелика",
+    "reason": "no_dims_in_catalog",
+    "match": "Анжелика",
+    "score": 1
+  },
+  {
+    "id": "ZGOAsDgv7gkkNSwyefGg",
+    "name": "МЕРИДИАН 2",
+    "reason": "no_dims_in_catalog",
+    "match": "МЕРИДИАН 2",
+    "score": 1
+  },
+  {
+    "id": "bFoUYQAKrGI79smC9Qml",
+    "name": "Граффити",
+    "reason": "no_dims_in_catalog",
+    "match": "Граффити",
+    "score": 1
+  },
+  {
+    "id": "cA4dLOHTUPWQdnyAQLxC",
+    "name": "Анжелика угловая",
+    "reason": "no_dims_in_catalog",
+    "match": "Анжелика угловая",
+    "score": 1
+  },
+  {
+    "id": "cGTOfMol0TyPmQjYU5nN",
+    "name": "Стол Рим",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Рим",
+    "score": 1
+  },
+  {
+    "id": "cKTys0z2BMNvpcWLsC6G",
+    "name": "Стол Голд",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Голд",
+    "score": 1
+  },
+  {
+    "id": "eG8w6IGjlxc4i4tnKyT2",
+    "name": "Ариэль",
+    "reason": "no_dims_in_catalog",
+    "match": "Ариэль",
+    "score": 1
+  },
+  {
+    "id": "f2wajMv5INZyTGkjBLsk",
+    "name": "Женева",
+    "reason": "no_dims_in_catalog",
+    "match": "Женева",
+    "score": 1
+  },
+  {
+    "id": "gWzVfmq0DUVstBUE8Mso",
+    "name": "Стул Вика",
+    "reason": "no_dims_in_catalog",
+    "match": "Стул Вика",
+    "score": 1
+  },
+  {
+    "id": "jKk9VUqQMWQGXgLAMIYz",
+    "name": "комплект СТОЛ и СТУЛЬЯ",
+    "reason": "no_dims_in_catalog",
+    "match": "комплект СТОЛ и СТУЛЬЯ",
+    "score": 1
+  },
+  {
+    "id": "lJy7pFXDDooNIkEGb66v",
+    "name": "Стол Лапка",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Лапка",
+    "score": 1
+  },
+  {
+    "id": "luxury-7e8e",
+    "reason": "no_match",
+    "score": 0
+  },
+  {
+    "id": "mjlSVBMAdZqGvc5p4NLp",
+    "name": "Стол Вика",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Вика",
+    "score": 1
+  },
+  {
+    "id": "mw1sBQcQGlDYFe8aIXtj",
+    "name": "Стол Милана",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Милана",
+    "score": 1
+  },
+  {
+    "id": "nfiQEcV9YElbc5OXyd6c",
+    "name": "Стол Вика",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Вика",
+    "score": 1
+  },
+  {
+    "id": "q0wlzb4xMc6Z5xQjgDOr",
+    "name": "Стол Рим 2",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Рим 2",
+    "score": 1
+  },
+  {
+    "id": "qBJmXSdyNMFwYFyzUMmb",
+    "name": "Женева",
+    "reason": "no_dims_in_catalog",
+    "match": "Женева",
+    "score": 1
+  },
+  {
+    "id": "r4yhmQj1CxXwSL3t9CTD",
+    "name": "Хилтон",
+    "reason": "no_dims_in_catalog",
+    "match": "Хилтон",
+    "score": 1
+  },
+  {
+    "id": "rDBq6wmBMFqp5ig45LDZ",
+    "name": "Женева угловая",
+    "reason": "no_dims_in_catalog",
+    "match": "Женева угловая",
+    "score": 1
+  },
+  {
+    "id": "sEHTwSPbbKxuLdjEdHRR",
+    "name": "Венеция угловая",
+    "reason": "no_dims_in_catalog",
+    "match": "Венеция угловая",
+    "score": 1
+  },
+  {
+    "id": "t3aeLa9cFos6im6EObGh",
+    "name": "Медея угловая",
+    "reason": "no_dims_in_catalog",
+    "match": "Медея угловая",
+    "score": 1
+  },
+  {
+    "id": "t7Rh6fFUzsCOmRQoyzoU",
+    "name": "Стол Милана",
+    "reason": "no_dims_in_catalog",
+    "match": "Стол Милана",
+    "score": 1
+  },
+  {
+    "id": "vE6dNgdaBv5uWV5lho7a",
+    "name": "Стул Лапка",
+    "reason": "no_dims_in_catalog",
+    "match": "Стул Лапка",
+    "score": 1
+  },
+  {
+    "id": "vFAg0pO06rPORHWljan7",
+    "name": "Богемия-нью",
+    "reason": "no_dims_in_catalog",
+    "match": "Богемия-нью",
+    "score": 1
+  },
+  {
+    "id": "z88rQInXQKAuhpVLHDMu",
+    "name": "тв тумба Сэнди",
+    "reason": "no_dims_in_catalog",
+    "match": "тв тумба Сэнди",
+    "score": 1
+  },
+  {
+    "id": "zoOgLuNdx6iSj3ouXv9K",
+    "name": "Оливия",
+    "reason": "no_dims_in_catalog",
+    "match": "Оливия",
+    "score": 1
+  }
+]

@@ -26,7 +26,12 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isWished = isInWishlist(product.id);
 
-  const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+  const hasPrice = typeof product.price === 'number' && !Number.isNaN(product.price);
+  const hasOriginalPrice = typeof product.originalPrice === 'number' && !Number.isNaN(product.originalPrice);
+  const hasImages = Array.isArray(product.imageUrls) && product.imageUrls.length > 0;
+  const discount = hasPrice && hasOriginalPrice
+    ? Math.round(((product.originalPrice as number) - (product.price as number)) / (product.originalPrice as number) * 100)
+    : 0;
   
   const handleSwipeLeft = useCallback(() => {
     setCurrentImageIndex((prevIndex) => 
@@ -42,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
 
   const { isSwiping, ...swipeHandlers } = useSwipe({ onSwipeLeft: handleSwipeLeft, onSwipeRight: handleSwipeRight });
   
-  const displayImage = (product.imageUrls && product.imageUrls[currentImageIndex]) || '/placeholder.svg';
+  const displayImage = hasImages ? product.imageUrls[currentImageIndex] : '/placeholder.svg';
 
 
   const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
@@ -108,6 +113,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
     <div 
       className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-premium-hover border border-transparent hover:border-brand-brown/5 hover:z-10 transform-gpu"
       onClick={handleCardClick}
+      {...swipeHandlers}
     >
       {discount > 0 && (
         <div className="absolute top-3 left-3 z-20 bg-brand-terracotta text-white text-xs font-medium tracking-wide px-3 py-1 rounded-full shadow-sm">
@@ -146,13 +152,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         >
         <Image 
           src={displayImage} 
-          alt={product.name} 
+          alt={product.name || 'Товар'} 
           className="object-cover w-full h-full transition-transform duration-700 ease-in-out group-hover:scale-105"
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 
-        {product.imageUrls && product.imageUrls.length > 1 && (
+        {hasImages && product.imageUrls.length > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
                 {product.imageUrls.map((_, index) => (
                     <button
@@ -191,13 +197,18 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         </div>
         
         <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide">{product.category}</p>
-        
         <div className="flex justify-between items-end border-t border-gray-50 pt-3 mt-1">
           <div className="flex flex-col">
-             {product.originalPrice && (
-              <span className="text-xs text-gray-400 line-through mb-0.5">{product.originalPrice.toLocaleString('ru-RU')} ₽</span>
+             {typeof product.originalPrice === 'number' && (
+              <span className="text-xs text-gray-400 line-through mb-0.5">
+                {product.originalPrice.toLocaleString('ru-RU')} ₽
+              </span>
             )}
-            <span className="text-lg font-serif text-brand-brown font-medium">{product.price.toLocaleString('ru-RU')} ₽</span>
+            <span className="text-lg font-serif text-brand-brown font-medium">
+              {typeof product.price === 'number' && !Number.isNaN(product.price)
+                ? `${product.price.toLocaleString('ru-RU')} ₽`
+                : 'Цена по запросу'}
+            </span>
           </div>
           
           <div className="flex items-center gap-1 mb-1">

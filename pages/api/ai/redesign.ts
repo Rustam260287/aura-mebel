@@ -38,6 +38,14 @@ async function runWithRetry(fn: () => Promise<any>, retries = 1, delay = 10000) 
     }
 }
 
+async function pollinationsFallback(prompt: string): Promise<string> {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=800&nologo=true`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Pollinations failed: ${res.status}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    return `data:image/jpeg;base64,${buffer.toString('base64')}`;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData> 
@@ -56,6 +64,7 @@ export default async function handler(
 
     let output;
     let usedModel = 'Adirik/Interior';
+    let redesignedImageUrl: string | null = null;
 
     try {
         console.log("Attempting Adirik Interior Design model...");
@@ -71,10 +80,6 @@ export default async function handler(
         };
         
         output = await runWithRetry(() => replicate.run(model, { input }));
-        
-        if (Array.isArray(output) && output.length > 1) output = output[1];
-        else if (Array.isArray(output)) output = output[0];
-
     } catch (primaryError: any) {
         const isRateLimit = primaryError.response?.status === 429 || primaryError.status === 429;
         if (isRateLimit) throw primaryError;
@@ -95,25 +100,26 @@ export default async function handler(
         };
         
         output = await runWithRetry(() => replicate.run(sdxlModel, { input: sdxlInput }));
-        if (Array.isArray(output)) output = output[0];
     }
 
     console.log(`Replicate run finished (${usedModel}).`);
 
-    if (!output) throw new Error("Replicate returned empty output");
-
-    let redesignedImageUrl: string;
     const resultItem = Array.isArray(output) ? output[0] : output;
 
     if (typeof resultItem === 'string') {
         redesignedImageUrl = resultItem;
     } else if (resultItem && typeof resultItem === 'object') {
-        const arrayBuffer = await new Response(resultItem).arrayBuffer();
+        const arrayBuffer = await new Response(resultItem as any).arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const base64 = buffer.toString('base64');
-        redesignedImageUrl = `data:image/png;base64,${base64}`;
-    } else {
-        throw new Error("Unknown output format");
+        redesignedImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
+    }
+
+    // Фолбек, если Replicate вернул пусто или неподходящий формат
+    if (!redesignedImageUrl) {
+        const fallbackPrompt = `magazine cover photo, luxury interior, ${style} style, ${prompt || ''}, cinematic light, 4k, photorealistic, warm palette, brass accents, no text, no watermark`;
+        console.warn("Replicate output empty, using Pollinations fallback");
+        redesignedImageUrl = await pollinationsFallback(fallbackPrompt);
+        usedModel = 'pollinations';
     }
 
     res.status(200).json({ 
@@ -121,7 +127,7 @@ export default async function handler(
         redesigned: redesignedImageUrl
     });
 
-  } catch (error: any) {
+    } catch (error: any) {
     const errorMessage = error.message || 'Error';
     console.error('API Error:', error);
     const status = error.response?.status || error.status || 500;
