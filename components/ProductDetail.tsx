@@ -14,10 +14,18 @@ import { FurnitureTryOnModal } from './FurnitureTryOnModal';
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
 
+// Cache-busting comment
+
 interface ProductDetailProps {
   product: Product;
   onBack: () => void;
 }
+
+// Определяем тип для элементов галереи
+type GalleryItem = {
+  type: 'image' | 'video';
+  url: string;
+};
 
 const parseDescription = (description: string) => {
     if (!description) {
@@ -48,8 +56,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   const { reviews = [], imageUrls = [], description = '', videoUrl, ...restOfProduct } = product;
   const safeProduct = { reviews, imageUrls, description, videoUrl, ...restOfProduct };
   
-  const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
-  const [currentIndex, setCurrentIndex] = useState(0); // Index for mixed gallery
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
   
@@ -59,12 +66,10 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const isWished = isInWishlist(safeProduct.id);
 
-  // Объединяем фото и видео в один массив для галереи
-  const galleryItems = useMemo(() => {
-      const items = imageUrls.filter(url => url).map(url => ({ type: 'image' as const, url }));
+  const galleryItems = useMemo((): GalleryItem[] => {
+      const items: GalleryItem[] = imageUrls.filter(url => url).map(url => ({ type: 'image', url }));
       if (videoUrl) {
-          // Добавляем видео в конец
-          items.push({ type: 'video' as const, url: videoUrl });
+          items.push({ type: 'video', url: videoUrl });
       }
       return items;
   }, [imageUrls, videoUrl]);
@@ -84,7 +89,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   }, [galleryItems.length]);
   
   const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
-  
   const gallerySwipe = useSwipe({ onSwipeLeft: handleNext, onSwipeRight: handlePrev });
   const gallerySwipeHandlers = useMemo(() => ({
     onTouchStart: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchStart(e); },
@@ -96,23 +100,20 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   const handleAddToCart = useCallback(() => { addToCart(safeProduct); addToast(`${safeProduct.name} добавлен в корзину`, 'success'); }, [addToCart, safeProduct, addToast]);
 
   const handleShareClick = useCallback(async () => {
-    const productUrl = `${window.location.origin}/products/${safeProduct.id}`;
-    const shareData = {
-        title: safeProduct.name,
-        text: `Посмотрите этот товар в Labelcom Мебель: ${safeProduct.name}`,
-        url: productUrl,
-    };
     if (navigator.share) {
-        try { await navigator.share(shareData); } catch (err) { console.error(err); }
+      try {
+        await navigator.share({ title: safeProduct.name, text: `Оцените ${safeProduct.name} от Labelcom!`, url: window.location.href });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
     } else {
-        try { await navigator.clipboard.writeText(shareData.url); addToast('Ссылка скопирована!', 'info'); } catch (err) { addToast('Ошибка копирования', 'error'); }
+      navigator.clipboard.writeText(window.location.href);
+      addToast('Ссылка на товар скопирована!', 'info');
     }
-  }, [safeProduct.id, safeProduct.name, addToast]);
+  }, [safeProduct.name, addToast]);
 
   const handleAddReview = useCallback((newReviewData: Omit<Review, 'date'>) => {
-    const newReview: Review = { ...newReviewData, date: new Date().toISOString() };
-    setCurrentReviews(prev => [newReview, ...prev]);
-    addToast('Спасибо за ваш отзыв!', 'success');
+    addToast('Спасибо за ваш отзыв! Он будет опубликован после модерации.', 'success');
   }, [addToast]);
 
   const currentItem = galleryItems[currentIndex];
@@ -139,7 +140,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                                 src={currentItem.url} 
                                 controls 
                                 className="w-full h-full object-contain bg-black" 
-                                poster={imageUrls[0]} // Используем первое фото как постер
+                                poster={imageUrls[0]}
                             />
                         )}
 
@@ -180,65 +181,63 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
           </div>
           <div className="flex flex-col">
             <h1 className="text-4xl lg:text-5xl font-serif text-brand-brown mb-4">{safeProduct.name}</h1>
-            <div className="flex items-center mb-4"><StarRating rating={safeProduct.rating} /><span className="ml-2 text-sm text-gray-600">({currentReviews.length} отзывов)</span></div>
-            <p className="text-3xl lg:text-4xl font-serif text-brand-charcoal mb-8">{safeProduct.price.toLocaleString('ru-RU')} ₽</p>
-            
-            <div className="flex items-center gap-2 mb-4">
-                <Button size="lg" onClick={handleAddToCart} className="flex-grow shadow-lg hover:shadow-xl transition-shadow">Добавить в корзину</Button>
-                <Button variant="outline" size="lg" onClick={handleWishlistClick} className="px-4 shadow-sm hover:shadow-md transition-shadow"><HeartIcon className={`w-6 h-6 ${isWished ? 'text-red-500 fill-current' : ''}`} /></Button>
-                <Button variant="outline" size="lg" onClick={handleShareClick} className="px-4 shadow-sm hover:shadow-md transition-shadow"><ArrowUpTrayIcon className="w-6 h-6" /></Button>
+            <div className="flex items-center gap-6 mb-6">
+              <StarRating rating={safeProduct.rating ?? 0} />
+              <span className="text-sm text-gray-500">({(safeProduct.reviews ?? []).length} отзывов)</span>
+            </div>
+            <div className="text-4xl font-light text-brand-charcoal mb-8">
+              {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(safeProduct.price)}
             </div>
             
-            <Button 
-                variant="outline" 
-                size="lg" 
-                onClick={() => setIsTryOnModalOpen(true)} 
-                className="mb-8 w-full border-2 border-dashed border-brand-brown text-brand-brown hover:bg-brand-brown hover:text-white transition-all duration-300 group"
-            >
-                <CubeIcon className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" />
-                Примерить в комнате
-            </Button>
+            <div className="flex items-center gap-4 mb-8">
+              <Button onClick={handleAddToCart} size="lg">Добавить в корзину</Button>
+              <Button variant="outline" onClick={handleWishlistClick} aria-label="Добавить в избранное" className="p-3">
+                <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-red-500 fill-current' : 'text-brand-charcoal'}`} />
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-4 text-sm mb-8">
+                 <Button variant="text" onClick={() => setIsTryOnModalOpen(true)} className="text-brand-brown">
+                     <CubeIcon className="w-5 h-5 mr-2"/>
+                     Примерить в комнате (AR)
+                 </Button>
+                <Button variant="text" onClick={handleShareClick}>
+                  <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
+                  Поделиться
+                </Button>
+            </div>
 
-            <div className="w-full">
-              <Tab.Group>
-                <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream-dark p-1">
-                  <Tab as={Fragment}>{({ selected }) => ( <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>Описание</button> )}</Tab>
-                  {techSpecs && <Tab as={Fragment}>{({ selected }) => ( <button className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-colors ${ selected ? 'bg-white shadow text-brand-brown' : 'text-brand-charcoal hover:bg-white/[0.6]' }`}>Характеристики</button> )}</Tab>}
-                </Tab.List>
-                <Tab.Panels className="mt-4">
-                  <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2 prose-headings:my-4">
-                    <div dangerouslySetInnerHTML={{ __html: mainDesc.replace(/\n/g, '<br />') }} />
-                  </Tab.Panel>
-                  {techSpecs && <Tab.Panel className="rounded-xl bg-white p-6 shadow-inner border border-brand-cream-dark prose max-w-none text-brand-charcoal prose-p:my-2">
-                     <div className="whitespace-pre-line font-mono text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: techSpecs }} />
-                  </Tab.Panel>}
-                </Tab.Panels>
-              </Tab.Group>
+            <div className="w-full max-w-full">
+                 <Tab.Group>
+                    <Tab.List className="flex border-b border-gray-200">
+                        <Tab as={Fragment}>{
+                            ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Описание</button>
+                        }</Tab>
+                        {techSpecs && <Tab as={Fragment}>{ 
+                            ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Характеристики</button>
+                        }</Tab>}
+                        <Tab as={Fragment}>{
+                             ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Отзывы ({(safeProduct.reviews ?? []).length})</button>
+                        }</Tab>
+                    </Tab.List>
+                    <Tab.Panels className="mt-6">
+                        <Tab.Panel className="prose max-w-none text-gray-600 leading-relaxed">
+                            <p>{mainDesc}</p>
+                        </Tab.Panel>
+                       {techSpecs && <Tab.Panel className="prose max-w-none text-gray-600">
+                           <pre className="whitespace-pre-wrap font-sans text-sm">{techSpecs}</pre>
+                        </Tab.Panel>}
+                        <Tab.Panel>
+                            <Reviews productId={safeProduct.id} reviews={safeProduct.reviews ?? []} onAddReview={handleAddReview} />
+                        </Tab.Panel>
+                    </Tab.Panels>
+                </Tab.Group>
             </div>
           </div>
         </div>
-        <Reviews reviews={currentReviews} onAddReview={handleAddReview} />
       </div>
-      
-      {isZoomModalOpen && galleryItems.length > 0 && ( 
-        <ImageZoomModal 
-            isOpen={isZoomModalOpen} 
-            onClose={() => setIsZoomModalOpen(false)} 
-            // Передаем только картинки в зум, так как видео там сложно показывать
-            images={imageUrls.filter(u => u)} 
-            initialIndex={currentIndex >= imageUrls.length ? 0 : currentIndex}
-            productName={safeProduct.name} 
-        /> 
-      )}
-        
-      {isTryOnModalOpen && (
-        <FurnitureTryOnModal 
-            isOpen={isTryOnModalOpen} 
-            onClose={() => setIsTryOnModalOpen(false)} 
-            productImage={imageUrls[0] || ''} 
-            productName={safeProduct.name} 
-        />
-      )}
+      <ImageZoomModal isOpen={isZoomModalOpen} onClose={() => setIsZoomModalOpen(false)} imageUrl={currentItem?.type === 'image' ? currentItem.url : imageUrls[0]} />
+      <FurnitureTryOnModal isOpen={isTryOnModalOpen} onClose={() => setIsTryOnModalOpen(false)} product={safeProduct} />
     </>
   );
 };
