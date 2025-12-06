@@ -21,11 +21,12 @@ const nextConfig = {
       { protocol: 'https', hostname: 'picsum.photos' },
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
       { protocol: 'https', hostname: 'storage.googleapis.com' },
-      { protocol: 'https', hostname: 'label-com.ru' },
       { protocol: 'https', hostname: 'image.pollinations.ai' },
       { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'replicate.delivery' },
+      // ДОБАВЛЕНО: домен для изображений товаров
+      { protocol: 'https', hostname: 'label-com.ru' }, 
     ],
   },
   devIndicators: {
@@ -33,5 +34,4 @@ const nextConfig = {
   }
 };
 
-// Force restart to clear cache
 export default withPWA(nextConfig);

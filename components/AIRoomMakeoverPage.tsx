@@ -13,6 +13,7 @@ import {
   PhotoIcon, 
   SparklesIcon, 
   ChatBubbleLeftRightIcon,
+  ArrowLeftIcon, // Добавил иконку стрелки
 } from '@/components/Icons'; 
 
 const styleOptions = [
@@ -216,17 +217,28 @@ const AIRoomMakeoverPage: React.FC = () => {
       
       <div className="relative bg-brand-brown text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/pattern-bg.png')] mix-blend-overlay"></div> 
-        <div className="container mx-auto px-4 relative z-10 text-center">
-            <div className="inline-flex items-center justify-center p-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20">
-                <SparklesIcon className="w-5 h-5 text-yellow-300 mr-2" />
-                <span className="text-sm font-medium tracking-wide uppercase">Premium Interior AI</span>
+        <div className="container mx-auto px-4 relative z-10">
+            {/* Кнопка Назад */}
+            <button 
+                onClick={() => router.push('/')}
+                className="absolute top-0 left-4 md:left-10 mt-6 flex items-center text-white/70 hover:text-white transition-colors group"
+            >
+                <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                На главную
+            </button>
+
+            <div className="text-center mt-8">
+                <div className="inline-flex items-center justify-center p-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20">
+                    <SparklesIcon className="w-5 h-5 text-yellow-300 mr-2" />
+                    <span className="text-sm font-medium tracking-wide uppercase">Premium Interior AI</span>
+                </div>
+                <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">
+                    Создайте интерьер мечты <br className="hidden md:block" /> одним кликом
+                </h1>
+                <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto font-light leading-relaxed">
+                    Загрузите фото вашей комнаты, выберите стиль, и наш искусственный интеллект мгновенно предложит профессиональный дизайн-проект с мебелью Labelcom.
+                </p>
             </div>
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">
-                Создайте интерьер мечты <br className="hidden md:block" /> одним кликом
-            </h1>
-            <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto font-light leading-relaxed">
-                Загрузите фото вашей комнаты, выберите стиль, и наш искусственный интеллект мгновенно предложит профессиональный дизайн-проект с мебелью Labelcom.
-            </p>
         </div>
       </div>
 
@@ -373,7 +385,6 @@ const AIRoomMakeoverPage: React.FC = () => {
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                             
-                            {/* ИСПОЛЬЗУЕМ SparklesIcon ВМЕСТО "очков" */}
                             <div className="relative mr-3 p-1 bg-white/20 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform">
                                 <SparklesIcon className="w-6 h-6 animate-pulse" />
                             </div>

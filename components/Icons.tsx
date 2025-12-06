@@ -136,3 +136,57 @@ export const CloudArrowUpIcon: React.FC<IconProps> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
   </svg>
 );
+
+// Dropdown caret
+export const ChevronDownIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+// Messengers / links
+export const WhatsAppIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12.04 2a9.96 9.96 0 00-8.63 14.9l-1.1 4.03 4.14-1.08A10 10 0 1012.04 2zm0 1.6a8.35 8.35 0 018.37 8.34 8.34 8.34 0 01-12.5 7.22l-.24-.14-2.45.64.65-2.39-.15-.24a8.34 8.34 0 016.32-12.43z" />
+    <path d="M9.2 7.48c-.2-.44-.4-.45-.58-.46l-.5-.01c-.17 0-.45.06-.69.31s-.9.88-.9 2.14 1.02 2.48 1.16 2.65c.14.18 2 3.11 4.93 4.23.68.27 1.21.43 1.62.55.68.22 1.3.19 1.79.12.55-.08 1.7-.7 1.94-1.38.24-.68.24-1.26.17-1.38-.07-.12-.27-.2-.56-.35s-1.7-.84-1.96-.94-.45-.14-.64.14-.74.94-.9 1.13c-.17.2-.33.22-.62.07s-1.2-.44-2.29-1.4c-.85-.75-1.42-1.67-1.59-1.95-.16-.27-.02-.42.12-.56.13-.13.3-.34.45-.5.15-.17.2-.28.3-.47.1-.2.05-.37-.01-.52-.05-.14-.64-1.53-.9-2.08z" />
+  </svg>
+);
+
+export const TelegramIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M22.81 3.2a1.11 1.11 0 00-1.16-.18L2.7 11.4a.9.9 0 00-.58.86c0 .4.25.75.63.88l4.73 1.6 1.82 5.7a.9.9 0 00.83.63h.05a.9.9 0 00.82-.6l2.18-6.22 4.57 3.44a1.11 1.11 0 001.77-.63l2.32-13.5a1.11 1.11 0 00-.42-1.05zm-3.6 2.64l-9.4 8.19a.45.45 0 00-.14.4l.53 3.76-1.23-3.88a.45.45 0 01.28-.56l8.41-3a.45.45 0 00.28-.38.45.45 0 00-.6-.43l-9.08 3.23-3.2-1.08 14.12-6.86z" />
+  </svg>
+);
+
+export const LinkIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 13.5l3-3m-6 6l-1.06 1.06a3.75 3.75 0 105.3 5.3l3.5-3.5a3.75 3.75 0 10-5.3-5.3l-.94.94m9-9l.94-.94a3.75 3.75 0 10-5.3-5.3l-3.5 3.5a3.75 3.75 0 105.3 5.3L15 10.5" />
+  </svg>
+);
+
+export const MaxMessengerIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" {...props}>
+    <image href="https://upload.wikimedia.org/wikipedia/commons/7/75/Max_logo_2025.png" x="0" y="0" width="64" height="64" />
+  </svg>
+);
+
+// Map / contact
+export const MapPinIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s6-4.35 6-10.5A6 6 0 006 10.5C6 16.65 12 21 12 21z" />
+    <circle cx="12" cy="10.5" r="1.75" fill="currentColor" />
+  </svg>
+);
+
+export const PhoneIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 4.5c0-.621.504-1.125 1.125-1.125h2.25c.558 0 1.036.408 1.113.961l.427 2.992a1.125 1.125 0 01-.58 1.169l-1.27.724a.75.75 0 00-.234 1.074 11.289 11.289 0 005.08 5.08.75.75 0 001.074-.234l.724-1.27a1.125 1.125 0 011.169-.58l2.992.427c.553.077.961.555.961 1.113v2.25c0 .621-.504 1.125-1.125 1.125H17.25C9.641 21 3 14.359 3 6.75V5.625C3 5.004 3.504 4.5 4.125 4.5h-1.875z" />
+  </svg>
+);
+
+export const EnvelopeIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5.75A1.75 1.75 0 014.75 4h14.5A1.75 1.75 0 0121 5.75v12.5A1.75 1.75 0 0119.25 20H4.75A1.75 1.75 0 013 18.25V5.75z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 6l7.7 5.775a1.25 1.25 0 001.55 0L20.5 6" />
+  </svg>
+);

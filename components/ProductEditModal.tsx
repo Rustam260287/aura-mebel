@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
-import { XMarkIcon, SparklesIcon, ArrowPathIcon, TrashIcon } from './Icons';
+import { XMarkIcon, SparklesIcon, ArrowPathIcon, TrashIcon, PhotoIcon } from './Icons'; // Добавил иконки
 import { useToast } from '../contexts/ToastContext';
 import { storage } from '../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -21,6 +21,7 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
     description: '',
     seoDescription: '',
     imageUrls: [],
+    videoUrl: '', // Добавлено поле
     details: { dimensions: '', material: '', care: '' },
     rating: 0,
     reviews: [],
@@ -109,6 +110,37 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
     }
   };
 
+  // Новый обработчик для видео
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    // Ограничение на размер видео (например, 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+        addToast('Видео слишком большое (макс 50MB)', 'error');
+        return;
+    }
+
+    const storageRef = ref(storage, `products/videos/${Date.now()}_${file.name}`);
+    setIsUploading(true);
+
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      setProductData(prev => ({
+        ...prev,
+        videoUrl: downloadURL
+      }));
+      addToast('Видео успешно загружено', 'success');
+    } catch (error) {
+      console.error("Video upload error:", error);
+      addToast('Не удалось загрузить видео', 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleRemoveImage = (indexToRemove: number) => {
     setProductData(prev => ({
       ...prev,
@@ -116,9 +148,12 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
     }));
   };
 
+  const handleRemoveVideo = () => {
+      setProductData(prev => ({ ...prev, videoUrl: undefined }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Ensure price is a number
     const dataToSave = {
         ...productData,
         price: Number(productData.price)
@@ -163,6 +198,7 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
             </select>
           </div>
 
+          {/* Images */}
           <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Изображения</label>
               <div className="flex flex-wrap gap-4 mb-4">
@@ -183,6 +219,32 @@ const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, o
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
                   </label>
               </div>
+          </div>
+
+          {/* Video Upload Section */}
+          <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Видео обзор</label>
+              {productData.videoUrl ? (
+                  <div className="relative w-full max-w-xs aspect-video bg-black rounded overflow-hidden border border-gray-300">
+                      <video src={productData.videoUrl} controls className="w-full h-full" />
+                      <button
+                          type="button"
+                          onClick={handleRemoveVideo}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-md"
+                          title="Удалить видео"
+                      >
+                          <TrashIcon className="w-4 h-4" />
+                      </button>
+                  </div>
+              ) : (
+                  <label className="flex items-center justify-center w-full max-w-xs p-4 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown hover:bg-gray-50 transition-colors">
+                      <div className="text-center">
+                          <PhotoIcon className="w-8 h-8 mx-auto text-gray-400" /> {/* Используем PhotoIcon как заглушку, или VideoIcon если есть */}
+                          <span className="mt-2 block text-sm font-medium text-gray-600">{isUploading ? 'Загрузка...' : 'Загрузить видео (MP4, WebM)'}</span>
+                      </div>
+                      <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={isUploading} />
+                  </label>
+              )}
           </div>
           
           <div>

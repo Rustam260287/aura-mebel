@@ -28,6 +28,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   imageUrls: string[];
+  videoUrl?: string; // Добавлено поле для видео
   description: string;
   seoDescription?: string;
   rating: number;

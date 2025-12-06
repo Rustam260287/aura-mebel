@@ -19,47 +19,37 @@ interface ProductDetailProps {
   onBack: () => void;
 }
 
-// Умный парсер описания
 const parseDescription = (description: string) => {
     if (!description) {
         return { mainDesc: 'Подробное описание товара готовится к публикации.', techSpecs: '' };
     }
-    
-    // Ключевые слова, обозначающие начало блока характеристик
     const keywords = [
         'Размеры:', 'Шкаф:', 'Кровать:', 'Тумба:', 'Трельяж:', 
         'Длина:', 'Ширина:', 'Высота:', 'Глубина:', 'В комплект входят:'
     ];
-    
     const lines = description.split('\n').map(line => line.trim()).filter(line => line);
-    
     let separatorIndex = -1;
     for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (keywords.some(keyword => line.startsWith(keyword))) {
+        if (keywords.some(keyword => lines[i].startsWith(keyword))) {
             separatorIndex = i;
             break;
         }
     }
-
     if (separatorIndex !== -1) {
-        const mainDesc = lines.slice(0, separatorIndex).join('\n').trim();
-        const techSpecs = lines.slice(separatorIndex).join('\n').trim();
         return { 
-            mainDesc: mainDesc || 'Описание товара скоро будет добавлено.', 
-            techSpecs 
+            mainDesc: lines.slice(0, separatorIndex).join('\n').trim() || 'Описание товара скоро будет добавлено.', 
+            techSpecs: lines.slice(separatorIndex).join('\n').trim() 
         };
     }
-
     return { mainDesc: description.trim(), techSpecs: '' };
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const { reviews = [], imageUrls = [], description = '', ...restOfProduct } = product;
-  const safeProduct = { reviews, imageUrls, description, ...restOfProduct };
+  const { reviews = [], imageUrls = [], description = '', videoUrl, ...restOfProduct } = product;
+  const safeProduct = { reviews, imageUrls, description, videoUrl, ...restOfProduct };
   
   const [currentReviews, setCurrentReviews] = useState<Review[]>(safeProduct.reviews);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0); // Index for mixed gallery
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
   
@@ -69,25 +59,33 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const isWished = isInWishlist(safeProduct.id);
 
-  const galleryImages = useMemo(() => imageUrls.filter(url => url), [imageUrls]);
+  // Объединяем фото и видео в один массив для галереи
+  const galleryItems = useMemo(() => {
+      const items = imageUrls.filter(url => url).map(url => ({ type: 'image' as const, url }));
+      if (videoUrl) {
+          // Добавляем видео в конец
+          items.push({ type: 'video' as const, url: videoUrl });
+      }
+      return items;
+  }, [imageUrls, videoUrl]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
 
-  const handleNextImage = useCallback(() => { 
-    if (galleryImages.length > 0) {
-      setCurrentImageIndex(prev => (prev + 1) % galleryImages.length); 
+  const handleNext = useCallback(() => { 
+    if (galleryItems.length > 0) {
+      setCurrentIndex(prev => (prev + 1) % galleryItems.length); 
     }
-  }, [galleryImages.length]);
+  }, [galleryItems.length]);
 
-  const handlePrevImage = useCallback(() => { 
-    if (galleryImages.length > 0) {
-      setCurrentImageIndex(prev => (prev - 1 + galleryImages.length) % galleryImages.length); 
+  const handlePrev = useCallback(() => { 
+    if (galleryItems.length > 0) {
+      setCurrentIndex(prev => (prev - 1 + galleryItems.length) % galleryItems.length); 
     }
-  }, [galleryImages.length]);
+  }, [galleryItems.length]);
   
   const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
   
-  const gallerySwipe = useSwipe({ onSwipeLeft: handleNextImage, onSwipeRight: handlePrevImage });
+  const gallerySwipe = useSwipe({ onSwipeLeft: handleNext, onSwipeRight: handlePrev });
   const gallerySwipeHandlers = useMemo(() => ({
     onTouchStart: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchStart(e); },
     onTouchMove: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchMove(e); },
@@ -104,20 +102,10 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         text: `Посмотрите этот товар в Labelcom Мебель: ${safeProduct.name}`,
         url: productUrl,
     };
-
     if (navigator.share) {
-        try {
-            await navigator.share(shareData);
-        } catch (err) {
-            console.error('Share failed:', err);
-        }
+        try { await navigator.share(shareData); } catch (err) { console.error(err); }
     } else {
-        try {
-            await navigator.clipboard.writeText(shareData.url);
-            addToast('Ссылка на товар скопирована!', 'info');
-        } catch (err) {
-            addToast('Не удалось скопировать ссылку.', 'error');
-        }
+        try { await navigator.clipboard.writeText(shareData.url); addToast('Ссылка скопирована!', 'info'); } catch (err) { addToast('Ошибка копирования', 'error'); }
     }
   }, [safeProduct.id, safeProduct.name, addToast]);
 
@@ -126,6 +114,8 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
     setCurrentReviews(prev => [newReview, ...prev]);
     addToast('Спасибо за ваш отзыв!', 'success');
   }, [addToast]);
+
+  const currentItem = galleryItems[currentIndex];
 
   return (
     <>
@@ -137,29 +127,55 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="flex flex-col gap-4">
             <div className="relative group" {...gallerySwipeHandlers}>
-              <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50">
-                {galleryImages.length > 0 ? (
+              <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50 flex items-center justify-center">
+                {galleryItems.length > 0 && currentItem ? (
                     <>
-                        <div className="flex transition-transform duration-300 ease-in-out h-full" style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
-                            {galleryImages.map((url, index) => (
-                                <div key={index} className="w-full h-full flex-shrink-0 relative cursor-zoom-in" onClick={() => setIsZoomModalOpen(true)}>
-                                    <Image src={url} alt={`${safeProduct.name} - изображение ${index + 1}`} className="object-cover" fill sizes="(max-width: 1024px) 100vw, 50vw" />
-                                </div>
-                            ))}
-                        </div>
-                        {galleryImages.length > 1 && (
+                        {currentItem.type === 'image' ? (
+                            <div className="w-full h-full relative cursor-zoom-in" onClick={() => setIsZoomModalOpen(true)}>
+                                <Image src={currentItem.url} alt={`${safeProduct.name}`} className="object-cover" fill sizes="(max-width: 1024px) 100vw, 50vw" priority />
+                            </div>
+                        ) : (
+                            <video 
+                                src={currentItem.url} 
+                                controls 
+                                className="w-full h-full object-contain bg-black" 
+                                poster={imageUrls[0]} // Используем первое фото как постер
+                            />
+                        )}
+
+                        {galleryItems.length > 1 && (
                             <>
-                                <button onClick={(e) => { e.stopPropagation(); handlePrevImage(); }} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Предыдущее изображение"><ChevronLeftIcon className="w-6 h-6" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleNextImage(); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Следующее изображение"><ChevronRightIcon className="w-6 h-6" /></button>
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">{galleryImages.map((_, idx) => (<div key={idx} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }} className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50 hover:bg-white'}`} />))}</div>
+                                <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeftIcon className="w-6 h-6" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRightIcon className="w-6 h-6" /></button>
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                                    {galleryItems.map((_, idx) => (
+                                        <div key={idx} onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }} className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${idx === currentIndex ? 'bg-white' : 'bg-white/50 hover:bg-white'}`} />
+                                    ))}
+                                </div>
                             </>
                         )}
                     </>
                 ) : ( <div className="w-full h-full flex items-center justify-center text-gray-300"><PhotoIcon className="w-24 h-24" /></div> )}
               </div>
             </div>
-            {galleryImages.length > 1 && (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">{galleryImages.map((url, index) => (<button key={index} onClick={() => setCurrentImageIndex(index)} className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${currentImageIndex === index ? 'border-brand-brown shadow-md scale-105' : 'border-transparent opacity-70 hover:opacity-100'}`}><Image src={url} alt={`Миниатюра ${index + 1}`} fill className="object-cover" sizes="80px" /></button>))}</div>
+            {galleryItems.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+                    {galleryItems.map((item, index) => (
+                        <button 
+                            key={index} 
+                            onClick={() => setCurrentIndex(index)} 
+                            className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${currentIndex === index ? 'border-brand-brown shadow-md scale-105' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                        >
+                            {item.type === 'image' ? (
+                                <Image src={item.url} alt={`Миниатюра ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            ) : (
+                                <div className="w-full h-full bg-black flex items-center justify-center">
+                                    <span className="text-white text-xs font-bold">VIDEO</span>
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
             )}
           </div>
           <div className="flex flex-col">
@@ -204,12 +220,13 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         <Reviews reviews={currentReviews} onAddReview={handleAddReview} />
       </div>
       
-      {isZoomModalOpen && galleryImages.length > 0 && ( 
+      {isZoomModalOpen && galleryItems.length > 0 && ( 
         <ImageZoomModal 
             isOpen={isZoomModalOpen} 
             onClose={() => setIsZoomModalOpen(false)} 
-            images={galleryImages} 
-            initialIndex={currentImageIndex}
+            // Передаем только картинки в зум, так как видео там сложно показывать
+            images={imageUrls.filter(u => u)} 
+            initialIndex={currentIndex >= imageUrls.length ? 0 : currentIndex}
             productName={safeProduct.name} 
         /> 
       )}
@@ -218,7 +235,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
         <FurnitureTryOnModal 
             isOpen={isTryOnModalOpen} 
             onClose={() => setIsTryOnModalOpen(false)} 
-            productImage={galleryImages[currentImageIndex] || ''} 
+            productImage={imageUrls[0] || ''} 
             productName={safeProduct.name} 
         />
       )}

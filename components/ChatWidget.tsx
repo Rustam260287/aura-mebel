@@ -173,6 +173,22 @@ export const ChatWidget: React.FC = () => {
     };
   }, [mounted, sendToAi]); // Зависимости обновлены
 
+  // Открытие чата без изображения
+  useEffect(() => {
+    if (!mounted) return;
+    const handleOpenChat = (event: CustomEvent<{ text?: string }>) => {
+      const text = event.detail?.text || 'Здравствуйте! Нужна помощь стилиста.';
+      const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() };
+      const newHistory = [...messagesRef.current, userMsg];
+      setMessages(newHistory);
+      setIsOpen(true);
+      sendToAi(text, newHistory);
+    };
+
+    window.addEventListener('openStylistChat', handleOpenChat as EventListener);
+    return () => window.removeEventListener('openStylistChat', handleOpenChat as EventListener);
+  }, [mounted, sendToAi]);
+
   useEffect(() => {
     if (!isOpen || !chatContainerRef.current) return;
 

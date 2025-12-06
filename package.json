@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "blog:daily": "node smart-blog-openai-replicate.mjs",
+    "blog:daily:dry": "DRY_RUN=1 node smart-blog-openai-replicate.mjs"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.8.0",
