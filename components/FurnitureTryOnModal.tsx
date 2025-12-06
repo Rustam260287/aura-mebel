@@ -3,15 +3,15 @@ import React from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon, CubeTransparentIcon } from '@heroicons/react/24/outline';
+import { Product } from '../types'; // Импортируем тип Product
 
 interface FurnitureTryOnModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productImage: string;
-  productName: string;
+  product: Product; // Меняем на полный объект Product
 }
 
-export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen, onClose, productName }) => {
+export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen, onClose, product }) => {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -53,7 +53,8 @@ export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen
                     <Dialog.Title as="h3" className="text-xl font-serif text-brand-brown mb-2">
                         AR Примерка
                     </Dialog.Title>
-                    <p className="text-sm font-medium text-gray-900 mb-4">{productName}</p>
+                    {/* Используем product.name */}
+                    <p className="text-sm font-medium text-gray-900 mb-4">{product.name}</p>
                     
                     <p className="text-gray-500 mb-6 text-sm leading-relaxed">
                         Функция виртуальной примерки в вашем интерьере находится в активной разработке.
