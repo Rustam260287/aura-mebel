@@ -75,13 +75,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })),
     ];
 
+    const buildImageContent = async (url: string) => {
+        // Пытаемся инлайнить картинку как data URL, чтобы модель точно её увидела.
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`Image fetch failed: ${resp.status}`);
+            const buf = Buffer.from(await resp.arrayBuffer());
+            const base64 = buf.toString('base64');
+            return `data:image/jpeg;base64,${base64}`;
+        } catch (err) {
+            console.error("Image inline failed, fallback to URL:", err);
+            return url;
+        }
+    };
+
     let userContent: any = [{ type: "text", text: message }];
     
     if (imageUrl) {
+        const visionUrl = imageUrl.startsWith('http')
+            ? await buildImageContent(imageUrl)
+            : imageUrl;
         userContent.push({
             type: "image_url",
             image_url: {
-                url: imageUrl,
+                url: visionUrl,
                 detail: "auto"
             }
         });
