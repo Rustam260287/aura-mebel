@@ -18,6 +18,8 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   products?: ProductMini[];
+  customOffer?: boolean;
+  hideCustomCta?: boolean;
   timestamp?: number;
   isTyping?: boolean;
 }
@@ -60,7 +62,7 @@ export const ChatWidget: React.FC = () => {
               setMessages(loadedMessages);
               messagesRef.current = loadedMessages;
           } else {
-              const initial = [{ role: 'assistant', content: 'Здравствуйте! Я ваш AI-дизайнер. Подскажите, что вы ищете? Вы можете прислать фото интерьера, и я подберу мебель.' } as Message];
+              const initial = [{ role: 'assistant', content: 'Здравствуйте! Я ваш AI-стилист. Пришлите фото интерьера или мебели — подберу похожие позиции из каталога или предложу изготовление по фото.', customOffer: false } as Message];
               setMessages(initial);
               messagesRef.current = initial;
           }
@@ -75,13 +77,15 @@ export const ChatWidget: React.FC = () => {
       }
   }, [messages, mounted]);
 
-  const typeMessage = useCallback((fullText: string, products: ProductMini[] = []) => {
+  const typeMessage = useCallback((fullText: string, products: ProductMini[] = [], customOffer = false, hideCustomCta = false) => {
     let currentIndex = 0;
     
     setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: '', 
         products: [], 
+        customOffer,
+        hideCustomCta,
         timestamp: Date.now(),
         isTyping: true 
     }]);
@@ -103,7 +107,7 @@ export const ChatWidget: React.FC = () => {
                 if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
                 return prev.map((msg, idx) => 
                     idx === prev.length - 1 
-                        ? { ...msg, content: fullText, products: products, isTyping: false } 
+                        ? { ...msg, content: fullText, products: products, customOffer, hideCustomCta, isTyping: false } 
                         : msg
                 );
             }
@@ -133,7 +137,7 @@ export const ChatWidget: React.FC = () => {
 
       const data = await res.json();
       if (res.ok) {
-        typeMessage(data.reply, data.products);
+        typeMessage(data.reply, data.products, data.offerCustom, data.hideCustomCta);
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Простите, произошла ошибка.', timestamp: Date.now() }]);
       }
@@ -143,6 +147,15 @@ export const ChatWidget: React.FC = () => {
       setIsLoading(false);
     }
   }, [typeMessage]);
+
+  const sendQuickPrompt = useCallback((text: string) => {
+    if (!text.trim() || isLoading) return;
+    const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() };
+    const newHistory = [...messagesRef.current, userMsg];
+    setMessages(newHistory);
+    setIsOpen(true);
+    sendToAi(text, newHistory);
+  }, [isLoading, sendToAi]);
   
   useEffect(() => {
     if (!mounted) return;
@@ -277,7 +290,7 @@ export const ChatWidget: React.FC = () => {
     
     sendToAi(userMessage || "Проанализируй это изображение", newHistory, uploadedImageUrl);
   };
-  
+
   const handleProductClick = (id: string) => {
       setIsOpen(false);
       router.push(`/products/${id}`);
@@ -285,18 +298,19 @@ export const ChatWidget: React.FC = () => {
 
   const clearHistory = () => {
       if (confirm('Очистить историю переписки?')) {
-          const initialMsg: Message = { role: 'assistant', content: 'История очищена. Чем могу помочь?' };
+          const initialMsg: Message = { role: 'assistant', content: 'История очищена. Пришлите фото или опишите задачу — подберу похожие модели или оформим изготовление по фото.', customOffer: false };
           setMessages([initialMsg]);
           if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
       }
   };
+
 
   if (!mounted) return null;
 
   return (
     <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end">
       <Transition show={isOpen} enter="transition ease-out duration-300" enterFrom="opacity-0 translate-y-10 scale-95" enterTo="opacity-100 translate-y-0 scale-100" leave="transition ease-in duration-200" leaveFrom="opacity-100 translate-y-0 scale-100" leaveTo="opacity-0 translate-y-10 scale-95">
-        <div className="bg-white w-80 md:w-96 h-[75vh] max-h-[90vh] md:h-[640px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right">
+        <div className="bg-white w-80 md:w-96 h-[70vh] max-h-[calc(100vh-80px)] md:h-[640px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right">
           <div className="bg-gradient-to-r from-brand-brown to-[#7D5A50] text-white p-4 flex justify-between items-center shadow-md z-10 flex-shrink-0">
             <div className="flex items-center gap-3">
                 <div className="relative w-8 h-8 flex items-center justify-center bg-white/20 rounded-full backdrop-blur-sm">
@@ -362,6 +376,27 @@ export const ChatWidget: React.FC = () => {
                         </div>
                     </div>
                 )}
+                {!msg.isTyping && msg.customOffer && (
+                  <div className="mt-3 w-full max-w-[95%] animate-fade-in-up">
+                    <div className="bg-brand-cream text-brand-charcoal rounded-2xl p-4 border border-brand-cream shadow-sm space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-brand-brown">
+                        <SparklesIcon className="w-4 h-4" /> Изготовим по вашему фото
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        Сделаем мебель по вашему снимку и размерам. Напишите габариты (Д×Г×В), ткань/кожа, цвет и срок — рассчитаем и предложим варианты.
+                      </p>
+                      {!msg.hideCustomCta && (
+                        <button
+                          type="button"
+                          onClick={() => sendQuickPrompt('Хочу изготовить по фото. Какие параметры нужны и как согласовать ткань/цвет?')}
+                          className="w-full bg-brand-brown text-white text-sm font-semibold py-3 rounded-xl shadow-premium-hover hover:-translate-y-0.5 transition"
+                        >
+                          Оставить заявку
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && !messages[messages.length-1]?.isTyping && (
@@ -416,12 +451,12 @@ export const ChatWidget: React.FC = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Спросите совет..."
-              className="flex-1 bg-gray-50 text-gray-800 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-brown/20 transition-all placeholder-gray-400 border border-transparent focus:bg-white"
-            />
-            <button 
-                type="submit" 
-                disabled={(!input.trim() && !selectedFile) || isLoading || (messages.length > 0 && messages[messages.length-1].isTyping)}
+              placeholder="Пришлите фото или спросите совет..."
+            className="flex-1 bg-gray-50 text-gray-800 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-brown/20 transition-all placeholder-gray-400 border border-transparent focus:bg-white"
+          />
+          <button 
+              type="submit" 
+              disabled={(!input.trim() && !selectedFile) || isLoading || (messages.length > 0 && messages[messages.length-1].isTyping)}
                 className="bg-brand-brown text-white p-2 rounded-full hover:bg-brand-brown/90 transition-transform active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 flex items-center justify-center"
             >
               <PaperAirplaneIcon className="w-5 h-5" />
