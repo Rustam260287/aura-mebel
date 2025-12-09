@@ -13,7 +13,8 @@ import {
   PhotoIcon, 
   SparklesIcon, 
   ChatBubbleLeftRightIcon,
-  ArrowLeftIcon, // Добавил иконку стрелки
+  ArrowLeftIcon,
+  XMarkIcon
 } from '@/components/Icons'; 
 
 const styleOptions = [
@@ -32,11 +33,7 @@ const AIRoomMakeoverPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [redesignedImage, setRedesignedImage] = useState<string | null>(null);
   const [shareableUrl, setShareableUrl] = useState<string | null>(null);
@@ -48,6 +45,24 @@ const AIRoomMakeoverPage: React.FC = () => {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const [tryOnFurniture, setTryOnFurniture] = useState<{name: string, image: string} | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const { furnitureName, furnitureImage } = router.query;
+    if (furnitureName && typeof furnitureName === 'string') {
+        setTryOnFurniture({
+            name: furnitureName,
+            image: typeof furnitureImage === 'string' ? furnitureImage : ''
+        });
+        toast.success(`Режим примерки: ${furnitureName}`, { icon: '🛋️' });
+    }
+  }, [router.isReady, router.query]);
 
   const resizeImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -83,6 +98,63 @@ const AIRoomMakeoverPage: React.FC = () => {
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  // --- SMART COMPOSITE LOGIC ---
+  // Создаем коллаж: комната + мебель
+  const createCompositeImage = async (roomUrl: string, furnitureUrl: string): Promise<string> => {
+      return new Promise((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+              reject(new Error("Canvas context not available"));
+              return;
+          }
+
+          const roomImg = new Image();
+          roomImg.crossOrigin = "Anonymous";
+          
+          roomImg.onload = () => {
+              canvas.width = roomImg.width;
+              canvas.height = roomImg.height;
+              
+              // 1. Рисуем комнату
+              ctx.drawImage(roomImg, 0, 0);
+
+              const furnitureImg = new Image();
+              furnitureImg.crossOrigin = "Anonymous";
+              
+              furnitureImg.onload = () => {
+                  // 2. Рассчитываем размер и позицию мебели
+                  // Мебель занимает ~60% ширины
+                  const scaleFactor = 0.6; 
+                  const furnWidth = canvas.width * scaleFactor;
+                  const furnHeight = furnitureImg.height * (furnWidth / furnitureImg.width);
+                  
+                  // Позиция: по центру горизонтально
+                  const x = (canvas.width - furnWidth) / 2;
+                  
+                  // Ставим мебель "на пол" (примерно 8% от низа, чтобы не висела и не обрезалась)
+                  const y = canvas.height - furnHeight - (canvas.height * 0.08); 
+
+                  // 3. Рисуем мебель
+                  ctx.drawImage(furnitureImg, x, y, furnWidth, furnHeight);
+                  
+                  resolve(canvas.toDataURL('image/jpeg', 0.95));
+              };
+              
+              furnitureImg.onerror = (e) => {
+                  console.warn("Furniture load error", e);
+                  resolve(roomUrl); // Fallback: без мебели
+              };
+              
+              // Используем прокси, чтобы избежать CORS
+              furnitureImg.src = `/api/proxy-image?url=${encodeURIComponent(furnitureUrl)}`;
+          };
+          
+          roomImg.onerror = reject;
+          roomImg.src = roomUrl;
+      });
   };
 
   const processFile = async (file: File) => {
@@ -143,14 +215,15 @@ const AIRoomMakeoverPage: React.FC = () => {
     }
 
     if (url) {
+        const text = tryOnFurniture 
+            ? `Я примерил мебель "${tryOnFurniture.name}" в этом интерьере (стиль ${style}). Как вам результат?`
+            : `Здравствуйте! Мне понравился этот дизайн (стиль: ${style}). Можете найти такую мебель в вашем каталоге или предложить изготовление на заказ?`;
+
         const event = new CustomEvent('startChatWithImage', {
-            detail: {
-                imageUrl: url,
-                text: `Здравствуйте! Мне понравился этот дизайн, который я создал с помощью вашего AI. Можете помочь подобрать мебель в стиле ${style}?`
-            }
+            detail: { imageUrl: url, text }
         });
         window.dispatchEvent(event);
-        toast.success('Чат со стилистом открыт!', { icon: '💬' });
+        toast.success('Чат с экспертом открыт!', { icon: '💬' });
     }
   };
 
@@ -170,13 +243,37 @@ const AIRoomMakeoverPage: React.FC = () => {
         if (resultSection) resultSection.scrollIntoView({ behavior: 'smooth' });
     }, 100);
 
-    const toastId = toast.loading('Разрабатываем концепцию вашего нового интерьера...');
+    const toastId = toast.loading('Обработка...');
 
     try {
+      let finalImageUrl = originalImage;
+      let finalPrompt = prompt;
+      let isComposite = false;
+
+      // Если есть мебель, создаем коллаж
+      if (tryOnFurniture && tryOnFurniture.image) {
+          try {
+              toast.loading('Вставляем мебель...', { id: toastId });
+              finalImageUrl = await createCompositeImage(originalImage, tryOnFurniture.image);
+              isComposite = true;
+              
+              // Для режима примерки мы НЕ указываем стиль жестко, если он не был выбран
+              // Мы говорим нейросети: "сделай эту композицию реальной"
+              // Флаг isComposite для API - сигнал использовать Flux в режиме Refiner
+          } catch (err) {
+              console.error("Composite failed", err);
+          }
+      }
+
       const response = await fetch('/api/ai/redesign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: originalImage, prompt, style }),
+        body: JSON.stringify({ 
+            imageUrl: finalImageUrl, 
+            prompt: finalPrompt, 
+            style,
+            isComposite // Ключевой флаг
+        }),
       });
 
       const data = await response.json();
@@ -186,7 +283,7 @@ const AIRoomMakeoverPage: React.FC = () => {
       if (!data.redesigned) throw new Error("Сервер не вернул изображение.");
 
       setRedesignedImage(data.redesigned);
-      toast.success('Проект готов! Наслаждайтесь результатом.', { id: toastId });
+      toast.success('Готово! Оцените результат.', { id: toastId });
 
       setIsProductsLoading(true);
       try {
@@ -194,7 +291,6 @@ const AIRoomMakeoverPage: React.FC = () => {
         const productsData = await productsRes.json();
         if (productsData.products && productsData.products.length > 0) {
             setRecommendedProducts(productsData.products);
-            toast.success(`Подобрано ${productsData.products.length} эксклюзивных товаров!`, { icon: '✨' });
         }
       } catch (prodError) {
         console.error("Ошибка загрузки товаров:", prodError);
@@ -210,6 +306,12 @@ const AIRoomMakeoverPage: React.FC = () => {
     }
   };
 
+  const clearTryOn = () => {
+      setTryOnFurniture(null);
+      setPrompt('');
+      router.replace('/ai-room-makeover', undefined, { shallow: true });
+  };
+
   if (!mounted) return null;
 
   return (
@@ -218,7 +320,6 @@ const AIRoomMakeoverPage: React.FC = () => {
       <div className="relative bg-brand-brown text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('/pattern-bg.png')] mix-blend-overlay"></div> 
         <div className="container mx-auto px-4 relative z-10 pt-16 md:pt-20">
-            {/* Кнопка Назад */}
             <button 
                 onClick={() => router.push('/')}
                 className="absolute top-4 left-4 md:top-6 md:left-10 flex items-center text-white/70 hover:text-white transition-colors group z-20 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 border border-white/20"
@@ -273,6 +374,12 @@ const AIRoomMakeoverPage: React.FC = () => {
                             {originalImage ? (
                                 <div className="absolute inset-2 overflow-hidden rounded-lg">
                                     <img src={originalImage} alt="Uploaded" className="w-full h-full object-cover" />
+                                    {/* ПРЕВЬЮ: Показываем пользователю, как мебель "сядет" (чтобы он понимал, что будет в коллаже) */}
+                                    {tryOnFurniture && tryOnFurniture.image && (
+                                        <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[40%] z-10 pointer-events-none opacity-80">
+                                            <img src={tryOnFurniture.image} alt="Furniture Preview" className="w-full h-full object-contain" />
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <p className="text-white font-medium flex items-center bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
                                             <PhotoIcon className="w-5 h-5 mr-2" /> Заменить фото
@@ -293,6 +400,31 @@ const AIRoomMakeoverPage: React.FC = () => {
 
                     <div className="lg:col-span-7 flex flex-col justify-between">
                         <div>
+                            {/* Блок активной примерки */}
+                            {tryOnFurniture && (
+                                <div className="mb-6 bg-brand-cream/30 border border-brand-brown/20 rounded-xl p-4 flex items-center animate-fade-in-up">
+                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 mr-3">
+                                        {tryOnFurniture.image ? (
+                                            <img src={tryOnFurniture.image} alt={tryOnFurniture.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs text-gray-400">Нет фото</div>
+                                        )}
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="text-xs text-brand-brown font-bold uppercase tracking-wider">Режим примерки (Коллаж)</p>
+                                        <p className="text-sm font-medium text-brand-charcoal line-clamp-1">{tryOnFurniture.name}</p>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={clearTryOn}
+                                        className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                                        title="Отменить примерку"
+                                    >
+                                        <XMarkIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="mb-8">
                                 <label className="block text-sm font-bold text-brand-charcoal uppercase tracking-wider mb-4 flex items-center">
                                     <span className="bg-brand-brown text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>
@@ -344,7 +476,7 @@ const AIRoomMakeoverPage: React.FC = () => {
                                 {isLoading ? (
                                     <>
                                         <Spinner className="w-6 h-6 mr-3 text-white" />
-                                        <span className="relative z-20">Создаем ваш дизайн-проект...</span>
+                                        <span className="relative z-20">Обработка...</span>
                                     </>
                                 ) : (
                                     <>
@@ -390,7 +522,7 @@ const AIRoomMakeoverPage: React.FC = () => {
                             </div>
                             
                             <span className="relative font-medium tracking-wide">
-                                {isUploading ? 'Подготовка...' : 'Обсудить с AI-стилистом'}
+                                {isUploading ? 'Подготовка...' : 'Обсудить с AI-Ассистентом'}
                             </span>
                         </button>
                     </div>

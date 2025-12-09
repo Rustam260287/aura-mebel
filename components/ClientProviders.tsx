@@ -9,7 +9,7 @@ import { CartSidebar } from './CartSidebar';
 import { ToastContainer } from './ToastContainer';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { useRouter } from 'next/router'; // ИСПРАВЛЕНО: импорт для Pages Router
+import { useRouter } from 'next/router'; 
 import type { View } from '../types';
 
 const ChatWidget = dynamic(
@@ -20,10 +20,18 @@ const ChatWidget = dynamic(
   }
 );
 
+const FurnitureTryOnModal = dynamic(
+  () => import('./FurnitureTryOnModal').then(mod => mod.FurnitureTryOnModal),
+  {
+    ssr: false,
+    loading: () => null
+  }
+);
+
+
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  // ИСПРАВЛЕНО: функция теперь принимает объект View и правильно обрабатывает его
   const handleNavigate = (view: View) => {
     switch (view.page) {
       case 'home':
@@ -39,7 +47,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
         router.push(`/products/${view.productId}`);
         break;
       default:
-        // Для других view, если они будут использоваться, можно добавить логику
         router.push('/');
         break;
     }
@@ -56,6 +63,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             <CartSidebar onNavigate={handleNavigate} />
             <ToastContainer />
             <ChatWidget />
+            <FurnitureTryOnModal />
 
           </WishlistProvider>
         </CartProvider>

@@ -17,7 +17,8 @@
     "products:improve:dry": "DRY_RUN=1 node improve-product-content.mjs",
     "products:manual": "node manual-update-products.mjs",
     "products:fix-missing": "node fix-missing-from-catalog.mjs",
-    "products:specs": "node sync-catalog-specs.mjs"
+    "products:specs": "node sync-catalog-specs.mjs",
+    "generate:3d": "node scripts/generate-3d-models.mjs"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.8.0",

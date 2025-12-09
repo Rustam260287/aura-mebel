@@ -1,20 +1,71 @@
 
-import React from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
 import { XMarkIcon, CubeTransparentIcon } from '@heroicons/react/24/outline';
-import { Product } from '../types'; // Импортируем тип Product
+import { Product } from '../types';
 
 interface FurnitureTryOnModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  product: Product; // Меняем на полный объект Product
+  isOpen?: boolean;
+  onClose?: () => void;
+  product?: Product;
 }
 
-export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen, onClose, product }) => {
+export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ 
+    isOpen: controlledIsOpen, 
+    onClose: controlledOnClose, 
+    product: controlledProduct 
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const [internalProduct, setInternalProduct] = useState<{ name: string; imageUrl?: string } | null>(null);
+
+  const isControlled = typeof controlledIsOpen !== 'undefined';
+  const show = isControlled ? controlledIsOpen : internalIsOpen;
+  
+  const close = () => {
+      if (isControlled && controlledOnClose) {
+          controlledOnClose();
+      } else {
+          setInternalIsOpen(false);
+      }
+  };
+
+  const productData = isControlled ? controlledProduct : internalProduct;
+
+  useEffect(() => {
+      if (isControlled) return;
+
+      const handleOpenEvent = (event: CustomEvent) => {
+          const { productName, productImage } = event.detail;
+          setInternalProduct({ name: productName, imageUrl: productImage });
+          setInternalIsOpen(true);
+      };
+
+      window.addEventListener('openFurnitureTryOn', handleOpenEvent as EventListener);
+      return () => {
+          window.removeEventListener('openFurnitureTryOn', handleOpenEvent as EventListener);
+      };
+  }, [isControlled]);
+
+  const handleGoToRedesign = () => {
+    close();
+    if (productData) {
+        const params = new URLSearchParams();
+        if (productData.name) params.append('furnitureName', productData.name);
+        // @ts-ignore
+        const img = productData.imageUrl || productData.imageUrls?.[0];
+        if (img) params.append('furnitureImage', img);
+        
+        window.location.href = `/ai-room-makeover?${params.toString()}`;
+    } else {
+        window.location.href = '/ai-room-makeover';
+    }
+  };
+
+  if (!productData) return null;
+
   return (
-    <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+    <Transition show={show} as={Fragment}>
+      <Dialog as="div" className="relative z-[70]" onClose={close}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -24,7 +75,7 @@ export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -38,36 +89,55 @@ export const FurnitureTryOnModal: React.FC<FurnitureTryOnModalProps> = ({ isOpen
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-0 text-left align-middle shadow-2xl transition-all border border-white/20">
                 
-                <div className="flex justify-end">
-                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 outline-none">
-                    <XMarkIcon className="w-6 h-6" />
-                  </button>
+                <div className="relative h-48 bg-gray-100 overflow-hidden">
+                    {/* @ts-ignore */}
+                    {productData.imageUrl || productData.imageUrls?.[0] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                         <img 
+                            /* @ts-ignore */
+                            src={productData.imageUrl || productData.imageUrls?.[0]} 
+                            alt={productData.name} 
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-brand-cream text-brand-brown/30">
+                            <CubeTransparentIcon className="w-16 h-16" />
+                        </div>
+                    )}
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                     <button onClick={close} className="absolute top-4 right-4 bg-black/20 text-white p-2 rounded-full hover:bg-black/40 backdrop-blur-sm transition-colors">
+                        <XMarkIcon className="w-5 h-5" />
+                    </button>
+                    <div className="absolute bottom-4 left-6 text-white">
+                        <h3 className="text-xl font-serif font-bold">{productData.name}</h3>
+                        <p className="text-sm opacity-90">AR Примерка</p>
+                    </div>
                 </div>
 
-                <div className="text-center pb-6">
-                    <div className="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CubeTransparentIcon className="w-8 h-8 text-brand-brown" />
-                    </div>
-                    <Dialog.Title as="h3" className="text-xl font-serif text-brand-brown mb-2">
-                        AR Примерка
-                    </Dialog.Title>
-                    {/* Используем product.name */}
-                    <p className="text-sm font-medium text-gray-900 mb-4">{product.name}</p>
+                <div className="p-8 text-center">
                     
-                    <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-                        Функция виртуальной примерки в вашем интерьере находится в активной разработке.
-                        <br/>
-                        Скоро вы сможете увидеть, как эта мебель смотрится у вас дома, используя камеру телефона.
+                    <p className="text-gray-600 mb-8 text-base leading-relaxed">
+                        Хотите увидеть, как <b>{productData.name}</b> будет смотреться в вашей комнате? 
+                        <br/><br/>
+                        Загрузите фото вашей комнаты в <b>AI Редизайн</b>, и мы постараемся стилизовать интерьер под эту модель.
                     </p>
 
-                    <button 
-                        onClick={onClose}
-                        className="bg-brand-brown text-white px-6 py-2.5 rounded-lg font-medium hover:bg-brand-brown/90 transition-colors w-full"
-                    >
-                        Понятно
-                    </button>
+                    <div className="flex flex-col gap-3">
+                        <button 
+                            onClick={handleGoToRedesign}
+                            className="bg-brand-brown text-white px-6 py-3.5 rounded-xl font-bold hover:bg-brand-charcoal transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                        >
+                            Перейти к примерке
+                        </button>
+                        <button 
+                            onClick={close}
+                            className="text-gray-400 hover:text-gray-600 font-medium py-2 text-sm"
+                        >
+                            Закрыть
+                        </button>
+                    </div>
                 </div>
 
               </Dialog.Panel>

@@ -11,10 +11,9 @@ import { useToast } from '../contexts/ToastContext';
 import { useSwipe } from '../hooks/useSwipe';
 import { ImageZoomModal } from './ImageZoomModal';
 import { FurnitureTryOnModal } from './FurnitureTryOnModal';
+import { ARViewer } from './ARViewer'; // Импортируем новый компонент
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
-
-// Cache-busting comment
 
 interface ProductDetailProps {
   product: Product;
@@ -22,7 +21,7 @@ interface ProductDetailProps {
 }
 
 type GalleryItem = {
-  type: 'image' | 'video';
+  type: 'image' | 'video' | '3d';
   url: string;
 };
 
@@ -52,8 +51,8 @@ const parseDescription = (description: string) => {
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const { reviews = [], imageUrls = [], description = '', videoUrl, ...restOfProduct } = product;
-  const safeProduct = { reviews, imageUrls, description, videoUrl, ...restOfProduct };
+  const { reviews = [], imageUrls = [], description = '', videoUrl, model3dUrl, ...restOfProduct } = product;
+  const safeProduct = { reviews, imageUrls, description, videoUrl, model3dUrl, ...restOfProduct };
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
@@ -70,8 +69,12 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
       if (videoUrl) {
           items.push({ type: 'video', url: videoUrl });
       }
+      // Добавляем 3D модель в галерею, если она есть
+      if (model3dUrl) {
+          items.push({ type: '3d', url: model3dUrl });
+      }
       return items;
-  }, [imageUrls, videoUrl]);
+  }, [imageUrls, videoUrl, model3dUrl]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
 
@@ -135,16 +138,23 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                             <div className="w-full h-full relative cursor-zoom-in" onClick={() => setIsZoomModalOpen(true)}>
                                 <Image src={currentItem.url} alt={`${safeProduct.name}`} className="object-cover" fill sizes="(max-width: 1024px) 100vw, 50vw" priority />
                             </div>
-                        ) : (
+                        ) : currentItem.type === 'video' ? (
                             <video 
                                 src={currentItem.url} 
                                 controls 
                                 className="w-full h-full object-contain bg-black" 
                                 poster={imageUrls[0]}
                             />
+                        ) : (
+                            /* AR VIEWER */
+                            <ARViewer 
+                                src={currentItem.url} 
+                                alt={safeProduct.name}
+                                poster={imageUrls[0]} // Используем первое фото как превью загрузки
+                            />
                         )}
 
-                        {galleryItems.length > 1 && (
+                        {galleryItems.length > 1 && currentItem.type !== '3d' && (
                             <>
                                 <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeftIcon className="w-6 h-6" /></button>
                                 <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRightIcon className="w-6 h-6" /></button>
@@ -169,9 +179,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                         >
                             {item.type === 'image' ? (
                                 <Image src={item.url} alt={`Миниатюра ${index + 1}`} fill className="object-cover" sizes="80px" />
-                            ) : (
+                            ) : item.type === 'video' ? (
                                 <div className="w-full h-full bg-black flex items-center justify-center">
                                     <span className="text-white text-xs font-bold">VIDEO</span>
+                                </div>
+                            ) : (
+                                <div className="w-full h-full bg-brand-cream flex items-center justify-center flex-col">
+                                    <CubeIcon className="w-6 h-6 text-brand-brown mb-1" />
+                                    <span className="text-brand-brown text-[10px] font-bold">3D VIEW</span>
                                 </div>
                             )}
                         </button>
@@ -199,7 +214,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             <div className="flex items-center gap-4 text-sm mb-8">
                  <Button variant="text" onClick={() => setIsTryOnModalOpen(true)} className="text-brand-brown">
                      <CubeIcon className="w-5 h-5 mr-2"/>
-                     Примерить в комнате (AR)
+                     Примерить в комнате (AI)
                  </Button>
                 <Button variant="text" onClick={handleShareClick}>
                   <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>

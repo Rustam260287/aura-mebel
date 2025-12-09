@@ -29,6 +29,8 @@ export interface Product {
   originalPrice?: number;
   imageUrls: string[];
   videoUrl?: string; // Добавлено поле для видео
+  model3dUrl?: string; // URL 3D модели (GLB)
+  has3D?: boolean; // Флаг наличия 3D модели
   description: string;
   seoDescription?: string;
   rating: number;
