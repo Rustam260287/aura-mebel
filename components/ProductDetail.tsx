@@ -51,8 +51,8 @@ const parseDescription = (description: string) => {
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const { reviews = [], imageUrls = [], description = '', videoUrl, model3dUrl, ...restOfProduct } = product;
-  const safeProduct = { reviews, imageUrls, description, videoUrl, model3dUrl, ...restOfProduct };
+  const { reviews = [], imageUrls = [], description = '', videoUrl, model3dUrl, model3dIosUrl, ...restOfProduct } = product;
+  const safeProduct = { reviews, imageUrls, description, videoUrl, model3dUrl, model3dIosUrl, ...restOfProduct };
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
@@ -149,6 +149,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                             /* AR VIEWER */
                             <ARViewer 
                                 src={currentItem.url} 
+                                iosSrc={model3dIosUrl}
                                 alt={safeProduct.name}
                                 poster={imageUrls[0]} // Используем первое фото как превью загрузки
                             />

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 interface ARViewerProps {
   src: string;
+  iosSrc?: string;
   poster?: string;
   alt: string;
 }
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-export const ARViewer: React.FC<ARViewerProps> = ({ src, poster, alt }) => {
+export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) => {
   const [isClient, setIsClient] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,6 +89,7 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, poster, alt }) => {
       {blobUrl && (
           <model-viewer
             src={blobUrl}
+            ios-src={iosSrc}
             poster={poster}
             alt={alt}
             loading="eager"

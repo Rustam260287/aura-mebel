@@ -30,6 +30,7 @@ export interface Product {
   imageUrls: string[];
   videoUrl?: string; // Добавлено поле для видео
   model3dUrl?: string; // URL 3D модели (GLB)
+  model3dIosUrl?: string; // URL для iOS Quick Look (USDZ)
   has3D?: boolean; // Флаг наличия 3D модели
   description: string;
   seoDescription?: string;
