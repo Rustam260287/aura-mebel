@@ -212,10 +212,11 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             </div>
             
             <div className="flex items-center gap-4 text-sm mb-8">
-                 <Button variant="text" onClick={() => setIsTryOnModalOpen(true)} className="text-brand-brown">
-                     <CubeIcon className="w-5 h-5 mr-2"/>
-                     Примерить в комнате (AI)
-                 </Button>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-dashed border-gray-300 bg-gray-100 text-gray-600 shadow-inner">
+                    <CubeIcon className="w-5 h-5 text-gray-500" />
+                    <span className="font-semibold text-brand-charcoal">Примерить в комнате (AI)</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-500">скоро</span>
+                </div>
                 <Button variant="text" onClick={handleShareClick}>
                   <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
                   Поделиться

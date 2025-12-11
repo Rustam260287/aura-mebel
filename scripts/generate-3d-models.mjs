@@ -11,7 +11,6 @@ const serviceAccount = JSON.parse(
   readFileSync('./serviceAccountKey.json', 'utf8')
 );
 
-// Правильное имя бакета: project_id.appspot.com (по умолчанию)
 const BUCKET_NAME = `${serviceAccount.project_id}.firebasestorage.app`; 
 
 if (!admin.apps.length) {
@@ -29,7 +28,7 @@ const replicate = new Replicate({
 });
 
 const DRY_RUN = false; 
-const LIMIT = 5; // Увеличим лимит, чтобы обновить текущие
+const LIMIT = 5; // Пройдемся по 5 товарам, чтобы перезаписать старые ссылки
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -48,18 +47,13 @@ async function runWithRetry(fn, retries = 3, delay = 15000) {
 
 async function uploadToStorage(url, destination) {
     let buffer;
-    if (typeof url === 'object' && url.blob) {
-         const blob = await url.blob();
-         buffer = await blob.arrayBuffer();
-    } else if (typeof url === 'string') {
+    if (typeof url === 'string') {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Failed to fetch generated file: ${res.statusText}`);
         buffer = await res.arrayBuffer();
     } else {
         const streamChunks = [];
-        for await (const chunk of url) {
-            streamChunks.push(chunk);
-        }
+        for await (const chunk of url) { streamChunks.push(chunk); }
         buffer = Buffer.concat(streamChunks);
     }
     
@@ -68,10 +62,10 @@ async function uploadToStorage(url, destination) {
         metadata: { contentType: 'model/gltf-binary' } 
     });
     
-    // Генерируем Signed URL (действует 100 лет)
+    // ГЕНЕРИРУЕМ ПОДПИСАННУЮ ССЫЛКУ (Signed URL) - ЭТО КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ
     const [signedUrl] = await file.getSignedUrl({
         action: 'read',
-        expires: '03-01-2125'
+        expires: '03-01-2125' // Ссылка на 100 лет
     });
 
     return signedUrl;
@@ -82,15 +76,9 @@ async function outputToDataUri(output) {
     if (typeof output === 'string' && output.startsWith('http')) {
         const res = await fetch(output);
         buffer = await res.arrayBuffer();
-    } else if (output instanceof ReadableStream || (typeof output === 'object' && output.getReader)) {
+    } else {
          const blob = await new Response(output).blob();
          buffer = await blob.arrayBuffer();
-    } else {
-         const chunks = [];
-         for await (const chunk of output) {
-             chunks.push(chunk);
-         }
-         buffer = Buffer.concat(chunks);
     }
     return `data:image/png;base64,${Buffer.from(buffer).toString('base64')}`;
 }
@@ -99,18 +87,8 @@ async function processProduct(doc) {
     const product = doc.data();
     const productId = doc.id;
     
-    console.log(`\n📦 Processing: ${product.name} (${productId})`);
+    console.log(`\n📦 Processing (Final Fix): ${product.name} (${productId})`);
 
-    // ЕСЛИ УЖЕ ЕСТЬ МОДЕЛЬ, НО ССЫЛКА СТАРАЯ (не Signed URL) - ОБНОВЛЯЕМ
-    // Signed URL обычно длинный и содержит 'X-Goog-Algorithm'
-    if (product.model3dUrl && product.model3dUrl.includes('X-Goog-Algorithm')) {
-        console.log(`   ⏭️ Skipped: Already has valid 3D model`);
-        return;
-    }
-
-    // Если модели нет или ссылка старая - генерируем заново (или переподписываем, если файл есть)
-    // Для простоты генерируем заново, чтобы гарантировать свежесть
-    
     const imageUrl = product.imageUrls?.[0];
     if (!imageUrl) {
         console.log(`   ⚠️ Skipped: No image found`);
@@ -147,9 +125,9 @@ async function processProduct(doc) {
             const storagePath = `models/${productId}.glb`;
             const signedUrl = await uploadToStorage(modelOutput, storagePath);
             await db.collection('products').doc(productId).update({ model3dUrl: signedUrl, has3D: true });
-            console.log(`   ✅ Done! Signed URL: ${signedUrl.substring(0, 50)}...`);
+            console.log(`   ✅ Done! Correct Signed URL created.`);
         } else {
-            console.log(`   👀 Dry Run`);
+            console.log(`   👀 Dry Run: Model generated at ${modelOutput}`);
         }
 
     } catch (error) {
@@ -158,8 +136,7 @@ async function processProduct(doc) {
 }
 
 async function main() {
-    console.log(`🚀 Starting 3D Model Generation Pipeline (Bucket: ${BUCKET_NAME})...`);
-    // Убираем фильтр, чтобы пройтись по уже созданным и обновить ссылки
+    console.log(`🚀 Starting 3D Model Generation (with Signed URL fix)...`);
     const snapshot = await db.collection('products').limit(LIMIT).get();
     
     if (snapshot.empty) return console.log("No products found.");
