@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -107,20 +107,50 @@ const runGltfPipeline = (input, output) =>
     });
   });
 
+const findInPath = (cmd) => {
+  const which = process.platform === 'win32' ? 'where' : 'which';
+  const res = spawnSync(which, [cmd], { encoding: 'utf8' });
+  if (res.status === 0 && res.stdout) {
+    const first = res.stdout.split(/\r?\n/).find(Boolean);
+    return first?.trim();
+  }
+  return null;
+};
+
+const detectUsdConverterCommand = () => {
+  if (process.env.USDCONVERT_PATH) {
+    const args = (process.env.USDCONVERT_ARGS || '').split(' ').filter(Boolean);
+    return { program: process.env.USDCONVERT_PATH, args };
+  }
+
+  if (process.env.USD_FROM_GLTF_PATH) {
+    return { program: process.env.USD_FROM_GLTF_PATH, args: [] };
+  }
+
+  if (process.platform === 'darwin') {
+    return { program: 'xcrun', args: ['usdz_converter'] };
+  }
+
+  const usdFromPath = findInPath('usd_from_gltf');
+  if (usdFromPath) {
+    return { program: usdFromPath, args: [] };
+  }
+
+  return null;
+};
+
 const runUsdConversion = (input, output) =>
   new Promise((resolve, reject) => {
-    const converter =
-      process.env.USDCONVERT_PATH ||
-      (process.platform === 'darwin' && 'xcrun') ||
-      null;
-
-    if (!converter) {
-      console.log('USDZ conversion skipped, set USDCONVERT_PATH or run on macOS with xcrun.');
+    const converterCommand = detectUsdConverterCommand();
+    if (!converterCommand) {
+      console.log('USDZ conversion skipped, set USDCONVERT_PATH, USD_FROM_GLTF_PATH, or run on macOS with xcrun.');
       return resolve(null);
     }
 
-    const command = converter === 'xcrun' ? [converter, 'usdz_converter', input, output] : [converter, input, output];
-    const proc = spawn(command[0], command.slice(1), { stdio: 'inherit' });
+    const args = [...converterCommand.args];
+    args.push(input, output);
+
+    const proc = spawn(converterCommand.program, args, { stdio: 'inherit' });
     proc.on('close', (code) => {
       if (code === 0) return resolve(output);
       console.warn('USDZ conversion failed (code', code, ')');

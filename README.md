@@ -43,13 +43,26 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 1.  Подготовьте доступ к Firebase Admin (`serviceAccountKey.json` или переменная `FIREBASE_SERVICE_ACCOUNT`).
 2.  Запустите `npm run optimize:3d -- --product <ID>` или `npm run optimize:3d -- --all`.
-3.  Скрипт скачает `model3dUrl`, прогонит его через `npx gltf-pipeline` (draco + удаление ненужных атрибутов), загрузит `models/optimized/<ID>.glb`, обновит запись и (если доступен `USDCONVERT_PATH` или `xcrun usdz_converter`) соберёт `model3dIosUrl`.
+3.  Скрипт скачает `model3dUrl`, прогонит его через `npx gltf-pipeline` (draco + удаление ненужных атрибутов), загрузит `models/optimized/<ID>.glb`, обновит запись и (если доступен `USDCONVERT_PATH`, `USD_FROM_GLTF_PATH` или `xcrun usdz_converter`) соберёт `model3dIosUrl`.
 4.  Дополнительно доступен флаг `--dry` для симуляции.
 
 ```bash
 npm run optimize:3d -- --product K76YLoU4Co4T4RkF9xJG --dry
 USDCONVERT_PATH=/opt/usdz_converter npm run optimize:3d -- --all
 ```
+
+### USDZ на Windows
+
+1.  Установи Pixar USD локально. Самый простой путь — собрать инструменты из https://github.com/PixarAnimationStudios/USD. После сборки `usd_from_gltf.exe` окажется в `build/USD`.
+2.  Укажи путь в переменной окружения `USD_FROM_GLTF_PATH` **или** добавь `usd_from_gltf.exe` в PATH (скрипт найдёт его автоматически). Пример:
+
+    ```bash
+    USD_FROM_GLTF_PATH="C:/USD/build/USD/bin/usd_from_gltf.exe" npm run optimize:3d -- --product <ID>
+    ```
+
+3.  Путь можно зафиксировать в `.env.local` (для локальной машины) или в CI-среде: `USD_FROM_GLTF_PATH=/path/to/usd_from_gltf`.
+
+Если не хочешь собирать Pixar USD, можно использовать сторонний конвертер, главное — указать его путь через `USDCONVERT_PATH` и, при необходимости, дополнительные аргументы через `USDCONVERT_ARGS`.
 
 ## Deploying to Firebase
 
