@@ -55,9 +55,18 @@ export const getStaticProps: GetStaticProps = async () => {
         return { props: { posts: [], error: "Admin DB not initialized" } };
     }
     try {
-        // Получаем все посты, а фильтруем и сортируем в памяти для гибкости и избежания проблем с индексами
-        const snapshot = await db.collection('blog').get();
-        const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+        const snapshot = await db.collection('blog')
+          .select('title', 'excerpt', 'imageUrl', 'createdAt', 'tags', 'status', 'author')
+          .get();
+        const allPosts = snapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.get('title') ?? '',
+          excerpt: doc.get('excerpt') ?? '',
+          imageUrl: doc.get('imageUrl') ?? '',
+          createdAt: doc.get('createdAt') ?? '',
+          tags: doc.get('tags') ?? [],
+          status: doc.get('status') ?? 'draft',
+        })) as BlogPost[];
         
         const posts = allPosts
             .filter(post => post.status === 'published' || !post.status) // Обратная совместимость: если нет статуса - публикуем

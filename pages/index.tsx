@@ -108,9 +108,20 @@ export const getStaticProps: GetStaticProps = async () => {
     const productsSnapshot = await adminDb.collection('products')
       .orderBy('rating', 'desc')
       .limit(4)
+      .select('name', 'price', 'rating', 'imageUrls', 'category', 'description', 'seoDescription', 'model3dUrl')
       .get();
       
-    const popularProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+    const popularProducts = productsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      name: doc.get('name') ?? '',
+      price: doc.get('price') ?? 0,
+      rating: doc.get('rating') ?? 0,
+      imageUrls: doc.get('imageUrls') ?? [],
+      category: doc.get('category') ?? '',
+      description: doc.get('description') ?? '',
+      seoDescription: doc.get('seoDescription') ?? '',
+      model3dUrl: doc.get('model3dUrl') ?? '',
+    })) as Product[];
     
     return {
       props: { 

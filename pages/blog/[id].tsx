@@ -81,8 +81,16 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         let relatedProducts: Product[] = [];
         
         // Получаем товары (оптимизация: кэшировать бы, но это build time)
-        const productsSnapshot = await db.collection('products').limit(100).get();
-        const allProducts = productsSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()} as Product));
+        const productsSnapshot = await db.collection('products')
+          .select('name', 'imageUrls', 'category')
+          .limit(100)
+          .get();
+        const allProducts = productsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.get('name') ?? '',
+          imageUrls: doc.get('imageUrls') ?? [],
+          category: doc.get('category') ?? '',
+        }) as Product);
 
         if (productMatches) {
             const productNames = productMatches.map(m => m.replace('[PRODUCT: ', '').replace(']', '').trim());

@@ -1,27 +1,53 @@
 
-import React from 'react';
-import { GetStaticProps } from 'next';
+import React, { useEffect, useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { WishlistPage as WishlistPageComponent } from '../components/WishlistPage';
 import { CartSidebar } from '../components/CartSidebar';
 import { useRouter } from 'next/router';
-import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
+import { useWishlist } from '../contexts/WishlistContext';
+import { Spinner } from '../components/Spinner';
 
-interface WishlistPageProps {
-  allProducts: Product[];
-}
-
-export default function Wishlist({ allProducts }: WishlistPageProps) {
+export default function Wishlist() {
   const router = useRouter();
+  const { wishlistItems } = useWishlist();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+    const fetchProducts = async () => {
+      if (wishlistItems.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const idsParam = encodeURIComponent(wishlistItems.join(','));
+        const res = await fetch(`/api/products/wishlist?ids=${idsParam}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (isActive) setProducts(data.products || []);
+      } catch (e) {
+        console.error('Failed to load wishlist products', e);
+        if (isActive) setProducts([]);
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    };
+    fetchProducts();
+    return () => { isActive = false; };
+  }, [wishlistItems]);
 
   return (
     <>
       <Header />
       <main className="flex-grow">
         <WishlistPageComponent 
-            allProducts={allProducts}
+            products={products}
+            isLoading={loading}
             onNavigate={(view: View) => {
                  if (view.page === 'product' && 'productId' in view) {
                      router.push(`/products/${view.productId}`);
@@ -42,24 +68,3 @@ export default function Wishlist({ allProducts }: WishlistPageProps) {
     </>
   );
 }
-
-export const getStaticProps: GetStaticProps = async () => {
-  const adminDb = getAdminDb();
-  if (!adminDb) {
-    return { props: { allProducts: [] } };
-  }
-  try {
-    const productsSnapshot = await adminDb.collection('products').get();
-    const allProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
-    
-    return {
-      props: { 
-        allProducts: JSON.parse(JSON.stringify(allProducts)),
-      },
-      revalidate: 60, // Пересобирать страницу каждые 60 секунд
-    };
-  } catch (error) {
-    console.error("Error fetching products for wishlist:", error);
-    return { props: { allProducts: [] } };
-  }
-};
