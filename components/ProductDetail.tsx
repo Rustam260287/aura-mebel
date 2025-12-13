@@ -95,19 +95,19 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const gallerySwipeHandlers = useMemo(() => ({
     onTouchStart: (e: TouchEvent<HTMLElement>) => { 
-      // Не перехватываем свайп, если это 3D модель
-      if (currentItem?.type === '3d') return;
       e.stopPropagation(); 
+      // Не перехватываем свайп, если это 3D модель (но блокируем свайп-назад страницы)
+      if (currentItem?.type === '3d') return;
       gallerySwipe.onTouchStart(e); 
     },
     onTouchMove: (e: TouchEvent<HTMLElement>) => { 
-      if (currentItem?.type === '3d') return;
       e.stopPropagation(); 
+      if (currentItem?.type === '3d') return;
       gallerySwipe.onTouchMove(e); 
     },
     onTouchEnd: (e: TouchEvent<HTMLElement>) => { 
-      if (currentItem?.type === '3d') return;
       e.stopPropagation(); 
+      if (currentItem?.type === '3d') return;
       gallerySwipe.onTouchEnd(); 
     }
   }), [gallerySwipe, currentItem]);

@@ -36,7 +36,15 @@ const resolveModelUrl = (rawUrl?: string) => {
   try {
     const u = new URL(rawUrl);
     if (!PROXYABLE_HOSTS.has(u.hostname)) return rawUrl;
-    return `/api/proxy-model?url=${encodeURIComponent(rawUrl)}`;
+    const cleanUrl = rawUrl.split('?')[0]?.toLowerCase() || '';
+    const endpoint = cleanUrl.endsWith('.usdz')
+      ? '/api/proxy-model.usdz'
+      : cleanUrl.endsWith('.glb')
+        ? '/api/proxy-model.glb'
+        : cleanUrl.endsWith('.gltf')
+          ? '/api/proxy-model.gltf'
+          : '/api/proxy-model';
+    return `${endpoint}?url=${encodeURIComponent(rawUrl)}`;
   } catch {
     return rawUrl;
   }
