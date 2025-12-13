@@ -37,6 +37,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Optimizing 3D models
+
+Для ускорения загрузки и стабильной работы AR на мобильных используем пакетный скрипт:
+
+1.  Подготовьте доступ к Firebase Admin (`serviceAccountKey.json` или переменная `FIREBASE_SERVICE_ACCOUNT`).
+2.  Запустите `npm run optimize:3d -- --product <ID>` или `npm run optimize:3d -- --all`.
+3.  Скрипт скачает `model3dUrl`, прогонит его через `npx gltf-pipeline` (draco + удаление ненужных атрибутов), загрузит `models/optimized/<ID>.glb`, обновит запись и (если доступен `USDCONVERT_PATH` или `xcrun usdz_converter`) соберёт `model3dIosUrl`.
+4.  Дополнительно доступен флаг `--dry` для симуляции.
+
+```bash
+npm run optimize:3d -- --product K76YLoU4Co4T4RkF9xJG --dry
+USDCONVERT_PATH=/opt/usdz_converter npm run optimize:3d -- --all
+```
+
 ## Deploying to Firebase
 
 This is a full-stack Next.js application that requires a server environment to run the AI features.
