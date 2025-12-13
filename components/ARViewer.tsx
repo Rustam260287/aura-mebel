@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useMemo, Fragment } from 'react';
+import React, { useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -20,75 +20,39 @@ declare global {
   }
 }
 
-// Custom hook to create a blob URL from a source URL
-const useModelBlob = (src?: string) => {
-    const [blobUrl, setBlobUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+const PROXYABLE_HOSTS = new Set(['firebasestorage.googleapis.com', 'storage.googleapis.com']);
 
-    useEffect(() => {
-        if (!src) {
-            setLoading(false);
-            setBlobUrl(null);
-            return;
-        }
+const resolveModelUrl = (rawUrl?: string) => {
+  if (!rawUrl) return undefined;
 
-        let isActive = true;
-        setLoading(true);
+  if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:') || rawUrl.startsWith('/')) {
+    return rawUrl;
+  }
 
-        // Use proxy for Firebase storage URLs that are not already proxied or blobs
-        const finalUrl = (src.includes('firebasestorage') && !src.startsWith('blob:'))
-            ? `/api/proxy-model?url=${encodeURIComponent(src)}`
-            : src;
+  if (!(rawUrl.startsWith('http://') || rawUrl.startsWith('https://'))) {
+    return rawUrl;
+  }
 
-        // If it's already a blob, just use it
-        if (src.startsWith('blob:')) {
-            setBlobUrl(src);
-            setLoading(false);
-            return;
-        }
-
-        fetch(finalUrl)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status} fetching model`);
-                return res.blob();
-            })
-            .then(blob => {
-                if (isActive) {
-                    const objectUrl = URL.createObjectURL(blob);
-                    setBlobUrl(objectUrl);
-                }
-            })
-            .catch(err => {
-                console.error("Model blob creation failed:", err);
-                if (isActive) setBlobUrl(src); // Fallback to original src on error
-            })
-            .finally(() => {
-                if (isActive) setLoading(false);
-            });
-
-        return () => {
-            isActive = false;
-            // Revoke blob URL only if it was created by this hook
-            if (blobUrl && blobUrl.startsWith('blob:') && !src.startsWith('blob:')) {
-                URL.revokeObjectURL(blobUrl);
-            }
-        };
-    }, [src]); // blobUrl removed from dependencies to prevent re-running
-
-    return { blobUrl, loading };
+  try {
+    const u = new URL(rawUrl);
+    if (!PROXYABLE_HOSTS.has(u.hostname)) return rawUrl;
+    return `/api/proxy-model?url=${encodeURIComponent(rawUrl)}`;
+  } catch {
+    return rawUrl;
+  }
 };
 
 export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) => {
   const [isClient, setIsClient] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const { blobUrl: glbBlobUrl, loading: isLoadingGlb } = useModelBlob(src);
-  
-  // For iOS, we will pass the proxied URL directly without creating a blob
-  const usdzProxyUrl = useMemo(() => {
-    if (!iosSrc) return undefined;
-    return `/api/proxy-model?url=${encodeURIComponent(iosSrc)}`;
-  }, [iosSrc]);
+  const resolvedSrc = useMemo(() => resolveModelUrl(src), [src]);
+  const resolvedIosSrc = useMemo(() => resolveModelUrl(iosSrc), [iosSrc]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  const inlineViewerRef = useRef<any>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -96,10 +60,37 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
     import('@google/model-viewer').catch(console.error);
   }, []);
 
-  const ModelViewerContent = () => (
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+  }, [resolvedSrc, resolvedIosSrc]);
+
+  useEffect(() => {
+    const el = inlineViewerRef.current;
+    if (!el) return;
+
+    const handleLoad = () => setIsLoading(false);
+    const handleError = (event: any) => {
+      console.error('Model viewer error:', event);
+      setHasError(true);
+      setIsLoading(false);
+    };
+
+    el.addEventListener('load', handleLoad);
+    el.addEventListener('error', handleError);
+    return () => {
+      el.removeEventListener('load', handleLoad);
+      el.removeEventListener('error', handleError);
+    };
+  }, [resolvedSrc, resolvedIosSrc, isClient]);
+
+  const arModes = resolvedIosSrc ? 'webxr scene-viewer quick-look' : 'webxr scene-viewer';
+
+  const ModelViewerContent = ({ viewerRef }: { viewerRef?: any }) => (
     <model-viewer
-      src={glbBlobUrl}
-      ios-src={usdzProxyUrl} // Use direct proxied URL for iOS
+      ref={viewerRef}
+      src={resolvedSrc}
+      ios-src={resolvedIosSrc}
       poster={poster}
       alt={alt}
       loading="eager"
@@ -108,7 +99,7 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
       auto-rotate
       camera-target="auto auto auto"
       ar
-      ar-modes="webxr scene-viewer quick-look"
+      ar-modes={arModes}
       ar-scale="auto"
       shadow-intensity="1.5"
       shadow-softness="0.8"
@@ -135,16 +126,23 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
   return (
     <>
         <div className="relative w-full h-full bg-gray-50 overflow-hidden border border-gray-100 shadow-inner group">
-        {isLoadingGlb && (
+        {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-brown mb-2"></div>
                 <p className="text-xs text-gray-500">Загрузка 3D модели...</p>
             </div>
         )}
 
-        {glbBlobUrl && (
+        {!isLoading && hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20 px-6 text-center">
+            <p className="text-sm font-medium text-gray-700 mb-1">Не удалось загрузить 3D модель</p>
+            <p className="text-xs text-gray-500">Проверьте ссылку на файл и попробуйте позже.</p>
+          </div>
+        )}
+
+        {resolvedSrc && (
             <>
-                <ModelViewerContent />
+                <ModelViewerContent viewerRef={inlineViewerRef} />
                 <button onClick={() => setIsFullscreen(true)} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md hover:bg-white text-gray-700 hover:text-brand-brown transition-all z-10" title="На весь экран">
                     <ArrowsPointingOutIcon className="w-6 h-6" />
                 </button>
