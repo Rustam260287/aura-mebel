@@ -76,6 +76,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   }, [imageUrls, videoUrl, model3dUrl]);
 
   const { mainDesc, techSpecs } = useMemo(() => parseDescription(description), [description]);
+  const currentItem = galleryItems[currentIndex];
 
   const handleNext = useCallback(() => { 
     if (galleryItems.length > 0) {
@@ -91,11 +92,25 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   
   const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
   const gallerySwipe = useSwipe({ onSwipeLeft: handleNext, onSwipeRight: handlePrev });
+  
   const gallerySwipeHandlers = useMemo(() => ({
-    onTouchStart: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchStart(e); },
-    onTouchMove: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchMove(e); },
-    onTouchEnd: (e: TouchEvent<HTMLElement>) => { e.stopPropagation(); gallerySwipe.onTouchEnd(); }
-  }), [gallerySwipe]);
+    onTouchStart: (e: TouchEvent<HTMLElement>) => { 
+      // Не перехватываем свайп, если это 3D модель
+      if (currentItem?.type === '3d') return;
+      e.stopPropagation(); 
+      gallerySwipe.onTouchStart(e); 
+    },
+    onTouchMove: (e: TouchEvent<HTMLElement>) => { 
+      if (currentItem?.type === '3d') return;
+      e.stopPropagation(); 
+      gallerySwipe.onTouchMove(e); 
+    },
+    onTouchEnd: (e: TouchEvent<HTMLElement>) => { 
+      if (currentItem?.type === '3d') return;
+      e.stopPropagation(); 
+      gallerySwipe.onTouchEnd(); 
+    }
+  }), [gallerySwipe, currentItem]);
 
   const handleWishlistClick = useCallback(() => { if (isWished) { removeFromWishlist(safeProduct.id); } else { addToWishlist(safeProduct.id); } }, [isWished, safeProduct.id, addToWishlist, removeFromWishlist]);
   const handleAddToCart = useCallback(() => { addToCart(safeProduct); addToast(`${safeProduct.name} добавлен в корзину`, 'success'); }, [addToCart, safeProduct, addToast]);
@@ -117,26 +132,15 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
     addToast('Спасибо за ваш отзыв! Он будет опубликован после модерации.', 'success');
   }, [addToast]);
 
-  const currentItem = galleryItems[currentIndex];
   const imageItems = useMemo(() => galleryItems.filter(item => item.type === 'image').map(item => item.url), [galleryItems]);
 
   return (
     <>
       <div className="container mx-auto px-4 sm:px-6 py-8" {...pageSwipeHandlers}>
-        {/* Mobile-only back button */}
         <div className="md:hidden mb-4">
-          <Button variant="ghost" onClick={onBack}>
-            <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            Назад
-          </Button>
+          <Button variant="ghost" onClick={onBack}><ArrowLeftIcon className="w-5 h-5 mr-2" />Назад</Button>
         </div>
-
-        {/* Desktop-only back button */}
-        <Button variant="ghost" onClick={onBack} className="mb-8 hidden md:inline-flex">
-          <ArrowLeftIcon className="w-5 h-5 mr-2" />
-          Назад в каталог
-        </Button>
-
+        <Button variant="ghost" onClick={onBack} className="mb-8 hidden md:inline-flex"><ArrowLeftIcon className="w-5 h-5 mr-2" />Назад в каталог</Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div className="flex flex-col gap-4">
             <div className="relative group" {...gallerySwipeHandlers}>
@@ -148,19 +152,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                                 <Image src={currentItem.url} alt={`${safeProduct.name}`} className="object-cover" fill sizes="(max-width: 1024px) 100vw, 50vw" priority />
                             </div>
                         ) : currentItem.type === 'video' ? (
-                            <video 
-                                src={currentItem.url} 
-                                controls 
-                                className="w-full h-full object-contain bg-black" 
-                                poster={imageUrls[0]}
-                            />
+                            <video src={currentItem.url} controls className="w-full h-full object-contain bg-black" poster={imageUrls[0]}/>
                         ) : (
-                            <ARViewer 
-                                src={currentItem.url} 
-                                iosSrc={model3dIosUrl}
-                                alt={safeProduct.name}
-                                poster={imageUrls[0]}
-                            />
+                            <ARViewer src={currentItem.url} iosSrc={model3dIosUrl} alt={safeProduct.name} poster={imageUrls[0]} />
                         )}
 
                         {galleryItems.length > 1 && currentItem.type !== '3d' && (
@@ -189,14 +183,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                             {item.type === 'image' ? (
                                 <Image src={item.url} alt={`Миниатюра ${index + 1}`} fill className="object-cover" sizes="80px" />
                             ) : item.type === 'video' ? (
-                                <div className="w-full h-full bg-black flex items-center justify-center">
-                                    <span className="text-white text-xs font-bold">VIDEO</span>
-                                </div>
+                                <div className="w-full h-full bg-black flex items-center justify-center"><span className="text-white text-xs font-bold">VIDEO</span></div>
                             ) : (
-                                <div className="w-full h-full bg-brand-cream flex items-center justify-center flex-col">
-                                    <CubeIcon className="w-6 h-6 text-brand-brown mb-1" />
-                                    <span className="text-brand-brown text-[10px] font-bold">3D VIEW</span>
-                                </div>
+                                <div className="w-full h-full bg-brand-cream flex items-center justify-center flex-col"><CubeIcon className="w-6 h-6 text-brand-brown mb-1" /><span className="text-brand-brown text-[10px] font-bold">3D VIEW</span></div>
                             )}
                         </button>
                     ))}
@@ -215,9 +204,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             
             <div className="flex items-center gap-4 mb-8">
               <Button onClick={handleAddToCart} size="lg">Добавить в корзину</Button>
-              <Button variant="outline" onClick={handleWishlistClick} aria-label="Добавить в избранное" className="p-3">
-                <HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-red-500 fill-current' : 'text-brand-charcoal'}`} />
-              </Button>
+              <Button variant="outline" onClick={handleWishlistClick} aria-label="Добавить в избранное" className="p-3"><HeartIcon className={`w-6 h-6 transition-colors ${isWished ? 'text-red-500 fill-current' : 'text-brand-charcoal'}`} /></Button>
             </div>
             
             <div className="flex flex-wrap items-center gap-4 text-sm mb-8">
@@ -226,10 +213,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                     <span className="font-semibold text-brand-charcoal">Примерить в комнате (AI)</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-500">скоро</span>
                 </div>
-                <Button variant="text" onClick={handleShareClick}>
-                  <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
-                  Поделиться
-                </Button>
+                <Button variant="text" onClick={handleShareClick}><ArrowUpTrayIcon className="w-5 h-5 mr-2"/>Поделиться</Button>
             </div>
 
             <div className="w-full max-w-full">
@@ -246,28 +230,16 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                         }</Tab>
                     </Tab.List>
                     <Tab.Panels className="mt-6">
-                        <Tab.Panel className="prose max-w-none text-gray-600 leading-relaxed">
-                            <p>{mainDesc}</p>
-                        </Tab.Panel>
-                       {techSpecs && <Tab.Panel className="prose max-w-none text-gray-600">
-                           <pre className="whitespace-pre-wrap font-sans text-sm">{techSpecs}</pre>
-                        </Tab.Panel>}
-                        <Tab.Panel>
-                            <Reviews productId={safeProduct.id} reviews={safeProduct.reviews ?? []} onAddReview={handleAddReview} />
-                        </Tab.Panel>
+                        <Tab.Panel className="prose max-w-none text-gray-600 leading-relaxed"><p>{mainDesc}</p></Tab.Panel>
+                       {techSpecs && <Tab.Panel className="prose max-w-none text-gray-600"><pre className="whitespace-pre-wrap font-sans text-sm">{techSpecs}</pre></Tab.Panel>}
+                        <Tab.Panel><Reviews productId={safeProduct.id} reviews={safeProduct.reviews ?? []} onAddReview={handleAddReview} /></Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group>
             </div>
           </div>
         </div>
       </div>
-      <ImageZoomModal 
-        isOpen={isZoomModalOpen} 
-        onClose={() => setIsZoomModalOpen(false)} 
-        images={imageItems} 
-        initialIndex={imageItems.indexOf(currentItem?.url)} 
-        productName={safeProduct.name}
-      />
+      <ImageZoomModal isOpen={isZoomModalOpen} onClose={() => setIsZoomModalOpen(false)} images={imageItems} initialIndex={imageItems.indexOf(currentItem?.url)} productName={safeProduct.name}/>
       <FurnitureTryOnModal isOpen={isTryOnModalOpen} onClose={() => setIsTryOnModalOpen(false)} product={safeProduct} />
     </>
   );
