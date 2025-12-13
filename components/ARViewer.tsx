@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -20,81 +20,75 @@ declare global {
   }
 }
 
-// Helper hook for fetching and creating blob URLs for models
-const useModelBlob = (src?: string) => {
-    const [blobUrl, setBlobUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+const resolveModelUrl = (rawUrl?: string) => {
+  if (!rawUrl) return undefined;
 
-    useEffect(() => {
-        if (!src) {
-            setLoading(false);
-            setBlobUrl(null);
-            return;
-        }
+  if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:') || rawUrl.startsWith('/')) {
+    return rawUrl;
+  }
 
-        let isActive = true;
-        setLoading(true);
+  const cleanUrl = rawUrl.split('?')[0]?.toLowerCase() || '';
+  const isFirebaseStorage =
+    rawUrl.includes('firebasestorage.googleapis.com') || rawUrl.includes('storage.googleapis.com');
 
-        const finalUrl = (src.includes('firebasestorage') && !src.includes('Goog-Algorithm') && !src.startsWith('blob:'))
-            ? `/api/proxy-model?url=${encodeURIComponent(src)}`
-            : src;
-        
-        if (src.startsWith('blob:')) {
-            setBlobUrl(src);
-            setLoading(false);
-            return;
-        }
+  if (!isFirebaseStorage) return rawUrl;
 
-        fetch(finalUrl)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${finalUrl}`);
-                return res.blob();
-            })
-            .then(blob => {
-                if (isActive) {
-                    const objectUrl = URL.createObjectURL(blob);
-                    setBlobUrl(objectUrl);
-                    setLoading(false);
-                }
-            })
-            .catch(err => {
-                console.error("Model load failed:", err);
-                if (isActive) {
-                    setBlobUrl(src); // Fallback to original src
-                    setLoading(false);
-                }
-            });
+  if (cleanUrl.endsWith('.usdz')) return `/api/proxy-model.usdz?url=${encodeURIComponent(rawUrl)}`;
+  if (cleanUrl.endsWith('.glb')) return `/api/proxy-model.glb?url=${encodeURIComponent(rawUrl)}`;
+  if (cleanUrl.endsWith('.gltf')) return `/api/proxy-model.gltf?url=${encodeURIComponent(rawUrl)}`;
 
-        return () => {
-            isActive = false;
-            if (blobUrl && blobUrl.startsWith('blob:') && !src.startsWith('blob:')) {
-                URL.revokeObjectURL(blobUrl);
-            }
-        };
-    }, [src]);
-
-    return { blobUrl, loading };
+  return `/api/proxy-model?url=${encodeURIComponent(rawUrl)}`;
 };
-
 
 export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) => {
   const [isClient, setIsClient] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const { blobUrl: glbBlobUrl, loading: isLoadingGlb } = useModelBlob(src);
-  const { blobUrl: usdzBlobUrl, loading: isLoadingUsdz } = useModelBlob(iosSrc);
-  
-  const isLoading = isLoadingGlb || isLoadingUsdz;
+  const resolvedSrc = useMemo(() => resolveModelUrl(src), [src]);
+  const resolvedIosSrc = useMemo(() => resolveModelUrl(iosSrc), [iosSrc]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  const inlineViewerRef = useRef<any>(null);
+  const fullscreenViewerRef = useRef<any>(null);
 
   useEffect(() => {
     setIsClient(true);
     import('@google/model-viewer').catch(console.error);
   }, []);
 
-  const ModelViewerContent = () => (
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+  }, [resolvedSrc, resolvedIosSrc]);
+
+  useEffect(() => {
+    const el = inlineViewerRef.current;
+    if (!el) return;
+
+    const handleLoad = () => setIsLoading(false);
+    const handleError = (event: any) => {
+      console.error('Model viewer error:', event);
+      setHasError(true);
+      setIsLoading(false);
+    };
+
+    el.addEventListener('load', handleLoad);
+    el.addEventListener('error', handleError);
+    return () => {
+      el.removeEventListener('load', handleLoad);
+      el.removeEventListener('error', handleError);
+    };
+  }, [resolvedSrc, resolvedIosSrc, isClient]);
+
+  const arModes = resolvedIosSrc ? 'webxr scene-viewer quick-look' : 'webxr scene-viewer';
+
+  const ModelViewerContent = ({ viewerRef }: { viewerRef?: any }) => (
     <model-viewer
-      src={glbBlobUrl}
-      ios-src={usdzBlobUrl}
+      ref={viewerRef}
+      src={resolvedSrc}
+      ios-src={resolvedIosSrc}
       poster={poster}
       alt={alt}
       loading="eager"
@@ -102,14 +96,13 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
       auto-rotate
       camera-target="auto auto auto"
       ar
-      ar-modes="webxr scene-viewer quick-look"
+      ar-modes={arModes}
       ar-scale="auto"
       shadow-intensity="1.5"
       shadow-softness="0.8"
       exposure="1.2"
       environment-image="neutral"
       style={{ width: '100%', height: '100%' }}
-      onError={(e: any) => console.error("Model viewer internal error:", e)}
     >
       <div slot="progress-bar"></div>
       <button slot="ar-button" className="absolute bottom-6 right-6 bg-brand-brown text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-brand-charcoal transition-transform hover:scale-105 active:scale-95 z-10 cursor-pointer">
@@ -139,9 +132,16 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
             </div>
         )}
 
-        {glbBlobUrl && (
+        {!isLoading && hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20 px-6 text-center">
+            <p className="text-sm font-medium text-gray-700 mb-1">Не удалось загрузить 3D модель</p>
+            <p className="text-xs text-gray-500">Проверьте ссылку на файл и попробуйте позже.</p>
+          </div>
+        )}
+
+        {resolvedSrc && (
             <>
-                <ModelViewerContent />
+                <ModelViewerContent viewerRef={inlineViewerRef} />
                 <button 
                     onClick={() => setIsFullscreen(true)}
                     className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md hover:bg-white text-gray-700 hover:text-brand-brown transition-all z-10"
@@ -162,7 +162,7 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
                     <div className="absolute inset-0 flex items-center justify-center">
                         <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
                             <Dialog.Panel className="w-full h-full relative bg-black">
-                                <ModelViewerContent />
+                                <ModelViewerContent viewerRef={fullscreenViewerRef} />
                                 <button onClick={() => setIsFullscreen(false)} className="absolute top-6 right-6 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-md transition-all z-20">
                                     <XMarkIcon className="w-8 h-8" />
                                 </button>

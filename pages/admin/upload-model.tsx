@@ -36,7 +36,13 @@ function ModelUploader() {
 
     const fileName = `${Date.now()}-${file.name}`;
     const storageRef = ref(storage, `models/${fileName}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const contentType =
+      ext === 'glb' ? 'model/gltf-binary' : ext === 'usdz' ? 'model/vnd.usdz+zip' : file.type || undefined;
+    const uploadTask = uploadBytesResumable(storageRef, file, {
+      contentType,
+      cacheControl: 'public, max-age=31536000, immutable',
+    });
 
     uploadTask.on(
       'state_changed',
