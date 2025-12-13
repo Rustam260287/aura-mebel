@@ -11,7 +11,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useSwipe } from '../hooks/useSwipe';
 import { ImageZoomModal } from './ImageZoomModal';
 import { FurnitureTryOnModal } from './FurnitureTryOnModal';
-import { ARViewer } from './ARViewer'; // Импортируем новый компонент
+import { ARViewer } from './ARViewer'; 
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
 
@@ -69,7 +69,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
       if (videoUrl) {
           items.push({ type: 'video', url: videoUrl });
       }
-      // Добавляем 3D модель в галерею, если она есть
       if (model3dUrl) {
           items.push({ type: '3d', url: model3dUrl });
       }
@@ -123,12 +122,22 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
   return (
     <>
-      <div className="container mx-auto px-6 py-12" {...pageSwipeHandlers}>
+      <div className="container mx-auto px-4 sm:px-6 py-8" {...pageSwipeHandlers}>
+        {/* Mobile-only back button */}
+        <div className="md:hidden mb-4">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            Назад
+          </Button>
+        </div>
+
+        {/* Desktop-only back button */}
         <Button variant="ghost" onClick={onBack} className="mb-8 hidden md:inline-flex">
           <ArrowLeftIcon className="w-5 h-5 mr-2" />
           Назад в каталог
         </Button>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div className="flex flex-col gap-4">
             <div className="relative group" {...gallerySwipeHandlers}>
               <div className="relative overflow-hidden rounded-lg shadow-md aspect-square bg-gray-50 flex items-center justify-center">
@@ -146,19 +155,18 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                                 poster={imageUrls[0]}
                             />
                         ) : (
-                            /* AR VIEWER */
                             <ARViewer 
                                 src={currentItem.url} 
                                 iosSrc={model3dIosUrl}
                                 alt={safeProduct.name}
-                                poster={imageUrls[0]} // Используем первое фото как превью загрузки
+                                poster={imageUrls[0]}
                             />
                         )}
 
                         {galleryItems.length > 1 && currentItem.type !== '3d' && (
                             <>
-                                <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeftIcon className="w-6 h-6" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRightIcon className="w-6 h-6" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeftIcon className="w-6 h-6" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleNext(); }} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-md hover:bg-white text-brand-charcoal opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRightIcon className="w-6 h-6" /></button>
                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                                     {galleryItems.map((_, idx) => (
                                         <div key={idx} onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }} className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${idx === currentIndex ? 'bg-white' : 'bg-white/50 hover:bg-white'}`} />
@@ -196,12 +204,12 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             )}
           </div>
           <div className="flex flex-col">
-            <h1 className="text-4xl lg:text-5xl font-serif text-brand-brown mb-4">{safeProduct.name}</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-brand-brown mb-4">{safeProduct.name}</h1>
             <div className="flex items-center gap-6 mb-6">
               <StarRating rating={safeProduct.rating ?? 0} />
               <span className="text-sm text-gray-500">({(safeProduct.reviews ?? []).length} отзывов)</span>
             </div>
-            <div className="text-4xl font-light text-brand-charcoal mb-8">
+            <div className="text-3xl sm:text-4xl font-light text-brand-charcoal mb-8">
               {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(safeProduct.price)}
             </div>
             
@@ -212,7 +220,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
               </Button>
             </div>
             
-            <div className="flex items-center gap-4 text-sm mb-8">
+            <div className="flex flex-wrap items-center gap-4 text-sm mb-8">
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-dashed border-gray-300 bg-gray-100 text-gray-600 shadow-inner">
                     <CubeIcon className="w-5 h-5 text-gray-500" />
                     <span className="font-semibold text-brand-charcoal">Примерить в комнате (AI)</span>
@@ -228,13 +236,13 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                  <Tab.Group>
                     <Tab.List className="flex border-b border-gray-200">
                         <Tab as={Fragment}>{
-                            ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Описание</button>
+                            ({ selected }) => <button className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Описание</button>
                         }</Tab>
                         {techSpecs && <Tab as={Fragment}>{ 
-                            ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Характеристики</button>
+                            ({ selected }) => <button className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Характеристики</button>
                         }</Tab>}
                         <Tab as={Fragment}>{
-                             ({ selected }) => <button className={`px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Отзывы ({(safeProduct.reviews ?? []).length})</button>
+                             ({ selected }) => <button className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors outline-none ${selected ? 'text-brand-brown border-b-2 border-brand-brown' : 'text-gray-500 hover:text-brand-charcoal'}`}>Отзывы ({(safeProduct.reviews ?? []).length})</button>
                         }</Tab>
                     </Tab.List>
                     <Tab.Panels className="mt-6">

@@ -14,9 +14,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const buffer = await response.arrayBuffer();
 
-    // Важно: Правильный MIME-тип для GLB
-    res.setHeader('Content-Type', 'model/gltf-binary');
-    // Разрешаем доступ отовсюду
+    // Определяем Content-Type
+    let contentType = 'model/gltf-binary'; // По умолчанию GLB
+    
+    // Проверка расширения в URL (учитываем возможные параметры запроса)
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    
+    if (cleanUrl.endsWith('.usdz')) {
+        contentType = 'model/vnd.usdz+zip';
+    } else if (cleanUrl.endsWith('.gltf')) {
+        contentType = 'model/gltf+json';
+    }
+
+    res.setHeader('Content-Type', contentType);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     
