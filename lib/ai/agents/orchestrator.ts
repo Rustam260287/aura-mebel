@@ -1,7 +1,7 @@
 
 import { askAI } from '../core';
 
-export type Intent = 'CATALOG' | 'DESIGN' | 'TECH' | 'GENERAL';
+export type Intent = 'CATALOG' | 'DESIGN' | 'TECH' | 'CHANGE_VISUAL' | 'GENERAL';
 
 export async function detectIntent(message: string): Promise<Intent> {
   try {
@@ -9,7 +9,7 @@ export async function detectIntent(message: string): Promise<Intent> {
       key: 'ORCHESTRATOR_CLASSIFY',
       variables: { message },
       responseFormat: 'json',
-      model: 'gpt-3.5-turbo' // Для классификации хватит и быстрого
+      model: 'gpt-3.5-turbo'
     });
     
     return result.intent || 'GENERAL';
