@@ -60,3 +60,11 @@ export const getAdminStorage = () => {
   }
   return admin.storage();
 };
+
+// --- НОВАЯ ФУНКЦИЯ ---
+export const getAdminAuth = () => {
+  if (admin.apps.length === 0) {
+    initializeFirebaseAdmin();
+  }
+  return admin.auth();
+};
