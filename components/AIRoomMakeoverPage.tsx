@@ -48,6 +48,20 @@ const AIRoomMakeoverPage: React.FC = () => {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const previewObjectUrlRef = useRef<string | null>(null);
+
+  const revokePreviewUrl = () => {
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current);
+      previewObjectUrlRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      revokePreviewUrl();
+    };
+  }, []);
 
   const [tryOnFurniture, setTryOnFurniture] = useState<{name: string, image: string} | null>(null);
 
@@ -68,9 +82,14 @@ const AIRoomMakeoverPage: React.FC = () => {
   }, [router.isReady, router.query]);
 
   const resizeImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (event) => {
+        const rawData = event.target?.result;
+        if (typeof rawData !== 'string') {
+          reject(new Error('Не удалось прочитать файл'));
+          return;
+        }
         const img = createImageElement();
         img.onload = () => {
           const canvas = document.createElement('canvas');
@@ -97,8 +116,10 @@ const AIRoomMakeoverPage: React.FC = () => {
           ctx?.drawImage(img, 0, 0, width, height);
           resolve(canvas.toDataURL('image/jpeg', 0.85));
         };
-        img.src = event.target?.result as string;
+        img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+        img.src = rawData;
       };
+      reader.onerror = () => reject(new Error('Ошибка чтения файла'));
       reader.readAsDataURL(file);
     });
   };
@@ -161,19 +182,37 @@ const AIRoomMakeoverPage: React.FC = () => {
   };
 
   const processFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-        toast.error('Пожалуйста, загрузите изображение (JPG, PNG).');
+    const supportedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const fileType = file.type || '';
+    const isSupported =
+      supportedMimeTypes.has(fileType) ||
+      /\.(jpe?g|png|webp)$/i.test(file.name || '');
+
+    if (!isSupported) {
+        toast.error('Поддерживаются JPG/PNG/WebP. Форматы HEIC/HEIF часто не поддерживаются — сохраните фото как JPG.');
         return;
     }
+    let previewUrl: string | null = null;
     try {
-        const resized = await resizeImage(file);
-        setOriginalImage(resized);
+        previewUrl = URL.createObjectURL(file);
+        previewObjectUrlRef.current = previewUrl;
+        setOriginalImage(previewUrl);
         setRedesignedImage(null);
         setRecommendedProducts([]);
         setShareableUrl(null);
+
+        const resized = await resizeImage(file);
+        setOriginalImage(resized);
+        if (previewUrl) revokePreviewUrl();
     } catch (error) {
         console.error("Ошибка обработки:", error);
-        toast.error("Не удалось обработать изображение");
+        toast.error("Не удалось оптимизировать фото — использую оригинал.");
+        // Если успели показать превью (blob URL) — оставляем его, чтобы пользователь видел картинку.
+        // Если превью не было — очищаем.
+        if (!previewUrl) {
+          revokePreviewUrl();
+          setOriginalImage(null);
+        }
     }
   };
 
@@ -369,32 +408,28 @@ const AIRoomMakeoverPage: React.FC = () => {
                             <input 
                                 ref={fileInputRef}
                                 type="file" 
-                                accept="image/*" 
+                                accept="image/jpeg,image/png,image/webp"
                                 className="hidden"
                                 onChange={handleImageUpload} 
                             />
                             
                             {originalImage ? (
                                 <div className="absolute inset-2 overflow-hidden rounded-lg relative">
-                                    <Image
-                                        src={originalImage}
-                                        alt="Uploaded"
-                                        className="object-cover"
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                        unoptimized
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={originalImage}
+                                      alt="Uploaded"
+                                      className="w-full h-full object-cover"
                                     />
                                     {/* ПРЕВЬЮ: Показываем пользователю, как мебель "сядет" (чтобы он понимал, что будет в коллаже) */}
                                     {tryOnFurniture && tryOnFurniture.image && (
                                         <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[40%] z-10 pointer-events-none opacity-80">
                                             <div className="w-full h-full relative">
-                                                <Image
-                                                    src={tryOnFurniture.image}
-                                                    alt="Furniture Preview"
-                                                    className="object-contain"
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, 80vw"
-                                                    unoptimized
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                  src={tryOnFurniture.image}
+                                                  alt="Furniture Preview"
+                                                  className="w-full h-full object-contain"
                                                 />
                                             </div>
                                         </div>
