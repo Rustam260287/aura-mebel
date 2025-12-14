@@ -4,7 +4,8 @@ import { Dialog, Transition, Tab } from '@headlessui/react';
 import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { Product } from '../types';
 import { ModelUploader } from './admin/ModelUploader';
-import { MediaUploader } from './admin/MediaUploader'; // Import MediaUploader
+import { MediaUploader } from './admin/MediaUploader';
+import { useAuth } from '../contexts/AuthContext'; // Import Auth
 
 interface ProductEditModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ function classNames(...classes: string[]) {
 export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onClose, product, onSave }) => {
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { user } = useAuth(); // Get user
 
   useEffect(() => {
     if (product) {
@@ -55,13 +57,25 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
 
   const handleAIAnalyze = async () => {
       if (!formData.description) return;
+      if (!user) {
+          alert("Вы не авторизованы");
+          return;
+      }
+
       setIsAnalyzing(true);
       try {
+          const token = await user.getIdToken();
           const response = await fetch('/api/admin/analyze-product', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}` // Send Token
+              },
               body: JSON.stringify({ description: formData.description })
           });
+          
+          if (!response.ok) throw new Error('AI request failed');
+
           const data = await response.json();
           
           if (data) {
@@ -237,7 +251,6 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                                         </div>
                                     ))}
                                     
-                                    {/* Media Uploader Button */}
                                     <MediaUploader onUploadSuccess={handleMediaUpload}>
                                         {(open, isLoading) => (
                                             <button 

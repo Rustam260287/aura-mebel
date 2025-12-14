@@ -1,13 +1,19 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
+import { verifyAdmin } from '../../../../lib/auth/admin-check';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // --- SECURITY CHECK ---
+  const isAdmin = await verifyAdmin(req, res);
+  if (!isAdmin) return;
+  // ----------------------
+
   const { type } = req.body;
   
-  if (!['bulk_ai_specs', 'bulk_rewrite_desc'].includes(type)) {
+  if (!['bulk_ai_specs', 'bulk_rewrite_desc', 'bulk_generate_interior_photos'].includes(type)) {
       return res.status(400).json({ error: 'Invalid job type' });
   }
 
@@ -15,8 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!db) return res.status(500).json({ error: 'Database not available' });
 
   try {
-    // 1. Собираем ID всех товаров
-    // В реальном проекте лучше использовать пагинацию или фильтры, но для <1000 товаров это ок.
     const snapshot = await db.collection('products').select().get();
     const targetIds = snapshot.docs.map(doc => doc.id);
 
@@ -24,7 +28,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'No products found' });
     }
 
-    // 2. Создаем задачу
     const newJob = {
         type,
         status: 'pending',

@@ -2,6 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from 'replicate';
 import { MediaService } from '../../../lib/media/service';
+import { checkRateLimit } from '../../../lib/rate-limit';
+import { verifyAdmin } from '../../../lib/auth/admin-check';
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -38,15 +40,11 @@ async function runWithRetry(fn: () => Promise<any>, retries = 1, delay = 2000) {
     }
 }
 
-// Fallback logic
 async function pollinationsFallback(prompt: string): Promise<string> {
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=768&nologo=true&model=flux&seed=${Math.floor(Math.random() * 1000)}`;
-    
-    // Save fallback result to our storage too for consistency
     try {
         return await MediaService.uploadFromUrl(url, 'ai-designs');
     } catch (e) {
-        // If upload fails, fallback to direct URL (less reliable but works)
         return url;
     }
 }
@@ -59,6 +57,25 @@ export default async function handler(
     res.setHeader('Allow', ['POST']);
     return res.status(405).end();
   }
+
+  // --- SECURITY: Rate Limiting ---
+  // 1. Проверяем, админ ли это (по токену). Админам безлимит.
+  const isAdmin = await verifyAdmin(req, res as any).catch(() => false);
+  
+  if (!isAdmin) {
+      // 2. Если не админ, проверяем лимит по IP
+      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+      const limitResult = await checkRateLimit(ip, 10, 3600000, 'ai_redesign'); // 10 запросов в час
+
+      if (!limitResult.success) {
+          return res.status(429).json({ 
+              original: null, 
+              redesigned: null, 
+              error: 'Превышен лимит генераций. Попробуйте позже.' 
+          });
+      }
+  }
+  // -------------------------------
 
   const { imageUrl, prompt, style, isComposite } = req.body;
 
@@ -103,9 +120,6 @@ export default async function handler(
     const replicateUrl = Array.isArray(output) ? output[0] : output;
     
     if (typeof replicateUrl === 'string' && replicateUrl.startsWith('http')) {
-        // --- NEW: SAVE TO FIREBASE STORAGE ---
-        // Instead of returning volatile Replicate URL or heavy base64, 
-        // we upload it to our own storage.
         console.log("Uploading result to Firebase Storage...");
         redesignedImageUrl = await MediaService.uploadFromUrl(replicateUrl, 'ai-designs');
         console.log("Saved to:", redesignedImageUrl);

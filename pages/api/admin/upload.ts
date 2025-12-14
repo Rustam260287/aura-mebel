@@ -2,6 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MediaService } from '../../../lib/media/service';
 import sharp from 'sharp';
+import { verifyAdmin } from '../../../lib/auth/admin-check';
 
 export const config = {
   api: {
@@ -20,11 +21,15 @@ async function readStream(req: NextApiRequest): Promise<Buffer> {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // --- SECURITY CHECK ---
+  const isAdmin = await verifyAdmin(req, res);
+  if (!isAdmin) return; // Response is already sent by verifyAdmin
+  // ----------------------
+
   try {
     const folder = req.query.folder as string || 'uploads';
     const mimeType = req.headers['content-type'] || 'application/octet-stream';
     
-    // Read raw body
     let buffer = await readStream(req);
     
     if (buffer.length === 0) {
@@ -33,23 +38,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let finalMimeType = mimeType;
     
-    // Image Optimization
     if (mimeType.startsWith('image/') && !mimeType.includes('svg')) {
         try {
             console.log(`Optimizing image (${mimeType})...`);
             buffer = await sharp(buffer)
-                .rotate() // Auto-rotate based on EXIF
+                .rotate()
                 .resize({ 
                     width: 1920, 
                     height: 1920, 
                     fit: 'inside', 
                     withoutEnlargement: true 
                 })
-                .webp({ quality: 80, effort: 4 }) // Convert to WebP
+                .webp({ quality: 80, effort: 4 })
                 .toBuffer();
             
             finalMimeType = 'image/webp';
-            console.log('Image optimized to WebP');
         } catch (e) {
             console.error('Image optimization failed, uploading original:', e);
         }

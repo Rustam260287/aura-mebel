@@ -2,6 +2,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext'; // Import Auth
 
 interface MediaUploaderProps {
   onUploadSuccess: (url: string, type: 'image' | 'video') => void;
@@ -16,13 +17,13 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 export const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadSuccess, accept = "image/*,video/*", folder = 'products', children }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth(); // Get user
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const type = file.type.startsWith('video') ? 'video' : 'image';
       
-      // Validation
       const maxSize = type === 'video' ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
       if (file.size > maxSize) {
           alert(`Файл слишком большой. Максимальный размер для ${type === 'video' ? 'видео 50МБ' : 'фото 10МБ'}.`);
@@ -32,14 +33,18 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadSuccess, a
 
       setIsLoading(true);
       try {
+        if (!user) throw new Error("Вы не авторизованы");
+        const token = await user.getIdToken();
+
         const targetFolder = type === 'video' ? 'videos' : folder;
         
         const res = await fetch(`/api/admin/upload?folder=${targetFolder}`, {
             method: 'POST',
             headers: {
-                'Content-Type': file.type
+                'Content-Type': file.type,
+                'Authorization': `Bearer ${token}` // Send Token
             },
-            body: file // Send raw file
+            body: file 
         });
 
         if (!res.ok) throw new Error('Upload failed');
@@ -49,7 +54,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadSuccess, a
 
       } catch (error) {
         console.error("Upload failed", error);
-        alert("Ошибка загрузки файла");
+        alert("Ошибка загрузки файла: " + (error as any).message);
       } finally {
         setIsLoading(false);
         if (inputRef.current) inputRef.current.value = '';
