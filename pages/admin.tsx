@@ -53,9 +53,13 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
         body: JSON.stringify(updatedProduct),
       });
 
-      if (!res.ok) throw new Error('Failed to update product');
+      const responseData = await res.json();
+      if (!res.ok) {
+        throw new Error(responseData?.error || 'Failed to update product');
+      }
       
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      const savedProduct = responseData as Product;
+      setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
       addToast('Товар успешно обновлен', 'success');
     } catch (error) {
       console.error(error);

@@ -1,290 +1,297 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
-import type { Product } from '../types';
-import { Button } from './Button';
-import { XMarkIcon, SparklesIcon, ArrowPathIcon, TrashIcon, PhotoIcon } from './Icons'; // Добавил иконки
-import { useToast } from '../contexts/ToastContext';
-import { storage } from '../firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Image from 'next/image';
+
+'use client';
+
+import React, { useState, Fragment, useEffect } from 'react';
+import { Dialog, Transition, Tab } from '@headlessui/react';
+import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { Product } from '../types';
+import { ModelUploader } from './admin/ModelUploader';
 
 interface ProductEditModalProps {
-  product: Product | null;
+  isOpen: boolean;
   onClose: () => void;
-  onSave: (productData: Omit<Product, 'id'> | Product) => void;
+  product: Product | null;
+  onSave: (updatedProduct: Product) => void;
 }
 
-const ProductEditModalComponent: React.FC<ProductEditModalProps> = ({ product, onClose, onSave }) => {
-  const [productData, setProductData] = useState<Omit<Product, 'id'>>({
-    name: '',
-    category: '',
-    price: 0,
-    description: '',
-    seoDescription: '',
-    imageUrls: [],
-    videoUrl: '', // Добавлено поле
-    details: { dimensions: '', material: '', care: '' },
-    rating: 0,
-    reviews: [],
-  });
-  const [isSeoLoading, setIsSeoLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  
-  const { addToast } = useToast();
+type ProductFormData = Partial<Product> & { model3d?: string };
+
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
+}
+
+export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onClose, product, onSave }) => {
+  const [formData, setFormData] = useState<ProductFormData>({});
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (product) {
-      setProductData({
-          ...product,
-          details: product.details || { dimensions: '', material: '', care: '' }
+      setFormData({
+        ...product,
+        model3d: product.model3d ?? product.model3dUrl ?? '',
       });
+    } else {
+      setFormData({});
     }
   }, [product]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setProductData(prev => ({
-        ...prev,
-        [parent]: { ...(prev as any)[parent], [child]: value },
-      }));
+    
+    if (name.startsWith('specs.')) {
+        const specKey = name.split('.')[1];
+        setFormData(prev => ({
+            ...prev,
+            specs: {
+                ...prev.specs,
+                [specKey]: value
+            }
+        }));
+    } else if (name === 'model3d') {
+        setFormData(prev => ({
+            ...prev,
+            model3d: value,
+            model3dUrl: value,
+        }));
     } else {
-      setProductData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-  
-  const handleGenerateSeo = useCallback(async () => {
-    if (!productData.name) {
-        addToast('Введите название товара для генерации SEO.', 'error');
-        return;
-    }
-
-    setIsSeoLoading(true);
-    try {
-        const response = await fetch('/api/products/generate-seo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: productData.name,
-                category: productData.category,
-                description: productData.description
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to generate SEO');
-        }
-
-        const data = await response.json();
-        setProductData(prev => ({ ...prev, seoDescription: data.seoDescription }));
-        addToast('SEO описание успешно сгенерировано!', 'success');
-    } catch (err) {
-      console.error(err);
-      addToast('Не удалось сгенерировать SEO описание.', 'error');
-    } finally {
-      setIsSeoLoading(false);
-    }
-  }, [productData.name, productData.category, productData.description, addToast]);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-
-    const file = e.target.files[0];
-    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-    setIsUploading(true);
-
-    try {
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      setProductData(prev => ({
-        ...prev,
-        imageUrls: [...(prev.imageUrls || []), downloadURL]
-      }));
-      addToast('Image uploaded successfully', 'success');
-    } catch (error) {
-      console.error("Upload error:", error);
-      addToast('Failed to upload image', 'error');
-    } finally {
-      setIsUploading(false);
+        setFormData(prev => ({ ...prev, [name]: name === 'price' ? parseFloat(value) : value }));
     }
   };
 
-  // Новый обработчик для видео
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+  const handleSave = () => {
+    const { model3d, ...safeFormData } = formData;
 
-    const file = e.target.files[0];
-    // Ограничение на размер видео (например, 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-        addToast('Видео слишком большое (макс 50MB)', 'error');
-        return;
+    const isEditing = Boolean(product);
+    const baseProduct = (product ?? {
+      name: '',
+      category: '',
+      price: 0,
+      imageUrls: [],
+      description: '',
+      rating: 0,
+      reviews: [],
+    }) as Product;
+
+    const payload = {
+      ...baseProduct,
+      ...safeFormData,
+    } as Product;
+
+    payload.imageUrls = payload.imageUrls || [];
+    payload.reviews = payload.reviews || [];
+    payload.price = typeof payload.price === 'number' ? payload.price : Number(payload.price) || 0;
+
+    const has3D = Boolean(
+      safeFormData.has3D ||
+      baseProduct.has3D ||
+      safeFormData.model3dUrl ||
+      safeFormData.model3dIosUrl
+    );
+
+    payload.has3D = has3D;
+
+    if (!isEditing) {
+      delete (payload as Partial<Product>).id;
     }
 
-    const storageRef = ref(storage, `products/videos/${Date.now()}_${file.name}`);
-    setIsUploading(true);
-
-    try {
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      setProductData(prev => ({
-        ...prev,
-        videoUrl: downloadURL
-      }));
-      addToast('Видео успешно загружено', 'success');
-    } catch (error) {
-      console.error("Video upload error:", error);
-      addToast('Не удалось загрузить видео', 'error');
-    } finally {
-      setIsUploading(false);
-    }
+    onSave(payload);
+    onClose();
   };
 
-  const handleRemoveImage = (indexToRemove: number) => {
-    setProductData(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, index) => index !== indexToRemove)
-    }));
+  const handleAIAnalyze = async () => {
+      if (!formData.description) return;
+      setIsAnalyzing(true);
+      try {
+          const response = await fetch('/api/admin/analyze-product', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ description: formData.description })
+          });
+          const data = await response.json();
+          
+          if (data) {
+              const newSpecs = { ...(formData.specs || {}) };
+              if (data.width) newSpecs['Ширина'] = `${data.width} см`;
+              if (data.depth) newSpecs['Глубина'] = `${data.depth} см`;
+              if (data.height) newSpecs['Высота'] = `${data.height} см`;
+              if (data.material) newSpecs['Материал'] = data.material;
+              if (data.color) newSpecs['Цвет'] = data.color;
+              
+              setFormData(prev => ({ ...prev, specs: newSpecs }));
+          }
+      } catch (error) {
+          console.error("AI Analysis failed", error);
+          alert("Не удалось проанализировать описание.");
+      } finally {
+          setIsAnalyzing(false);
+      }
   };
 
-  const handleRemoveVideo = () => {
-      setProductData(prev => ({ ...prev, videoUrl: undefined }));
+  const handle3DUpload = (url: string) => {
+      let pathname = url;
+      try {
+        pathname = new URL(url).pathname;
+      } catch {
+        pathname = url;
+      }
+
+      const isUsdz = pathname.toLowerCase().endsWith('.usdz');
+
+      if (isUsdz) {
+          setFormData(prev => ({ ...prev, model3dIosUrl: url }));
+      } else {
+          setFormData(prev => ({
+              ...prev,
+              model3d: url,
+              model3dUrl: url,
+          }));
+      }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const dataToSave = {
-        ...productData,
-        price: Number(productData.price)
-    };
-    onSave(product ? { ...product, ...dataToSave } : dataToSave);
-  };
-  
+  if (!product) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-2xl font-serif text-brand-brown">{product ? 'Редактировать товар' : 'Добавить товар'}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}><XMarkIcon className="w-6 h-6" /></Button>
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all flex flex-col max-h-[90vh]">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                  <Dialog.Title as="h3" className="text-xl font-bold text-gray-900 font-serif">
+                    Редактирование: {formData.name}
+                  </Dialog.Title>
+                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors"><XMarkIcon className="w-6 h-6" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6">
+                    <Tab.Group>
+                        <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream/30 p-1 mb-6">
+                            {['Основное', 'Характеристики (AI)', '3D и Медиа', 'Изображения'].map((category) => (
+                            <Tab key={category} className={({ selected }) => classNames('w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all outline-none', selected ? 'bg-white shadow text-brand-brown' : 'text-gray-600 hover:bg-white/[0.12] hover:text-brand-brown')}>
+                                {category}
+                            </Tab>
+                            ))}
+                        </Tab.List>
+                        <Tab.Panels>
+                            <Tab.Panel className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                                    <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Цена (₽)</label>
+                                        <input type="number" name="price" value={formData.price || 0} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Категория</label>
+                                        <input type="text" name="category" value={formData.category || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
+                                    <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel className="space-y-6">
+                                <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-100">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h4 className="font-semibold text-purple-900">AI Ассистент</h4>
+                                            <p className="text-xs text-purple-700">Автоматически извлечь характеристики из описания</p>
+                                        </div>
+                                        <button onClick={handleAIAnalyze} disabled={isAnalyzing} className="flex items-center gap-2 bg-white text-purple-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50">
+                                            {isAnalyzing ? (<div className="animate-spin h-4 w-4 border-2 border-purple-700 border-t-transparent rounded-full"></div>) : (<SparklesIcon className="w-4 h-4" />)}
+                                            {isAnalyzing ? 'Анализирую...' : 'AI Заполнить'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {['Ширина', 'Глубина', 'Высота', 'Материал', 'Цвет'].map(spec => (
+                                        <div key={spec}>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1 uppercase">{spec}</label>
+                                            <input type="text" name={`specs.${spec}`} value={formData.specs?.[spec] || ''} onChange={handleChange} className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-brand-brown/20 outline-none transition-colors" placeholder="Не указано" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1 uppercase">Прочие характеристики (JSON)</label>
+                                    <textarea rows={4} className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-600" value={JSON.stringify(formData.specs, null, 2)} readOnly />
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-gray-800 flex items-center gap-2"><CubeIcon className="w-5 h-5" />Загрузка 3D</h4>
+                                        <ModelUploader onUploadSuccess={handle3DUpload} />
+                                        <div className="mt-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Android (.glb) URL</label>
+                                            <input type="text" name="model3d" value={formData.model3d || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">iOS (.usdz) URL</label>
+                                            <input type="text" name="model3dIosUrl" value={formData.model3dIosUrl || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">
+                                        {formData.model3d ? (
+                                            <div className="text-center">
+                                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3"><CubeIcon className="w-8 h-8" /></div>
+                                                <p className="font-medium text-gray-900">Модель подключена</p>
+                                                <p className="text-xs text-gray-500 break-all mt-2 px-4">{formData.model3d}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center text-gray-400"><CubeIcon className="w-16 h-16 mx-auto mb-2 opacity-20" /><p>Модель не загружена</p></div>
+                                        )}
+                                    </div>
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {formData.imageUrls?.map((url, index) => (
+                                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                        </div>
+                                    ))}
+                                    <button className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-brand-brown hover:text-brand-brown transition-all bg-gray-50 hover:bg-brand-cream/10">
+                                        <PhotoIcon className="w-8 h-8 mb-1" />
+                                        <span className="text-xs font-bold">Добавить</span>
+                                    </button>
+                                </div>
+                            </Tab.Panel>
+                        </Tab.Panels>
+                    </Tab.Group>
+                </div>
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                  <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">Отмена</button>
+                  <button onClick={handleSave} className="px-6 py-2.5 rounded-xl font-bold bg-brand-brown text-white hover:bg-brand-charcoal transition-all shadow-lg shadow-brand-brown/20">Сохранить изменения</button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Название</label>
-                <input type="text" name="name" value={productData.name} onChange={handleChange} className="w-full p-2 border rounded" required />
-            </div>
-            <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Цена</label>
-                <input type="number" name="price" value={productData.price} onChange={handleChange} className="w-full p-2 border rounded" required />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Категория</label>
-            <select name="category" value={productData.category} onChange={handleChange} className="w-full p-2 border rounded">
-                <option value="">Выберите категорию</option>
-                <option value="Диваны">Диваны</option>
-                <option value="Кресла">Кресла</option>
-                <option value="Кровати">Кровати</option>
-                <option value="Столы">Столы</option>
-                <option value="Стулья">Стулья</option>
-                <option value="Шкафы">Шкафы</option>
-                <option value="Кухни">Кухни</option>
-                <option value="Мягкая мебель">Мягкая мебель</option>
-                <option value="Гостиная">Гостиная</option>
-                <option value="Спальни">Спальни</option>
-            </select>
-          </div>
-
-          {/* Images */}
-          <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Изображения</label>
-              <div className="flex flex-wrap gap-4 mb-4">
-                  {productData.imageUrls?.map((url, index) => (
-                      <div key={index} className="relative group w-24 h-24">
-                          <Image src={url} alt={`Product ${index}`} className="w-full h-full object-cover rounded border" width={96} height={96} />
-                          <button
-                              type="button"
-                              onClick={() => handleRemoveImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                              <TrashIcon className="w-4 h-4" />
-                          </button>
-                      </div>
-                  ))}
-                  <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown">
-                      <span className="text-xs text-center text-gray-500">{isUploading ? '...' : '+ Фото'}</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
-                  </label>
-              </div>
-          </div>
-
-          {/* Video Upload Section */}
-          <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Видео обзор</label>
-              {productData.videoUrl ? (
-                  <div className="relative w-full max-w-xs aspect-video bg-black rounded overflow-hidden border border-gray-300">
-                      <video src={productData.videoUrl} controls className="w-full h-full" />
-                      <button
-                          type="button"
-                          onClick={handleRemoveVideo}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-md"
-                          title="Удалить видео"
-                      >
-                          <TrashIcon className="w-4 h-4" />
-                      </button>
-                  </div>
-              ) : (
-                  <label className="flex items-center justify-center w-full max-w-xs p-4 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-brand-brown hover:bg-gray-50 transition-colors">
-                      <div className="text-center">
-                          <PhotoIcon className="w-8 h-8 mx-auto text-gray-400" /> {/* Используем PhotoIcon как заглушку, или VideoIcon если есть */}
-                          <span className="mt-2 block text-sm font-medium text-gray-600">{isUploading ? 'Загрузка...' : 'Загрузить видео (MP4, WebM)'}</span>
-                      </div>
-                      <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={isUploading} />
-                  </label>
-              )}
-          </div>
-          
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Описание</label>
-            <textarea name="description" value={productData.description} onChange={handleChange} className="w-full p-2 border rounded" rows={4} required></textarea>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-             <div>
-                <label htmlFor="details.dimensions" className="block text-sm font-medium text-gray-700">Размеры</label>
-                <input type="text" name="details.dimensions" value={productData.details?.dimensions || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-             </div>
-             <div>
-                <label htmlFor="details.material" className="block text-sm font-medium text-gray-700">Материал</label>
-                <input type="text" name="details.material" value={productData.details?.material || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-             </div>
-             <div>
-                <label htmlFor="details.care" className="block text-sm font-medium text-gray-700">Уход</label>
-                <input type="text" name="details.care" value={productData.details?.care || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-             </div>
-          </div>
-
-          <div className="flex items-end gap-4">
-            <div className="flex-grow">
-              <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700">SEO Описание</label>
-              <textarea name="seoDescription" value={productData.seoDescription || ''} onChange={handleChange} className="w-full p-2 border rounded" rows={3}></textarea>
-            </div>
-            <Button variant="outline" type="button" onClick={handleGenerateSeo} disabled={isSeoLoading} title="Сгенерировать SEO описание с помощью ИИ">
-                {isSeoLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin"/> : <SparklesIcon className="w-5 h-5"/>}
-            </Button>
-          </div>
-          
-          <div className="pt-4 border-t flex justify-end gap-4">
-            <Button variant="outline" type="button" onClick={onClose}>Отмена</Button>
-            <Button type="submit">Сохранить</Button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </Dialog>
+    </Transition>
   );
 };
-
-export const ProductEditModal = memo(ProductEditModalComponent);

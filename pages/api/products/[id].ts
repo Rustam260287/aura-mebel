@@ -40,11 +40,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       const { id: _, ...dataToUpdate } = updatedProduct; // Exclude ID from data being written
 
-      await db.collection('products').doc(id as string).set({
+      const docRef = db.collection('products').doc(id as string);
+      console.info(`[api/products/${id}] Updating product`, {
+        model3dUrl: dataToUpdate.model3dUrl,
+        model3dIosUrl: dataToUpdate.model3dIosUrl,
+        has3D: dataToUpdate.has3D,
+      });
+
+      await docRef.set({
           ...dataToUpdate,
           updatedAt: new Date().toISOString()
       }, { merge: true });
-      res.status(200).json(updatedProduct);
+
+      const savedDoc = await docRef.get();
+      const savedProduct = {
+        id: savedDoc.id,
+        ...savedDoc.data(),
+      } as Product;
+
+      res.status(200).json(savedProduct);
     } catch (error) {
       console.error("Update product error:", error);
       res.status(500).json({ error: 'Failed to update product' });
