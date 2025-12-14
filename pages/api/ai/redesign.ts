@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from 'replicate';
 import { MediaService } from '../../../lib/media/service';
 import { checkRateLimit } from '../../../lib/rate-limit';
-import { verifyAdmin } from '../../../lib/auth/admin-check';
+import { checkIsAdmin } from '../../../lib/auth/admin-check';
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -59,13 +59,11 @@ export default async function handler(
   }
 
   // --- SECURITY: Rate Limiting ---
-  // 1. Проверяем, админ ли это (по токену). Админам безлимит.
-  const isAdmin = await verifyAdmin(req, res as any).catch(() => false);
+  const isAdmin = await checkIsAdmin(req);
   
   if (!isAdmin) {
-      // 2. Если не админ, проверяем лимит по IP
       const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
-      const limitResult = await checkRateLimit(ip, 10, 3600000, 'ai_redesign'); // 10 запросов в час
+      const limitResult = await checkRateLimit(ip, 10, 3600000, 'ai_redesign');
 
       if (!limitResult.success) {
           return res.status(429).json({ 
