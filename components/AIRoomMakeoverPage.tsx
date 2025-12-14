@@ -413,8 +413,8 @@ const AIRoomMakeoverPage: React.FC = () => {
                                 onChange={handleImageUpload} 
                             />
                             
-                            {originalImage ? (
-                                <div className="absolute inset-2 overflow-hidden rounded-lg relative">
+	                            {originalImage ? (
+	                                <div className="absolute inset-2 overflow-hidden rounded-lg">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                       src={originalImage}

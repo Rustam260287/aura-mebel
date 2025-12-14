@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 
 interface BeforeAfterSliderProps {
   before: string;
@@ -61,14 +60,13 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) 
       onTouchMove={handleTouchMove}
     >
       {/* After Image (Background) */}
-      <div className="absolute top-0 left-0 w-full h-full relative">
-        <Image 
-            src={after} 
-            alt="After Redesign" 
-            className="object-cover pointer-events-none" 
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized
+      <div className="absolute top-0 left-0 w-full h-full">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={after}
+          alt="After Redesign"
+          className="w-full h-full object-cover pointer-events-none"
+          draggable={false}
         />
       </div>
 
@@ -77,13 +75,12 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) 
         className="absolute top-0 left-0 h-full w-full overflow-hidden relative"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <Image 
-            src={before} 
-            alt="Original Room" 
-            className="object-cover pointer-events-none" 
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={before}
+          alt="Original Room"
+          className="w-full h-full object-cover pointer-events-none"
+          draggable={false}
         />
       </div>
 

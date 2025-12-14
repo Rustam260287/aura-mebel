@@ -45,6 +45,14 @@ async function pollinationsFallback(prompt: string): Promise<string> {
     return `data:image/jpeg;base64,${buffer.toString('base64')}`;
 }
 
+async function fetchAsDataUrl(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+  const contentType = res.headers.get('content-type') || 'image/jpeg';
+  const buffer = Buffer.from(await res.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString('base64')}`;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData> 
@@ -98,7 +106,7 @@ export default async function handler(
         console.log("Mode: Flux Furniture Try-On (Collage Refinement)");
     } else {
         // Для полного редизайна
-        input.prompt_strength = 0.65;
+        input.prompt_strength = 0.85;
         console.log("Mode: Flux Room Redesign");
     }
 
@@ -107,7 +115,8 @@ export default async function handler(
     const resultItem = Array.isArray(output) ? output[0] : output;
     
     if (typeof resultItem === 'string') {
-        redesignedImageUrl = resultItem;
+        // Возвращаем base64, чтобы фронт не зависел от доменов/CORS/next-image.
+        redesignedImageUrl = await fetchAsDataUrl(resultItem);
     } else if (resultItem && typeof resultItem === 'object') {
         const arrayBuffer = await new Response(resultItem as any).arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
