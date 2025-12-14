@@ -23,6 +23,7 @@ function classNames(...classes: string[]) {
 export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onClose, product, onSave }) => {
   const [formData, setFormData] = useState<ProductFormData>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSeoGenerating, setIsSeoGenerating] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -55,6 +56,40 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
         }));
     } else {
         setFormData(prev => ({ ...prev, [name]: name === 'price' ? parseFloat(value) : value }));
+    }
+  };
+
+  const handleGenerateSeo = async () => {
+    if (!formData.name) {
+      alert('Сначала введите название товара.');
+      return;
+    }
+
+    setIsSeoGenerating(true);
+    try {
+      const response = await fetch('/api/products/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          category: formData.category || '',
+          description: formData.description || '',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate SEO description');
+      }
+
+      const data = await response.json();
+      if (data?.seoDescription) {
+        setFormData((prev) => ({ ...prev, seoDescription: data.seoDescription }));
+      }
+    } catch (error) {
+      console.error('SEO generation failed', error);
+      alert('Не удалось сгенерировать SEO-описание.');
+    } finally {
+      setIsSeoGenerating(false);
     }
   };
 
@@ -211,6 +246,29 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                                 <div>
                                     <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
                                     <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
+                                </div>
+                                <div className="space-y-2 pt-2">
+                                  <div className="flex items-center justify-between">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                      SEO описание (meta)
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={handleGenerateSeo}
+                                      disabled={isSeoGenerating}
+                                      className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full border border-brand-brown/40 text-brand-brown hover:bg-brand-brown hover:text-white transition-colors disabled:opacity-60"
+                                    >
+                                      {isSeoGenerating ? 'Генерация…' : 'Сгенерировать SEO'}
+                                    </button>
+                                  </div>
+                                  <textarea
+                                    name="seoDescription"
+                                    rows={3}
+                                    value={formData.seoDescription || ''}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-xs leading-relaxed"
+                                    placeholder="Краткое описание для поисковиков и сниппета."
+                                  />
                                 </div>
                             </Tab.Panel>
                             <Tab.Panel className="space-y-6">

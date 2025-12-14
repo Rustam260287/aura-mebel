@@ -1,4 +1,4 @@
-import { storage } from 'firebase-functions';
+import { onObjectFinalized } from 'firebase-functions/v2/storage';
 import admin from 'firebase-admin';
 import sharp from 'sharp';
 import os from 'os';
@@ -11,10 +11,9 @@ const BUCKET_NAME = 'aura-mebel-7ec96.firebasestorage.app';
 const TARGET_FOLDER = 'products/';
 const METADATA_FLAG = 'convertedToWebp';
 
-export const convertProductImagesToWebp = storage
-  .bucket(BUCKET_NAME)
-  .object()
-  .onFinalize(async (object) => {
+export const convertProductImagesToWebp = onObjectFinalized(
+  { bucket: BUCKET_NAME, region: 'us-west1' },
+  async (object) => {
     const { bucket: bucketName, name, contentType, metadata } = object;
     if (!bucketName || !name || !contentType) return;
 
@@ -55,4 +54,5 @@ export const convertProductImagesToWebp = storage
     } finally {
       await fs.rm(tmpFilePath, { force: true });
     }
-  });
+  }
+);

@@ -5,6 +5,7 @@ import type { Product, BlogPost } from '../../types';
 interface AdminDashboardProps {
   products: Product[];
   posts: BlogPost[];
+  onAutoFixProblems?: (ids: string[]) => Promise<void>;
 }
 
 const StatCard: React.FC<{ title: string; value: string | number; children: React.ReactNode }> = ({ title, value, children }) => (
@@ -19,7 +20,98 @@ const StatCard: React.FC<{ title: string; value: string | number; children: Reac
     </div>
 );
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ products, posts }) => {
+const buildProblemReason = (product: Product) => {
+  const reasons: string[] = [];
+  if (!product.imageUrls || product.imageUrls.length === 0) {
+    reasons.push('нет фото');
+  }
+  const descLength = (product.description || '').replace(/\s+/g, ' ').trim().length;
+  if (!product.description || descLength < 100) {
+    reasons.push('короткое описание');
+  }
+  if (!product.model3dUrl && !product.model3dIosUrl) {
+    reasons.push('нет 3D');
+  }
+  return reasons.join(', ');
+};
+
+const hasStrangeDescription = (description?: string) => {
+  if (!description) return false;
+  return /уточните.+консультант/iu.test(description);
+};
+
+interface ProblemListProps {
+  title: string;
+  products: Product[];
+  emptyLabel: string;
+  onEditProduct?: (product: Product) => void;
+  getReason: (product: Product) => string;
+}
+
+const ProblemList: React.FC<
+  ProblemListProps & { onAutoFixProblemsClick?: (ids: string[]) => void }
+> = ({ title, products, emptyLabel, onEditProduct, getReason, onAutoFixProblemsClick }) => (
+  <div className="bg-white p-5 rounded-lg shadow-md">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-brand-charcoal">{title}</h2>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+          {products.length}
+        </span>
+      </div>
+      {products.length > 0 && onAutoFixProblemsClick && (
+        <button
+          type="button"
+          onClick={() => onAutoFixProblemsClick(products.map(p => p.id))}
+          className="text-xs font-semibold text-brand-brown hover:text-brand-charcoal px-3 py-1 rounded-full border border-brand-brown/30 hover:border-brand-charcoal/40 transition-colors"
+        >
+          Исправить автоматически
+        </button>
+      )}
+    </div>
+    {products.length === 0 ? (
+      <p className="text-sm text-gray-400">{emptyLabel}</p>
+    ) : (
+      <ul className="divide-y divide-gray-100">
+        {products.slice(0, 8).map((product) => (
+          <li key={product.id} className="py-2.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-brand-charcoal truncate">{product.name}</p>
+              <p className="text-xs text-gray-500 truncate">
+                {getReason(product)}
+              </p>
+            </div>
+            {onEditProduct && (
+              <button
+                type="button"
+                onClick={() => onEditProduct(product)}
+                className="text-xs font-semibold text-brand-brown hover:text-brand-charcoal px-3 py-1 rounded-full border border-brand-brown/30 hover:border-brand-charcoal/40 transition-colors"
+              >
+                Открыть
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
+export const AdminDashboard: React.FC<
+  AdminDashboardProps & { onEditProduct?: (product: Product) => void }
+> = ({ products, posts, onEditProduct, onAutoFixProblems }) => {
+  const problemProducts = products.filter((p) => {
+    const hasImages = p.imageUrls && p.imageUrls.length > 0;
+    const has3D = Boolean(p.model3dUrl || p.model3dIosUrl);
+    const descLength = (p.description || '').replace(/\s+/g, ' ').trim().length;
+    return !hasImages || !has3D || descLength < 100;
+  });
+
+  const strangeProducts = products.filter((p) => {
+    const badPrice = !p.price || p.price <= 0;
+    return badPrice || hasStrangeDescription(p.description);
+  });
+
   return (
     <div>
       <h1 className="text-3xl font-serif text-brand-brown mb-8">Аналитика</h1>
@@ -35,7 +127,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ products, posts 
             <p>Скоро здесь будут графики продаж</p>
         </div>
       </div>
-      {/* Future sections for charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <ProblemList
+          title="Проблемные товары"
+          products={problemProducts}
+          emptyLabel="Все товары выглядят хорошо — 3D, фото и тексты на месте."
+          onEditProduct={onEditProduct}
+          getReason={buildProblemReason}
+          onAutoFixProblemsClick={
+            onAutoFixProblems
+              ? (ids: string[]) => {
+                  onAutoFixProblems(ids).catch(err => {
+                    console.error('Auto-fix problems failed', err);
+                  });
+                }
+              : undefined
+          }
+        />
+        <ProblemList
+          title="Странные данные"
+          products={strangeProducts}
+          emptyLabel="Подозрительных цен и описаний не найдено."
+          onEditProduct={onEditProduct}
+          getReason={(product) => {
+            const reasons: string[] = [];
+            if (!product.price || product.price <= 0) {
+              reasons.push('подозрительная цена');
+            }
+            if (hasStrangeDescription(product.description)) {
+              reasons.push('текст: «уточните у консультанта»');
+            }
+            return reasons.join(', ');
+          }}
+        />
+      </div>
     </div>
   );
 };

@@ -109,6 +109,77 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
     }
   }, []);
 
+  const handleBulkGenerateSeo = useCallback(
+    async (productIds: string[]) => {
+      const token = await getAuthToken();
+      const res = await fetch('/api/admin/products/bulk-generate-seo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productIds }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Bulk SEO error:', data);
+        throw new Error(data?.error || 'Failed to bulk-generate SEO');
+      }
+    },
+    [],
+  );
+
+  const handleBulkUpdatePrices = useCallback(
+    async (productIds: string[], percent: number) => {
+      const token = await getAuthToken();
+      const res = await fetch('/api/admin/products/bulk-update-prices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productIds, percent }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Bulk price update error:', data);
+        throw new Error(data?.error || 'Failed to bulk update prices');
+      }
+
+      setProducts(prev =>
+        prev.map(p => {
+          if (!productIds.includes(p.id) || !p.price || p.price <= 0) return p;
+          const newPrice = Math.round(p.price * (1 + percent / 100));
+          return { ...p, price: newPrice };
+        }),
+      );
+    },
+    [],
+  );
+
+  const handleBulkGenerateDescriptions = useCallback(
+    async (productIds: string[]) => {
+      const token = await getAuthToken();
+      const res = await fetch('/api/admin/products/bulk-generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productIds }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Bulk description error:', data);
+        throw new Error(data?.error || 'Failed to bulk-generate descriptions');
+      }
+    },
+    [],
+  );
+
   const handleUpdateBlogPost = useCallback(async (updatedPost: BlogPost) => {
     try {
       const token = await getAuthToken();
@@ -179,17 +250,20 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
         <Button onClick={logout} variant="outline">Выйти</Button>
       </div>
       <AdminPage 
-          allProducts={products}
-          blogPosts={blogPosts}
-          orders={orders}
-          chatLogs={[]}
-          onNavigate={handleNavigate}
-          onUpdateProduct={handleUpdateProduct}
-          onAddProduct={handleAddProduct}
-          onDeleteProduct={handleDeleteProduct}
-          onUpdateBlogPost={handleUpdateBlogPost}
-          onDeleteBlogPost={handleDeleteBlogPost}
-          onUpdateOrderStatus={handleUpdateOrderStatus}
+        allProducts={products}
+        blogPosts={blogPosts}
+        orders={orders}
+        chatLogs={[]}
+        onNavigate={handleNavigate}
+        onUpdateProduct={handleUpdateProduct}
+        onAddProduct={handleAddProduct}
+        onDeleteProduct={handleDeleteProduct}
+        onBulkGenerateSeo={handleBulkGenerateSeo}
+        onBulkUpdatePrices={handleBulkUpdatePrices}
+        onBulkGenerateDescriptions={handleBulkGenerateDescriptions}
+        onUpdateBlogPost={handleUpdateBlogPost}
+        onDeleteBlogPost={handleDeleteBlogPost}
+        onUpdateOrderStatus={handleUpdateOrderStatus}
       />
     </>
   );

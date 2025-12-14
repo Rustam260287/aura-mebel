@@ -22,6 +22,9 @@ interface AdminPageProps {
   onDeleteBlogPost: (postId: string) => Promise<void>;
   onDeleteProduct: (productId: string) => Promise<void>;
   onUpdateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  onBulkGenerateSeo: (ids: string[]) => Promise<void>;
+  onBulkUpdatePrices: (ids: string[], percent: number) => Promise<void>;
+  onBulkGenerateDescriptions: (ids: string[]) => Promise<void>;
 }
 
 const AdminPageComponent: React.FC<AdminPageProps> = ({ 
@@ -36,6 +39,9 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   onDeleteBlogPost,
   onDeleteProduct,
   onUpdateOrderStatus,
+  onBulkGenerateSeo,
+  onBulkUpdatePrices,
+  onBulkGenerateDescriptions,
 }) => {
   const [adminView, setAdminView] = useState<AdminView>('products');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -51,14 +57,26 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   const renderContent = () => {
     switch (adminView) {
       case 'dashboard':
-        return <AdminDashboard products={allProducts} posts={currentBlogPosts} />;
+        return (
+          <AdminDashboard
+            products={allProducts}
+            posts={currentBlogPosts}
+            onEditProduct={setEditingProduct}
+            onAutoFixProblems={onBulkGenerateDescriptions}
+          />
+        );
       case 'products':
-        return <AdminProducts 
-                  products={allProducts} 
-                  onEditProduct={setEditingProduct}
-                  onDeleteProduct={onDeleteProduct}
-                  onAddProduct={() => setIsAddModalOpen(true)}
-                />;
+        return (
+          <AdminProducts
+            products={allProducts}
+            onEditProduct={setEditingProduct}
+            onDeleteProduct={onDeleteProduct}
+            onAddProduct={() => setIsAddModalOpen(true)}
+            onBulkGenerateSeo={onBulkGenerateSeo}
+            onBulkUpdatePrices={onBulkUpdatePrices}
+            onBulkGenerateDescriptions={onBulkGenerateDescriptions}
+          />
+        );
       case 'blog':
         return <AdminBlog 
                   posts={currentBlogPosts}
@@ -99,6 +117,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
       
       {isAddModalOpen && (
         <ProductEditModal
+          isOpen={isAddModalOpen}
           product={null}
           onClose={() => setIsAddModalOpen(false)}
           onSave={async (productData) => {
@@ -109,6 +128,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
       )}
       {editingProduct && (
         <ProductEditModal
+          isOpen={!!editingProduct}
           product={editingProduct}
           onClose={() => setEditingProduct(null)}
           onSave={async (updatedProduct) => {

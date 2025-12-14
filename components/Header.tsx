@@ -119,39 +119,47 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
             <nav className="hidden md:flex items-center gap-8 flex-1">
               {navLinks.map(link => (
                 link.isMenu ? (
-                    <Menu as="div" className="relative" key={link.label}>
+                  <Menu as="div" className="relative" key={link.label}>
+                    {({ open }) => (
+                      <>
                         <Menu.Button className="flex items-center gap-1 text-brand-charcoal/80 hover:text-brand-brown transition-colors font-medium group py-2">
-                            <span>{link.label}</span>
-                            <ChevronDownIcon className="w-4 h-4 transition-transform group-hover:rotate-180" />
+                          <span>{link.label}</span>
+                          <ChevronDownIcon className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : 'group-hover:rotate-180'}`} />
                         </Menu.Button>
                         <Transition
-                            as={Fragment}
-                            enter="transition ease-out duration-100"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
+                          show={open}
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
                         >
-                            <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <div className="px-1 py-1 ">
-                                    {link.items?.map(item => (
-                                        <Menu.Item key={item.href}>
-                                            {({ active }) => (
-                                                <Link href={item.href} className={`${active ? 'bg-brand-brown text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm transition-colors`}>
-                                                    {item.label}
-                                                </Link>
-                                            )}
-                                        </Menu.Item>
-                                    ))}
-                                </div>
-                            </Menu.Items>
+                          <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div className="px-1 py-1 ">
+                              {link.items?.map(item => (
+                                <Menu.Item key={item.href}>
+                                  {({ active }) => (
+                                    <Link
+                                      href={item.href}
+                                      className={`${active ? 'bg-brand-brown text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm transition-colors`}
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  )}
+                                </Menu.Item>
+                              ))}
+                            </div>
+                          </Menu.Items>
                         </Transition>
-                    </Menu>
+                      </>
+                    )}
+                  </Menu>
                 ) : (
-                    <NavLink key={link.label} href={link.href!}>
-                        {link.label}
-                    </NavLink>
+                  <NavLink key={link.label} href={link.href!}>
+                    {link.label}
+                  </NavLink>
                 )
               ))}
             </nav>
