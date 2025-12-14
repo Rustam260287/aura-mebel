@@ -2,59 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
 import { verifyIdToken, isAdmin } from '../../../../lib/authMiddleware';
 import type { Product } from '../../../../types';
-
-async function generateProductDescription(name: string, category: string, rawDescription: string) {
-  const API_URL = `${process.env.ARTEMOX_BASE_URL}/models/gemini-1.5-flash:generateContent`;
-  const apiKey = process.env.ARTEMOX_API_KEY;
-
-  if (!API_URL || !apiKey) {
-    throw new Error('Description generation service is not configured');
-  }
-
-  const prompt = `Ты — опытный копирайтер для премиального мебельного магазина.
-
-Тебе нужно переписать описание товара так, чтобы оно:
-- было на русском;
-- звучало живо и продающе;
-- содержало 2–4 абзаца;
-- обязательно упоминало ключевые характеристики (размеры, материалы, стиль), если они видны из текста;
-- в конце дало краткий блок "Техническая информация:" с перечислением основных параметров в виде списка.
-
-Название: "${name}"
-Категория: "${category}"
-Сырое описание: "${rawDescription || ''}"
-
-Верни только готовый текст без пояснений и без разметки Markdown.`;
-
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Gemini API Error (bulk description):', errorText);
-    throw new Error('Failed to generate description');
-  }
-
-  const data = await response.json();
-  const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!generatedText) {
-    throw new Error('No description generated');
-  }
-
-  return generatedText.trim();
-}
+import { generateImprovedProductDescription } from '../../../../services/ai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY is not set; cannot generate bulk descriptions');
+    return res.status(500).json({ error: 'Description generation service is not configured (missing OPENAI_API_KEY)' });
   }
 
   const authHeader = req.headers.authorization;
@@ -104,11 +61,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         continue;
       }
 
-      const improved = await generateProductDescription(
-        data.name,
-        data.category || '',
-        currentDescription,
-      );
+      const improved = await generateImprovedProductDescription({
+        name: data.name,
+        category: data.category || '',
+        rawDescription: currentDescription,
+      });
 
       await docRef.set(
         {
@@ -128,4 +85,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const updatedCount = results.filter((r) => r.status === 'ok').length;
   res.status(200).json({ updatedCount, results });
 }
-

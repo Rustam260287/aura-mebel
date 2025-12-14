@@ -1,10 +1,6 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { analyzeProductDescription } from '../../../services/ai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,28 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Description is required' });
   }
 
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY is not set; cannot analyze product');
+    return res.status(500).json({ error: 'AI service is not configured (missing OPENAI_API_KEY)' });
+  }
+
   try {
-    const prompt = `
-      Analyze the following product description and extract key specifications into a JSON format.
-      Target fields: "width" (in cm), "depth" (in cm), "height" (in cm), "material" (main material), "color", "sleeping_area" (if applicable).
-      If a value is not found, leave it as null or an empty string.
-      
-      Description:
-      "${description}"
-      
-      Return ONLY valid JSON.
-    `;
-
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "gpt-4-turbo-preview", // Or gpt-3.5-turbo
-      response_format: { type: "json_object" },
-    });
-
-    const result = completion.choices[0].message.content;
-    if (!result) throw new Error('No content returned from AI');
-
-    const parsedData = JSON.parse(result);
+    const parsedData = await analyzeProductDescription(description);
     res.status(200).json(parsedData);
 
   } catch (error: any) {

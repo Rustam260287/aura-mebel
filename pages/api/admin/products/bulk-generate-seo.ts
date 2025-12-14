@@ -2,51 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
 import { verifyIdToken, isAdmin } from '../../../../lib/authMiddleware';
 import type { Product } from '../../../../types';
-
-async function generateSeoDescription(name: string, category: string, description: string) {
-  const API_URL = `${process.env.ARTEMOX_BASE_URL}/models/gemini-1.5-flash:generateContent`;
-  const apiKey = process.env.ARTEMOX_API_KEY;
-
-  if (!API_URL || !apiKey) {
-    throw new Error('SEO generation service is not configured');
-  }
-
-  const prompt = `Напиши привлекательное и оптимизированное для поисковых систем (SEO) описание (meta description) для товара. 
-Название: "${name}". 
-Категория: "${category}". 
-Описание: "${description || ''}".
-
-Сделай описание длиной от 140 до 160 символов. Используй ключевые слова, призывай к действию, но звучи естественно. Описание должно быть на русском языке.`;
-
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Gemini API Error (bulk SEO):', errorText);
-    throw new Error('Failed to generate SEO description');
-  }
-
-  const data = await response.json();
-  const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!generatedText) {
-    throw new Error('No SEO text generated');
-  }
-
-  return generatedText.trim().replace(/^["']|["']$/g, '');
-}
+import { generateSeoDescription } from '../../../../services/ai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY is not set; cannot generate bulk SEO');
+    return res.status(500).json({ error: 'SEO generation service is not configured (missing OPENAI_API_KEY)' });
   }
 
   const authHeader = req.headers.authorization;
@@ -89,7 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         continue;
       }
 
-      const seo = await generateSeoDescription(data.name, data.category || '', data.description || '');
+      const seo = await generateSeoDescription({
+        name: data.name,
+        category: data.category || '',
+        description: data.description || '',
+      });
       await docRef.set(
         {
           seoDescription: seo,
@@ -108,4 +77,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const updatedCount = results.filter((r) => r.status === 'ok').length;
   res.status(200).json({ updatedCount, results });
 }
-

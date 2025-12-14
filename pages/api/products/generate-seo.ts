@@ -1,10 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { generateSeoDescription } from '../../../services/ai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -23,29 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const prompt = `Напиши привлекательное и оптимизированное для поисковых систем (SEO) описание (meta description) для товара.
-Название: "${name}".
-Категория: "${category || ''}".
-Описание: "${description || ''}".
-
-Сделай описание длиной от 140 до 160 символов. Используй ключевые слова, призывай к действию, но звучи естественно. Описание должно быть на русском языке. Верни только готовый текст без кавычек.`;
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 120,
-    });
-
-    const generatedText = completion.choices[0]?.message?.content;
-
-    if (!generatedText) {
-      throw new Error('No text generated');
-    }
-
-    const cleanText = generatedText.trim().replace(/^["']|["']$/g, '');
-
-    res.status(200).json({ seoDescription: cleanText });
+    const seoDescription = await generateSeoDescription({ name, category, description });
+    res.status(200).json({ seoDescription });
   } catch (error) {
     console.error('Error generating SEO:', error);
     res.status(500).json({ message: 'Failed to generate SEO description' });
