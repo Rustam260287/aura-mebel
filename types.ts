@@ -46,6 +46,7 @@ export interface Product {
   materialTags?: string[];
   colorTags?: string[];
   formTags?: string[];
+  specs?: Record<string, string>; // NEW: Характеристики (Ширина, Глубина и т.д.)
 }
 
 export interface BlogPost {
