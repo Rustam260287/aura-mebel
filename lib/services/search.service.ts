@@ -18,22 +18,21 @@ const openai = new OpenAI({
 export class SearchService {
   
   /**
-   * Умный поиск товаров (Гибридный: Векторы + Теги + Размеры)
+   * Умный поиск товаров (Гибридный: Векторы + Теги + Размеры + Точное название)
    */
   static async search(options: SearchOptions): Promise<Product[]> {
     const { query, limit = 10 } = options;
     const db = getAdminDb();
     if (!db) return [];
 
-    // 1. Подготовка всех товаров (в идеале - кешировать это или использовать Vector DB)
-    // Для < 500 товаров можно держать в памяти или читать быстро
+    // 1. Подготовка (Кеширование в памяти для скорости)
     const snapshot = await db.collection('products').limit(300).get();
     const allProducts = snapshot.docs.map(doc => {
       const d = doc.data();
       return {
         id: doc.id,
         ...d,
-        _searchTags: this.extractProductTags(d), // Helper
+        _searchTags: this.extractProductTags(d),
         _dims: this.parseDimensions((d.description || d.description_main || '').toString())
       } as any;
     });
@@ -41,33 +40,54 @@ export class SearchService {
     const userDims = this.parseDimensions(query);
     const queryTags = this.extractQueryTags(query);
     
+    // Подготовка ключевых слов для поиска по названию
+    const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+
     // 2. Векторный поиск (если есть ключ)
     let candidates = allProducts;
+    let embeddingsMap = new Map<string, number>();
+
     if (process.env.OPENAI_API_KEY) {
         const embedding = await this.getEmbedding(query);
         if (embedding) {
-            candidates = allProducts.map(p => ({
-                ...p,
-                _score: this.cosineSimilarity(embedding, p.embedding || []) + this.sizePenalty(userDims, p._dims)
-            })).sort((a, b) => b._score - a._score);
+            candidates.forEach(p => {
+                const score = this.cosineSimilarity(embedding, p.embedding || []);
+                embeddingsMap.set(p.id, score);
+            });
         }
     }
 
-    // 3. Теговый ре-ранкинг (если векторов нет или как дополнение)
-    // Если кандидаты не отсортированы вектором, сортируем по тегам
-    if (!process.env.OPENAI_API_KEY) {
-        candidates = allProducts.map(p => {
-            let score = 0;
-            const pTags = new Set(p._searchTags);
-            queryTags.forEach(t => pTags.has(t) && (score += 2));
-            return { ...p, _score: score };
-        }).sort((a, b) => b._score - a._score);
-    }
+    // 3. Гибридный ранкинг (Scoring)
+    candidates = candidates.map(p => {
+        let score = embeddingsMap.get(p.id) || 0;
 
-    return candidates.slice(0, limit);
+        // A. Бонус за название (Keyword Match) - Самый важный!
+        const nameLower = p.name.toLowerCase();
+        queryWords.forEach(word => {
+            if (nameLower.includes(word)) {
+                score += 5.0; // Огромный бонус за совпадение имени (Парус, Gucci и т.д.)
+            }
+        });
+
+        // B. Бонус за теги
+        const pTags = new Set(p._searchTags);
+        queryTags.forEach(t => {
+            if (pTags.has(t)) score += 0.5;
+        });
+
+        // C. Бонус/Штраф за размеры
+        score += this.sizePenalty(userDims, p._dims);
+
+        return { ...p, _score: score };
+    });
+
+    // 4. Сортировка и выдача
+    return candidates
+        .sort((a, b) => b._score - a._score)
+        .slice(0, limit);
   }
 
-  // --- HELPERS (Copied & Refined from chat/message.ts) ---
+  // --- HELPERS ---
 
   private static async getEmbedding(text: string) {
     try {
@@ -119,9 +139,11 @@ export class SearchService {
           const diff = Math.abs(u - v) / u;
           return diff < 0.15 ? 0.5 : (diff > 0.3 ? -1 : 0);
       };
-      p += cmp(user.length, prod.length);
-      p += cmp(user.width, prod.width);
-      // ... others
+      // Only apply if user asked for specific dims
+      if (user.length) p += cmp(user.length, prod.length);
+      if (user.width) p += cmp(user.width, prod.width);
+      if (user.depth) p += cmp(user.depth, prod.depth);
+      if (user.height) p += cmp(user.height, prod.height);
       return p;
   }
 
@@ -132,12 +154,10 @@ export class SearchService {
       add(/диван/.test(t), 'диван');
       add(/кровать/.test(t), 'кровать');
       add(/стол/.test(t), 'стол');
-      // ... full list from chat logic ...
       return Array.from(tags);
   }
 
   private static extractProductTags(data: any) {
-      // Simplified extraction logic for service
       const tags = new Set<string>();
       if (Array.isArray(data.tags)) data.tags.forEach((t: string) => tags.add(t.toLowerCase()));
       return Array.from(tags);
