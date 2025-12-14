@@ -1,4 +1,4 @@
-import { getAdminDb } from '../lib/firebaseAdmin.ts';
+import { getAdminDb } from '../lib/firebaseAdmin';
 
 const targetId = process.argv[2] || '1G4w3eInYj5TEu9YaTbw';
 

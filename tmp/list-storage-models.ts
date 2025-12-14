@@ -1,4 +1,4 @@
-import { getAdminStorage } from '../lib/firebaseAdmin.ts';
+import { getAdminStorage } from '../lib/firebaseAdmin';
 
 async function main() {
   const bucket = getAdminStorage().bucket();

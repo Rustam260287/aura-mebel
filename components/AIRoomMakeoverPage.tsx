@@ -32,6 +32,8 @@ const styleOptions = [
 const AIRoomMakeoverPage: React.FC = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const createImageElement = (): HTMLImageElement =>
+    document.createElement('img');
   
   const [mounted, setMounted] = useState(false);
   
@@ -69,7 +71,7 @@ const AIRoomMakeoverPage: React.FC = () => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const img = new Image();
+        const img = createImageElement();
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 1024;
@@ -112,7 +114,7 @@ const AIRoomMakeoverPage: React.FC = () => {
               return;
           }
 
-          const roomImg = new Image();
+          const roomImg = createImageElement();
           roomImg.crossOrigin = "Anonymous";
           
           roomImg.onload = () => {
@@ -122,7 +124,7 @@ const AIRoomMakeoverPage: React.FC = () => {
               // 1. Рисуем комнату
               ctx.drawImage(roomImg, 0, 0);
 
-              const furnitureImg = new Image();
+              const furnitureImg = createImageElement();
               furnitureImg.crossOrigin = "Anonymous";
               
               furnitureImg.onload = () => {

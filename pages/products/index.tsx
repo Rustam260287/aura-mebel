@@ -242,7 +242,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ? [categoryQuery as string]
         : [];
 
-    let baseQuery = adminDb.collection('products');
+    let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection('products');
     if (selectedCategories.length > 0) {
       if (selectedCategories.length === 1) {
         baseQuery = baseQuery.where('category', '==', selectedCategories[0]);

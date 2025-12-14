@@ -1,4 +1,4 @@
-import { getAdminStorage } from '../lib/firebaseAdmin.ts';
+import { getAdminStorage } from '../lib/firebaseAdmin';
 
 const pathArg = process.argv[2];
 if (!pathArg) {

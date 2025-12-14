@@ -1,4 +1,4 @@
-import { getAdminDb } from '../lib/firebaseAdmin.ts';
+import { getAdminDb } from '../lib/firebaseAdmin';
 
 async function main() {
   const db = getAdminDb();

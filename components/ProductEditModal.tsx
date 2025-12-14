@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, Fragment, useEffect } from 'react';
+import Image from 'next/image';
 import { Dialog, Transition, Tab } from '@headlessui/react';
 import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { Product } from '../types';
@@ -14,7 +15,7 @@ interface ProductEditModalProps {
   onSave: (updatedProduct: Product) => void;
 }
 
-type ProductFormData = Partial<Product> & { model3d?: string };
+type ProductFormData = Partial<Product> & { model3d?: string; specs?: Record<string, string> };
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -328,7 +329,7 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                                 <div className="grid grid-cols-3 gap-4">
                                     {formData.imageUrls?.map((url, index) => (
                                         <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                            <Image src={url || '/placeholder.svg'} alt={`Фото ${index + 1}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                                         </div>
                                     ))}
