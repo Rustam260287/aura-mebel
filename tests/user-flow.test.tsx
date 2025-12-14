@@ -22,11 +22,11 @@ jest.mock('next/router', () => ({
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
-    // Filter out 'fill' and other Next.js specific props that <img> doesn't support
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { fill, ...rest } = props;
+    const { fill, alt, ...rest } = props;
+    void fill;
+    const normalizedAlt = alt ?? 'mocked image';
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...rest} />;
+    return <img {...rest} alt={normalizedAlt} />;
   },
 }));
 

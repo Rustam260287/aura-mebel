@@ -12,6 +12,7 @@ import { Button } from '../../components/Button';
 import { ChevronLeftIcon, ChevronRightIcon, SlidersHorizontalIcon } from '../../components/Icons';
 import { FilterSidebar } from '../../components/FilterSidebar';
 import { useToast } from '../../contexts/ToastContext'; // Import Toast
+import { useProductModals } from '../../hooks/useProductModals';
 
 const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
@@ -19,6 +20,17 @@ const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').t
 
 const ITEMS_PER_PAGE = 12;
 const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
+const DEFAULT_MAX_PRICE = 1_000_000;
+const CATEGORY_IN_LIMIT = 10;
+
+const SORT_CONFIGS: Record<string, { field: string; direction: FirebaseFirestore.OrderByDirection }> = {
+  rating_desc: { field: 'rating', direction: 'desc' },
+  price_asc: { field: 'price', direction: 'asc' },
+  price_desc: { field: 'price', direction: 'desc' },
+  name_asc: { field: 'name', direction: 'asc' },
+};
+
+const getSortConfig = (sort: string) => SORT_CONFIGS[sort] ?? SORT_CONFIGS.rating_desc;
 
 interface CatalogPageProps {
   products: Product[];
@@ -31,15 +43,15 @@ interface CatalogPageProps {
 export default function CatalogPage({ products, currentPage, totalPages, globalMaxPrice, error }: CatalogPageProps) {
   const router = useRouter();
   const { addToast } = useToast(); // Use Toast
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const [imageModalState, setImageModalState] = useState({
-    isOpen: false,
-    images: [] as string[],
-    initialIndex: 0,
-    productName: ''
-  });
+  const {
+    quickViewProduct,
+    openQuickView,
+    closeQuickView,
+    imageModalState,
+    handleImageClick,
+    closeImageModal,
+  } = useProductModals();
 
   // Filter State from URL
   const { category, minPrice, maxPrice, sort } = router.query;
@@ -90,20 +102,6 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
     addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
   };
   
-  const handleImageClick = (product: Product, index: number) => {
-    setImageModalState({
-        isOpen: true,
-        images: product.imageUrls || [],
-        initialIndex: index,
-        productName: product.name
-    })
-  }
-  
-  const closeImageModal = () => {
-    setImageModalState(prev => ({ ...prev, isOpen: false }));
-  }
-
-
   if (error) {
     return (
         <>
@@ -158,7 +156,7 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
                     allProducts={products}
                     isLoading={false}
                     onProductSelect={(id) => router.push(`/products/${id}`)}
-                    onQuickView={setQuickViewProduct}
+                    onQuickView={openQuickView}
                     onVirtualStage={handleVirtualStage} // Pass the handler
                     onImageClick={handleImageClick}
                 />
@@ -192,8 +190,15 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
       </main>
       <Footer />
 
-      {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
-      <ImageZoomModal 
+      {quickViewProduct && (
+        <QuickViewModal
+          product={quickViewProduct}
+          onClose={closeQuickView}
+          onViewDetails={(id) => router.push(`/products/${id}`)}
+        />
+      )}
+      <ImageZoomModal
+        key={`${imageModalState.productName}-${imageModalState.initialIndex}-${imageModalState.isOpen ? 'open' : 'closed'}`}
         isOpen={imageModalState.isOpen}
         images={imageModalState.images}
         initialIndex={imageModalState.initialIndex}
@@ -211,96 +216,121 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       throw new Error("Firebase Admin SDK initialization failed.");
     }
 
-    // 1. Get Global Max Price for Filters
-    // Note: This query is cheap and usually indexed
-    let globalMaxPrice = 1000000;
+    let globalMaxPrice = DEFAULT_MAX_PRICE;
     try {
-        const maxPriceSnapshot = await adminDb.collection('products').orderBy('price', 'desc').limit(1).get();
-        globalMaxPrice = maxPriceSnapshot.empty ? 1000000 : maxPriceSnapshot.docs[0].data().price;
+      const maxPriceSnapshot = await adminDb.collection('products').orderBy('price', 'desc').limit(1).get();
+      globalMaxPrice = maxPriceSnapshot.empty ? DEFAULT_MAX_PRICE : maxPriceSnapshot.docs[0].data().price;
     } catch (e) {
-        console.log("Failed to get max price, using default", e);
+      console.log("Failed to get max price, using default", e);
     }
 
-    // 2. Build Query - STRATEGY: Fetch Filtered by Category, do the rest in memory to avoid Index Hell
-    let query: FirebaseFirestore.Query = adminDb.collection('products');
-    
-    // Params
     const page = Number(context.query.page) || 1;
     const categoryQuery = context.query.category;
-    const minPrice = Number(context.query.minPrice);
-    const maxPrice = Number(context.query.maxPrice);
-    const sort = context.query.sort as string || 'rating_desc';
+    const sortParam = (context.query.sort as string) || 'rating_desc';
+    const rawMinPrice = Number(context.query.minPrice);
+    const rawMaxPrice = Number(context.query.maxPrice);
 
-    // Filter: Category (DB Level)
-    let selectedCategories: string[] = [];
-    if (Array.isArray(categoryQuery)) {
-        selectedCategories = categoryQuery as string[];
-    } else if (categoryQuery) {
-        selectedCategories = [categoryQuery as string];
-    }
+    const hasMinPriceFilter = !Number.isNaN(rawMinPrice) && rawMinPrice > 0;
+    const hasMaxPriceFilter = !Number.isNaN(rawMaxPrice) && rawMaxPrice > 0 && rawMaxPrice < globalMaxPrice;
+    const minPriceFilter = hasMinPriceFilter ? rawMinPrice : undefined;
+    const maxPriceFilter = hasMaxPriceFilter ? rawMaxPrice : undefined;
+    const isPriceFilterActive = Boolean(minPriceFilter !== undefined || maxPriceFilter !== undefined);
 
+    const selectedCategories = Array.isArray(categoryQuery)
+      ? (categoryQuery as string[])
+      : categoryQuery
+        ? [categoryQuery as string]
+        : [];
+
+    let baseQuery = adminDb.collection('products');
     if (selectedCategories.length > 0) {
-        if (selectedCategories.length === 1) {
-             query = query.where('category', '==', selectedCategories[0]);
-        } else {
-             query = query.where('category', 'in', selectedCategories.slice(0, 10)); 
-        }
+      if (selectedCategories.length === 1) {
+        baseQuery = baseQuery.where('category', '==', selectedCategories[0]);
+      } else {
+        baseQuery = baseQuery.where('category', 'in', selectedCategories.slice(0, CATEGORY_IN_LIMIT));
+      }
     }
 
-    // Fetch ALL matching items (without limit/offset for now, to sort in memory)
-    // Assuming catalog < 1000 items, this is fine.
-    const snapshot = await query.get();
-    let productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+    const sortConfig = getSortConfig(sortParam);
+    const canApplyPriceFilterInQuery = isPriceFilterActive && (sortParam === 'price_asc' || sortParam === 'price_desc');
+    const shouldUseLegacyPipeline = sortParam === 'discount_desc' || (isPriceFilterActive && !canApplyPriceFilterInQuery);
 
-    // 3. Filter: Price (Memory Level)
-    const isPriceFiltered = !isNaN(minPrice) || (!isNaN(maxPrice) && maxPrice < globalMaxPrice);
-    if (isPriceFiltered) {
-        productsData = productsData.filter(p => {
-            const price = p.price || 0;
-            const min = !isNaN(minPrice) ? minPrice : 0;
-            const max = !isNaN(maxPrice) ? maxPrice : Infinity;
-            return price >= min && price <= max;
-        });
+    if (!shouldUseLegacyPipeline) {
+      let filteredQuery = baseQuery;
+      if (canApplyPriceFilterInQuery) {
+        if (typeof minPriceFilter === 'number') {
+          filteredQuery = filteredQuery.where('price', '>=', minPriceFilter);
+        }
+        if (typeof maxPriceFilter === 'number') {
+          filteredQuery = filteredQuery.where('price', '<=', maxPriceFilter);
+        }
+      }
+
+      const totalItemsSnapshot = await filteredQuery.count().get();
+      const totalItems = totalItemsSnapshot.data().count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+      const safePage = Math.max(1, Math.min(page, totalPages));
+      const offset = (safePage - 1) * ITEMS_PER_PAGE;
+
+      const sortedQuery = filteredQuery.orderBy(sortConfig.field, sortConfig.direction);
+      const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
+      const products = pageSnapshot.docs.map(doc => {
+        const data = doc.data() as Product;
+        const imageUrls = (data.imageUrls || []).map(url => url || '/placeholder.svg');
+        return { ...data, id: doc.id, imageUrls };
+      });
+
+      return {
+        props: {
+          products: JSON.parse(JSON.stringify(products)),
+          currentPage: safePage,
+          totalPages,
+          globalMaxPrice,
+        },
+      };
     }
 
-    // 4. Sort (Memory Level)
-    productsData.sort((a, b) => {
-        if (sort === 'price_asc') {
-            return a.price - b.price;
-        } else if (sort === 'price_desc') {
-            return b.price - a.price;
-        } else if (sort === 'rating_desc') {
-            return (b.rating || 0) - (a.rating || 0);
-        } else if (sort === 'name_asc') {
-            return a.name.localeCompare(b.name);
-        } else if (sort === 'discount_desc') {
-             // Assuming discount calculation
-             const discountA = a.originalPrice ? (a.originalPrice - a.price) : 0;
-             const discountB = b.originalPrice ? (b.originalPrice - b.price) : 0;
-             return discountB - discountA;
-        }
-        return 0;
-    });
+    // Legacy: fallback for discount sort and incompatible price filter combinations.
+    const legacySnapshot = await baseQuery.get();
+    let productsData = legacySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
-    // 5. Pagination (Memory Level)
+    if (isPriceFilterActive) {
+      productsData = productsData.filter(product => {
+        const price = product.price || 0;
+        const matchesMin = typeof minPriceFilter === 'number' ? price >= minPriceFilter : true;
+        const matchesMax = typeof maxPriceFilter === 'number' ? price <= maxPriceFilter : true;
+        return matchesMin && matchesMax;
+      });
+    }
+
+    const sortHandlers: Record<string, (a: Product, b: Product) => number> = {
+      price_asc: (a, b) => (a.price ?? 0) - (b.price ?? 0),
+      price_desc: (a, b) => (b.price ?? 0) - (a.price ?? 0),
+      rating_desc: (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
+      name_asc: (a, b) => a.name.localeCompare(b.name),
+      discount_desc: (a, b) => {
+        const discountA = a.originalPrice && a.price ? a.originalPrice - a.price : 0;
+        const discountB = b.originalPrice && b.price ? b.originalPrice - b.price : 0;
+        return discountB - discountA;
+      },
+    };
+
+    productsData.sort(sortHandlers[sortParam] ?? sortHandlers.rating_desc);
+
     const totalItems = productsData.length;
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    
-    // Handle out of bounds page
-    const safePage = Math.max(1, Math.min(page, totalPages || 1));
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    const safePage = Math.max(1, Math.min(page, totalPages));
     const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    
-    const paginatedProducts = productsData.slice(startIndex, endIndex);
+    const paginatedProducts = productsData
+      .slice(startIndex, startIndex + ITEMS_PER_PAGE)
+      .map(product => ({
+        ...product,
+        imageUrls: (product.imageUrls || []).map(url => url || '/placeholder.svg'),
+      }));
 
-    const products = paginatedProducts.map(product => {
-      const imageUrls = (product.imageUrls || []).map(url => url || '/placeholder.svg');
-      return { ...product, imageUrls };
-    });
-    
     return {
-      props: { 
-        products: JSON.parse(JSON.stringify(products)),
+      props: {
+        products: JSON.parse(JSON.stringify(paginatedProducts)),
         currentPage: safePage,
         totalPages,
         globalMaxPrice,

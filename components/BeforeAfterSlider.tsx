@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-// import Image from 'next/image'; // Заменяем на обычный img для избежания проблем с доменами и src
+import Image from 'next/image';
 
 interface BeforeAfterSliderProps {
   before: string;
@@ -61,23 +61,29 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ before, after }) 
       onTouchMove={handleTouchMove}
     >
       {/* After Image (Background) */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        <img 
+      <div className="absolute top-0 left-0 w-full h-full relative">
+        <Image 
             src={after} 
             alt="After Redesign" 
-            className="w-full h-full object-cover pointer-events-none" 
+            className="object-cover pointer-events-none" 
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
         />
       </div>
 
       {/* Before Image (Foreground with clip-path) */}
       <div 
-        className="absolute top-0 left-0 h-full w-full overflow-hidden"
+        className="absolute top-0 left-0 h-full w-full overflow-hidden relative"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <img 
+        <Image 
             src={before} 
             alt="Original Room" 
-            className="w-full h-full object-cover pointer-events-none" 
+            className="object-cover pointer-events-none" 
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
         />
       </div>
 

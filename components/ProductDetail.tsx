@@ -51,8 +51,13 @@ const parseDescription = (description: string) => {
 };
 
 const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack }) => {
-  const { reviews = [], imageUrls = [], description = '', videoUrl, model3dUrl, model3dIosUrl, ...restOfProduct } = product;
-  const safeProduct = { reviews, imageUrls, description, videoUrl, model3dUrl, model3dIosUrl, ...restOfProduct };
+  const safeProduct = useMemo(() => ({
+    ...product,
+    reviews: product.reviews ?? [],
+    imageUrls: product.imageUrls ?? [],
+    description: product.description ?? '',
+  }), [product]);
+  const { reviews, imageUrls, description, videoUrl, model3dUrl, model3dIosUrl } = safeProduct;
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);

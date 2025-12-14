@@ -22,7 +22,7 @@ export const AdminChatAnalytics: React.FC<AdminChatAnalyticsProps> = ({ chatLogs
         } finally {
             setIsLoading(false);
         }
-    }, [chatLogs]);
+    }, []);
 
     return (
         <div>

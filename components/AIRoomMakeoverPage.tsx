@@ -16,6 +16,7 @@ import {
   ArrowLeftIcon,
   XMarkIcon
 } from '@/components/Icons'; 
+import Image from 'next/image';
 
 const styleOptions = [
   { value: "Modern", label: "Современный" },
@@ -372,12 +373,28 @@ const AIRoomMakeoverPage: React.FC = () => {
                             />
                             
                             {originalImage ? (
-                                <div className="absolute inset-2 overflow-hidden rounded-lg">
-                                    <img src={originalImage} alt="Uploaded" className="w-full h-full object-cover" />
+                                <div className="absolute inset-2 overflow-hidden rounded-lg relative">
+                                    <Image
+                                        src={originalImage}
+                                        alt="Uploaded"
+                                        className="object-cover"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        unoptimized
+                                    />
                                     {/* ПРЕВЬЮ: Показываем пользователю, как мебель "сядет" (чтобы он понимал, что будет в коллаже) */}
                                     {tryOnFurniture && tryOnFurniture.image && (
                                         <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[40%] z-10 pointer-events-none opacity-80">
-                                            <img src={tryOnFurniture.image} alt="Furniture Preview" className="w-full h-full object-contain" />
+                                            <div className="w-full h-full relative">
+                                                <Image
+                                                    src={tryOnFurniture.image}
+                                                    alt="Furniture Preview"
+                                                    className="object-contain"
+                                                    fill
+                                                    sizes="(max-width: 768px) 100vw, 80vw"
+                                                    unoptimized
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -403,9 +420,16 @@ const AIRoomMakeoverPage: React.FC = () => {
                             {/* Блок активной примерки */}
                             {tryOnFurniture && (
                                 <div className="mb-6 bg-brand-cream/30 border border-brand-brown/20 rounded-xl p-4 flex items-center animate-fade-in-up">
-                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 mr-3">
+                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 mr-3 relative">
                                         {tryOnFurniture.image ? (
-                                            <img src={tryOnFurniture.image} alt={tryOnFurniture.name} className="w-full h-full object-cover" />
+                                            <Image
+                                                src={tryOnFurniture.image}
+                                                alt={tryOnFurniture.name}
+                                                className="object-cover"
+                                                fill
+                                                sizes="48px"
+                                                unoptimized
+                                            />
                                         ) : (
                                             <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs text-gray-400">Нет фото</div>
                                         )}

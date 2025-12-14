@@ -1,0 +1,14 @@
+{
+  "name": "aura-mebel-functions",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.mjs",
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^7.0.1",
+    "sharp": "^0.34.5"
+  }
+}

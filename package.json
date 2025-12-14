@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
     "optimize:3d": "node scripts/optimize-and-upload-3d.mjs",

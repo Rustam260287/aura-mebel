@@ -1,5 +1,5 @@
 
-import React, { memo, Fragment, useState, useEffect } from 'react';
+import React, { memo, Fragment, useState, useEffect, useCallback } from 'react';
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import Image from 'next/image';
 import { Transition, Dialog } from '@headlessui/react';
@@ -15,11 +15,13 @@ interface ImageZoomModalProps {
 export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, images = [], initialIndex = 0, productName, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentIndex(initialIndex);
-    }
-  }, [isOpen, initialIndex]);
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  }, [images.length]);
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  }, [images.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -29,20 +31,12 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, images.length]); // Добавил images.length, чтобы пересоздать обработчик, если набор картинок изменится
+  }, [isOpen, handleNext, handlePrev]); // Добавил зависимости, чтобы не ругался линтер
 
   if (!images || images.length === 0) {
     return null;
   }
   
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
-  
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-  };
-
 
   return (
     <Transition show={isOpen} as={Fragment}>

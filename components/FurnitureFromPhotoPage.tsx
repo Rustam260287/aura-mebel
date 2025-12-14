@@ -5,6 +5,7 @@ import { PhotoIcon, ArrowPathIcon } from './Icons';
 import { FurnitureBlueprint, Product } from '../types';
 import { fileToBase64 } from '../utils';
 import { useCartDispatch } from '../contexts/CartContext'; // ИСПРАВЛЕНО
+import Image from 'next/image';
 
 export const FurnitureFromPhotoPage = () => {
     const [image, setImage] = useState<File | null>(null);
@@ -92,7 +93,16 @@ export const FurnitureFromPhotoPage = () => {
                     )}
                     {preview && (
                         <div className="relative">
-                            <img src={preview} alt="Upload preview" className="rounded-lg shadow-lg w-full max-h-[500px] object-contain" />
+                            <div className="relative rounded-lg shadow-lg w-full max-h-[500px] h-full">
+                                <Image
+                                    src={preview}
+                                    alt="Превью загруженного фото"
+                                    className="object-contain rounded-lg"
+                                    fill
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                    unoptimized
+                                />
+                            </div>
                             <button onClick={() => { setPreview(null); setImage(null); setBlueprint(null); }} className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full shadow text-gray-600">
                                 ✕
                             </button>

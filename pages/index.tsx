@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
@@ -12,6 +12,7 @@ import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
 import { useToast } from '../contexts/ToastContext';
+import { useProductModals } from '../hooks/useProductModals';
 
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
@@ -24,13 +25,14 @@ interface HomePageProps {
 export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
   const { addToast } = useToast();
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
-  const [imageModalState, setImageModalState] = useState({
-    isOpen: false,
-    images: [] as string[],
-    initialIndex: 0,
-    productName: ''
-  });
+  const {
+    quickViewProduct,
+    openQuickView,
+    closeQuickView,
+    imageModalState,
+    handleImageClick,
+    closeImageModal,
+  } = useProductModals();
 
   if (error) {
     return (
@@ -55,19 +57,6 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
     addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
   };
 
-  const handleImageClick = (product: Product, index: number) => {
-    setImageModalState({
-        isOpen: true,
-        images: product.imageUrls || [],
-        initialIndex: index,
-        productName: product.name
-    })
-  }
-  
-  const closeImageModal = () => {
-    setImageModalState(prev => ({ ...prev, isOpen: false }));
-  }
-  
   return (
     <>
       <SEO title="Главная" description="Откройте для себя мир премиальной мебели Labelcom. Идеальное сочетание стиля, комфорта и качества для вашего дома." />
@@ -79,15 +68,22 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
           allProducts={popularProducts}
           isLoading={router.isFallback}
           onProductSelect={(id) => router.push(`/products/${id}`)}
-          onQuickView={setQuickViewProduct}
+          onQuickView={openQuickView}
           onVirtualStage={handleVirtualStage}
           onImageClick={handleImageClick}
           isHomePage
         />
       </main>
       <Footer />
-      {quickViewProduct && <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} onViewDetails={(id) => router.push(`/products/${id}`)} />}
-      <ImageZoomModal 
+      {quickViewProduct && (
+        <QuickViewModal
+          product={quickViewProduct}
+          onClose={closeQuickView}
+          onViewDetails={(id) => router.push(`/products/${id}`)}
+        />
+      )}
+      <ImageZoomModal
+        key={`${imageModalState.productName}-${imageModalState.initialIndex}-${imageModalState.isOpen ? 'open' : 'closed'}`}
         isOpen={imageModalState.isOpen}
         images={imageModalState.images}
         initialIndex={imageModalState.initialIndex}
