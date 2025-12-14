@@ -1,12 +1,10 @@
 
-'use client';
-
 import React, { useState, Fragment, useEffect } from 'react';
-import Image from 'next/image';
 import { Dialog, Transition, Tab } from '@headlessui/react';
 import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { Product } from '../types';
 import { ModelUploader } from './admin/ModelUploader';
+import { MediaUploader } from './admin/MediaUploader'; // Import MediaUploader
 
 interface ProductEditModalProps {
   isOpen: boolean;
@@ -15,25 +13,19 @@ interface ProductEditModalProps {
   onSave: (updatedProduct: Product) => void;
 }
 
-type ProductFormData = Partial<Product> & { model3d?: string; specs?: Record<string, string> };
-
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
 export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onClose, product, onSave }) => {
-  const [formData, setFormData] = useState<ProductFormData>({});
+  const [formData, setFormData] = useState<Partial<Product>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isSeoGenerating, setIsSeoGenerating] = useState(false);
 
   useEffect(() => {
     if (product) {
-      setFormData({
-        ...product,
-        model3d: product.model3d ?? product.model3dUrl ?? '',
-      });
+      setFormData(product);
     } else {
-      setFormData({});
+        setFormData({});
     }
   }, [product]);
 
@@ -49,89 +41,16 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                 [specKey]: value
             }
         }));
-    } else if (name === 'model3d') {
-        setFormData(prev => ({
-            ...prev,
-            model3d: value,
-            model3dUrl: value,
-        }));
     } else {
         setFormData(prev => ({ ...prev, [name]: name === 'price' ? parseFloat(value) : value }));
     }
   };
 
-  const handleGenerateSeo = async () => {
-    if (!formData.name) {
-      alert('Сначала введите название товара.');
-      return;
-    }
-
-    setIsSeoGenerating(true);
-    try {
-      const response = await fetch('/api/products/generate-seo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          category: formData.category || '',
-          description: formData.description || '',
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate SEO description');
-      }
-
-      const data = await response.json();
-      if (data?.seoDescription) {
-        setFormData((prev) => ({ ...prev, seoDescription: data.seoDescription }));
-      }
-    } catch (error) {
-      console.error('SEO generation failed', error);
-      alert('Не удалось сгенерировать SEO-описание.');
-    } finally {
-      setIsSeoGenerating(false);
-    }
-  };
-
   const handleSave = () => {
-    const { model3d, ...safeFormData } = formData;
-
-    const isEditing = Boolean(product);
-    const baseProduct = (product ?? {
-      name: '',
-      category: '',
-      price: 0,
-      imageUrls: [],
-      description: '',
-      rating: 0,
-      reviews: [],
-    }) as Product;
-
-    const payload = {
-      ...baseProduct,
-      ...safeFormData,
-    } as Product;
-
-    payload.imageUrls = payload.imageUrls || [];
-    payload.reviews = payload.reviews || [];
-    payload.price = typeof payload.price === 'number' ? payload.price : Number(payload.price) || 0;
-
-    const has3D = Boolean(
-      safeFormData.has3D ||
-      baseProduct.has3D ||
-      safeFormData.model3dUrl ||
-      safeFormData.model3dIosUrl
-    );
-
-    payload.has3D = has3D;
-
-    if (!isEditing) {
-      delete (payload as Partial<Product>).id;
+    if (product && formData) {
+      onSave({ ...product, ...formData } as Product);
+      onClose();
     }
-
-    onSave(payload);
-    onClose();
   };
 
   const handleAIAnalyze = async () => {
@@ -164,22 +83,21 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
   };
 
   const handle3DUpload = (url: string) => {
-      let pathname = url;
-      try {
-        pathname = new URL(url).pathname;
-      } catch {
-        pathname = url;
-      }
-
-      const isUsdz = pathname.toLowerCase().endsWith('.usdz');
-
+      const isUsdz = url.toLowerCase().endsWith('.usdz');
       if (isUsdz) {
           setFormData(prev => ({ ...prev, model3dIosUrl: url }));
       } else {
+          setFormData(prev => ({ ...prev, model3d: url, model3dUrl: url }));
+      }
+  };
+
+  const handleMediaUpload = (url: string, type: 'image' | 'video') => {
+      if (type === 'video') {
+          setFormData(prev => ({ ...prev, videoUrl: url }));
+      } else {
           setFormData(prev => ({
               ...prev,
-              model3d: url,
-              model3dUrl: url,
+              imageUrls: [...(prev.imageUrls || []), url]
           }));
       }
   };
@@ -248,29 +166,6 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                                     <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
                                     <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
                                 </div>
-                                <div className="space-y-2 pt-2">
-                                  <div className="flex items-center justify-between">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                      SEO описание (meta)
-                                    </label>
-                                    <button
-                                      type="button"
-                                      onClick={handleGenerateSeo}
-                                      disabled={isSeoGenerating}
-                                      className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full border border-brand-brown/40 text-brand-brown hover:bg-brand-brown hover:text-white transition-colors disabled:opacity-60"
-                                    >
-                                      {isSeoGenerating ? 'Генерация…' : 'Сгенерировать SEO'}
-                                    </button>
-                                  </div>
-                                  <textarea
-                                    name="seoDescription"
-                                    rows={3}
-                                    value={formData.seoDescription || ''}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-xs leading-relaxed"
-                                    placeholder="Краткое описание для поисковиков и сниппета."
-                                  />
-                                </div>
                             </Tab.Panel>
                             <Tab.Panel className="space-y-6">
                                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-100">
@@ -329,14 +224,38 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                                 <div className="grid grid-cols-3 gap-4">
                                     {formData.imageUrls?.map((url, index) => (
                                         <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                                            <Image src={url || '/placeholder.svg'} alt={`Фото ${index + 1}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                <button 
+                                                    onClick={() => setFormData(prev => ({ ...prev, imageUrls: prev.imageUrls?.filter((_, i) => i !== index) }))}
+                                                    className="bg-white/90 p-2 rounded-full text-red-500 hover:text-red-700"
+                                                >
+                                                    <XMarkIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
-                                    <button className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-brand-brown hover:text-brand-brown transition-all bg-gray-50 hover:bg-brand-cream/10">
-                                        <PhotoIcon className="w-8 h-8 mb-1" />
-                                        <span className="text-xs font-bold">Добавить</span>
-                                    </button>
+                                    
+                                    {/* Media Uploader Button */}
+                                    <MediaUploader onUploadSuccess={handleMediaUpload}>
+                                        {(open, isLoading) => (
+                                            <button 
+                                                onClick={open}
+                                                disabled={isLoading}
+                                                className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-brand-brown hover:text-brand-brown transition-all bg-gray-50 hover:bg-brand-cream/10 disabled:opacity-50"
+                                            >
+                                                {isLoading ? (
+                                                    <div className="animate-spin h-6 w-6 border-2 border-brand-brown border-t-transparent rounded-full" />
+                                                ) : (
+                                                    <>
+                                                        <PhotoIcon className="w-8 h-8 mb-1" />
+                                                        <span className="text-xs font-bold">Добавить</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+                                    </MediaUploader>
                                 </div>
                             </Tab.Panel>
                         </Tab.Panels>

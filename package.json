@@ -33,7 +33,6 @@
     "dotenv": "^17.2.3",
     "firebase": "^12.5.0",
     "firebase-admin": "^11.11.1",
-    "firebase-tools": "^15.0.0",
     "next": "latest",
     "next-pwa": "^5.6.0",
     "node-fetch": "^3.3.2",
@@ -42,6 +41,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.6.0",
+    "react-zoom-pan-pinch": "^3.4.4",
     "replicate": "^1.4.0",
     "sharp": "^0.34.5"
   },

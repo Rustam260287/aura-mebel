@@ -11,12 +11,12 @@ import { Footer } from '../../components/Footer';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon, ChevronRightIcon, SlidersHorizontalIcon } from '../../components/Icons';
 import { FilterSidebar } from '../../components/FilterSidebar';
-import { useToast } from '../../contexts/ToastContext'; // Import Toast
+import { useToast } from '../../contexts/ToastContext';
 import { useProductModals } from '../../hooks/useProductModals';
+import { SearchService } from '../../lib/services/search.service';
 
 const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
-
 
 const ITEMS_PER_PAGE = 12;
 const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
@@ -38,11 +38,12 @@ interface CatalogPageProps {
   totalPages: number;
   globalMaxPrice: number;
   error?: string;
+  searchQuery?: string;
 }
 
-export default function CatalogPage({ products, currentPage, totalPages, globalMaxPrice, error }: CatalogPageProps) {
+export default function CatalogPage({ products, currentPage, totalPages, globalMaxPrice, error, searchQuery }: CatalogPageProps) {
   const router = useRouter();
-  const { addToast } = useToast(); // Use Toast
+  const { addToast } = useToast();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const {
     quickViewProduct,
@@ -63,14 +64,15 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
   ];
   const currentSort = (sort as any) || 'rating_desc';
 
-  // Handlers
   const handleCategoryChange = (newCategories: string[]) => {
     const query = { ...router.query };
-    delete query.category; // Clear existing
+    delete query.category;
+    delete query.q;
+    delete query.search; // Clear search
     if (newCategories.length > 0) {
       query.category = newCategories;
     }
-    query.page = '1'; // Reset to first page
+    query.page = '1';
     router.push({ pathname: '/products', query }, undefined, { scroll: true });
   };
 
@@ -121,90 +123,63 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-serif text-brand-brown">Каталог товаров</h1>
-            <Button 
-                variant="outline" 
-                className="md:hidden flex items-center gap-2"
-                onClick={() => setIsFilterOpen(true)}
-            >
-                <SlidersHorizontalIcon className="w-5 h-5" />
-                Фильтры
-            </Button>
+            <h1 className="text-3xl font-serif text-brand-brown">
+                {searchQuery ? `Результаты поиска: "${searchQuery}"` : 'Каталог товаров'}
+            </h1>
+            {!searchQuery && (
+                <Button 
+                    variant="outline" 
+                    className="md:hidden flex items-center gap-2"
+                    onClick={() => setIsFilterOpen(true)}
+                >
+                    <SlidersHorizontalIcon className="w-5 h-5" />
+                    Фильтры
+                </Button>
+            )}
         </div>
         
         <div className="flex flex-col md:flex-row gap-8">
-            {/* Sidebar */}
-            <aside className="w-full md:w-64 flex-shrink-0">
-                <FilterSidebar 
-                    allCategories={ALL_CATEGORIES}
-                    selectedCategories={selectedCategories}
-                    onCategoryChange={handleCategoryChange}
-                    priceRange={currentPriceRange}
-                    maxPrice={globalMaxPrice}
-                    onPriceChange={handlePriceChange}
-                    sortOption={currentSort}
-                    onSortChange={handleSortChange}
-                    onReset={handleReset}
-                    isOpen={isFilterOpen}
-                    onClose={() => setIsFilterOpen(false)}
-                />
-            </aside>
+            {!searchQuery && (
+                <aside className="w-full md:w-64 flex-shrink-0">
+                    <FilterSidebar 
+                        allCategories={ALL_CATEGORIES}
+                        selectedCategories={selectedCategories}
+                        onCategoryChange={handleCategoryChange}
+                        priceRange={currentPriceRange}
+                        maxPrice={globalMaxPrice}
+                        onPriceChange={handlePriceChange}
+                        sortOption={currentSort}
+                        onSortChange={handleSortChange}
+                        onReset={handleReset}
+                        isOpen={isFilterOpen}
+                        onClose={() => setIsFilterOpen(false)}
+                    />
+                </aside>
+            )}
 
-            {/* Product Grid */}
             <div className="flex-grow">
                 <Catalog
                     allProducts={products}
                     isLoading={false}
                     onProductSelect={(id) => router.push(`/products/${id}`)}
                     onQuickView={openQuickView}
-                    onVirtualStage={handleVirtualStage} // Pass the handler
+                    onVirtualStage={handleVirtualStage}
                     onImageClick={handleImageClick}
                 />
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="flex justify-center items-center gap-4 mt-12">
-                        <Button 
-                            variant="outline" 
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage <= 1}
-                        >
-                            <ChevronLeftIcon className="w-5 h-5" />
-                        </Button>
-                        
-                        <span className="text-brand-charcoal font-medium">
-                            Страница {currentPage} из {totalPages}
-                        </span>
-
-                        <Button 
-                            variant="outline" 
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage >= totalPages}
-                        >
-                            <ChevronRightIcon className="w-5 h-5" />
-                        </Button>
+                        <Button variant="outline" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}><ChevronLeftIcon className="w-5 h-5" /></Button>
+                        <span className="text-brand-charcoal font-medium">Страница {currentPage} из {totalPages}</span>
+                        <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}><ChevronRightIcon className="w-5 h-5" /></Button>
                     </div>
                 )}
             </div>
         </div>
       </main>
       <Footer />
-
-      {quickViewProduct && (
-        <QuickViewModal
-          product={quickViewProduct}
-          onClose={closeQuickView}
-          onViewDetails={(id) => router.push(`/products/${id}`)}
-        />
-      )}
-      <ImageZoomModal
-        key={`${imageModalState.productName}-${imageModalState.initialIndex}-${imageModalState.isOpen ? 'open' : 'closed'}`}
-        isOpen={imageModalState.isOpen}
-        images={imageModalState.images}
-        initialIndex={imageModalState.initialIndex}
-        productName={imageModalState.productName}
-        onClose={closeImageModal}
-      />
+      {quickViewProduct && (<QuickViewModal product={quickViewProduct} onClose={closeQuickView} onViewDetails={(id) => router.push(`/products/${id}`)} />)}
+      <ImageZoomModal key={`${imageModalState.productName}-${imageModalState.initialIndex}-${imageModalState.isOpen ? 'open' : 'closed'}`} isOpen={imageModalState.isOpen} images={imageModalState.images} initialIndex={imageModalState.initialIndex} productName={imageModalState.productName} onClose={closeImageModal} />
     </>
   );
 }
@@ -212,19 +187,45 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const adminDb = getAdminDb();
-    if (!adminDb) {
-      throw new Error("Firebase Admin SDK initialization failed.");
+    if (!adminDb) throw new Error("Firebase Admin SDK initialization failed.");
+
+    const page = Number(context.query.page) || 1;
+    // Support both 'q' and 'search' params
+    const qParam = context.query.q || context.query.search;
+    const queryParam = qParam ? String(qParam).trim() : '';
+    
+    let products: Product[] = [];
+    let totalItems = 0;
+    let totalPages = 1;
+    let globalMaxPrice = DEFAULT_MAX_PRICE;
+
+    if (queryParam) {
+        try {
+            products = await SearchService.search({ query: queryParam, limit: 30 });
+            totalItems = products.length;
+            totalPages = 1; 
+        } catch (e) {
+            console.error("Search failed:", e);
+        }
+        
+        return {
+            props: {
+                products: JSON.parse(JSON.stringify(products)),
+                currentPage: 1,
+                totalPages: 1,
+                globalMaxPrice,
+                searchQuery: queryParam
+            }
+        };
     }
 
-    let globalMaxPrice = DEFAULT_MAX_PRICE;
     try {
       const maxPriceSnapshot = await adminDb.collection('products').orderBy('price', 'desc').limit(1).get();
       globalMaxPrice = maxPriceSnapshot.empty ? DEFAULT_MAX_PRICE : maxPriceSnapshot.docs[0].data().price;
     } catch (e) {
-      console.log("Failed to get max price, using default", e);
+      console.log("Failed to get max price", e);
     }
 
-    const page = Number(context.query.page) || 1;
     const categoryQuery = context.query.category;
     const sortParam = (context.query.sort as string) || 'rating_desc';
     const rawMinPrice = Number(context.query.minPrice);
@@ -236,11 +237,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const maxPriceFilter = hasMaxPriceFilter ? rawMaxPrice : undefined;
     const isPriceFilterActive = Boolean(minPriceFilter !== undefined || maxPriceFilter !== undefined);
 
-    const selectedCategories = Array.isArray(categoryQuery)
-      ? (categoryQuery as string[])
-      : categoryQuery
-        ? [categoryQuery as string]
-        : [];
+    const selectedCategories = Array.isArray(categoryQuery) ? (categoryQuery as string[]) : categoryQuery ? [categoryQuery as string] : [];
 
     let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection('products');
     if (selectedCategories.length > 0) {
@@ -258,23 +255,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!shouldUseLegacyPipeline) {
       let filteredQuery = baseQuery;
       if (canApplyPriceFilterInQuery) {
-        if (typeof minPriceFilter === 'number') {
-          filteredQuery = filteredQuery.where('price', '>=', minPriceFilter);
-        }
-        if (typeof maxPriceFilter === 'number') {
-          filteredQuery = filteredQuery.where('price', '<=', maxPriceFilter);
-        }
+        if (typeof minPriceFilter === 'number') filteredQuery = filteredQuery.where('price', '>=', minPriceFilter);
+        if (typeof maxPriceFilter === 'number') filteredQuery = filteredQuery.where('price', '<=', maxPriceFilter);
       }
 
       const totalItemsSnapshot = await filteredQuery.count().get();
-      const totalItems = totalItemsSnapshot.data().count ?? 0;
-      const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+      totalItems = totalItemsSnapshot.data().count ?? 0;
+      totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
       const safePage = Math.max(1, Math.min(page, totalPages));
       const offset = (safePage - 1) * ITEMS_PER_PAGE;
 
       const sortedQuery = filteredQuery.orderBy(sortConfig.field, sortConfig.direction);
       const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
-      const products = pageSnapshot.docs.map(doc => {
+      products = pageSnapshot.docs.map(doc => {
         const data = doc.data() as Product;
         const imageUrls = (data.imageUrls || []).map(url => url || '/placeholder.svg');
         return { ...data, id: doc.id, imageUrls };
@@ -290,7 +283,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }
 
-    // Legacy: fallback for discount sort and incompatible price filter combinations.
     const legacySnapshot = await baseQuery.get();
     let productsData = legacySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
@@ -317,8 +309,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     productsData.sort(sortHandlers[sortParam] ?? sortHandlers.rating_desc);
 
-    const totalItems = productsData.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    totalItems = productsData.length;
+    totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
     const safePage = Math.max(1, Math.min(page, totalPages));
     const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
     const paginatedProducts = productsData
@@ -338,16 +330,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   } catch (error) {
     console.error("Catalog Error:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    
-    return { 
-        props: { 
-            products: [], 
-            currentPage: 1, 
-            totalPages: 1, 
-            globalMaxPrice: 1000000,
-            error: errorMessage 
-        } 
-    };
+    return { props: { products: [], currentPage: 1, totalPages: 1, globalMaxPrice: 1000000, error: String(error) } };
   }
 };

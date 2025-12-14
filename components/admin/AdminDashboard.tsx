@@ -1,6 +1,7 @@
 
 import React from 'react';
 import type { Product, BlogPost } from '../../types';
+import { JobManager } from './JobManager';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -114,6 +115,10 @@ export const AdminDashboard: React.FC<
 
   return (
     <div>
+      <div className="mb-8">
+        <JobManager />
+      </div>
+
       <h1 className="text-3xl font-serif text-brand-brown mb-8">Аналитика</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard title="Всего товаров" value={products.length}>

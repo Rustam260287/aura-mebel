@@ -3,6 +3,7 @@ import React, { memo, Fragment, useState, useEffect, useCallback } from 'react';
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import Image from 'next/image';
 import { Transition, Dialog } from '@headlessui/react';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 interface ImageZoomModalProps {
   isOpen: boolean;
@@ -31,13 +32,12 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleNext, handlePrev]); // Добавил зависимости, чтобы не ругался линтер
+  }, [isOpen, handleNext, handlePrev]);
 
   if (!images || images.length === 0) {
     return null;
   }
   
-
   return (
     <Transition show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-[100]" onClose={onClose}>
@@ -51,11 +51,11 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-sm" />
             </Transition.Child>
             
             {/* Modal Content Wrapper */}
-            <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div className="fixed inset-0 flex items-center justify-center p-0 sm:p-4 overflow-hidden">
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -65,33 +65,48 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                 >
-                    <Dialog.Panel className="relative w-full h-full max-w-6xl max-h-[90vh]">
+                    <Dialog.Panel className="relative w-full h-full max-w-7xl max-h-screen flex items-center justify-center">
                         
-                        {/* Image */}
-                        <Image 
-                            src={images[currentIndex]} 
-                            alt={`Увеличенное изображение ${currentIndex + 1} из ${images.length}: ${productName}`}
-                            className="object-contain"
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                        />
+                        {/* Zoomable Image Container */}
+                        <div className="w-full h-full flex items-center justify-center">
+                            <TransformWrapper
+                                initialScale={1}
+                                minScale={1}
+                                maxScale={4}
+                                centerOnInit
+                            >
+                                <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
+                                        {/* Используем обычный img для лучшей совместимости с зум-библиотекой или Next Image с правильно настроенными стилями.
+                                            Для зума проще использовать обычный img, так как Next Image требует fill/absolute, что конфликтует с transform.
+                                        */}
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img 
+                                            src={images[currentIndex]} 
+                                            alt={`${productName} - ${currentIndex + 1}`}
+                                            className="max-w-full max-h-full object-contain"
+                                        />
+                                    </div>
+                                </TransformComponent>
+                            </TransformWrapper>
+                        </div>
                         
-                        {/* Кнопки теперь ВНУТРИ Dialog.Panel */}
-
+                        {/* Controls - Absolute positioned on top of everything */}
+                        
                         {/* Close Button */}
                         <button 
                             onClick={onClose} 
-                            className="absolute -top-12 right-0 sm:top-0 sm:-right-12 text-white hover:text-gray-300 z-[110] p-2 bg-black/30 rounded-full transition-all hover:scale-110"
+                            className="absolute top-4 right-4 sm:-top-12 sm:-right-12 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                             aria-label="Закрыть"
                         >
-                            <XMarkIcon className="w-8 h-8" />
+                            <XMarkIcon className="w-6 h-6" />
                         </button>
 
                         {/* Prev Button */}
                         {images.length > 1 && (
                           <button 
-                              onClick={handlePrev} 
-                              className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[110] p-2 bg-black/30 rounded-full transition-all hover:scale-110"
+                              onClick={(e) => { e.stopPropagation(); handlePrev(); }} 
+                              className="absolute left-2 sm:-left-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                               aria-label="Предыдущее изображение"
                           >
                               <ChevronLeftIcon className="w-8 h-8" />
@@ -101,8 +116,8 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         {/* Next Button */}
                         {images.length > 1 && (
                           <button 
-                              onClick={handleNext} 
-                              className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[110] p-2 bg-black/30 rounded-full transition-all hover:scale-110"
+                              onClick={(e) => { e.stopPropagation(); handleNext(); }} 
+                              className="absolute right-2 sm:-right-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                               aria-label="Следующее изображение"
                           >
                               <ChevronRightIcon className="w-8 h-8" />
@@ -110,7 +125,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         )}
 
                         {/* Counter */}
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 text-white z-[110] p-2 bg-black/30 rounded-full text-sm font-medium">
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white z-[120] px-4 py-1 bg-black/40 rounded-full text-sm font-medium backdrop-blur-md">
                           {currentIndex + 1} / {images.length}
                         </div>
 
