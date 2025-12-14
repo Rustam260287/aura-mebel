@@ -10,6 +10,9 @@ interface MediaUploaderProps {
   children: (open: () => void, isLoading: boolean) => React.ReactNode;
 }
 
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
 export const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadSuccess, accept = "image/*,video/*", folder = 'products', children }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,9 +20,18 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadSuccess, a
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const type = file.type.startsWith('video') ? 'video' : 'image';
+      
+      // Validation
+      const maxSize = type === 'video' ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+      if (file.size > maxSize) {
+          alert(`Файл слишком большой. Максимальный размер для ${type === 'video' ? 'видео 50МБ' : 'фото 10МБ'}.`);
+          if (inputRef.current) inputRef.current.value = '';
+          return;
+      }
+
       setIsLoading(true);
       try {
-        const type = file.type.startsWith('video') ? 'video' : 'image';
         const targetFolder = type === 'video' ? 'videos' : folder;
         
         const res = await fetch(`/api/admin/upload?folder=${targetFolder}`, {

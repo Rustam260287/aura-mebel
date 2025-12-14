@@ -1,10 +1,11 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MediaService } from '../../../lib/media/service';
+import sharp from 'sharp';
 
 export const config = {
   api: {
-    bodyParser: false, // Disabling body parser to handle streams manually
+    bodyParser: false,
   },
 };
 
@@ -24,13 +25,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const mimeType = req.headers['content-type'] || 'application/octet-stream';
     
     // Read raw body
-    const buffer = await readStream(req);
+    let buffer = await readStream(req);
     
     if (buffer.length === 0) {
         return res.status(400).json({ error: 'Empty file' });
     }
 
-    const url = await MediaService.uploadBuffer(buffer, folder, mimeType);
+    let finalMimeType = mimeType;
+    
+    // Image Optimization
+    if (mimeType.startsWith('image/') && !mimeType.includes('svg')) {
+        try {
+            console.log(`Optimizing image (${mimeType})...`);
+            buffer = await sharp(buffer)
+                .rotate() // Auto-rotate based on EXIF
+                .resize({ 
+                    width: 1920, 
+                    height: 1920, 
+                    fit: 'inside', 
+                    withoutEnlargement: true 
+                })
+                .webp({ quality: 80, effort: 4 }) // Convert to WebP
+                .toBuffer();
+            
+            finalMimeType = 'image/webp';
+            console.log('Image optimized to WebP');
+        } catch (e) {
+            console.error('Image optimization failed, uploading original:', e);
+        }
+    }
+
+    const url = await MediaService.uploadBuffer(buffer, folder, finalMimeType);
     
     res.status(200).json({ url });
 

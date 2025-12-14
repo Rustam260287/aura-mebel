@@ -7,8 +7,9 @@ import { useRouter } from 'next/router';
 import { useCartState, useCartDispatch } from '../contexts/CartContext'; 
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
-import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowUpTrayIcon } from './Icons'; // Вернул ChevronDownIcon
+import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowUpTrayIcon } from './Icons';
 import { Transition, Dialog, Menu } from '@headlessui/react';
+import { Logo } from './Logo'; // Import Logo
 
 interface HeaderProps {}
 
@@ -69,7 +70,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
     }
   };
 
-  // Функция "Поделиться приложением"
   const handleShareApp = async () => {
     const shareData = {
         title: 'Labelcom Мебель',
@@ -112,8 +112,9 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
       <header className="sticky top-0 bg-brand-cream/80 backdrop-blur-lg z-30 shadow-sm transition-all duration-300 border-b border-black/5">
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
-            <Link href="/" className="text-4xl font-serif text-brand-brown tracking-wider mr-8 transform hover:scale-105 transition-transform">
-              Labelcom
+            {/* Logo */}
+            <Link href="/" className="mr-8 transform hover:scale-105 transition-transform origin-left">
+              <Logo />
             </Link>
 
             <nav className="hidden md:flex items-center gap-8 flex-1">
@@ -189,7 +190,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                     </button>
                 </div>
                 
-              {/* Кнопка "Поделиться" для десктопа (скрытая на очень маленьких, но тут место позволяет) */}
               <button 
                   onClick={handleShareApp}
                   className="hidden md:block text-brand-charcoal/80 hover:text-brand-brown transition-colors p-2 rounded-full hover:bg-brand-cream-dark"
@@ -220,7 +220,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
       {/* Mobile Menu Overlay */}
       <Transition show={isMobileMenuOpen} as={Fragment}>
         <Dialog as="div" className="md:hidden fixed inset-0 z-40" onClose={closeMobileMenu}>
-          {/* Backdrop */}
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -233,7 +232,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           </Transition.Child>
           
-          {/* Panel */}
           <Transition.Child
             as="div"
             className="fixed top-0 right-0 h-full w-full max-w-sm bg-brand-cream shadow-xl"
@@ -246,7 +244,7 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
           >
             <Dialog.Panel className="p-5 flex flex-col h-full overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-3xl font-serif text-brand-brown">Labelcom</span>
+                <Logo /> {/* Logo in mobile menu */}
                 <button onClick={closeMobileMenu}>
                   <XMarkIcon className="w-8 h-8" />
                 </button>
@@ -286,7 +284,6 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                 ))}
               </nav>
 
-              {/* Кнопка "Поделиться" внизу мобильного меню */}
               <div className="mt-auto pt-6 border-t border-gray-200">
                  <button 
                     onClick={handleShareApp}

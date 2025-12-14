@@ -3,9 +3,9 @@ import React, { memo, useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from './Logo'; // Import Logo
 
 // Список email-адресов администраторов
-// В идеале это должно быть в переменных окружения: process.env.NEXT_PUBLIC_ADMIN_EMAILS
 const ADMIN_EMAILS = ['amin8914@gmail.com', 'admin@labelcom.store']; 
 
 const FooterComponent: React.FC = () => {
@@ -60,7 +60,7 @@ const FooterComponent: React.FC = () => {
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-serif text-brand-brown mb-4">Labelcom</h3>
+            <Logo className="mb-4" /> {/* Logo */}
             <p className="text-brand-charcoal/80">Мебель, вдохновленная уютом и людьми.</p>
           </div>
           <div>
