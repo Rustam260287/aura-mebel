@@ -302,3 +302,79 @@
 [debug] [2025-12-16T14:04:06.524Z] > authorizing via signed-in user (amin8914@gmail.com)
 [debug] [2025-12-16T14:04:06.541Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
 [debug] [2025-12-16T14:04:06.541Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:56.619Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:56.620Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-16T18:26:56.630Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.630Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.631Z] > refreshing access token with scopes: []
+[debug] [2025-12-16T18:26:56.636Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-16T18:26:56.637Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:56.705Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.705Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.706Z] > refreshing access token with scopes: []
+[debug] [2025-12-16T18:26:56.707Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-16T18:26:56.707Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:56.711Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:56.712Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-16T18:26:56.713Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.714Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.714Z] > refreshing access token with scopes: []
+[debug] [2025-12-16T18:26:56.715Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-16T18:26:56.715Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:56.721Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.721Z] Checked if tokens are valid: false, expires at: 1765897444767
+[debug] [2025-12-16T18:26:56.721Z] > refreshing access token with scopes: []
+[debug] [2025-12-16T18:26:56.722Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-16T18:26:56.722Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:57.216Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-16T18:26:57.216Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:57.239Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-16T18:26:57.240Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-16T18:26:57.306Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-16T18:26:57.307Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:57.317Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-16T18:26:57.318Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-16T18:26:57.334Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-16T18:26:57.334Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:57.349Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-16T18:26:57.349Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-16T18:26:57.380Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-16T18:26:57.381Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-16T18:26:57.395Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-16T18:26:57.396Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-16T18:26:58.001Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-16T18:26:58.001Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-16T18:26:58.007Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-16T18:26:58.008Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-16T18:26:58.140Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-16T18:26:58.140Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-12-16T18:26:58.175Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-16T18:26:58.176Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.186Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.187Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.192Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.192Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.215Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.215Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.218Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.218Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.231Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.232Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-16T18:26:58.233Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-16T18:26:58.233Z] > authorizing via signed-in user (amin8914@gmail.com)
