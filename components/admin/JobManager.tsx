@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, PlayIcon, CheckCircleIcon, ExclamationTriangleIcon, PauseIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { getAuth } from 'firebase/auth';
 
 export const JobManager = () => {
   const [activeJob, setActiveJob] = useState<any>(null);
@@ -10,15 +11,26 @@ export const JobManager = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const isRunningRef = useRef(false);
 
+  const getAuthToken = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) throw new Error('Пользователь не авторизован');
+    return user.getIdToken();
+  };
+
   const processNextBatch = async (jobId: string) => {
       if (!isRunningRef.current) return;
 
       try {
-          const res = await fetch('/api/admin/jobs/worker', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ jobId })
-          });
+          const token = await getAuthToken();
+	          const res = await fetch('/api/admin/jobs/worker', {
+	              method: 'POST',
+	              headers: {
+	                  'Content-Type': 'application/json',
+	                  'Authorization': `Bearer ${token}`,
+	              },
+	              body: JSON.stringify({ jobId })
+	          });
           
           if (!res.ok) {
               const text = await res.text();
@@ -37,7 +49,16 @@ export const JobManager = () => {
           }
       } catch (e: any) {
           console.error("Worker failed:", e);
-          setErrorMsg(e.message || "Ошибка соединения");
+          const message = e?.message || "Ошибка соединения";
+          setErrorMsg(message);
+
+          // Если это ошибка прав/авторизации — не зацикливаемся
+          if (String(message).includes('403') || String(message).toLowerCase().includes('forbidden') || String(message).toLowerCase().includes('авториз')) {
+              isRunningRef.current = false;
+              setIsLoading(false);
+              return;
+          }
+
           setIsLoading(false);
           setTimeout(() => processNextBatch(jobId), 5000);
       }
@@ -47,13 +68,20 @@ export const JobManager = () => {
       setIsLoading(true);
       setErrorMsg(null);
       try {
+          const token = await getAuthToken();
           const res = await fetch('/api/admin/jobs/create', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
               body: JSON.stringify({ type })
           });
           
-          if (!res.ok) throw new Error("Failed to create job");
+          if (!res.ok) {
+              const text = await res.text();
+              throw new Error(`Server error ${res.status}: ${text}`);
+          }
           
           const job = await res.json();
           
@@ -63,7 +91,9 @@ export const JobManager = () => {
               processNextBatch(job.jobId);
           }
       } catch (e: any) {
-          alert("Не удалось создать задачу: " + e.message);
+          const message = e?.message || 'Неизвестная ошибка';
+          setErrorMsg(message);
+          alert("Не удалось создать задачу: " + message);
           setIsLoading(false);
       }
   };
@@ -105,6 +135,13 @@ export const JobManager = () => {
                     Сгенерировать интерьеры (AI)
                 </button>
             </div>
+
+            {errorMsg && (
+                <div className="flex items-center gap-2 text-xs text-red-500 mt-4 bg-red-50 p-2 rounded">
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                    {errorMsg}
+                </div>
+            )}
         </div>
       );
   }
