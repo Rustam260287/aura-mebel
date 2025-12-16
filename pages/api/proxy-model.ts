@@ -86,8 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(upstream.status);
     res.setHeader('Content-Type', contentType);
-    const disposition = contentType === 'model/vnd.usdz+zip' ? 'attachment' : 'inline';
-    res.setHeader('Content-Disposition', `${disposition}; filename="${filename}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
@@ -95,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (contentLength) res.setHeader('Content-Length', contentLength);
 
     const acceptRanges = upstream.headers.get('accept-ranges');
-    if (acceptRanges) res.setHeader('Accept-Ranges', acceptRanges);
+    res.setHeader('Accept-Ranges', acceptRanges || 'bytes');
 
     const contentRange = upstream.headers.get('content-range');
     if (contentRange) res.setHeader('Content-Range', contentRange);

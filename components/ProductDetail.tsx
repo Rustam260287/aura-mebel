@@ -71,7 +71,21 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
   const handleNext = useCallback(() => galleryItems.length > 0 && setCurrentIndex(prev => (prev + 1) % galleryItems.length), [galleryItems.length]);
   const handlePrev = useCallback(() => galleryItems.length > 0 && setCurrentIndex(prev => (prev - 1 + galleryItems.length) % galleryItems.length), [galleryItems.length]);
   
-  const pageSwipeHandlers = useSwipe({ onSwipeRight: onBack });
+  const pageSwipe = useSwipe({ onSwipeRight: onBack });
+  const pageSwipeHandlers = useMemo(
+    () => ({
+      onTouchStart: (e: TouchEvent<HTMLElement>) => {
+        if (currentItem?.type !== '3d') pageSwipe.onTouchStart(e);
+      },
+      onTouchMove: (e: TouchEvent<HTMLElement>) => {
+        if (currentItem?.type !== '3d') pageSwipe.onTouchMove(e);
+      },
+      onTouchEnd: () => {
+        if (currentItem?.type !== '3d') pageSwipe.onTouchEnd();
+      },
+    }),
+    [pageSwipe, currentItem],
+  );
   const gallerySwipe = useSwipe({ onSwipeLeft: handleNext, onSwipeRight: handlePrev });
   
   const gallerySwipeHandlers = useMemo(() => ({

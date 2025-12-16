@@ -1,8 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useMemo, Fragment, useRef } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowsPointingOutIcon, XMarkIcon, CameraIcon, ShareIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import type { Product } from '../types';
 
@@ -23,47 +22,24 @@ declare global {
   }
 }
 
-const useModelBlob = (src?: string) => {
-    const [blobUrl, setBlobUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!src) {
-            setLoading(false);
-            setBlobUrl(null);
-            return;
-        }
-        let isActive = true;
-        setLoading(true);
-        const finalUrl = (src.includes('firebasestorage') && !src.startsWith('blob:'))
-            ? `/api/proxy-model?url=${encodeURIComponent(src)}`
-            : src;
-        if (src.startsWith('blob:')) {
-            setBlobUrl(src);
-            setLoading(false);
-            return;
-        }
-        fetch(finalUrl)
-            .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.blob(); })
-            .then(blob => { if (isActive) { setBlobUrl(URL.createObjectURL(blob)); }})
-            .catch(err => { console.error("Model blob failed:", err); if (isActive) setBlobUrl(src); })
-            .finally(() => { if (isActive) setLoading(false); });
-        return () => { isActive = false; };
-    }, [src]);
-    return { blobUrl, loading };
+const toProxyUrl = (src?: string) => {
+  if (!src) return undefined;
+  if (src.startsWith('blob:') || src.startsWith('/') || src.startsWith('data:')) return src;
+  if (src.includes('firebasestorage') || src.includes('storage.googleapis.com')) {
+    return `/api/proxy-model?url=${encodeURIComponent(src)}`;
+  }
+  return src;
 };
 
 export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt, product, onAddToCart }) => {
-  const [isClient, setIsClient] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const modelViewerRef = useRef<any>(null);
   const [currentMaterial, setCurrentMaterial] = useState<string | null>(null);
 
-  const { blobUrl: glbBlobUrl, loading: isLoadingGlb } = useModelBlob(src);
-  const usdzProxyUrl = useMemo(() => iosSrc ? `/api/proxy-model?url=${encodeURIComponent(iosSrc)}` : undefined, [iosSrc]);
+  const glbSrc = useMemo(() => toProxyUrl(src), [src]);
+  const usdzSrc = useMemo(() => toProxyUrl(iosSrc), [iosSrc]);
 
   useEffect(() => {
-    setIsClient(true);
     import('@google/model-viewer').catch(console.error);
     const handleSetMaterial = (event: CustomEvent) => {
       setCurrentMaterial(event.detail);
@@ -72,6 +48,33 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt, pr
     window.addEventListener('set-material', handleSetMaterial as EventListener);
     return () => window.removeEventListener('set-material', handleSetMaterial as EventListener);
   }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const el = modelViewerRef.current as HTMLElement | null;
+    if (!el) return;
+    const stop = (e: TouchEvent) => e.stopPropagation();
+    const preventScroll = (e: TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    el.addEventListener('touchstart', stop as any, { passive: true });
+    el.addEventListener('touchend', stop as any, { passive: true });
+    el.addEventListener('touchmove', preventScroll as any, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', stop as any);
+      el.removeEventListener('touchend', stop as any);
+      el.removeEventListener('touchmove', preventScroll as any);
+    };
+  }, [glbSrc]);
 
   useEffect(() => {
     const viewer = modelViewerRef.current;
@@ -87,55 +90,62 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt, pr
   const takeScreenshot = async () => { if (modelViewerRef.current) { const blob = await modelViewerRef.current.toBlob({idealAspect: true}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${alt}.png`; a.click(); URL.revokeObjectURL(url); } };
   const shareProduct = async () => { if (navigator.share && product) { await navigator.share({ title: product.name, text: `Оцени ${product.name}!`, url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href); alert("Ссылка скопирована!"); }};
 
-  const ModelViewerContent = ({ isFull = false }) => (
-    <model-viewer
-      ref={isFull ? modelViewerRef : null}
-      src={glbBlobUrl}
-      ios-src={usdzProxyUrl}
+  return (
+    <div className={isFullscreen ? 'fixed inset-0 z-[100] bg-black' : 'relative w-full h-full bg-gray-50 group'}>
+      {!glbSrc && <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-20">3D модель недоступна</div>}
+      {glbSrc && (
+        <>
+          <model-viewer
+            ref={modelViewerRef}
+      src={glbSrc}
+      ios-src={usdzSrc}
       poster={poster}
       alt={alt}
       camera-controls
       auto-rotate
+      touch-action="none"
       ar
       ar-modes="webxr scene-viewer quick-look"
-      style={{ width: '100%', height: '100%' }}
-    >
-      {!isFull && (
-        <button slot="ar-button" className="absolute bottom-4 right-4 bg-brand-brown text-white px-4 py-2 rounded-full font-bold shadow-lg">
-            AR Примерка
-        </button>
+            style={{ width: '100%', height: '100%', touchAction: 'none' }}
+          >
+            {!isFullscreen && (
+              <button slot="ar-button" className="absolute bottom-4 right-4 bg-brand-brown text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                AR Примерка
+              </button>
+            )}
+          </model-viewer>
+
+          <button
+            onClick={() => setIsFullscreen(true)}
+            className={isFullscreen ? 'hidden' : 'absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md z-10'}
+            aria-label="Fullscreen"
+          >
+            <ArrowsPointingOutIcon className="w-6 h-6" />
+          </button>
+        </>
       )}
-    </model-viewer>
-  );
 
-  return (
-    <>
-        <div className="relative w-full h-full bg-gray-50 group">
-        {isLoadingGlb && <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-brown"></div></div>}
-        {glbBlobUrl && (
-            <>
-                <ModelViewerContent />
-                <button onClick={() => setIsFullscreen(true)} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md z-10"><ArrowsPointingOutIcon className="w-6 h-6" /></button>
-            </>
-        )}
-        </div>
-
-        <Transition show={isFullscreen} as={Fragment}>
-            <Dialog as="div" className="relative z-[100]" onClose={() => setIsFullscreen(false)}>
-                <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0"><div className="fixed inset-0 bg-black/80" /></Transition.Child>
-                <div className="fixed inset-0 flex items-center justify-center"><Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-                    <Dialog.Panel className="w-full h-full relative bg-black">
-                        <ModelViewerContent isFull={true} />
-                        <button onClick={() => setIsFullscreen(false)} className="absolute top-4 right-4 text-white p-2 z-20"><XMarkIcon className="w-8 h-8" /></button>
-                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
-                            <button onClick={takeScreenshot} className="bg-white/10 p-4 rounded-full text-white"><CameraIcon className="w-6 h-6" /></button>
-                            {onAddToCart && <button onClick={onAddToCart} className="bg-brand-brown px-6 py-4 rounded-full text-white font-bold flex items-center gap-2"><ShoppingCartIcon className="w-6 h-6" /><span>В корзину</span></button>}
-                            <button onClick={shareProduct} className="bg-white/10 p-4 rounded-full text-white"><ShareIcon className="w-6 h-6" /></button>
-                        </div>
-                    </Dialog.Panel>
-                </Transition.Child></div>
-            </Dialog>
-        </Transition>
-    </>
+      {isFullscreen && (
+        <>
+          <button onClick={() => setIsFullscreen(false)} className="absolute top-4 right-4 text-white p-2 z-20" aria-label="Close">
+            <XMarkIcon className="w-8 h-8" />
+          </button>
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
+            <button onClick={takeScreenshot} className="bg-white/10 p-4 rounded-full text-white" aria-label="Screenshot">
+              <CameraIcon className="w-6 h-6" />
+            </button>
+            {onAddToCart && (
+              <button onClick={onAddToCart} className="bg-brand-brown px-6 py-4 rounded-full text-white font-bold flex items-center gap-2" aria-label="Add to cart">
+                <ShoppingCartIcon className="w-6 h-6" />
+                <span>В корзину</span>
+              </button>
+            )}
+            <button onClick={shareProduct} className="bg-white/10 p-4 rounded-full text-white" aria-label="Share">
+              <ShareIcon className="w-6 h-6" />
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
