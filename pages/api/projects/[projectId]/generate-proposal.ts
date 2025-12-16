@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ProposalTemplate } from '../../../../components/proposals/ProposalTemplate';
 import puppeteer from 'puppeteer';
 import { MediaService } from '../../../../lib/media/service';
+import React from 'react';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -24,12 +25,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Project not found' });
     }
     const project = { id: projectSnap.id, ...projectSnap.data() } as ProjectContext;
+    
+    if (!project) {
+        return res.status(404).json({ error: 'Project data is missing' });
+    }
 
     // 1. Render React component to HTML string
-    const html = renderToStaticMarkup(<ProposalTemplate project={project} />);
+    const ProposalComponent: React.ComponentType<{ project: ProjectContext }> = ProposalTemplate;
+    const html = renderToStaticMarkup(React.createElement(ProposalComponent, { project }));
 
     // 2. Launch Puppeteer to "print" to PDF
-    // Note: In Vercel, this might need specific args `['--no-sandbox']`
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -37,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await browser.close();
 
     // 3. Upload PDF to Firebase Storage using MediaService
-    const pdfUrl = await MediaService.uploadBuffer(pdfBuffer, `proposals/${projectId}`, 'application/pdf');
+    const pdfUrl = await MediaService.uploadBuffer(Buffer.from(pdfBuffer), `proposals/${projectId}`, 'application/pdf');
 
     res.status(200).json({ url: pdfUrl });
 

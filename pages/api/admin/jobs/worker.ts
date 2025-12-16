@@ -66,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 if (description && description.length > 10) {
                     const specs = await askAI({
                         key: 'PRODUCT_ANALYZE',
-                        variables: { description },
+                        variables: { data: description }, // FIXED: was { description }
                         responseFormat: 'json',
                         model: 'gpt-3.5-turbo' 
                     });

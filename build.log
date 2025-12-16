@@ -1,0 +1,23 @@
+
+> aura-мебель@0.0.0 build
+> next build --webpack
+
+   ▲ Next.js 16.0.10 (webpack)
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ scrollRestoration
+
+   Running TypeScript ...
+Failed to compile.
+
+./pages/api/projects/[projectId]/generate-proposal.ts:3:28
+Type error: Cannot find module '../../lib/firebaseAdmin' or its corresponding type declarations.
+
+[0m [90m 1 |[39m
+ [90m 2 |[39m [36mimport[39m { [33mNextApiRequest[39m[33m,[39m [33mNextApiResponse[39m } [36mfrom[39m [32m'next'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { getAdminDb } [36mfrom[39m [32m'../../lib/firebaseAdmin'[39m[33m;[39m
+ [90m   |[39m                            [31m[1m^[22m[39m
+ [90m 4 |[39m [36mimport[39m { getUserId } [36mfrom[39m [32m'../../lib/auth/user-check'[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { [33mProjectContext[39m } [36mfrom[39m [32m'../../types'[39m[33m;[39m
+ [90m 6 |[39m [36mimport[39m { renderToStaticMarkup } [36mfrom[39m [32m'react-dom/server'[39m[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

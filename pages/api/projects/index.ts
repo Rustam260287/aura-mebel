@@ -1,7 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAdminDb } from '../../lib/firebaseAdmin';
-import { getUserId } from '../../lib/auth/user-check';
+import { getAdminDb } from '../../../lib/firebaseAdmin';
+import { getUserId } from '../../../lib/auth/user-check';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = await getUserId(req);
