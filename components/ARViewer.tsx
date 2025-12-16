@@ -95,7 +95,6 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt, pr
       poster={poster}
       alt={alt}
       camera-controls
-      touch-action="pan-y"
       auto-rotate
       ar
       ar-modes="webxr scene-viewer quick-look"
