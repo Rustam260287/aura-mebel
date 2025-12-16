@@ -14,6 +14,7 @@
       <stop offset="55%" stop-color="rgba(0,0,0,0.18)" />
       <stop offset="100%" stop-color="rgba(0,0,0,0.35)" />
     </radialGradient>
+
     <radialGradient id="wood" cx="45%" cy="35%" r="75%">
       <stop offset="0%" stop-color="#513126" />
       <stop offset="45%" stop-color="#3B231B" />
@@ -25,6 +26,7 @@
       <stop offset="70%" stop-color="rgba(0,0,0,0.10)" />
       <stop offset="100%" stop-color="rgba(0,0,0,0.18)" />
     </linearGradient>
+
     <linearGradient id="metal" x1="170" y1="150" x2="360" y2="380">
       <stop offset="0%" stop-color="#FFF2D6" />
       <stop offset="22%" stop-color="#E6C08C" />
@@ -39,13 +41,28 @@
   </defs>
 
   <rect width="512" height="512" fill="#FBF9F4" />
+
+  <!-- Rim -->
   <circle cx="256" cy="256" r="238" fill="url(#bronze)" />
   <circle cx="256" cy="256" r="238" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="2" />
   <circle cx="256" cy="256" r="220" fill="none" stroke="url(#bronzeEdge)" stroke-width="22" />
+
+  <!-- Wood -->
   <circle cx="256" cy="256" r="205" fill="url(#wood)" />
   <circle cx="256" cy="256" r="205" fill="url(#woodSheen)" opacity="0.9" />
+
+  <!-- Inner rim -->
   <circle cx="256" cy="256" r="205" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="3" />
   <circle cx="256" cy="256" r="212" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
-  <path d="M210 150H288V334H390V404H210V150Z" fill="url(#metal)" />
-  <path d="M210 150H288V334H390V404H210V150Z" fill="url(#metalHi)" opacity="0.55" />
+
+  <!-- Letter (simple, reads well at small sizes) -->
+  <path
+    d="M210 150H288V334H390V404H210V150Z"
+    fill="url(#metal)"
+  />
+  <path
+    d="M210 150H288V334H390V404H210V150Z"
+    fill="url(#metalHi)"
+    opacity="0.55"
+  />
 </svg>
