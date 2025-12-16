@@ -1,5 +1,4 @@
 
-import type { NextApiRequest, NextApiResponse } from 'next';
 import Replicate from 'replicate';
 import { MediaService } from '../../../lib/media/service';
 import { checkRateLimit } from '../../../lib/rate-limit';
@@ -106,12 +105,25 @@ export default async function handler(
     };
 
     if (isComposite) {
-        input.prompt_strength = 0.45; 
+        input.prompt_strength = 0.15; 
         console.log("Mode: Flux Furniture Try-On (Collage Refinement)");
     } else {
-        input.prompt_strength = 0.85;
+        input.prompt_strength = 0.65;
         console.log("Mode: Flux Room Redesign");
-    }
+    }    // ...
+       // ... ваш код до Line 113, где заканчивается else блок
+    // После закрывающей скобки '}' для else-блока (Line 113)
+    // Добавьте это:
+
+            console.log("Replicate API Input Payload:", JSON.stringify(input, null, 2)); // <-- ДОБАВЬТЕ ЭТО
+
+            output = await runWithRetry(() => replicate.run(model, { input }));
+
+            console.log("Replicate API Output:", JSON.stringify(output, null, 2)); // <-- ДОБАВЬТЕ ЭТО
+
+            
+
+
 
     output = await runWithRetry(() => replicate.run(model, { input }));
 
