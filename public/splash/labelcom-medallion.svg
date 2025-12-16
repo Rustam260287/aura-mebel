@@ -1,0 +1,54 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Bronze rim -->
+    <radialGradient id="bronze" cx="30%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#FFE7C7" />
+      <stop offset="18%" stop-color="#D7A06E" />
+      <stop offset="38%" stop-color="#A7643E" />
+      <stop offset="58%" stop-color="#8A4A2F" />
+      <stop offset="78%" stop-color="#D3A072" />
+      <stop offset="100%" stop-color="#5B2C1B" />
+    </radialGradient>
+    <radialGradient id="bronzeEdge" cx="70%" cy="25%" r="70%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.65)" />
+      <stop offset="25%" stop-color="rgba(255,255,255,0.10)" />
+      <stop offset="55%" stop-color="rgba(0,0,0,0.18)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.35)" />
+    </radialGradient>
+
+    <!-- Wood center -->
+    <radialGradient id="wood" cx="45%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#513126" />
+      <stop offset="45%" stop-color="#3B231B" />
+      <stop offset="100%" stop-color="#2A1712" />
+    </radialGradient>
+    <linearGradient id="woodSheen" x1="120" y1="120" x2="392" y2="392">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.10)" />
+      <stop offset="35%" stop-color="rgba(255,255,255,0.00)" />
+      <stop offset="70%" stop-color="rgba(0,0,0,0.10)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.18)" />
+    </linearGradient>
+
+  </defs>
+
+  <!-- Rim -->
+  <circle cx="256" cy="256" r="238" fill="url(#bronze)" />
+  <circle cx="256" cy="256" r="238" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="2" />
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#bronzeEdge)" stroke-width="22" />
+
+  <!-- Wood -->
+  <circle cx="256" cy="256" r="205" fill="url(#wood)" />
+  <circle cx="256" cy="256" r="205" fill="url(#woodSheen)" opacity="0.9" />
+
+  <!-- Subtle grain -->
+  <g opacity="0.10" stroke="rgba(0,0,0,0.9)" stroke-width="2" fill="none">
+    <path d="M140 210c32 20 56 22 90 10s56-12 88 8 60 20 94 0" />
+    <path d="M120 262c40 16 74 10 102-6s52-20 90-2 64 16 96 2" />
+    <path d="M132 316c36 10 64 6 96-8s56-18 92-2 60 14 88 0" />
+  </g>
+
+  <!-- Inner rim -->
+  <circle cx="256" cy="256" r="205" fill="none" stroke="rgba(0,0,0,0.20)" stroke-width="3" />
+  <circle cx="256" cy="256" r="212" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+
+</svg>
