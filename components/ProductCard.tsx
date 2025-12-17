@@ -1,4 +1,3 @@
-
 import React, { useState, memo, useCallback } from 'react';
 import type { Product } from '../types';
 import { Button } from './Button';
@@ -108,10 +107,23 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
     }
   };
 
+  // Helper to extract dimensions from specs or description if specs missing
+  const getProductSpecs = () => {
+     if (product.specs && Object.keys(product.specs).length > 0) {
+        return (
+            <div className="flex flex-wrap gap-2 mb-2 text-xs text-gray-500">
+                {product.specs.width && <span>Ш: {product.specs.width} см</span>}
+                {product.specs.depth && <span>Г: {product.specs.depth} см</span>}
+                {product.specs.height && <span>В: {product.specs.height} см</span>}
+            </div>
+        );
+     }
+     return null;
+  };
 
   return (
     <div 
-      className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-premium-hover border border-transparent hover:border-brand-brown/5 hover:z-10 transform-gpu"
+      className="group relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-premium-hover border border-transparent hover:border-brand-brown/5 hover:z-10 transform-gpu flex flex-col h-full"
       onClick={handleCardClick}
       {...swipeHandlers}
     >
@@ -189,15 +201,26 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onProduc
         )}
       </div>
 
-      <div className="p-5 relative z-20 bg-white">
+      <div className="p-5 relative z-20 bg-white flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-1">
             <h3 className="text-base font-medium text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-brown transition-colors" title={product.name}>
                 {product.name}
             </h3>
         </div>
         
-        <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide">{product.category}</p>
-        <div className="flex justify-between items-end border-t border-gray-50 pt-3 mt-1">
+        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">{product.category}</p>
+
+        {/* Added Description - limited to 2 lines */}
+        {product.description && (
+          <p className="text-sm text-gray-500 line-clamp-2 mb-3 leading-relaxed">
+            {product.description}
+          </p>
+        )}
+
+        {/* Added Specs rendering */}
+        {getProductSpecs()}
+
+        <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-end">
           <div className="flex flex-col">
              {typeof product.originalPrice === 'number' && (
               <span className="text-xs text-gray-400 line-through mb-0.5">

@@ -35,7 +35,6 @@ export class ProductService {
 
   /**
    * Получить список товаров с фильтрацией и пагинацией.
-   * (Логика перенесена из pages/products/index.tsx)
    */
   static async getAll(filter: ProductFilter = {}): Promise<{ products: Product[], total: number }> {
     try {
@@ -50,26 +49,26 @@ export class ProductService {
         }
       }
 
-      // Price (Note: Firestore requires inequality filter on the same field as orderBy)
-      // This logic often requires client-side filtering or advanced indexing.
-      // For now, let's keep it simple: fetch then filter if complex sort needed.
-      
-      // ... Complex filtering logic to be migrated fully later ...
-      // For this first version, we return basic query result
+      // Price filters
+      if (filter.minPrice !== undefined) {
+        query = query.where('price', '>=', filter.minPrice);
+      }
+      if (filter.maxPrice !== undefined) {
+        query = query.where('price', '<=', filter.maxPrice);
+      }
+
+      // Count total matching documents BEFORE applying limit/offset
+      const countSnapshot = await query.count().get();
+      const total = countSnapshot.data().count;
       
       const limit = filter.limit || 12;
       const offset = filter.offset || 0;
 
-      // TODO: Implement proper sort + filter combination logic
-      // For now, simple fetch
-      
+      // Apply pagination
       const snapshot = await query.limit(limit).offset(offset).get();
       const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       
-      // Total count (approx)
-      // const countSnap = await query.count().get(); // New nodejs SDK supports count()
-      
-      return { products, total: 0 }; // Total 0 for now until full migration
+      return { products, total };
 
     } catch (error) {
       console.error("ProductService.getAll error:", error);
