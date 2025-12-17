@@ -1,5 +1,6 @@
 
 import Replicate from 'replicate';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { MediaService } from '../../../lib/media/service';
 import { checkRateLimit } from '../../../lib/rate-limit';
 import { checkIsAdmin } from '../../../lib/auth/admin-check';
@@ -110,28 +111,17 @@ export default async function handler(
     } else {
         input.prompt_strength = 0.65;
         console.log("Mode: Flux Room Redesign");
-    }    // ...
-       // ... ваш код до Line 113, где заканчивается else блок
-    // После закрывающей скобки '}' для else-блока (Line 113)
-    // Добавьте это:
+    }
 
-            console.log("Replicate API Input Payload:", JSON.stringify(input, null, 2)); // <-- ДОБАВЬТЕ ЭТО
-
-            output = await runWithRetry(() => replicate.run(model, { input }));
-
-            console.log("Replicate API Output:", JSON.stringify(output, null, 2)); // <-- ДОБАВЬТЕ ЭТО
-
-            
-
-
-
+    console.log("Replicate API Input Payload:", JSON.stringify(input, null, 2));
     output = await runWithRetry(() => replicate.run(model, { input }));
+    console.log("Replicate API Output:", JSON.stringify(output, null, 2));
 
-    const replicateUrl = Array.isArray(output) ? output[0] : output;
+    const replicationOutputUrl = Array.isArray(output) ? output[0] : output;
     
-    if (typeof replicateUrl === 'string' && replicateUrl.startsWith('http')) {
+    if (typeof replicationOutputUrl === 'string' && replicationOutputUrl.startsWith('http')) {
         console.log("Uploading result to Firebase Storage...");
-        redesignedImageUrl = await MediaService.uploadFromUrl(replicateUrl, 'ai-designs');
+        redesignedImageUrl = await MediaService.uploadFromUrl(replicationOutputUrl, 'ai-designs');
         console.log("Saved to:", redesignedImageUrl);
     } else {
         throw new Error("Invalid response from AI model");
