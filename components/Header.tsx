@@ -123,7 +123,41 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
               {navLinks.map(link => (
                 link.isMenu ? (
                   <Menu as="div" className="relative" key={link.label}>
-                    {/* ... (Menu code remains the same) ... */}
+                    {({ open }) => (
+                      <>
+                        <Menu.Button className="flex items-center gap-1 text-brand-charcoal/80 hover:text-brand-brown transition-colors font-medium group py-2">
+                          <span>{link.label}</span>
+                          <ChevronDownIcon className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : 'group-hover:rotate-180'}`} />
+                        </Menu.Button>
+                        <Transition
+                          show={open}
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div className="px-1 py-1 ">
+                              {link.items?.map(item => (
+                                <Menu.Item key={item.href}>
+                                  {({ active }) => (
+                                    <Link
+                                      href={item.href}
+                                      className={`${active ? 'bg-brand-brown text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm transition-colors`}
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  )}
+                                </Menu.Item>
+                              ))}
+                            </div>
+                          </Menu.Items>
+                        </Transition>
+                      </>
+                    )}
                   </Menu>
                 ) : (
                   <NavLink key={link.label} href={link.href!}>
@@ -134,7 +168,29 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
             </nav>
 
             <div className="flex items-center justify-end gap-x-1 md:gap-x-2 flex-1">
-                {/* ... (Search code remains the same) ... */}
+                <div className="hidden md:flex items-center relative mr-2">
+                    <form 
+                        onSubmit={handleSearchSubmit} 
+                        className={`flex items-center transition-all duration-300 ease-in-out overflow-hidden ${isSearchOpen ? 'w-64 opacity-100' : 'w-0 opacity-0'}`}
+                    >
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Поиск по каталогу..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onBlur={() => !searchQuery && setIsSearchOpen(false)}
+                            className="w-full bg-transparent border-b border-brand-brown/30 text-brand-charcoal placeholder-brand-charcoal/50 focus:outline-none focus:border-brand-brown py-1 pr-8 text-sm"
+                        />
+                    </form>
+                    <button 
+                        onClick={() => setIsSearchOpen(!isSearchOpen)}
+                        className="text-brand-charcoal/80 hover:text-brand-brown transition-colors p-2 rounded-full hover:bg-brand-cream-dark"
+                        aria-label="Поиск"
+                    >
+                        <MagnifyingGlassIcon className="w-6 h-6" />
+                    </button>
+                </div>
                 
               <button 
                   onClick={handleShareApp}
@@ -158,9 +214,9 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
                 )}
               </button>
               
-              {/* FIX: Removed ml-2, now spacing is handled by parent `gap-x-1` */}
-              <button className="md:hidden text-brand-charcoal p-2 -mr-2" onClick={() => setIsMobileMenuOpen(true)}>
-                <Bars3Icon className="w-8 h-8" />
+              {/* FIX: Removed negative margin, added relative z-index, reduced icon size slightly */}
+              <button className="md:hidden text-brand-charcoal p-2 relative z-50 hover:bg-black/5 rounded-full transition-colors" onClick={() => setIsMobileMenuOpen(true)}>
+                <Bars3Icon className="w-7 h-7" />
               </button>
             </div>
           </div>
@@ -168,7 +224,86 @@ const HeaderComponent: React.FC<HeaderProps> = () => {
       </header>
 
       {/* Mobile Menu Overlay */}
-      {/* ... (The rest of the component remains the same) ... */}
+      <Transition show={isMobileMenuOpen} as={Fragment}>
+        <Dialog as="div" className="md:hidden fixed inset-0 z-50" onClose={closeMobileMenu}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          </Transition.Child>
+          
+          <Transition.Child
+            as="div"
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-brand-cream shadow-xl z-50"
+            enter="transform transition ease-in-out duration-300"
+            enterFrom="translate-x-full"
+            enterTo="translate-x-0"
+            leave="transform transition ease-in-out duration-300"
+            leaveFrom="translate-x-0"
+            leaveTo="translate-x-full"
+          >
+            <Dialog.Panel className="p-5 flex flex-col h-full overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <Logo />
+                <button onClick={closeMobileMenu} className="p-2 -mr-2 text-brand-charcoal hover:text-brand-brown">
+                  <XMarkIcon className="w-8 h-8" />
+                </button>
+              </div>
+
+               <form onSubmit={handleSearchSubmit} className="mb-6">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Поиск товаров..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white border-gray-200 focus:border-brand-brown rounded-md py-2.5 pl-4 pr-10 outline-none focus:ring-2 focus:ring-brand-brown/20 transition-all"
+                        />
+                        <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 text-brand-charcoal/50 hover:text-brand-brown">
+                            <MagnifyingGlassIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+               </form>
+
+              <nav className="flex flex-col gap-2">
+                {navLinks.map(link => (
+                    link.isMenu ? (
+                        <div key={link.label}>
+                            <p className="px-4 pt-4 pb-2 text-sm text-gray-400 font-bold uppercase tracking-wider">{link.label}</p>
+                            {link.items?.map(item => (
+                                <NavLink key={item.href} href={item.href} isMobile>
+                                    {item.label}
+                                </NavLink>
+                            ))}
+                        </div>
+                    ) : (
+                        <NavLink key={link.label} href={link.href!} isMobile>
+                            {link.label}
+                        </NavLink>
+                    )
+                ))}
+              </nav>
+
+              <div className="mt-auto pt-6 border-t border-gray-200">
+                 <button 
+                    onClick={handleShareApp}
+                    className="w-full flex items-center justify-center gap-2 bg-white border border-brand-brown/30 text-brand-brown font-medium py-3 rounded-lg hover:bg-brand-brown hover:text-white transition-colors"
+                 >
+                    <ArrowUpTrayIcon className="w-5 h-5" />
+                    Поделиться приложением
+                 </button>
+              </div>
+
+            </Dialog.Panel>
+          </Transition.Child>
+        </Dialog>
+      </Transition>
     </>
   );
 };

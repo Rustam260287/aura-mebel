@@ -6,42 +6,53 @@ import { verifyAdmin } from '../../../lib/auth/admin-check';
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Отключаем стандартный парсер, чтобы читать поток
   },
 };
 
-async function readStream(req: NextApiRequest): Promise<Buffer> {
-    const chunks = [];
-    for await (const chunk of req) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-    }
-    return Buffer.concat(chunks);
+// Функция для чтения всего тела запроса в буфер
+async function getRawBody(req: NextApiRequest): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk) => {
+      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    });
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    req.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // --- SECURITY CHECK ---
-  const isAdmin = await verifyAdmin(req, res);
-  if (!isAdmin) return; // Response is already sent by verifyAdmin
-  // ----------------------
-
   try {
+    // 1. Проверяем админа
+    const isAdmin = await verifyAdmin(req, res);
+    if (!isAdmin) return; // verifyAdmin сам отправляет 401/403
+
     const folder = req.query.folder as string || 'uploads';
     const mimeType = req.headers['content-type'] || 'application/octet-stream';
     
-    let buffer = await readStream(req);
+    // 2. Читаем файл
+    // ВАЖНО: Мы читаем raw body, так как клиент отправляет файл напрямую в body
+    const buffer = await getRawBody(req);
     
     if (buffer.length === 0) {
         return res.status(400).json({ error: 'Empty file' });
     }
 
     let finalMimeType = mimeType;
+    let finalBuffer = buffer;
     
-    if (mimeType.startsWith('image/') && !mimeType.includes('svg')) {
+    // 3. Оптимизация (только для картинок)
+    if (mimeType.startsWith('image/') && !mimeType.includes('svg') && !mimeType.includes('gif')) {
         try {
             console.log(`Optimizing image (${mimeType})...`);
-            buffer = await sharp(buffer)
+            finalBuffer = await sharp(buffer)
                 .rotate()
                 .resize({ 
                     width: 1920, 
@@ -49,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     fit: 'inside', 
                     withoutEnlargement: true 
                 })
-                .webp({ quality: 80, effort: 4 })
+                .webp({ quality: 80, effort: 3 }) // Уменьшил effort для скорости
                 .toBuffer();
             
             finalMimeType = 'image/webp';
@@ -58,12 +69,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     }
 
-    const url = await MediaService.uploadBuffer(buffer, folder, finalMimeType);
+    // 4. Загрузка в Storage
+    const url = await MediaService.uploadBuffer(finalBuffer, folder, finalMimeType);
     
     res.status(200).json({ url });
 
   } catch (error: any) {
     console.error('Upload API Error:', error);
-    res.status(500).json({ error: error.message });
+    // Важно вернуть JSON, а не HTML страницу ошибки Next.js
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }

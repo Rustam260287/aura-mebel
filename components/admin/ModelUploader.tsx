@@ -2,8 +2,12 @@
 'use client'
 
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext'; // Import Auth
-import { CubeIcon } from '../Icons';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { app } from '../../firebaseConfig'; 
+import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../Icons';
+
+// Инициализируем Storage
+const storage = getStorage(app);
 
 interface ModelUploaderProps {
   onUploadSuccess: (url: string) => void;
@@ -11,53 +15,68 @@ interface ModelUploaderProps {
 
 export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess }) => {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth(); // Get user
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadTask, setUploadTask] = useState<any>(null);
 
   const processFile = async (file: File) => {
+    // Валидация расширения
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (ext !== 'glb' && ext !== 'usdz') {
         setError('Пожалуйста, загрузите файл .glb или .usdz');
         return;
     }
-    
-    // 3D модели могут быть большими, установим лимит в 100MB
-    if (file.size > 100 * 1024 * 1024) {
-        setError('Файл слишком большой. Максимальный размер: 100 МБ.');
-        return;
-    }
 
     setIsLoading(true);
     setError(null);
+    setUploadProgress(0);
     
     try {
-        if (!user) throw new Error("Вы не авторизованы");
-        const token = await user.getIdToken();
-
-        // Отправляем на тот же эндпоинт, что и изображения, но в папку 'models'
-        // API-эндпоинт не будет оптимизировать 3D-модели (т.к. MIME-тип не 'image/'), что нам и нужно.
-        const res = await fetch('/api/admin/upload?folder=models', {
-            method: 'POST',
-            headers: {
-                'Content-Type': file.type || 'application/octet-stream',
-                'Authorization': `Bearer ${token}` // Send Token
-            },
-            body: file 
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Upload failed');
-        }
+        // Создаем уникальное имя файла
+        const fileName = `${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, `models/${fileName}`);
         
-        const data = await res.json();
-        onUploadSuccess(data.url);
+        // Запускаем загрузку (Resumable upload)
+        const task = uploadBytesResumable(storageRef, file);
+        setUploadTask(task);
 
-      } catch (error: any) {
-        setError("Ошибка загрузки: " + error.message);
-      } finally {
+        task.on('state_changed',
+          (snapshot) => {
+            // Вычисляем прогресс
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Upload Error:", error);
+            setError(`Ошибка загрузки: ${error.message}`);
+            setIsLoading(false);
+            setUploadProgress(null);
+            setUploadTask(null);
+          },
+          async () => {
+            // Загрузка завершена
+            const url = await getDownloadURL(task.snapshot.ref);
+            setIsLoading(false);
+            setUploadProgress(null);
+            setUploadTask(null);
+            onUploadSuccess(url);
+          }
+        );
+    } catch (e: any) {
+        setError(e.message);
         setIsLoading(false);
+        setUploadProgress(null);
+    }
+  };
+
+  const cancelUpload = () => {
+      if (uploadTask) {
+          uploadTask.cancel();
+          setUploadTask(null);
+          setIsLoading(false);
+          setUploadProgress(null);
+          setError("Загрузка отменена");
       }
   };
 
@@ -78,13 +97,13 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
   return (
     <div className="w-full">
       <div 
-        className={`border-2 border-dashed rounded-xl p-6 transition-all text-center cursor-pointer ${
+        className={`border-2 border-dashed rounded-xl p-6 transition-all text-center cursor-pointer relative overflow-hidden ${
             isDragOver ? 'border-brand-brown bg-brand-cream/20' : 'border-gray-300 hover:border-brand-brown/50 hover:bg-gray-50'
         }`}
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
-        onClick={() => document.getElementById('model-upload-input')?.click()}
+        onClick={() => !isLoading && document.getElementById('model-upload-input')?.click()}
       >
         <input 
             type="file" 
@@ -96,9 +115,22 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
         />
         
         {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-brown mb-3"></div>
-                <p className="text-sm font-medium text-brand-brown">Загрузка...</p>
+            <div className="relative z-10 flex flex-col items-center justify-center py-4">
+                <div className="w-full max-w-[200px] h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
+                    <div 
+                        className="h-full bg-brand-brown transition-all duration-300 ease-out"
+                        style={{ width: `${uploadProgress || 0}%` }}
+                    />
+                </div>
+                <p className="text-sm font-bold text-brand-brown">
+                    Загрузка {Math.round(uploadProgress || 0)}%
+                </p>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); cancelUpload(); }}
+                    className="mt-3 text-xs text-red-500 hover:text-red-700 underline"
+                >
+                    Отменить
+                </button>
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center py-2">
