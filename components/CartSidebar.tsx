@@ -5,7 +5,10 @@ import React, { memo } from 'react';
 import { CartItem, useCartState, useCartDispatch } from '../contexts/CartContext';
 import type { View } from '../types';
 import { Button } from './Button';
-import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon, ArrowRightIcon, TruckIcon } from './Icons';
+// Иконки, которые ТОЧНО есть в вашем файле
+import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon, ShoppingCartIcon } from './Icons'; 
+// Иконки, которых НЕ БЫЛО, импортируем НАПРЯМУЮ
+import { ArrowRightIcon, TruckIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
 interface CartSidebarProps {
@@ -42,7 +45,6 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
                 className="absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-out translate-x-0"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Header */}
                 <header className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
                     <h2 className="text-xl font-serif font-bold text-brand-charcoal">Ваша корзина <span className="text-gray-400 font-sans font-normal text-sm ml-1">({cartCount})</span></h2>
                     <button onClick={toggleCart} className="p-2 -mr-2 text-gray-400 hover:text-brand-brown rounded-full hover:bg-gray-50 transition-colors">
@@ -50,7 +52,6 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
                     </button>
                 </header>
 
-                {/* Free Shipping Progress */}
                 {cartItems.length > 0 && (
                     <div className="bg-[#FAF9F6] px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-brand-brown mb-2">
@@ -70,12 +71,11 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
                     </div>
                 )}
 
-                {/* Items List */}
                 <div className="flex-grow overflow-y-auto p-6 bg-white scrollbar-hide">
                     {cartItems.length === 0 ? (
                         <div className="text-center h-full flex flex-col justify-center items-center space-y-4">
                             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                                <TruckIcon className="w-8 h-8" />
+                                <ShoppingCartIcon className="w-8 h-8" />
                             </div>
                             <p className="text-gray-500 font-medium">Ваша корзина пока пуста</p>
                             <Button variant="outline" onClick={toggleCart} className="mt-2">Начать покупки</Button>
@@ -89,7 +89,6 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
                     )}
                 </div>
 
-                {/* Footer */}
                 {cartItems.length > 0 && (
                     <footer className="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-10">
                         <div className="space-y-3 mb-6">
