@@ -6,8 +6,8 @@ import { useRouter } from 'next/router';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
 import { Hero } from '../components/Hero';
-import { Scenarios } from '../components/Scenarios'; // Новый компонент
-import { Catalog } from '../components/Catalog';
+import { Scenarios } from '../components/Scenarios';
+import { Gallery } from '../components/Gallery'; // Новый компонент галереи
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
@@ -27,10 +27,8 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   const { addToast } = useToast();
   const {
     quickViewProduct,
-    openQuickView,
     closeQuickView,
     imageModalState,
-    handleImageClick,
     closeImageModal,
   } = useProductModals();
 
@@ -56,33 +54,29 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
 
   return (
     <>
-      <SEO title="Labelcom — Мебель дома" description="Спокойное пространство выбора мебели." />
+      <SEO title="Label — Мебель в вашем доме" description="Спокойное пространство выбора мебели без давления и маркетинга." />
       <Header />
       <main className="flex-grow bg-warm-white">
         
-        {/* 1. Hero */}
+        {/* 1. Hero Block: "Мебель, которую можно увидеть у себя дома" */}
         <Hero onNavigate={handleNavigate} />
         
-        {/* 2. Scenarios */}
+        {/* 2. Scenarios: Выбор намерения */}
         <Scenarios onNavigate={handleNavigate} />
 
-        {/* 3. Gallery (Selected Models) */}
+        {/* 3. Gallery: Избранные модели (Без цен, только эстетика) */}
         <div className="container mx-auto px-6 pb-24">
             <h2 className="text-2xl font-medium text-soft-black mb-8 pl-1">Избранные модели</h2>
-            <Catalog
-                allProducts={popularProducts} // Limit to 4-8 on server side
+            <Gallery
+                products={popularProducts}
                 isLoading={router.isFallback}
                 onProductSelect={(id) => router.push(`/products/${id}`)}
-                onQuickView={openQuickView}
-                onVirtualStage={() => {}}
-                onImageClick={handleImageClick}
-                isHomePage // This triggers specialized "Gallery" mode in Catalog
             />
         </div>
 
         {/* 4. How it works (Quiet text) */}
         <div className="container mx-auto px-6 pb-24 text-center">
-            <div className="max-w-md mx-auto space-y-2 text-muted-gray text-sm">
+            <div className="max-w-md mx-auto space-y-3 text-muted-gray text-sm font-normal">
                 <p>Выберите мебель</p>
                 <p>Посмотрите в комнате</p>
                 <p>Узнайте стоимость, если захотите</p>
