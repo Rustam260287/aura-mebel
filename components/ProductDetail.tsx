@@ -13,6 +13,7 @@ import { ImageZoomModal } from './ImageZoomModal';
 import { ARViewer } from './ARViewer'; 
 import Image from 'next/image';
 import { Tab } from '@headlessui/react';
+import { cn } from '../utils';
 
 interface ProductDetailProps {
   product: Product;
@@ -97,20 +98,20 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
     <>
       <div className="container mx-auto px-4 sm:px-6 py-8 md:py-12" {...pageSwipeHandlers}>
         {/* Navigation */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-8">
             <button 
                 onClick={onBack} 
-                className="group inline-flex items-center text-sm font-medium text-gray-400 hover:text-brand-brown transition-colors uppercase tracking-wider"
+                className="group inline-flex items-center text-[10px] font-bold text-gray-400 hover:text-brand-terracotta transition-colors uppercase tracking-widest"
             >
-                <ArrowLeftIcon className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                Назад в каталог
+                <ArrowLeftIcon className="w-3 h-3 mr-2 transition-transform group-hover:-translate-x-1" />
+                Назад
             </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
-          {/* Gallery Section - 7 cols on large screens */}
+          {/* Gallery Section */}
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <div className="relative group bg-[#F9F9F9] rounded-sm overflow-hidden" {...gallerySwipeHandlers}>
+            <div className="relative group bg-[#F9F9F9] rounded-sm overflow-hidden shadow-sm" {...gallerySwipeHandlers}>
               <div className="relative aspect-[4/3] md:aspect-square lg:aspect-[4/3] flex items-center justify-center">
                 {currentItem ? (
                     <>
@@ -122,7 +123,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                                     fill 
                                     sizes="(max-width: 768px) 100vw, 60vw" 
                                     priority 
-                                    className="object-contain mix-blend-multiply p-4" 
+                                    className="object-contain p-8 md:p-12 transition-transform duration-500 hover:scale-105" 
                                 />
                             </div>
                         )}
@@ -139,38 +140,47 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                         )}
                         {galleryItems.length > 1 && currentItem.type !== '3d' && (
                             <>
-                                <button onClick={handlePrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/0 hover:bg-white/90 text-brand-charcoal/50 hover:text-brand-charcoal rounded-full transition-all z-10 hidden md:block">
-                                    <ChevronLeftIcon className="w-6 h-6" />
+                                <button onClick={handlePrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/80 hover:bg-white text-brand-charcoal/50 hover:text-brand-terracotta rounded-full transition-all z-10 hidden md:flex shadow-sm opacity-0 group-hover:opacity-100 items-center justify-center">
+                                    <ChevronLeftIcon className="w-5 h-5" />
                                 </button>
-                                <button onClick={handleNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/0 hover:bg-white/90 text-brand-charcoal/50 hover:text-brand-charcoal rounded-full transition-all z-10 hidden md:block">
-                                    <ChevronRightIcon className="w-6 h-6" />
+                                <button onClick={handleNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/80 hover:bg-white text-brand-charcoal/50 hover:text-brand-terracotta rounded-full transition-all z-10 hidden md:flex shadow-sm opacity-0 group-hover:opacity-100 items-center justify-center">
+                                    <ChevronRightIcon className="w-5 h-5" />
                                 </button>
                             </>
                         )}
                     </>
                 ) : <div className="text-gray-300"><PhotoIcon className="w-24 h-24" /></div>}
               </div>
+              
+              <div className="absolute top-4 right-4 flex gap-2">
+                 {model3dUrl && (
+                     <div className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm" title="Доступен 3D просмотр">
+                         <CubeIcon className="w-5 h-5 text-brand-terracotta" />
+                     </div>
+                 )}
+              </div>
             </div>
             
             {/* Thumbnails */}
             {galleryItems.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide px-1">
                     {galleryItems.map((item, index) => (
                         <button 
                             key={index} 
                             onClick={() => setCurrentIndex(index)} 
-                            className={`relative w-20 h-20 flex-shrink-0 rounded-sm overflow-hidden transition-all duration-300 ${
+                            className={cn(
+                                "relative w-20 h-20 flex-shrink-0 rounded-sm overflow-hidden transition-all duration-300 border",
                                 currentIndex === index 
-                                    ? 'ring-1 ring-brand-brown opacity-100 grayscale-0' 
-                                    : 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
-                            }`}
+                                    ? 'border-brand-terracotta ring-1 ring-brand-terracotta opacity-100' 
+                                    : 'border-transparent opacity-60 hover:opacity-100 grayscale hover:grayscale-0'
+                            )}
                         >
                             {item.type === 'image' ? (
                                 <Image src={item.url} alt={`View ${index + 1}`} fill sizes="80px" className="object-cover" />
                             ) : item.type === 'video' ? (
-                                <div className="w-full h-full bg-black flex items-center justify-center text-white text-[10px]">VIDEO</div>
+                                <div className="w-full h-full bg-black flex items-center justify-center text-white text-[10px] font-bold tracking-wider">VIDEO</div>
                             ) : (
-                                <div className="w-full h-full bg-brand-cream flex items-center justify-center"><CubeIcon className="w-6 h-6 text-brand-brown" /></div>
+                                <div className="w-full h-full bg-brand-cream-dark flex items-center justify-center"><CubeIcon className="w-6 h-6 text-brand-terracotta" /></div>
                             )}
                         </button>
                     ))}
@@ -178,68 +188,82 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
             )}
           </div>
 
-          {/* Product Info Section - 5 cols */}
+          {/* Product Info Section */}
           <div className="lg:col-span-5 flex flex-col pt-2">
-            <div className="mb-2">
-                <span className="text-xs font-semibold tracking-[0.2em] text-gray-400 uppercase">{safeProduct.category}</span>
+            <div className="mb-3">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-brand-terracotta uppercase bg-brand-terracotta/5 px-2 py-1 rounded inline-block">
+                    {safeProduct.category}
+                </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-serif text-brand-brown mb-4 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-serif text-brand-charcoal mb-4 leading-tight">
                 {safeProduct.name}
             </h1>
 
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-8">
                 <div className="flex items-center gap-2">
                     <StarRating rating={safeProduct.rating ?? 0} />
-                    <span className="text-xs text-gray-400 font-medium border-b border-gray-200">
+                    <button className="text-xs text-gray-400 font-medium border-b border-gray-200 hover:text-brand-terracotta hover:border-brand-terracotta transition-colors">
                         {safeProduct.reviews?.length || 0} отзывов
-                    </span>
+                    </button>
                 </div>
+                {safeProduct.specs && (
+                    <div className="text-xs text-gray-400 pl-4 border-l border-gray-200">
+                        Артикул: {safeProduct.id.slice(0,8).toUpperCase()}
+                    </div>
+                )}
             </div>
 
             <div className="flex items-baseline gap-4 mb-8 pb-8 border-b border-gray-100">
-                <span className="text-3xl font-light text-brand-charcoal">
+                <span className="text-4xl font-light text-brand-charcoal tracking-tight">
                     {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(safeProduct.price)}
                 </span>
                 {safeProduct.originalPrice && (
-                    <span className="text-lg text-gray-400 line-through decoration-1">
+                    <span className="text-lg text-gray-400 line-through decoration-1 decoration-gray-300">
                         {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(safeProduct.originalPrice)}
                     </span>
                 )}
+                {safeProduct.originalPrice && safeProduct.price && (
+                     <span className="ml-auto text-xs font-bold text-white bg-brand-terracotta px-2 py-1 rounded">
+                         - {Math.round((1 - safeProduct.price / safeProduct.originalPrice) * 100)}%
+                     </span>
+                )}
             </div>
             
-            <div className="flex gap-3 mb-10">
+            <div className="flex gap-4 mb-12">
               <Button 
                 onClick={handleAddToCart} 
-                className="flex-1 py-4 bg-brand-brown hover:bg-brand-charcoal text-white text-sm uppercase tracking-widest transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 h-14 bg-brand-charcoal hover:bg-brand-brown text-white text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-xl shadow-brand-charcoal/10"
               >
                 В корзину
               </Button>
               <button 
                 onClick={handleWishlistClick} 
-                className={`w-14 h-14 flex items-center justify-center border transition-all duration-300 rounded-sm ${
+                className={cn(
+                    "w-14 h-14 flex items-center justify-center border transition-all duration-300 rounded-sm",
                     isWished 
                         ? 'border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5' 
                         : 'border-gray-200 text-gray-400 hover:border-brand-brown hover:text-brand-brown'
-                }`}
+                )}
+                title={isWished ? "Удалить из избранного" : "Добавить в избранное"}
               >
-                <HeartIcon className={`w-6 h-6 ${isWished ? 'fill-current' : ''}`} />
+                <HeartIcon className={cn("w-6 h-6", isWished && "fill-current")} />
               </button>
             </div>
 
             {/* Premium Tabs */}
             <Tab.Group>
-                <Tab.List className="flex gap-8 border-b border-gray-100 mb-6">
+                <Tab.List className="flex gap-8 border-b border-gray-100 mb-8">
                     {['Описание', 'Характеристики', 'Отзывы'].map((tab) => (
                         <Tab as={Fragment} key={tab}>
                             {({ selected }) => (
                                 <button 
-                                    className={`
-                                        pb-3 text-xs font-bold uppercase tracking-widest focus:outline-none transition-all duration-300 border-b-2
-                                        ${selected 
-                                            ? 'border-brand-brown text-brand-brown' 
-                                            : 'border-transparent text-gray-400 hover:text-brand-charcoal'}
-                                    `}
+                                    className={cn(
+                                        "pb-4 text-[10px] font-bold uppercase tracking-[0.2em] focus:outline-none transition-all duration-300 border-b-2",
+                                        selected 
+                                            ? 'border-brand-terracotta text-brand-terracotta' 
+                                            : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                                    )}
                                 >
                                     {tab}
                                 </button>
@@ -251,7 +275,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                 <Tab.Panels className="min-h-[200px]">
                     {/* Description Panel */}
                     <Tab.Panel className="focus:outline-none animate-fadeIn">
-                        <div className="prose prose-sm prose-brown max-w-none text-gray-500 font-light leading-relaxed">
+                        <div className="prose prose-sm prose-brown max-w-none text-brand-charcoal/70 font-light leading-loose text-justify">
                             {description ? (
                                 description.split('\n').map((paragraph, idx) => (
                                     paragraph.trim() && <p key={idx} className="mb-4">{paragraph.trim()}</p>
@@ -265,10 +289,10 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
                     {/* Specs Panel */}
                     <Tab.Panel className="focus:outline-none animate-fadeIn">
                         {specs && Object.keys(specs).length > 0 ? (
-                            <dl className="space-y-4">
+                            <dl className="grid grid-cols-1 gap-y-4">
                                 {Object.entries(specs).map(([key, value]) => (
-                                    <div key={key} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors px-1">
-                                        <dt className="text-xs text-gray-400 uppercase tracking-wide font-medium">
+                                    <div key={key} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors px-2 rounded">
+                                        <dt className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
                                             {translateSpecKey(key)}
                                         </dt>
                                         <dd className="text-sm font-medium text-brand-charcoal">
@@ -284,7 +308,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product, onBack 
 
                     {/* Reviews Panel */}
                     <Tab.Panel className="focus:outline-none animate-fadeIn">
-                        <Reviews reviews={safeProduct.reviews} onAddReview={handleAddReview} />
+                        <Reviews reviews={safeProduct.reviews} onAddReview={handleAddReview} productId={safeProduct.id} />
                     </Tab.Panel>
                 </Tab.Panels>
             </Tab.Group>

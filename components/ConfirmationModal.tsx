@@ -1,7 +1,8 @@
 
 import React, { memo } from 'react';
 import { Button } from './Button';
-import { XMarkIcon, ArrowPathIcon } from './Icons';
+import { XMarkIcon } from './Icons';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface ConfirmationModalProps {
   isOpen: boolean;

@@ -13,6 +13,7 @@ import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
 import { useToast } from '../contexts/ToastContext';
 import { useProductModals } from '../hooks/useProductModals';
+import { Lookbook } from '../components/Lookbook';
 
 const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
@@ -36,9 +37,9 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-brand-terracotta">
-        <h1 className="text-2xl font-bold mb-4">Ошибка загрузки данных</h1>
-        <p>{error}</p>
+      <div className="flex flex-col items-center justify-center min-h-screen text-brand-terracotta bg-brand-cream">
+        <h1 className="text-2xl font-bold mb-4 font-serif">Внимание</h1>
+        <p className="text-brand-charcoal">{error}</p>
       </div>
     );
   }
@@ -50,6 +51,10 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
       } else {
         router.push('/products');
       }
+    } else if (view.page === 'blog') {
+        router.push('/blog');
+    } else if (view.page === 'about') {
+        router.push('/about');
     }
   };
 
@@ -61,7 +66,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
     <>
       <SEO title="Главная" description="Откройте для себя мир премиальной мебели Labelcom. Идеальное сочетание стиля, комфорта и качества для вашего дома." />
       <Header />
-      <main className="flex-grow">
+      <main className="flex-grow bg-white">
         <Hero onNavigate={handleNavigate} />
         <CategoryShowcase onNavigate={handleNavigate} />
         <Catalog
@@ -73,6 +78,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
           onImageClick={handleImageClick}
           isHomePage
         />
+        <Lookbook onNavigate={handleNavigate} />
       </main>
       <Footer />
       {quickViewProduct && (
@@ -103,21 +109,26 @@ export const getStaticProps: GetStaticProps = async () => {
 
     const productsSnapshot = await adminDb.collection('products')
       .orderBy('rating', 'desc')
-      .limit(4)
-      .select('name', 'price', 'rating', 'imageUrls', 'category', 'description', 'seoDescription', 'model3dUrl')
+      .limit(8)
+      .select('name', 'price', 'rating', 'imageUrls', 'category', 'description', 'seoDescription', 'model3dUrl', 'originalPrice', 'specs')
       .get();
       
-    const popularProducts = productsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.get('name') ?? '',
-      price: doc.get('price') ?? 0,
-      rating: doc.get('rating') ?? 0,
-      imageUrls: doc.get('imageUrls') ?? [],
-      category: doc.get('category') ?? '',
-      description: doc.get('description') ?? '',
-      seoDescription: doc.get('seoDescription') ?? '',
-      model3dUrl: doc.get('model3dUrl') ?? '',
-    })) as Product[];
+    const popularProducts = productsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name ?? '',
+        price: data.price ?? 0,
+        rating: data.rating ?? 0,
+        imageUrls: data.imageUrls ?? [],
+        category: data.category ?? '',
+        description: data.description ?? '',
+        seoDescription: data.seoDescription ?? '',
+        model3dUrl: data.model3dUrl ?? '',
+        originalPrice: data.originalPrice ?? null,
+        specs: data.specs ?? {},
+      };
+    }) as Product[];
     
     return {
       props: { 
@@ -130,6 +141,7 @@ export const getStaticProps: GetStaticProps = async () => {
       if (error.message.includes('requires an index')) {
         return { props: { popularProducts: [], error: `Firestore требует индекс. Пожалуйста, создайте его по ссылке из лога ошибки в терминале.` } };
       }
+      console.error("Error fetching popular products:", error);
       return { props: { popularProducts: [], error: error.message } };
     }
     return { props: { popularProducts: [], error: 'Произошла неизвестная ошибка.' } };

@@ -328,14 +328,14 @@ export const ChatWidget: React.FC = () => {
         <div className="bg-white w-[calc(100vw-2rem)] md:w-96 h-[75vh] max-h-[calc(100vh-80px)] md:h-[680px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right font-sans">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-brand-brown to-[#7D5A50] text-white p-4 flex justify-between items-center shadow-md z-10 flex-shrink-0">
+          <div className="bg-gradient-to-r from-brand-charcoal to-brand-brown/90 text-white p-4 flex justify-between items-center shadow-md z-10 flex-shrink-0">
             <div className="flex items-center gap-3">
-                <div className="relative w-9 h-9 flex items-center justify-center bg-white/20 rounded-full backdrop-blur-sm border border-white/10">
-                    <SparklesIcon className="w-5 h-5 text-brand-gold animate-pulse" />
+                <div className="relative w-9 h-9 flex items-center justify-center bg-white/10 rounded-full backdrop-blur-sm border border-white/20">
+                    <SparklesIcon className="w-5 h-5 text-brand-terracotta animate-pulse" />
                 </div>
                 <div>
                     <h3 className="font-serif font-bold tracking-wide text-base leading-tight">AI Ассистент</h3>
-                    <p className="text-[10px] text-white/80 uppercase tracking-widest font-medium">Labelcom Intelligence</p>
+                    <p className="text-[10px] text-white/60 uppercase tracking-widest font-medium">Labelcom Intelligence</p>
                 </div>
             </div>
             <div className="flex items-center gap-1">
@@ -351,7 +351,7 @@ export const ChatWidget: React.FC = () => {
           {/* Chat Area */}
           <div 
             ref={chatContainerRef} 
-            className="flex-1 overflow-y-auto p-4 space-y-6 bg-[#FBF9F4] min-h-0 custom-scrollbar scroll-smooth"
+            className="flex-1 overflow-y-auto p-4 space-y-6 bg-brand-cream-dark/30 min-h-0 custom-scrollbar scroll-smooth"
           >
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -359,20 +359,20 @@ export const ChatWidget: React.FC = () => {
                 {/* Message Bubble */}
                 <div className={`prose prose-sm max-w-[90%] p-4 rounded-2xl leading-relaxed shadow-sm relative transition-all ${
                   msg.role === 'user' 
-                    ? 'bg-brand-brown text-white rounded-tr-sm prose-invert' 
+                    ? 'bg-brand-charcoal text-white rounded-tr-sm prose-invert' 
                     : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
                 }`}>
                   <div dangerouslySetInnerHTML={{ __html: msg.content }} />
                   {msg.isTyping && (
-                      <span className="inline-block w-1.5 h-4 ml-1 align-middle bg-brand-gold animate-pulse"></span>
+                      <span className="inline-block w-1.5 h-4 ml-1 align-middle bg-brand-terracotta animate-pulse"></span>
                   )}
                 </div>
 
                 {/* Recommended Products Carousel */}
                 {!msg.isTyping && msg.products && msg.products.length > 0 && (
                     <div className="mt-3 w-full max-w-[95%] space-y-2 animate-fade-in-up">
-                        <p className="text-[10px] text-gray-400 ml-1 font-bold uppercase tracking-widest flex items-center gap-1">
-                            <SparklesIcon className="w-3 h-3 text-brand-gold" />
+                        <p className="text-[10px] text-brand-charcoal/40 ml-1 font-bold uppercase tracking-widest flex items-center gap-1">
+                            <SparklesIcon className="w-3 h-3 text-brand-terracotta" />
                             Рекомендации
                         </p>
                         <div className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x scrollbar-hide px-1">
@@ -380,9 +380,9 @@ export const ChatWidget: React.FC = () => {
                                 <div 
                                     key={prod.id} 
                                     onClick={() => handleProductClick(prod.id)}
-                                    className="min-w-[150px] w-[150px] bg-white p-2 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300 snap-start flex-shrink-0 group relative"
+                                    className="min-w-[150px] w-[150px] bg-white p-2 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 snap-start flex-shrink-0 group relative"
                                 >
-                                    <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 mb-2">
+                                    <div className="relative aspect-[4/3] rounded overflow-hidden bg-brand-cream-dark/50 mb-2">
                                         <Image 
                                             src={prod.imageUrls?.[0] || '/placeholder.svg'} 
                                             alt={prod.name} 
@@ -392,14 +392,14 @@ export const ChatWidget: React.FC = () => {
                                         />
                                         <button 
                                             onClick={(e) => handleTryOn(e, prod)}
-                                            className="absolute bottom-1 right-1 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:bg-brand-gold hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                            className="absolute bottom-1 right-1 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:bg-brand-terracotta hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                                             title="Примерить в комнате"
                                         >
                                             <EyeIcon className="w-4 h-4" />
                                         </button>
                                     </div>
                                     <h4 className="text-xs font-bold text-gray-800 truncate leading-tight mb-1">{prod.name}</h4>
-                                    <p className="text-xs text-brand-brown font-serif font-bold">{prod.price.toLocaleString()} ₽</p>
+                                    <p className="text-xs text-brand-terracotta font-serif font-bold">{prod.price.toLocaleString()} ₽</p>
                                 </div>
                             ))}
                         </div>
@@ -409,11 +409,11 @@ export const ChatWidget: React.FC = () => {
                 {/* Custom Offer Box */}
                 {!msg.isTyping && msg.customOffer && (
                   <div className="mt-3 w-full max-w-[95%] animate-fade-in-up">
-                    <div className="bg-brand-cream text-brand-charcoal rounded-xl p-4 border border-[#EBE5D9] shadow-sm space-y-3 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-brand-gold/10 rounded-bl-full -mr-8 -mt-8"></div>
+                    <div className="bg-brand-cream text-brand-charcoal rounded-xl p-4 border border-brand-brown/10 shadow-sm space-y-3 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-brand-terracotta/10 rounded-bl-full -mr-8 -mt-8"></div>
                       
                       <div className="flex items-center gap-2 text-sm font-bold text-brand-brown z-10 relative">
-                        <SparklesIcon className="w-4 h-4 text-brand-gold" /> Индивидуальный заказ
+                        <SparklesIcon className="w-4 h-4 text-brand-terracotta" /> Индивидуальный заказ
                       </div>
                       <p className="text-xs text-gray-600 leading-relaxed z-10 relative">
                         Не нашли идеальный вариант? Наши мастера изготовят мебель любой сложности по вашему фото или эскизу.
@@ -438,7 +438,7 @@ export const ChatWidget: React.FC = () => {
                         <button
                           key={i}
                           onClick={() => sendQuickPrompt(reply)}
-                          className="bg-white border border-brand-brown/10 text-brand-charcoal/80 text-xs px-3 py-1.5 rounded-full hover:bg-brand-brown hover:text-white hover:border-brand-brown transition-colors shadow-sm"
+                          className="bg-white border border-brand-brown/10 text-brand-charcoal/70 text-[10px] uppercase tracking-wide font-bold px-3 py-2 rounded-full hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors shadow-sm"
                         >
                           {reply}
                         </button>
@@ -452,9 +452,9 @@ export const ChatWidget: React.FC = () => {
             {isLoading && !messages[messages.length-1]?.isTyping && (
               <div className="flex justify-start animate-fade-in">
                 <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm flex gap-1.5 items-center">
-                  <div className="w-1.5 h-1.5 bg-brand-brown/40 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-brand-brown/40 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-1.5 h-1.5 bg-brand-brown/40 rounded-full animate-bounce delay-200"></div>
+                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce delay-100"></div>
+                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce delay-200"></div>
                 </div>
               </div>
             )}
@@ -490,7 +490,7 @@ export const ChatWidget: React.FC = () => {
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-gray-400 hover:text-brand-brown hover:bg-brand-brown/5 transition-all p-2.5 rounded-full flex-shrink-0"
+                className="text-gray-400 hover:text-brand-terracotta hover:bg-brand-brown/5 transition-all p-2.5 rounded-full flex-shrink-0"
                 title="Загрузить фото"
             >
                 <PhotoIcon className="w-6 h-6" />
@@ -508,13 +508,13 @@ export const ChatWidget: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Спросите AI..."
-              className="flex-1 min-w-0 bg-gray-50 text-gray-800 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-brown/30 focus:bg-white transition-all placeholder-gray-400 border border-transparent"
+              className="flex-1 min-w-0 bg-gray-50 text-gray-800 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-terracotta focus:bg-white transition-all placeholder-gray-400 border border-transparent"
             />
             
             <button 
               type="submit" 
               disabled={(!input.trim() && !selectedFile) || isLoading || (messages.length > 0 && messages[messages.length-1].isTyping)}
-              className="bg-brand-brown text-white p-2.5 rounded-full hover:bg-brand-brown/90 transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 flex items-center justify-center"
+              className="bg-brand-charcoal text-white p-2.5 rounded-full hover:bg-brand-brown transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 flex items-center justify-center"
             >
               <PaperAirplaneIcon className="w-5 h-5 -ml-0.5 mt-0.5 transform -rotate-45" />
             </button>
@@ -527,15 +527,15 @@ export const ChatWidget: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={`group relative flex items-center justify-center transition-all duration-500 outline-none z-50 ${isOpen ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}`}
       >
-        <div className="absolute inset-0 rounded-full bg-brand-gold/20 animate-ping duration-[3s]"></div>
+        <div className="absolute inset-0 rounded-full bg-brand-terracotta/20 animate-ping duration-[3s]"></div>
         <div className="absolute inset-0 rounded-full bg-brand-brown/10 animate-pulse duration-[2s]"></div>
         
-        <div className="relative w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-brand-brown to-[#4A322C] rounded-full shadow-2xl flex items-center justify-center overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300">
-            <SparklesIcon className="w-7 h-7 md:w-8 md:h-8 text-brand-gold animate-pulse drop-shadow-lg" />
+        <div className="relative w-14 h-14 md:w-16 md:h-16 bg-brand-charcoal rounded-full shadow-2xl flex items-center justify-center overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300">
+            <SparklesIcon className="w-7 h-7 md:w-8 md:h-8 text-brand-terracotta animate-pulse drop-shadow-lg" />
         </div>
 
         <div className="absolute right-full mr-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0 hidden md:block">
-            <span className="text-brand-brown font-bold text-sm whitespace-nowrap">AI Ассистент</span>
+            <span className="text-brand-charcoal font-bold text-sm whitespace-nowrap">AI Ассистент</span>
         </div>
       </button>
     </div>

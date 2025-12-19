@@ -3,6 +3,7 @@ import React, { memo, useState, useEffect, useRef, Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Button } from './Button';
 import { XMarkIcon, ChevronDownIcon, CheckCircleIcon, ArrowsUpDownIcon, StarIcon, FireIcon, TagIcon } from './Icons';
+import { cn } from '../utils';
 
 type SortOption = 'price_asc' | 'price_desc' | 'rating_desc' | 'name_asc' | 'discount_desc';
 
@@ -71,18 +72,16 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
     <>
       {/* Category Filter - Custom Checkboxes */}
       <div>
-        <h4 className="font-bold text-brand-charcoal text-sm uppercase tracking-wider mb-4">Категории</h4>
-        <div className="space-y-3">
+        <h4 className="font-bold text-brand-charcoal text-xs uppercase tracking-widest mb-4">Категории</h4>
+        <div className="space-y-2">
           {allCategories.map(category => {
             const isSelected = selectedCategories.includes(category);
             return (
               <label key={category} className="flex items-center cursor-pointer group select-none">
-                <div className={`
-                    w-5 h-5 rounded border flex items-center justify-center transition-all duration-200
-                    ${isSelected 
-                        ? 'bg-brand-brown border-brand-brown' 
-                        : 'bg-white border-gray-300 group-hover:border-brand-brown'}
-                `}>
+                <div className={cn(
+                    "w-4 h-4 rounded border flex items-center justify-center transition-all duration-200",
+                    isSelected ? 'bg-brand-terracotta border-brand-terracotta' : 'bg-white border-gray-300 group-hover:border-brand-terracotta'
+                )}>
                     <input 
                         type="checkbox" 
                         className="hidden"
@@ -90,12 +89,15 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
                         onChange={() => handleCategoryToggle(category)}
                     />
                     {isSelected && (
-                        <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                     )}
                 </div>
-                <span className={`ml-3 text-sm transition-colors ${isSelected ? 'text-brand-brown font-medium' : 'text-gray-600 group-hover:text-brand-charcoal'}`}>
+                <span className={cn(
+                    "ml-3 text-sm transition-colors",
+                    isSelected ? 'text-brand-terracotta font-medium' : 'text-gray-600 group-hover:text-brand-charcoal'
+                )}>
                     {category}
                 </span>
               </label>
@@ -108,14 +110,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
 
       {/* Price Filter - Custom Range */}
       <div>
-        <h4 className="font-bold text-brand-charcoal text-sm uppercase tracking-wider mb-4">Цена</h4>
-        <div className="flex justify-between text-sm text-gray-500 mb-4 font-medium">
-            <span>0 ₽</span>
-            <span className="text-brand-brown">{localPrice.toLocaleString('ru-RU')} ₽</span>
-        </div>
-        <div className="relative h-2 bg-gray-100 rounded-full">
+        <h4 className="font-bold text-brand-charcoal text-xs uppercase tracking-widest mb-5">Цена</h4>
+        <div className="relative h-1.5 bg-gray-100 rounded-full mb-6">
             <div 
-                className="absolute top-0 left-0 h-full bg-brand-brown rounded-full pointer-events-none" 
+                className="absolute top-0 left-0 h-full bg-brand-terracotta rounded-full pointer-events-none" 
                 style={{ width: `${(localPrice / maxPrice) * 100}%` }}
             />
             <input 
@@ -125,12 +123,20 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
                 step="1000"
                 value={localPrice}
                 onChange={handlePriceDrag}
-                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
             <div 
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-brand-brown rounded-full shadow-md pointer-events-none transition-transform active:scale-110"
-                style={{ left: `calc(${(localPrice / maxPrice) * 100}% - 10px)` }}
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-brand-terracotta rounded-full shadow-md pointer-events-none transition-transform duration-200 ease-out z-20"
+                style={{ left: `calc(${(localPrice / maxPrice) * 100}% - 8px)` }}
             />
+        </div>
+        <div className="flex justify-between items-center text-sm font-medium">
+             <div className="bg-gray-50 px-3 py-1.5 rounded text-gray-500">
+                0 ₽
+             </div>
+             <div className="bg-gray-50 px-3 py-1.5 rounded text-brand-terracotta">
+                {localPrice.toLocaleString('ru-RU')} ₽
+             </div>
         </div>
       </div>
 
@@ -138,10 +144,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
 
       {/* Sort Options - Custom Listbox */}
       <div>
-        <h4 className="font-bold text-brand-charcoal text-sm uppercase tracking-wider mb-4">Сортировка</h4>
+        <h4 className="font-bold text-brand-charcoal text-xs uppercase tracking-widest mb-4">Сортировка</h4>
         <Listbox value={sortOption} onChange={onSortChange}>
             <div className="relative mt-1">
-                <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white py-3 pl-4 pr-10 text-left border border-gray-200 focus:outline-none focus-visible:border-brand-brown sm:text-sm shadow-sm hover:border-gray-300 transition-colors">
+                <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-gray-50 py-3 pl-4 pr-10 text-left border border-transparent focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-terracotta sm:text-sm transition-all hover:bg-gray-100">
                     <span className="block truncate text-brand-charcoal font-medium">
                         {sortOptionsDisplay[sortOption].label}
                     </span>
@@ -155,24 +161,24 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-xl ring-1 ring-black/5 focus:outline-none z-50">
                         {Object.entries(sortOptionsDisplay).map(([key, { label, icon: Icon }]) => (
                             <Listbox.Option
                                 key={key}
                                 className={({ active }) =>
                                     `relative cursor-pointer select-none py-3 pl-10 pr-4 transition-colors ${
-                                        active ? 'bg-brand-cream/30 text-brand-brown' : 'text-gray-700'
+                                        active ? 'bg-brand-cream/50 text-brand-terracotta' : 'text-gray-700'
                                     }`
                                 }
                                 value={key}
                             >
                                 {({ selected }) => (
                                     <>
-                                        <span className={`block truncate ${selected ? 'font-bold text-brand-brown' : 'font-normal'}`}>
+                                        <span className={`block truncate ${selected ? 'font-bold text-brand-terracotta' : 'font-normal'}`}>
                                             {label}
                                         </span>
                                         {selected ? (
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-brown">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-terracotta">
                                                 <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
                                             </span>
                                         ) : null}
@@ -190,7 +196,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
         <Button 
             variant="ghost" 
             onClick={onReset} 
-            className="w-full text-xs text-gray-400 hover:text-red-500 uppercase tracking-widest font-bold transition-colors"
+            className="w-full text-[10px] text-gray-400 hover:text-red-500 uppercase tracking-widest font-bold transition-colors"
         >
             Сбросить фильтры
         </Button>
@@ -204,13 +210,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
         className={`fixed inset-0 z-50 transition-all duration-300 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       >
         <div 
-            className={`fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
+            className={`fixed inset-0 bg-brand-charcoal/20 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
             onClick={onClose} 
         />
         <div className={`relative h-full w-[85%] max-w-sm bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <header className="flex items-center justify-between p-6 border-b border-gray-100">
-            <h3 className="text-xl font-serif text-brand-brown font-bold">Фильтры</h3>
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-brand-brown transition-colors rounded-full hover:bg-gray-50">
+            <h3 className="text-xl font-serif text-brand-charcoal">Фильтры</h3>
+            <button onClick={onClose} className="p-2 text-gray-400 hover:text-brand-terracotta transition-colors rounded-full hover:bg-gray-50">
                 <XMarkIcon className="w-6 h-6"/>
             </button>
           </header>
@@ -218,15 +224,15 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = memo(({
             <FilterControls />
           </div>
           <footer className="p-6 border-t border-gray-100 bg-gray-50">
-            <Button className="w-full py-3.5 text-sm uppercase tracking-widest font-bold shadow-lg shadow-brand-brown/20" onClick={onClose}>
-                Применить
+            <Button className="w-full py-3.5 text-xs uppercase tracking-widest font-bold shadow-lg shadow-brand-terracotta/20 bg-brand-terracotta hover:bg-brand-terracotta-dark text-white" onClick={onClose}>
+                Показать результаты
             </Button>
           </footer>
         </div>
       </div>
 
-      <div className="hidden md:block sticky top-28 self-start">
-        <div className="bg-white p-8 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100">
+      <div className="hidden md:block sticky top-24 self-start max-w-[280px]">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100/50">
             <FilterControls />
         </div>
       </div>

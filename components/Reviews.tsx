@@ -31,49 +31,56 @@ const AddReviewForm: React.FC<{ onAddReview: (review: Omit<Review, 'date'>) => v
     };
 
     return (
-        <div className="mt-10 bg-white p-8 rounded-lg shadow-md">
-            <h4 className="text-xl font-serif text-brand-brown mb-4">Оставить отзыв</h4>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-brand-charcoal font-medium">Ваша оценка:</span>
-                    <div className="flex">
+        <div className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100">
+            <h4 className="text-lg font-bold text-brand-charcoal mb-4">Написать отзыв</h4>
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                    <span className="block text-sm font-medium text-gray-700 mb-2">Ваша оценка</span>
+                    <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map(star => (
-                            <StarIcon
+                            <button
+                                type="button"
                                 key={star}
-                                className={`w-6 h-6 cursor-pointer transition-colors ${
-                                    (hoverRating || rating) >= star ? 'text-brand-gold' : 'text-gray-300'
-                                }`}
+                                className="focus:outline-none"
                                 onClick={() => setRating(star)}
                                 onMouseEnter={() => setHoverRating(star)}
                                 onMouseLeave={() => setHoverRating(0)}
-                            />
+                            >
+                                <StarIcon
+                                    className={`w-8 h-8 transition-colors ${
+                                        (hoverRating || rating) >= star ? 'text-brand-terracotta' : 'text-gray-200'
+                                    }`}
+                                />
+                            </button>
                         ))}
                     </div>
                 </div>
                 <div>
-                    <label htmlFor="author" className="block text-sm font-medium text-brand-charcoal mb-1">Ваше имя</label>
+                    <label htmlFor="author" className="block text-sm font-medium text-gray-700 mb-1">Имя</label>
                     <input
                         type="text"
                         id="author"
                         value={author}
                         onChange={(e) => setAuthor(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-brown"
+                        className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:border-brand-terracotta focus:outline-none focus:ring-1 focus:ring-brand-terracotta transition-colors text-sm"
+                        placeholder="Как вас зовут?"
                         required
                     />
                 </div>
                 <div>
-                    <label htmlFor="comment" className="block text-sm font-medium text-brand-charcoal mb-1">Комментарий</label>
+                    <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">Ваш отзыв</label>
                     <textarea
                         id="comment"
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         rows={4}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-brown resize-none"
+                         className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:border-brand-terracotta focus:outline-none focus:ring-1 focus:ring-brand-terracotta transition-colors text-sm resize-none"
+                        placeholder="Расскажите о своих впечатлениях..."
                         required
                     />
                 </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit">Отправить отзыв</Button>
+                {error && <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+                <Button type="submit" className="w-full md:w-auto">Отправить отзыв</Button>
             </form>
         </div>
     );
@@ -82,29 +89,49 @@ const AddReviewForm: React.FC<{ onAddReview: (review: Omit<Review, 'date'>) => v
 
 export const Reviews: React.FC<ReviewsProps> = memo(({ reviews, onAddReview }) => {
   return (
-    <div className="mt-12">
-      <h3 className="text-2xl font-serif text-brand-brown mb-6">Отзывы покупателей</h3>
+    <div className="mt-16 md:mt-24 max-w-5xl mx-auto">
+      <div className="flex items-center gap-4 mb-8">
+         <h3 className="text-2xl md:text-3xl font-serif text-brand-charcoal">Отзывы</h3>
+         <span className="text-gray-400 font-serif text-xl md:text-2xl">({reviews?.length || 0})</span>
+      </div>
       
-      <AddReviewForm onAddReview={onAddReview} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-8">
+            {(!reviews || reviews.length === 0) ? (
+                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                    <p className="text-gray-500">Пока нет отзывов. Станьте первым, кто оценит этот товар!</p>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                {reviews.map((review, index) => (
+                    <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-shadow hover:shadow-md">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-brand-terracotta/10 text-brand-terracotta flex items-center justify-center font-bold text-lg">
+                                {review.author.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-brand-charcoal text-sm">{review.author}</h4>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <StarRating rating={review.rating} size="sm" showCount={false} />
+                                </div>
+                            </div>
+                        </div>
+                        <span className="text-gray-400 text-xs">{new Date(review.date).toLocaleDateString('ru-RU')}</span>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed text-sm pl-[52px]">{review.comment}</p>
+                    </div>
+                ))}
+                </div>
+            )}
+        </div>
 
-      {(!reviews || reviews.length === 0) ? (
-        <div className="mt-8 text-center text-brand-charcoal bg-gray-50 p-6 rounded-md">
-          <p>На этот товар еще нет отзывов. Будьте первым!</p>
+        <div className="lg:col-span-1">
+             <div className="sticky top-24">
+                 <AddReviewForm onAddReview={onAddReview} />
+             </div>
         </div>
-      ) : (
-        <div className="mt-8 space-y-8">
-          {reviews.map((review, index) => (
-            <div key={index} className="border-b border-gray-200 pb-6">
-              <div className="flex items-center mb-2">
-                <StarRating rating={review.rating} />
-                <span className="ml-4 font-bold text-brand-charcoal">{review.author}</span>
-              </div>
-              <p className="text-gray-500 text-sm mb-3">{new Date(review.date).toLocaleDateString('ru-RU')}</p>
-              <p className="text-brand-charcoal leading-relaxed">{review.comment}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 });
