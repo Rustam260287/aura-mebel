@@ -1,3 +1,4 @@
+
 import React, { memo } from 'react';
 import { cn } from '../utils';
 
@@ -23,18 +24,26 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   return (
     <button 
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-terracotta disabled:pointer-events-none disabled:opacity-50 active:scale-98',
+        'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-brown focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-98',
         {
-          'bg-brand-terracotta text-white hover:bg-brand-terracotta-dark shadow-sm': variant === 'primary',
-          'bg-brand-cream-dark text-brand-charcoal hover:bg-gray-200/80': variant === 'secondary',
-          'border border-brand-brown/30 text-brand-brown bg-transparent hover:bg-brand-brown/5': variant === 'outline',
-          'text-brand-charcoal hover:bg-brand-cream-dark hover:text-brand-brown': variant === 'ghost',
-          'text-brand-charcoal hover:text-brand-brown px-0 py-0 hover:bg-transparent': variant === 'text',
-          'text-brand-terracotta underline-offset-4 hover:underline': variant === 'link',
+          // Primary: Classic chocolate background
+          'bg-brand-brown text-white hover:bg-brand-charcoal shadow-md hover:shadow-lg': variant === 'primary',
           
-          'h-8 px-3 text-xs': size === 'sm',
-          'h-10 px-5 text-sm': size === 'md',
-          'h-12 px-8 text-base': size === 'lg',
+          // Secondary: Lighter brown for secondary actions
+          'bg-brand-brown-light/20 text-brand-brown hover:bg-brand-brown-light/30': variant === 'secondary',
+          
+          // Outline: Classic border
+          'border-2 border-brand-brown text-brand-brown bg-transparent hover:bg-brand-brown hover:text-white': variant === 'outline',
+          
+          // Ghost & Text & Link
+          'text-brand-brown hover:bg-brand-brown/5': variant === 'ghost',
+          'text-brand-charcoal hover:text-brand-brown px-0 py-0 hover:bg-transparent': variant === 'text',
+          'text-brand-brown underline-offset-4 hover:underline': variant === 'link',
+          
+          // Sizes
+          'h-9 px-4 text-xs font-semibold uppercase tracking-wider': size === 'sm',
+          'h-11 px-6 text-sm font-semibold': size === 'md',
+          'h-14 px-8 text-base font-bold': size === 'lg',
           'h-10 w-10 p-0': size === 'icon',
         },
         className

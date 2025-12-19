@@ -16,7 +16,6 @@ const NAV_LINKS = [
   { label: 'AI Редизайн', href: '/ai-room-makeover' },
   { label: 'О нас', href: '/about' },
   { label: 'Контакты', href: '/contacts' },
-  { label: 'Доставка', href: '/shipping' },
 ];
 
 const HeaderComponent: React.FC = () => {
@@ -38,42 +37,33 @@ const HeaderComponent: React.FC = () => {
     setIsSearchOpen(false);
   };
 
-  const handleSearchClose = () => {
-    setIsSearchOpen(false);
-    setSearchInput('');
-  };
-
-  const handleWishlistOpen = () => {
-    router.push('/wishlist');
-  };
-
   const handleLoginRedirect = () => {
     router.push('/login');
   };
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-brand-cream/90 backdrop-blur-md transition-all duration-300">
-        <div className="container mx-auto flex items-center justify-between gap-4 px-4 py-3 sm:px-6 h-16">
+      <header className="sticky top-0 z-40 bg-brand-cream border-b border-brand-brown/10 shadow-sm transition-all duration-300">
+        <div className="container mx-auto flex items-center justify-between gap-6 px-4 py-4 sm:px-6 h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <Logo className="text-sm scale-90 sm:scale-100 origin-left" />
+            <Logo className="origin-left" />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex flex-1 justify-center gap-8 text-[13px] font-medium uppercase tracking-widest text-brand-charcoal/80 transition-colors duration-200">
+          <nav className="hidden lg:flex flex-1 justify-center gap-10 text-sm font-medium text-brand-charcoal/80">
             {NAV_LINKS.map(link => (
               <Link
                 key={link.label}
                 href={link.href}
                 className={cn(
-                  "hover:text-brand-terracotta relative group py-1",
-                  router.pathname === link.href ? "text-brand-terracotta font-semibold" : ""
+                  "hover:text-brand-brown transition-colors relative group py-2",
+                  router.pathname === link.href ? "text-brand-brown font-bold" : ""
                 )}
               >
                 {link.label}
                 <span className={cn(
-                    "absolute bottom-0 left-0 h-[1px] bg-brand-terracotta transition-all duration-300 ease-out",
+                    "absolute bottom-0 left-0 h-0.5 bg-brand-brown transition-all duration-300 ease-out rounded-full",
                     router.pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
                 )} />
               </Link>
@@ -81,25 +71,27 @@ const HeaderComponent: React.FC = () => {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-3 sm:gap-4">
              <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
               aria-label="Поиск"
-              className="rounded-full p-2 text-brand-charcoal/70 transition hover:text-brand-terracotta hover:bg-brand-brown/5 focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
+              className="text-brand-charcoal hover:text-brand-brown transition-colors p-1"
             >
-              <MagnifyingGlassIcon className="h-5 w-5" />
+              <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
 
             <button
               type="button"
-              onClick={handleWishlistOpen}
+              onClick={() => router.push('/wishlist')}
               aria-label={`Избранное, ${wishlistCount} товаров`}
-              className="hidden sm:block relative rounded-full p-2 text-brand-charcoal/70 transition hover:text-brand-terracotta hover:bg-brand-brown/5 focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
+              className="hidden sm:block text-brand-charcoal hover:text-brand-brown transition-colors p-1 relative"
             >
-              <HeartIcon className="h-5 w-5" />
+              <HeartIcon className="h-6 w-6" />
               {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-2 w-2 items-center justify-center rounded-full bg-brand-terracotta ring-2 ring-brand-cream" />
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-brown text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-cream">
+                  {wishlistCount}
+                </span>
               )}
             </button>
 
@@ -107,34 +99,24 @@ const HeaderComponent: React.FC = () => {
               type="button"
               onClick={toggleCart}
               aria-label={`Корзина, ${cartCount} товаров`}
-              className="relative rounded-full p-2 text-brand-charcoal/70 transition hover:text-brand-terracotta hover:bg-brand-brown/5 focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
+              className="text-brand-charcoal hover:text-brand-brown transition-colors p-1 relative"
             >
-              <ShoppingCartIcon className="h-5 w-5" />
+              <ShoppingCartIcon className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-terracotta text-[10px] font-bold text-white shadow-sm">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-brown text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-cream">
                   {cartCount}
                 </span>
               )}
-            </button>
-
-             <div className="hidden md:block w-px h-6 bg-brand-charcoal/10 mx-2" />
-
-            <button
-              type="button"
-              onClick={handleLoginRedirect}
-              className="hidden md:flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-brand-charcoal/70 transition hover:text-brand-terracotta px-2 py-1"
-            >
-              Войти
             </button>
 
             {/* Mobile Menu Button */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="rounded-full p-2 text-brand-charcoal/70 transition hover:text-brand-terracotta hover:bg-brand-brown/5 focus:outline-none md:hidden"
+              className="lg:hidden text-brand-charcoal hover:text-brand-brown transition-colors p-1"
               aria-label="Меню"
             >
-              <Bars3Icon className="h-6 w-6" />
+              <Bars3Icon className="h-7 w-7" />
             </button>
           </div>
         </div>
@@ -142,7 +124,7 @@ const HeaderComponent: React.FC = () => {
 
       {/* Search Modal */}
       <Transition.Root show={isSearchOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={handleSearchClose}>
+        <Dialog as="div" className="relative z-50" onClose={setIsSearchOpen}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -152,10 +134,10 @@ const HeaderComponent: React.FC = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Dialog.Overlay className="fixed inset-0 bg-brand-charcoal/20 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-brand-brown/20 backdrop-blur-sm" />
           </Transition.Child>
 
-          <div className="fixed inset-0 flex items-start justify-center pt-20 px-4">
+          <div className="fixed inset-0 flex items-start justify-center pt-24 px-4">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -165,32 +147,24 @@ const HeaderComponent: React.FC = () => {
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 -translate-y-4"
             >
-              <Dialog.Panel className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
-                <form className="flex items-center border-b border-gray-100 p-2" onSubmit={handleSearchSubmit}>
-                  <MagnifyingGlassIcon className="ml-4 h-5 w-5 text-gray-400" />
+              <Dialog.Panel className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
+                <form className="flex items-center p-4" onSubmit={handleSearchSubmit}>
+                  <MagnifyingGlassIcon className="ml-2 h-6 w-6 text-brand-brown/50" />
                   <input
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
-                    placeholder="Поиск товаров, коллекций..."
+                    placeholder="Что вы ищете? (например: диван, стол...)"
                     autoFocus
-                    className="flex-1 border-0 bg-transparent px-4 py-4 text-brand-charcoal placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+                    className="flex-1 border-0 bg-transparent px-4 py-3 text-lg text-brand-charcoal placeholder:text-gray-400 focus:ring-0"
                   />
                   <button
                     type="button"
-                    onClick={handleSearchClose}
-                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                    onClick={() => setIsSearchOpen(false)}
+                    className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                   >
-                    <span className="sr-only">Закрыть</span>
-                    <kbd className="hidden sm:inline-block font-sans text-xs font-semibold text-gray-400">ESC</kbd>
-                    <XMarkIcon className="h-5 w-5 sm:hidden" />
+                    <XMarkIcon className="h-6 w-6" />
                   </button>
                 </form>
-                {/* Search suggestions could go here */}
-                {searchInput.length > 0 && (
-                    <div className="bg-gray-50 px-4 py-3 text-xs text-gray-500 text-center">
-                        Нажмите Enter для поиска "{searchInput}"
-                    </div>
-                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>
@@ -199,7 +173,7 @@ const HeaderComponent: React.FC = () => {
 
       {/* Mobile Menu */}
       <Transition.Root show={isMobileMenuOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50 md:hidden" onClose={setIsMobileMenuOpen}>
+        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setIsMobileMenuOpen}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -209,7 +183,7 @@ const HeaderComponent: React.FC = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-brand-charcoal/20 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 flex justify-end">
@@ -222,13 +196,13 @@ const HeaderComponent: React.FC = () => {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <Dialog.Panel className="w-full max-w-sm bg-white shadow-2xl flex flex-col h-full">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                  <Logo className="scale-75 origin-left" />
+              <Dialog.Panel className="w-full max-w-xs bg-brand-cream shadow-2xl flex flex-col h-full border-l border-brand-brown/10">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-brand-brown/10">
+                  <Logo className="scale-90 origin-left" />
                   <button
                     type="button"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="rounded-full p-2 text-brand-charcoal/70 transition hover:text-brand-terracotta hover:bg-brand-brown/5"
+                    className="rounded-full p-2 text-brand-charcoal hover:bg-brand-brown/10 hover:text-brand-brown"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -242,8 +216,8 @@ const HeaderComponent: React.FC = () => {
                           href={link.href}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className={cn(
-                            "block text-2xl font-serif text-brand-charcoal hover:text-brand-terracotta transition-colors",
-                             router.pathname === link.href ? "text-brand-terracotta italic" : ""
+                            "block text-xl font-serif text-brand-charcoal hover:text-brand-brown transition-colors",
+                             router.pathname === link.href ? "text-brand-brown font-bold italic" : ""
                           )}
                         >
                           {link.label}
@@ -252,37 +226,29 @@ const HeaderComponent: React.FC = () => {
                     ))}
                   </ul>
 
-                  <div className="mt-12 space-y-4 border-t border-gray-100 pt-8">
-                     <button
-                        type="button"
-                        className="flex w-full items-center gap-3 text-lg font-medium text-brand-charcoal/80 transition hover:text-brand-terracotta"
-                        onClick={() => {
-                          handleWishlistOpen();
-                          setIsMobileMenuOpen(false);
-                        }}
+                  <div className="mt-12 pt-8 border-t border-brand-brown/10 space-y-6">
+                     <Link
+                        href="/wishlist"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-4 text-brand-charcoal font-medium hover:text-brand-brown"
                       >
                         <HeartIcon className="h-6 w-6" />
                         Избранное 
-                        {wishlistCount > 0 && <span className="ml-auto text-sm text-brand-terracotta font-bold">{wishlistCount}</span>}
-                      </button>
+                        {wishlistCount > 0 && <span className="ml-auto text-xs bg-brand-brown text-white px-2 py-0.5 rounded-full">{wishlistCount}</span>}
+                      </Link>
 
                       <button
-                        type="button"
-                        className="flex w-full items-center gap-3 text-lg font-medium text-brand-charcoal/80 transition hover:text-brand-terracotta"
                         onClick={() => {
-                          handleLoginRedirect();
-                          setIsMobileMenuOpen(false);
+                            handleLoginRedirect();
+                            setIsMobileMenuOpen(false);
                         }}
+                        className="flex w-full items-center gap-4 text-brand-charcoal font-medium hover:text-brand-brown"
                       >
                          <ArrowUpTrayIcon className="h-6 w-6" />
-                        Войти / Регистрация
+                        Войти
                       </button>
                   </div>
                 </nav>
-                
-                <div className="bg-brand-cream p-6 text-center text-xs text-brand-charcoal/50">
-                    &copy; 2024 Label.com
-                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>
