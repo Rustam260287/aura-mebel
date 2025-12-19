@@ -1,6 +1,5 @@
 
 import React, { memo } from 'react';
-import type { View } from '../types';
 import { TruckIcon, MapPinIcon, ShieldCheckIcon, BanknotesIcon } from '@heroicons/react/24/outline'; // WrenchIcon removed as it's not in the restored Icons.tsx
 
 const features = [
@@ -19,11 +18,6 @@ const features = [
     title: 'Гарантия качества',
     desc: 'Если товар приедет с повреждением, мы заменим его за свой счет.'
   },
-  // {
-  //   icon: WrenchIcon, // This icon is missing, so we comment out this feature
-  //   title: 'Сборка',
-  //   desc: 'Предоставляем контакты проверенных сборщиков в крупных городах.'
-  // }
 ];
 
 const rates = [
@@ -36,61 +30,55 @@ const rates = [
 
 export const ShippingPage: React.FC = memo(() => {
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pb-20">
+    <div className="bg-warm-white min-h-screen pb-20">
       
-      <div className="container mx-auto px-4 md:px-6 py-12">
-        <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-serif text-brand-brown mb-4">Доставка и Сервис</h1>
-            <p className="text-lg text-brand-charcoal/70 max-w-2xl mx-auto">
-                Мы позаботимся о том, чтобы ваша мебель прибыла в идеальном состоянии, где бы вы ни находились.
+      <div className="container mx-auto px-6 py-20 max-w-4xl">
+        <div className="mb-20">
+            <h1 className="text-2xl font-medium text-soft-black mb-6">Доставка и Сервис</h1>
+            <p className="text-base text-muted-gray leading-relaxed max-w-xl">
+                Мы берем на себя ответственность за сохранность вашего заказа до момента, пока он не окажется у вас дома.
             </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-24">
           {features.map((f, i) => (
-            <div key={i} className="bg-white p-8 rounded-lg shadow-soft border border-brand-brown/5 text-center">
-              <div className="w-16 h-16 bg-brand-cream text-brand-brown rounded-full flex items-center justify-center mx-auto mb-6">
-                <f.icon className="w-8 h-8" />
+            <div key={i} className="flex flex-col gap-4">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-stone-beige/30 text-soft-black">
+                <f.icon className="w-6 h-6 stroke-1" />
               </div>
-              <h3 className="text-xl font-serif font-bold text-brand-charcoal mb-2">{f.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+              <div>
+                  <h3 className="text-base font-medium text-soft-black mb-2">{f.title}</h3>
+                  <p className="text-sm text-muted-gray leading-relaxed">{f.desc}</p>
+              </div>
             </div>
           ))}
         </div>
 
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-soft border border-brand-brown/5 overflow-hidden mb-16">
-          <div className="p-8 border-b border-gray-100">
-            <h2 className="text-3xl font-serif text-brand-charcoal mb-2 text-center">Стоимость доставки</h2>
-            <p className="text-gray-500 text-center text-sm">Точный расчет производится менеджером после оформления заказа.</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <div className="mb-20">
+          <h2 className="text-lg font-medium text-soft-black mb-8">Стоимость доставки</h2>
+          <div className="bg-white rounded-xl overflow-hidden border border-stone-beige/20">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-warm-white text-muted-gray font-normal border-b border-stone-beige/10">
                 <tr>
-                  <th className="px-8 py-4">Регион</th>
-                  <th className="px-8 py-4">Стоимость</th>
-                  <th className="px-8 py-4">Сроки</th>
+                  <th className="px-6 py-4 font-normal">Регион</th>
+                  <th className="px-6 py-4 font-normal">Стоимость</th>
+                  <th className="px-6 py-4 font-normal">Сроки</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-stone-beige/10">
                 {rates.map((rate, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-8 py-5 text-brand-charcoal font-medium">{rate.region}</td>
-                    <td className="px-8 py-5 text-brand-brown font-bold">{rate.price}</td>
-                    <td className="px-8 py-5 text-gray-500">{rate.time}</td>
+                  <tr key={i} className="text-soft-black">
+                    <td className="px-6 py-4">{rate.region}</td>
+                    <td className="px-6 py-4">{rate.price}</td>
+                    <td className="px-6 py-4 text-muted-gray">{rate.time}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div className="max-w-3xl mx-auto text-center p-8 bg-brand-cream rounded-lg">
-            <BanknotesIcon className="w-10 h-10 text-brand-brown mx-auto mb-4" />
-            <h2 className="text-3xl font-serif text-brand-charcoal mb-4">Оплата заказа</h2>
-            <p className="text-gray-600 leading-relaxed">
-                Оплата производится после согласования деталей заказа с менеджером. Мы выставим вам счет или ссылку на оплату. Возможна оплата картой, банковским переводом или в рассрочку.
-            </p>
+          <p className="mt-4 text-xs text-muted-gray">
+              * Итоговая стоимость рассчитывается индивидуально и зависит от веса и габаритов заказа.
+          </p>
         </div>
 
       </div>

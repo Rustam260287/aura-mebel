@@ -5,18 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon, ArrowUpTrayIcon } from './Icons';
-import { Dialog, Transition } from '@headlessui/react';
+import { HeartIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon, MagnifyingGlassIcon, ShareIcon, ChevronDownIcon } from './Icons'; // Добавил ShareIcon, ChevronDownIcon
+import { Dialog, Transition, Menu } from '@headlessui/react';
 import { Logo } from './Logo';
 import { cn } from '../utils';
 
-const NAV_LINKS = [
-  { label: 'Каталог', href: '/products' },
-  { label: 'Блог', href: '/blog' },
-  { label: 'AI Редизайн', href: '/ai-room-makeover' },
-  { label: 'О нас', href: '/about' },
-  { label: 'Контакты', href: '/contacts' },
-];
+const HEADER_BG = "bg-[#FBF9F4]"; // Цвет фона как на референсе
 
 const HeaderComponent: React.FC = () => {
   const router = useRouter();
@@ -37,86 +31,100 @@ const HeaderComponent: React.FC = () => {
     setIsSearchOpen(false);
   };
 
-  const handleLoginRedirect = () => {
-    router.push('/login');
+  const handleShare = async () => {
+    const shareData = {
+        title: 'Labelcom Мебель',
+        text: 'Премиальная мебель для вашего дома',
+        url: window.location.href,
+    };
+    if (navigator.share) {
+        try { await navigator.share(shareData); } catch (err) {}
+    } else {
+        try { await navigator.clipboard.writeText(window.location.href); alert('Ссылка скопирована'); } catch (err) {}
+    }
   };
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-brand-cream border-b border-brand-brown/10 shadow-sm transition-all duration-300">
-        <div className="container mx-auto flex items-center justify-between gap-6 px-4 py-4 sm:px-6 h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <Logo className="origin-left" />
+      <header className={cn("sticky top-0 z-40 transition-all duration-300", HEADER_BG)}>
+        <div className="container mx-auto flex items-center justify-between px-6 h-20">
+          
+          {/* Logo (Left) */}
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Logo variant="dark" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex flex-1 justify-center gap-10 text-sm font-medium text-brand-charcoal/80">
-            {NAV_LINKS.map(link => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={cn(
-                  "hover:text-brand-brown transition-colors relative group py-2",
-                  router.pathname === link.href ? "text-brand-brown font-bold" : ""
-                )}
-              >
-                {link.label}
-                <span className={cn(
-                    "absolute bottom-0 left-0 h-0.5 bg-brand-brown transition-all duration-300 ease-out rounded-full",
-                    router.pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
-                )} />
-              </Link>
-            ))}
+          {/* Navigation (Center) */}
+          <nav className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-[#59443B]">
+            <Link href="/products" className="hover:opacity-70 transition-opacity">Каталог</Link>
+            <Link href="/blog" className="hover:opacity-70 transition-opacity">Блог</Link>
+            <Link href="/ai-room-makeover" className="hover:opacity-70 transition-opacity">AI Редизайн</Link>
+            
+            {/* Dropdown "Компания" */}
+            <Menu as="div" className="relative">
+                <Menu.Button className="flex items-center gap-1 hover:opacity-70 transition-opacity focus:outline-none">
+                    Компания
+                    <ChevronDownIcon className="w-3 h-3 mt-0.5" />
+                </Menu.Button>
+                <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                >
+                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 py-1">
+                        <Menu.Item>
+                            {({ active }) => (
+                                <Link href="/about" className={cn("block px-4 py-2 text-sm text-gray-700", active && "bg-gray-50")}>
+                                    О нас
+                                </Link>
+                            )}
+                        </Menu.Item>
+                        <Menu.Item>
+                            {({ active }) => (
+                                <Link href="/contacts" className={cn("block px-4 py-2 text-sm text-gray-700", active && "bg-gray-50")}>
+                                    Контакты
+                                </Link>
+                            )}
+                        </Menu.Item>
+                        <Menu.Item>
+                            {({ active }) => (
+                                <Link href="/shipping" className={cn("block px-4 py-2 text-sm text-gray-700", active && "bg-gray-50")}>
+                                    Доставка
+                                </Link>
+                            )}
+                        </Menu.Item>
+                    </Menu.Items>
+                </Transition>
+            </Menu>
           </nav>
 
-          {/* Desktop Actions */}
-          <div className="flex items-center gap-3 sm:gap-4">
-             <button
-              type="button"
-              onClick={() => setIsSearchOpen(true)}
-              aria-label="Поиск"
-              className="text-brand-charcoal hover:text-brand-brown transition-colors p-1"
-            >
-              <MagnifyingGlassIcon className="h-6 w-6" />
+          {/* Icons Actions (Right) */}
+          <div className="flex items-center gap-5 text-[#59443B]">
+             <button onClick={() => setIsSearchOpen(true)} className="hover:opacity-70 transition-opacity p-1">
+                <MagnifyingGlassIcon className="w-5 h-5" strokeWidth={1.5} />
             </button>
 
-            <button
-              type="button"
-              onClick={() => router.push('/wishlist')}
-              aria-label={`Избранное, ${wishlistCount} товаров`}
-              className="hidden sm:block text-brand-charcoal hover:text-brand-brown transition-colors p-1 relative"
-            >
-              <HeartIcon className="h-6 w-6" />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-brown text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-cream">
-                  {wishlistCount}
-                </span>
-              )}
+            <button onClick={handleShare} className="hover:opacity-70 transition-opacity p-1 hidden sm:block">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
             </button>
 
-            <button
-              type="button"
-              onClick={toggleCart}
-              aria-label={`Корзина, ${cartCount} товаров`}
-              className="text-brand-charcoal hover:text-brand-brown transition-colors p-1 relative"
-            >
-              <ShoppingCartIcon className="h-6 w-6" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-brown text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-cream">
-                  {cartCount}
-                </span>
-              )}
+            <button onClick={() => router.push('/wishlist')} className="hover:opacity-70 transition-opacity p-1 relative">
+                <HeartIcon className="w-5 h-5" />
+                {wishlistCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#59443B] rounded-full border border-[#FBF9F4]" />}
             </button>
 
-            {/* Mobile Menu Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden text-brand-charcoal hover:text-brand-brown transition-colors p-1"
-              aria-label="Меню"
-            >
-              <Bars3Icon className="h-7 w-7" />
+            <button onClick={toggleCart} className="hover:opacity-70 transition-opacity p-1 relative">
+                <ShoppingCartIcon className="w-5 h-5" />
+                {cartCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#59443B] rounded-full border border-[#FBF9F4]" />}
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden hover:opacity-70 transition-opacity p-1 ml-2">
+                <Bars3Icon className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -134,7 +142,7 @@ const HeaderComponent: React.FC = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-brand-brown/20 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-[#59443B]/20 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 flex items-start justify-center pt-24 px-4">
@@ -147,22 +155,18 @@ const HeaderComponent: React.FC = () => {
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 -translate-y-4"
             >
-              <Dialog.Panel className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
-                <form className="flex items-center p-4" onSubmit={handleSearchSubmit}>
-                  <MagnifyingGlassIcon className="ml-2 h-6 w-6 text-brand-brown/50" />
+              <Dialog.Panel className="w-full max-w-2xl bg-white shadow-xl rounded-lg overflow-hidden">
+                <form className="flex items-center px-4 py-3" onSubmit={handleSearchSubmit}>
+                  <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
                   <input
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
-                    placeholder="Что вы ищете? (например: диван, стол...)"
+                    placeholder="Поиск..."
                     autoFocus
-                    className="flex-1 border-0 bg-transparent px-4 py-3 text-lg text-brand-charcoal placeholder:text-gray-400 focus:ring-0"
+                    className="flex-1 border-0 bg-transparent px-4 py-2 text-[#59443B] placeholder:text-gray-400 focus:ring-0 text-sm"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setIsSearchOpen(false)}
-                    className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
+                  <button type="button" onClick={() => setIsSearchOpen(false)}>
+                    <XMarkIcon className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                   </button>
                 </form>
               </Dialog.Panel>
@@ -174,18 +178,7 @@ const HeaderComponent: React.FC = () => {
       {/* Mobile Menu */}
       <Transition.Root show={isMobileMenuOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50 lg:hidden" onClose={setIsMobileMenuOpen}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
-          </Transition.Child>
-
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" aria-hidden="true" />
           <div className="fixed inset-0 flex justify-end">
             <Transition.Child
               as={Fragment}
@@ -196,58 +189,20 @@ const HeaderComponent: React.FC = () => {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <Dialog.Panel className="w-full max-w-xs bg-brand-cream shadow-2xl flex flex-col h-full border-l border-brand-brown/10">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-brand-brown/10">
+              <Dialog.Panel className="w-full max-w-xs bg-[#FBF9F4] shadow-2xl h-full flex flex-col p-6">
+                <div className="flex items-center justify-between mb-8">
                   <Logo className="scale-90 origin-left" />
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="rounded-full p-2 text-brand-charcoal hover:bg-brand-brown/10 hover:text-brand-brown"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="text-[#59443B]">
+                    <XMarkIcon className="w-6 h-6" />
                   </button>
                 </div>
-
-                <nav className="flex-1 overflow-y-auto px-6 py-8">
-                  <ul className="space-y-6">
-                    {NAV_LINKS.map(link => (
-                      <li key={link.label}>
-                        <Link
-                          href={link.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={cn(
-                            "block text-xl font-serif text-brand-charcoal hover:text-brand-brown transition-colors",
-                             router.pathname === link.href ? "text-brand-brown font-bold italic" : ""
-                          )}
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-12 pt-8 border-t border-brand-brown/10 space-y-6">
-                     <Link
-                        href="/wishlist"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex w-full items-center gap-4 text-brand-charcoal font-medium hover:text-brand-brown"
-                      >
-                        <HeartIcon className="h-6 w-6" />
-                        Избранное 
-                        {wishlistCount > 0 && <span className="ml-auto text-xs bg-brand-brown text-white px-2 py-0.5 rounded-full">{wishlistCount}</span>}
-                      </Link>
-
-                      <button
-                        onClick={() => {
-                            handleLoginRedirect();
-                            setIsMobileMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-4 text-brand-charcoal font-medium hover:text-brand-brown"
-                      >
-                         <ArrowUpTrayIcon className="h-6 w-6" />
-                        Войти
-                      </button>
-                  </div>
+                <nav className="flex flex-col gap-6 text-lg font-serif text-[#59443B]">
+                    <Link href="/products" onClick={() => setIsMobileMenuOpen(false)}>Каталог</Link>
+                    <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)}>Блог</Link>
+                    <Link href="/ai-room-makeover" onClick={() => setIsMobileMenuOpen(false)}>AI Редизайн</Link>
+                    <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>О нас</Link>
+                    <Link href="/contacts" onClick={() => setIsMobileMenuOpen(false)}>Контакты</Link>
+                    <Link href="/shipping" onClick={() => setIsMobileMenuOpen(false)}>Доставка</Link>
                 </nav>
               </Dialog.Panel>
             </Transition.Child>

@@ -13,60 +13,41 @@ const HeroComponent: React.FC<HeroProps> = ({ onNavigate }) => {
   const isVisible = useIntersectionObserver(ref, { threshold: 0.1 });
 
   return (
-    <div className="relative bg-brand-cream overflow-hidden" ref={ref}>
-        {/* Background elements */}
-        <div className="absolute inset-0 z-0">
-             <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-brand-terracotta/5 blur-[100px]" />
-             <div className="absolute top-[40%] -left-[10%] w-[500px] h-[500px] rounded-full bg-brand-brown/5 blur-[100px]" />
-        </div>
-
-      <div className="container mx-auto px-6 py-20 md:py-32 relative z-10 flex flex-col md:flex-row items-center gap-12">
-        <div className="flex-1 text-center md:text-left">
-            <span className={`inline-block text-brand-terracotta font-bold tracking-widest uppercase text-xs mb-4 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
-                Новая коллекция 2024
-            </span>
-            <h1 className={`text-5xl md:text-7xl lg:text-8xl font-serif text-brand-charcoal mb-6 leading-tight ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
-            Искусство <br/><span className="italic text-brand-terracotta">уюта</span>
+    <div className="relative min-h-[80vh] flex items-center bg-warm-white overflow-hidden" ref={ref}>
+      <div className="container mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        {/* Text Content - Тишина и Уверенность */}
+        <div className="lg:col-span-7 text-left">
+            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-medium text-soft-black mb-6 leading-[1.1] tracking-tight ${isVisible ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
+                Мебель, которую можно <br/>
+                увидеть у себя дома
             </h1>
-            <p 
-            className={`text-lg text-brand-charcoal/70 max-w-xl mx-auto md:mx-0 mb-10 leading-relaxed font-light ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-            style={{ animationDelay: '0.2s' }}
-            >
-            Откройте для себя эксклюзивную мебель, которая превращает пространство в место силы и вдохновения. Дизайн вне времени.
+            
+            <p className={`text-lg text-muted-gray mb-10 font-normal max-w-lg ${isVisible ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+                Посмотрите в 3D и AR — без регистрации и давления.
             </p>
-            <div 
-            className={`flex flex-col sm:flex-row gap-4 justify-center md:justify-start ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-            style={{ animationDelay: '0.3s' }}
-            >
-            <Button size="lg" className="rounded-full px-10 shadow-lg shadow-brand-terracotta/20" onClick={() => onNavigate({ page: 'catalog' })}>
-                Смотреть каталог
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-full px-10 border-brand-charcoal/20 text-brand-charcoal hover:bg-brand-charcoal hover:text-white hover:border-transparent" onClick={() => onNavigate({ page: 'about' })}>
-                О бренде
-            </Button>
+            
+            <div className={`${isVisible ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.3s' }}>
+                <Button 
+                    size="lg" 
+                    className="bg-soft-black text-white hover:opacity-90 rounded-2xl px-10 h-14 text-base font-medium shadow-soft" 
+                    onClick={() => onNavigate({ page: 'catalog' })}
+                >
+                    Посмотреть в интерьере
+                </Button>
             </div>
         </div>
 
-        <div className={`flex-1 relative w-full aspect-square max-w-lg md:max-w-none ${isVisible ? 'animate-scale-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
-             {/* Abstract shape or Featured Image */}
-             <div className="relative w-full h-full">
-                <div className="absolute inset-0 bg-[#E8E4DC] rounded-full transform rotate-3 scale-95" />
-                 {/* Replace with actual hero image */}
-                 <div className="absolute inset-4 rounded-3xl overflow-hidden shadow-2xl shadow-brand-brown/10 transform -rotate-2 hover:rotate-0 transition-transform duration-700">
-                    <Image 
-                        src="/generated_images/01N67emOrzKb819BCOOE_sdxl.jpg" 
-                        alt="Интерьер гостиной" 
-                        fill
-                        className="object-cover"
-                        priority
-                    />
-                 </div>
-
-                  {/* Floating badge */}
-                  <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl shadow-black/5 max-w-[200px] animate-pulse-slow hidden md:block">
-                      <p className="text-3xl font-serif text-brand-terracotta mb-1">15+</p>
-                      <p className="text-xs text-brand-charcoal/60 uppercase tracking-wider font-semibold">Лет создаем уют</p>
-                  </div>
+        {/* Visual - Спокойствие */}
+        <div className="lg:col-span-5 relative h-[500px] hidden lg:block">
+             <div className={`relative h-full w-full rounded-2xl overflow-hidden ${isVisible ? 'animate-scale-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+                <Image 
+                    src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                    alt="Interior Calm" 
+                    fill
+                    className="object-cover"
+                    priority
+                />
              </div>
         </div>
       </div>

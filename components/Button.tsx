@@ -24,27 +24,29 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   return (
     <button 
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-brown focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-98',
+        'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-soft-black focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-98',
         {
-          // Primary: Classic chocolate background
-          'bg-brand-brown text-white hover:bg-brand-charcoal shadow-md hover:shadow-lg': variant === 'primary',
+          // Primary: Soft Black, белый текст. Тихая, но уверенная.
+          'bg-soft-black text-white hover:bg-black shadow-sm': variant === 'primary',
           
-          // Secondary: Lighter brown for secondary actions
-          'bg-brand-brown-light/20 text-brand-brown hover:bg-brand-brown-light/30': variant === 'secondary',
+          // Secondary: Светлый фон, темный текст
+          'bg-white text-soft-black border border-stone-beige hover:bg-stone-beige/10': variant === 'secondary',
           
-          // Outline: Classic border
-          'border-2 border-brand-brown text-brand-brown bg-transparent hover:bg-brand-brown hover:text-white': variant === 'outline',
+          // Outline: Тонкая рамка
+          'border border-soft-black/20 text-soft-black bg-transparent hover:border-soft-black': variant === 'outline',
           
-          // Ghost & Text & Link
-          'text-brand-brown hover:bg-brand-brown/5': variant === 'ghost',
-          'text-brand-charcoal hover:text-brand-brown px-0 py-0 hover:bg-transparent': variant === 'text',
-          'text-brand-brown underline-offset-4 hover:underline': variant === 'link',
+          // Ghost: Без фона, для вторичных действий
+          'text-soft-black hover:bg-stone-beige/10': variant === 'ghost',
           
-          // Sizes
-          'h-9 px-4 text-xs font-semibold uppercase tracking-wider': size === 'sm',
-          'h-11 px-6 text-sm font-semibold': size === 'md',
-          'h-14 px-8 text-base font-bold': size === 'lg',
-          'h-10 w-10 p-0': size === 'icon',
+          // Text & Link
+          'text-soft-black hover:opacity-70 px-0 py-0 hover:bg-transparent': variant === 'text',
+          'text-soft-black underline-offset-4 hover:underline': variant === 'link',
+          
+          // Sizes (по гайду min 48px height for main actions)
+          'h-10 px-4 text-xs font-medium': size === 'sm',
+          'h-12 px-6 text-sm font-medium': size === 'md', // Standard 48px
+          'h-14 px-8 text-base font-medium': size === 'lg',
+          'h-12 w-12 p-0': size === 'icon',
         },
         className
       )}

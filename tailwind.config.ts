@@ -11,32 +11,42 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'brand-cream': '#F9F8F6', // More warm and light background
-        'brand-cream-dark': '#F0EBE5', // For panels and highlights
-        'brand-brown': '#59443B', // Classic deep chocolate brown
-        'brand-brown-light': '#8C7568', // Lighter brown for secondary text
-        'brand-charcoal': '#3E3836', // Warm dark gray, almost black
-        'brand-terracotta': '#AF4E2E', // Kept for accents like sales tags or errors
-        'brand-gold': '#C6A87C', // Muted gold for stars and icons
+        // Основная палитра LABEL
+        'warm-white': '#F7F7F5', // Фон (основа)
+        'soft-black': '#1C1C1C', // Основной текст / Кнопки
+        'muted-gray': '#8A8A8A', // Вторичный текст
+        'stone-beige': '#C8BEB2', // Акцент (редко)
+        
+        // Legacy support (mapping to new system where possible to prevent crashes)
+        'brand-cream': '#F7F7F5', 
+        'brand-cream-dark': '#EBEBE9',
+        'brand-brown': '#1C1C1C', 
+        'brand-charcoal': '#1C1C1C',
+        'brand-terracotta': '#C8BEB2', 
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'], // Serif for headings
+        sans: ['Inter', 'sans-serif'], // Основной шрифт для всего
+        serif: ['Inter', 'sans-serif'], // Убираем засечки, используем Inter везде
+      },
+      borderRadius: {
+        'lg': '14px', // Для кнопок (12-16px)
+        'xl': '20px', // Для карточек
+        '2xl': '24px',
       },
       boxShadow: {
-        'soft': '0 4px_20px -2px rgba(89, 68, 59, 0.08)', // Brown-tinted shadow
+        'soft': '0 10px 30px -10px rgba(28, 28, 28, 0.05)', // Очень мягкая тень
       },
       animation: {
-        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+        'fade-in': 'fadeIn 0.4s ease-out forwards',
         'scale-in': 'scaleIn 0.4s ease-out forwards',
       },
       keyframes: {
-        fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(15px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         scaleIn: {
-            '0%': { opacity: '0', transform: 'scale(0.97)' },
+            '0%': { opacity: '0', transform: 'scale(0.98)' },
             '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
