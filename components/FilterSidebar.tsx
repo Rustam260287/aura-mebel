@@ -2,7 +2,7 @@
 import React, { memo, useState, useEffect, useRef, Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Button } from './Button';
-import { XMarkIcon, ChevronDownIcon, CheckCircleIcon, ArrowsUpDownIcon, StarIcon } from './Icons';
+import { XMarkIcon, ChevronDownIcon, CheckCircleIcon, ArrowsUpDownIcon, StarIcon } from './icons';
 import { cn } from '../utils';
 
 type SortOption = 'price_asc' | 'price_desc' | 'rating_desc' | 'name_asc' | 'discount_desc';

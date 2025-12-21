@@ -1,7 +1,7 @@
 
 import React, { memo } from 'react';
 import type { View } from '../types';
-import { CubeTransparentIcon, PhotoIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
+import { CubeTransparentIcon, PhotoIcon, WrenchScrewdriverIcon } from './icons';
 
 interface ScenariosProps {
   onNavigate: (view: View) => void;

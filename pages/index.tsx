@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
@@ -7,7 +7,7 @@ import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
 import { Hero } from '../components/Hero';
 import { Scenarios } from '../components/Scenarios';
-import { Gallery } from '../components/Gallery'; // Новый компонент галереи
+import { Gallery } from '../components/Gallery';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
@@ -25,6 +25,8 @@ interface HomePageProps {
 export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
   const { addToast } = useToast();
+  const scenariosRef = useRef<HTMLDivElement>(null); // Ref для скролла
+  
   const {
     quickViewProduct,
     closeQuickView,
@@ -41,6 +43,16 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   }
 
   const handleNavigate = (view: View) => {
+    // LABEL GUIDE: Скролл-переход
+    if (view.page === 'catalog' && !router.asPath.includes('products')) {
+        // Если мы на главной и нажали CTA в Hero - скроллим к сценариям
+        if (scenariosRef.current) {
+            scenariosRef.current.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+    }
+    
+    // Стандартная навигация
     if (view.page === 'catalog') {
         router.push('/products');
     } else if (view.page === 'ai-room-makeover') {
@@ -58,13 +70,15 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
       <Header />
       <main className="flex-grow bg-warm-white">
         
-        {/* 1. Hero Block: "Мебель, которую можно увидеть у себя дома" */}
+        {/* 1. Hero Block */}
         <Hero onNavigate={handleNavigate} />
         
-        {/* 2. Scenarios: Выбор намерения */}
-        <Scenarios onNavigate={handleNavigate} />
+        {/* 2. Scenarios: Выбор намерения (Якорь для скролла) */}
+        <div ref={scenariosRef} className="scroll-mt-24">
+             <Scenarios onNavigate={handleNavigate} />
+        </div>
 
-        {/* 3. Gallery: Избранные модели (Без цен, только эстетика) */}
+        {/* 3. Gallery: Избранные модели */}
         <div className="container mx-auto px-6 pb-24">
             <h2 className="text-2xl font-medium text-soft-black mb-8 pl-1">Избранные модели</h2>
             <Gallery
@@ -114,7 +128,7 @@ export const getStaticProps: GetStaticProps = async () => {
     const productsSnapshot = await adminDb.collection('products')
       .orderBy('rating', 'desc')
       .limit(8)
-      .select('name', 'imageUrls', 'category', 'model3dUrl') // Fetch ONLY needed fields for gallery
+      .select('name', 'imageUrls', 'category', 'model3dUrl')
       .get();
       
     const popularProducts = productsSnapshot.docs.map(doc => {
@@ -125,7 +139,7 @@ export const getStaticProps: GetStaticProps = async () => {
         imageUrls: data.imageUrls ?? [],
         category: data.category ?? '',
         model3dUrl: data.model3dUrl ?? '',
-        price: 0, // Price hidden in gallery
+        price: 0,
       };
     }) as Product[];
     

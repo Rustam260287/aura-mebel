@@ -9,7 +9,7 @@ import {
   ChatBubbleLeftRightIcon,
   StarIcon,
   HeartIcon
-} from '../components/Icons';
+} from '../components/icons';
 import { SEO } from '../components/SEO';
 
 export default function About() {

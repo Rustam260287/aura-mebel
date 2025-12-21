@@ -3,7 +3,7 @@ import React, { memo } from 'react';
 import type { Product } from '../types';
 import { ProductCardSkeleton } from './ProductCardSkeleton';
 import Image from 'next/image';
-import { CubeTransparentIcon } from './Icons';
+import { CubeTransparentIcon } from './icons';
 
 interface GalleryProps {
   products: Product[];

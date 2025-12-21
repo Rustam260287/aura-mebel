@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { Product } from '../../types';
 import { Button } from '../../components/Button';
-import { PencilSquareIcon, TrashIcon } from '../../components/Icons';
+import { PencilSquareIcon, TrashIcon } from '../icons';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useToast } from '../../contexts/ToastContext';
 import Image from 'next/image';

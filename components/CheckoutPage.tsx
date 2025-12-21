@@ -3,7 +3,7 @@ import React, { useState, memo, useMemo } from 'react';
 import type { View } from '../types';
 import { useCartState, useCartDispatch } from '../contexts/CartContext';
 import { Button } from './Button';
-import { CheckCircleIcon, SparklesIcon } from './Icons'; // Убрал WhatsAppIcon из импорта
+import { CheckCircleIcon, SparklesIcon } from './icons';
 import Image from 'next/image';
 import { useToast } from '../contexts/ToastContext';
 import Link from 'next/link';

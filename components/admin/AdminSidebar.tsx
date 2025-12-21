@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeftIcon, ChatBubbleLeftRightIcon, ShoppingBagIcon } from '../../components/Icons';
+import { ArrowLeftIcon, ChatBubbleLeftRightIcon, ShoppingBagIcon } from '../icons';
 import type { View, AdminView } from '../../types';
 
 interface AdminSidebarProps {

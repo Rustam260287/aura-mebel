@@ -1,6 +1,6 @@
 
 import React, { memo } from 'react';
-import { TruckIcon, MapPinIcon, ShieldCheckIcon, BanknotesIcon } from '@heroicons/react/24/outline'; // WrenchIcon removed as it's not in the restored Icons.tsx
+import { TruckIcon, MapPinIcon, ShieldCheckIcon, BanknotesIcon } from './icons';
 
 const features = [
   {

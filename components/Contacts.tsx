@@ -1,8 +1,6 @@
 
 import React, { memo } from 'react';
-import { MapPinIcon, PhoneIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ClockIcon } from '@heroicons/react/24/outline';
-// Используем иконки брендов из нашего набора, если есть, или имитируем
-import { WhatsAppIcon, TelegramIcon } from './Icons'; 
+import { MapPinIcon, PhoneIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ClockIcon, WhatsAppIcon, TelegramIcon } from './icons'; 
 import Image from 'next/image';
 
 const addresses = [

@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { app } from '../../firebaseConfig'; 
-import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../Icons';
+import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../icons';
 
 // Инициализируем Storage
 const storage = getStorage(app);

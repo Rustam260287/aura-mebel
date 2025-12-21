@@ -1,60 +1,54 @@
+
 import React, { memo } from 'react';
-import { useWishlist } from '../contexts/WishlistContext';
 import type { Product, View } from '../types';
-import { ProductCard } from './ProductCard';
+import { Gallery } from './Gallery';
 import { Button } from './Button';
-import { useSwipe } from '../hooks/useSwipe';
-import { Spinner } from './Spinner';
+import { HeartIcon } from './icons';
 
 interface WishlistPageProps {
   products: Product[];
-  isLoading?: boolean;
+  isLoading: boolean;
   onNavigate: (view: View) => void;
-  onQuickView: (product: Product) => void;
-  onVirtualStage: (product: Product) => void;
+  // Legacy props compatibility
+  onQuickView?: (product: Product) => void;
+  onVirtualStage?: (product: Product) => void;
 }
 
-const WishlistPageComponent: React.FC<WishlistPageProps> = ({ products, isLoading, onNavigate, onQuickView, onVirtualStage }) => {
-  const { wishlistItems } = useWishlist();
-  const swipeHandlers = useSwipe({ onSwipeRight: () => onNavigate({ page: 'catalog' }) });
-
-
-  const wishedProducts = products.filter(p => wishlistItems.includes(p.id));
-  const handleProductSelect = (productId: string) => {
-    onNavigate({ page: 'product', productId });
-  };
+const WishlistPageComponent: React.FC<WishlistPageProps> = ({ products, isLoading, onNavigate }) => {
+  const hasItems = products && products.length > 0;
 
   return (
-    <div className="container mx-auto px-6 py-12" {...swipeHandlers}>
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-serif text-brand-brown mb-3">Избранное</h1>
+    <div className="bg-warm-white min-h-[70vh] py-12 md:py-20">
+      <div className="container mx-auto px-6">
+        <h1 className="text-3xl md:text-4xl font-medium text-soft-black mb-12 tracking-tight">Ваша подборка</h1>
+
+        {hasItems ? (
+          <Gallery 
+            products={products}
+            isLoading={isLoading}
+            onProductSelect={(id) => onNavigate({ page: 'product', productId: id })}
+          />
+        ) : (
+          !isLoading && (
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-soft">
+                 <HeartIcon className="w-8 h-8 text-stone-beige stroke-1" />
+              </div>
+              <h2 className="text-xl font-medium text-soft-black mb-3">Здесь пока пусто</h2>
+              <p className="text-muted-gray mb-8 max-w-sm font-light leading-relaxed">
+                Сохраняйте понравившиеся объекты, чтобы вернуться к ним позже.
+                Это ваше личное пространство для вдохновения.
+              </p>
+              <Button 
+                onClick={() => onNavigate({ page: 'catalog' })}
+                className="bg-soft-black text-white px-8 rounded-xl h-12 text-sm font-medium hover:opacity-90 shadow-soft"
+              >
+                Перейти в галерею
+              </Button>
+            </div>
+          )
+        )}
       </div>
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-          <Spinner />
-          <p className="mt-3 text-sm">Загружаем избранное...</p>
-        </div>
-      ) : wishedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {wishedProducts.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onProductSelect={handleProductSelect}
-              onQuickView={onQuickView}
-              onVirtualStage={onVirtualStage}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-lg text-brand-charcoal max-w-md mx-auto">
-          <p>Ваш список избранного пуст.</p>
-          <p className="text-base text-gray-500 mt-2">Нажмите на сердечко на карточке товара, чтобы добавить его сюда.</p>
-          <Button className="mt-6" onClick={() => onNavigate({ page: 'catalog' })}>
-            Перейти в каталог
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

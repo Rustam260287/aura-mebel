@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { BlogPost } from '../../types';
 import { Button } from '../../components/Button';
-import { PencilSquareIcon, TrashIcon, SparklesIcon, CheckCircleIcon, ClockIcon } from '../../components/Icons';
+import { PencilSquareIcon, TrashIcon, SparklesIcon, CheckCircleIcon, ClockIcon } from '../icons';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
@@ -10,6 +10,7 @@ interface AdminBlogProps {
   posts: BlogPost[];
   onEditPost: (post: BlogPost) => void;
   onDeletePost: (postId: string) => Promise<void>;
+  onDeletePostById: (postId: string) => Promise<void>; // Added to satisfy potential different prop names
   onUpdatePost: (post: BlogPost) => Promise<void>;
   setBlogPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
 }
@@ -77,13 +78,6 @@ export const AdminBlog: React.FC<AdminBlogProps> = ({ posts, onEditPost, onDelet
         try {
             const updatedPost: BlogPost = { ...post, status: 'published' };
             await onUpdatePost(updatedPost);
-            // State update is handled by parent or setBlogPosts if we want optimistic update
-            // But AdminPage handles it via parent's onUpdatePost which updates parent state -> props -> AdminPage state -> props here.
-            // So we just rely on props update or call setBlogPosts for immediate feedback?
-            // Parent's onUpdatePost updates state in AdminContainer, which passes down.
-            // Let's optimistic update here too for speed? Or wait.
-            // AdminPage updates its state 'currentBlogPosts' via 'setEditingBlogPost' logic, but here we call 'onUpdatePost' directly.
-            // Let's update local state manually to show checkmark immediately.
             setBlogPosts(prev => prev.map(p => p.id === post.id ? updatedPost : p));
             addToast(`Статья "${post.title}" опубликована!`, 'success');
         } catch (error) {

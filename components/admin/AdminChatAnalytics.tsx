@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import type { ChatMessage, ChatAnalysisResult } from '../../types';
 import { Button } from '../../components/Button';
-import { SparklesIcon } from '../../components/Icons';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, ArrowPathIcon } from '../icons';
 
 interface AdminChatAnalyticsProps {
   chatLogs: ChatMessage[][];

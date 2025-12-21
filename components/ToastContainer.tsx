@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { useToast } from '../contexts/ToastContext';
-import { CheckCircleIcon, XMarkIcon } from './Icons';
+import { CheckCircleIcon, XMarkIcon } from './icons';
 
 export const ToastContainer: React.FC = memo(() => {
   const { toasts } = useToast();
