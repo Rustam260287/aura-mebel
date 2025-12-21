@@ -1,234 +1,275 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Button } from './Button';
-import { PhotoIcon } from './Icons';
-import { ArrowPathIcon, ScaleIcon, WrenchScrewdriverIcon, BanknotesIcon } from '@heroicons/react/24/outline';
-import { FurnitureBlueprint, Product } from '../types';
-import { fileToBase64 } from '../utils';
-import { useCartDispatch } from '../contexts/CartContext'; // ИСПРАВЛЕНО
-import Image from 'next/image';
+import { ArrowLeftIcon, CubeTransparentIcon, CheckCircleIcon, ShareIcon, HeartIcon } from './icons';
+import { ARViewer } from './ARViewer';
+import { FurniturePreview } from './FurniturePreview'; // Import the newly created component
+import { cn } from '../utils';
+
+// Типы конфигурации
+type FurnitureType = 'sofa' | 'armchair' | 'bed';
+type SizeType = 'compact' | 'standard' | 'grand';
+type StyleType = 'soft' | 'modern' | 'classic';
+
+interface Configuration {
+  type: FurnitureType;
+  size: SizeType;
+  style: StyleType;
+}
+
+// Данные для шагов (Контент)
+const FURNITURE_TYPES = [
+  { id: 'sofa', label: 'Диван' },
+  { id: 'armchair', label: 'Кресло' },
+  { id: 'bed', label: 'Кровать' },
+];
+
+const SIZES = [
+  { id: 'compact', label: 'Компактный', desc: 'Для уютных студий' },
+  { id: 'standard', label: 'Стандарт', desc: 'Для гостиной' },
+  { id: 'grand', label: 'Просторный', desc: 'Для большой семьи' },
+];
+
+const STYLES = [
+  { id: 'soft', label: 'Уютный', color: '#EBE5D9', desc: 'Текстиль, мягкие формы' },
+  { id: 'modern', label: 'Модерн', color: '#7D7D7D', desc: 'Строгие линии, велюр' },
+  { id: 'classic', label: 'Классика', color: '#59443B', desc: 'Детали, фактура' },
+];
 
 export const FurnitureFromPhotoPage = () => {
-    const [image, setImage] = useState<File | null>(null);
-    const [preview, setPreview] = useState<string | null>(null);
-    const [dimensions, setDimensions] = useState({ width: '100', height: '80', depth: '60' });
-    const [isLoading, setIsLoading] = useState(false);
-    const [blueprint, setBlueprint] = useState<FurnitureBlueprint | null>(null);
-    const { addToCart } = useCartDispatch(); // ИСПРАВЛЕНО
+  // Состояния
+  const [step, setStep] = useState<number>(0);
+  const [config, setConfig] = useState<Configuration>({
+    type: 'sofa',
+    size: 'standard',
+    style: 'soft',
+  });
+  const [isAROpen, setIsAROpen] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.[0]) {
-            const file = e.target.files[0];
-            setImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+  // Helper to get AR model URL based on config (Static Mapping for MVP)
+  const getARModelUrl = (config: Configuration) => {
+      // In a real app, this would point to specific files like /models/sofa_modern.glb
+      // For MVP demo, we use a placeholder or a generic model if available
+      return `/models/${config.type}_${config.style}.glb`; 
+  };
 
-    const handleGenerate = useCallback(async () => {
-        if (!image) return;
-        setIsLoading(true);
-        setBlueprint(null);
-        try {
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Mock response based on dimensions
-            const mockBlueprint: FurnitureBlueprint = {
-                furnitureName: "Эксклюзивный проект (AI Design)",
-                blueprint: {
-                    estimatedDimensions: [dimensions.width, dimensions.height, dimensions.depth],
-                    materials: ["Массив дуба", "Итальянский велюр", "Латунь"]
-                },
-                priceEstimate: {
-                    materialsCost: 25000,
-                    laborCost: 15000,
-                    totalPrice: 40000
-                }
-            };
-            
-            setBlueprint(mockBlueprint);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [image, dimensions]);
+  // Хендлеры
+  const handleNext = () => setStep((prev) => prev + 1);
+  const handleBack = () => setStep((prev) => prev - 1);
+  
+  const handleSelectType = (type: FurnitureType) => {
+    setConfig(prev => ({ ...prev, type }));
+    handleNext();
+  };
 
-    const handleAddToCart = () => {
-        if (blueprint && preview) {
-            const customProduct: Product = {
-                id: `custom-${Date.now()}`,
-                name: blueprint.furnitureName,
-                price: blueprint.priceEstimate.totalPrice,
-                imageUrls: [preview],
-                category: 'Индивидуальный заказ',
-                description: `Мебель по вашему фото. Габариты: ${dimensions.width}x${dimensions.height}x${dimensions.depth} см. Материалы: ${blueprint.blueprint.materials.join(', ')}.`,
-                rating: 5,
-                reviews: [],
-                specs: {
-                    width: Number(dimensions.width),
-                    height: Number(dimensions.height),
-                    depth: Number(dimensions.depth)
-                }
-            };
-            addToCart(customProduct);
-        }
-    };
+  const handleSelectSize = (size: SizeType) => {
+    setConfig(prev => ({ ...prev, size }));
+    handleNext();
+  };
 
+  const handleSelectStyle = (style: StyleType) => {
+    setConfig(prev => ({ ...prev, style }));
+    // Не переходим автоматически, даем насладиться цветом
+  };
+
+  const startAR = () => {
+    setIsAROpen(true);
+  };
+
+  const closeAR = () => {
+    setIsAROpen(false);
+    setIsFinished(true); // Показываем финальный экран
+    setStep(4);
+  };
+
+  // --- ЭКРАН 0: ВХОД ---
+  if (step === 0) {
     return (
-        <div className="bg-[#FAF9F6] min-h-screen pb-20">
-            {/* Hero */}
-            <div className="bg-brand-brown text-white py-16 md:py-24 relative overflow-hidden">
-                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-10"></div>
-                 <div className="absolute inset-0 bg-gradient-to-t from-brand-brown via-brand-brown/80 to-transparent"></div>
-                 <div className="container mx-auto px-6 relative z-10 text-center">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">Мебель по фото</h1>
-                    <p className="text-xl text-white/80 max-w-2xl mx-auto font-light">
-                        Загрузите фотографию понравившейся мебели, и наш AI рассчитает стоимость и предложит проект изготовления.
-                    </p>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center bg-warm-white px-6 text-center">
+        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-soft animate-fade-in-up">
+           <CubeTransparentIcon className="w-10 h-10 text-brand-brown stroke-1" />
+        </div>
+        <h1 className="text-4xl md:text-5xl font-serif text-soft-black mb-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          Создадим мебель<br />под вас
+        </h1>
+        <p className="text-muted-gray text-lg mb-12 max-w-md animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          Выберите основу — мы поможем настроить остальное. Визуализация в реальном времени.
+        </p>
+        <Button size="lg" onClick={handleNext} className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          Начать создание
+        </Button>
+      </div>
+    );
+  }
+
+  // --- AR РЕЖИМ ---
+  if (isAROpen) {
+    const currentModelUrl = getARModelUrl(config);
+    
+    return (
+      <div className="fixed inset-0 z-[100] bg-black">
+        <ARViewer 
+            src={currentModelUrl} 
+            alt="Custom Furniture"
+            // В реальном проекте передаем сгенерированный конфиг или маппинг
+        />
+        <button 
+            onClick={closeAR} 
+            className="absolute top-6 left-6 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft z-20"
+        >
+            <ArrowLeftIcon className="w-6 h-6 text-soft-black" />
+        </button>
+      </div>
+    );
+  }
+
+  // --- ФИНАЛ (ПОСЛЕ AR) ---
+  if (isFinished) {
+    return (
+       <div className="min-h-[80vh] flex flex-col items-center justify-center bg-warm-white px-6 text-center animate-fade-in">
+          <div className="bg-white p-8 rounded-2xl shadow-soft max-w-md w-full border border-stone-beige/20">
+             <div className="flex justify-center mb-6">
+                 <CheckCircleIcon className="w-12 h-12 text-brand-brown" />
+             </div>
+             <h2 className="text-2xl font-serif text-soft-black mb-2">Ваш проект готов</h2>
+             <p className="text-muted-gray text-sm mb-8">
+                {FURNITURE_TYPES.find(t => t.id === config.type)?.label}, {SIZES.find(s => s.id === config.size)?.label}, {STYLES.find(s => s.id === config.style)?.label}
+             </p>
+             
+             <div className="space-y-3">
+                 <Button className="w-full bg-soft-black text-white">
+                    Обсудить с дизайнером
+                 </Button>
+                 <Button variant="secondary" className="w-full" onClick={() => setIsFinished(false)}>
+                    Изменить конфигурацию
+                 </Button>
+                 <div className="flex justify-center gap-6 pt-4">
+                    <button className="flex items-center gap-2 text-sm text-muted-gray hover:text-soft-black">
+                        <HeartIcon className="w-5 h-5" /> Сохранить
+                    </button>
+                    <button className="flex items-center gap-2 text-sm text-muted-gray hover:text-soft-black">
+                        <ShareIcon className="w-5 h-5" /> Поделиться
+                    </button>
                  </div>
-            </div>
+             </div>
+          </div>
+       </div>
+    );
+  }
 
-            <div className="container mx-auto px-6 -mt-10 relative z-20">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                    
-                    {/* Left Column: Upload */}
-                    <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
-                         {!preview ? (
-                            <label className="w-full h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-10 cursor-pointer hover:bg-gray-50 hover:border-brand-terracotta transition-all group">
-                                <div className="w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <PhotoIcon className="w-10 h-10 text-brand-brown" />
-                                </div>
-                                <span className="text-xl font-medium text-brand-charcoal mb-2">Загрузить фото</span>
-                                <span className="text-gray-400 text-sm">Нажмите или перетащите файл сюда</span>
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                            </label>
-                         ) : (
-                            <div className="relative w-full h-full min-h-[400px]">
-                                <Image
-                                    src={preview}
-                                    alt="Preview"
-                                    fill
-                                    className="object-contain rounded-lg"
-                                />
-                                <button 
-                                    onClick={() => { setPreview(null); setImage(null); setBlueprint(null); }} 
-                                    className="absolute top-4 right-4 bg-white/90 backdrop-blur text-brand-charcoal p-2 rounded-full shadow-md hover:bg-white transition-colors"
-                                >
-                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
-                            </div>
-                         )}
-                    </div>
+  // --- ВИЗУАЛИЗАЦИЯ И ШАГИ (1-3) ---
+  return (
+    <div className="min-h-screen bg-warm-white flex flex-col">
+      {/* 3D Preview Area (Sticky Top) */}
+      <div className="flex-grow relative bg-[#F0F0F0] h-[50vh] transition-all duration-500 overflow-hidden">
+         
+         {/* ИНТЕГРАЦИЯ: Живое 3D вместо иконки */}
+         <div className="absolute inset-0">
+             <FurniturePreview config={config} />
+         </div>
+         
+         {/* Navigation Overlay */}
+         <div className="absolute top-6 left-6 z-10">
+             <button onClick={handleBack} className="bg-white/80 backdrop-blur p-2 rounded-full shadow-sm hover:bg-white transition-colors">
+                 <ArrowLeftIcon className="w-5 h-5 text-soft-black" />
+             </button>
+         </div>
+         <div className="absolute top-6 right-6 z-10">
+             <span className="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest text-soft-black">
+                 Шаг {step} из 3
+             </span>
+         </div>
+      </div>
 
-                    {/* Right Column: Controls & Result */}
-                    <div className="space-y-6">
-                         {/* Controls */}
-                        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                             <div className="flex items-center gap-3 mb-6">
-                                <ScaleIcon className="w-6 h-6 text-brand-brown" />
-                                <h3 className="text-xl font-serif text-brand-charcoal font-bold">Параметры изделия</h3>
-                             </div>
-                             
-                             <div className="grid grid-cols-3 gap-4 mb-8">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Ширина (см)</label>
-                                    <input 
-                                        type="number" 
-                                        value={dimensions.width} 
-                                        onChange={e => setDimensions(d => ({...d, width: e.target.value}))} 
-                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:border-brand-brown focus:outline-none focus:ring-2 focus:ring-brand-brown/20 transition-all font-medium text-brand-charcoal"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Высота (см)</label>
-                                    <input 
-                                        type="number" 
-                                        value={dimensions.height} 
-                                        onChange={e => setDimensions(d => ({...d, height: e.target.value}))} 
-                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:border-brand-brown focus:outline-none focus:ring-2 focus:ring-brand-brown/20 transition-all font-medium text-brand-charcoal"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Глубина (см)</label>
-                                    <input 
-                                        type="number" 
-                                        value={dimensions.depth} 
-                                        onChange={e => setDimensions(d => ({...d, depth: e.target.value}))} 
-                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:border-brand-brown focus:outline-none focus:ring-2 focus:ring-brand-brown/20 transition-all font-medium text-brand-charcoal"
-                                    />
-                                </div>
-                             </div>
-
-                             <Button 
-                                onClick={handleGenerate} 
-                                disabled={!image || isLoading} 
-                                className="w-full py-4 text-sm uppercase tracking-widest font-bold shadow-lg shadow-brand-brown/20"
-                             >
-                                {isLoading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                                        Анализ и расчет...
-                                    </span>
-                                ) : (
-                                    'Рассчитать стоимость'
-                                )}
-                            </Button>
-                        </div>
-
-                        {/* Result Card */}
-                        {blueprint && (
-                            <div className="bg-white p-8 rounded-2xl shadow-xl border-l-4 border-brand-terracotta animate-fade-in-up">
-                                <h2 className="text-2xl font-serif text-brand-charcoal mb-4">{blueprint.furnitureName}</h2>
-                                
-                                <div className="space-y-4 mb-6">
-                                     <div className="flex items-start gap-3">
-                                        <WrenchScrewdriverIcon className="w-5 h-5 text-gray-400 mt-0.5" />
-                                        <div>
-                                            <p className="text-xs text-gray-400 uppercase tracking-wide font-bold">Материалы</p>
-                                            <p className="text-brand-charcoal font-medium">{blueprint.blueprint.materials.join(', ')}</p>
-                                        </div>
-                                     </div>
-                                     <div className="flex items-start gap-3">
-                                        <ScaleIcon className="w-5 h-5 text-gray-400 mt-0.5" />
-                                        <div>
-                                            <p className="text-xs text-gray-400 uppercase tracking-wide font-bold">Размеры</p>
-                                            <p className="text-brand-charcoal font-medium">{blueprint.blueprint.estimatedDimensions.join(' x ')} см</p>
-                                        </div>
-                                     </div>
-                                </div>
-
-                                <div className="bg-brand-cream/30 rounded-xl p-5 mb-6">
-                                     <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
-                                         <span>Материалы</span>
-                                         <span>{blueprint.priceEstimate.materialsCost.toLocaleString('ru-RU')} ₽</span>
-                                     </div>
-                                     <div className="flex justify-between items-center mb-4 text-sm text-gray-600 border-b border-gray-200 pb-2">
-                                         <span>Работа</span>
-                                         <span>{blueprint.priceEstimate.laborCost.toLocaleString('ru-RU')} ₽</span>
-                                     </div>
-                                     <div className="flex justify-between items-center">
-                                         <span className="font-serif font-bold text-xl text-brand-charcoal">Итого</span>
-                                         <span className="font-serif font-bold text-2xl text-brand-brown">{blueprint.priceEstimate.totalPrice.toLocaleString('ru-RU')} ₽</span>
-                                     </div>
-                                </div>
-
-                                <Button 
-                                    onClick={handleAddToCart} 
-                                    className="w-full bg-brand-charcoal hover:bg-brand-brown text-white shadow-none"
-                                >
-                                    Оформить индивидуальный заказ
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-
+      {/* Controls Area (Bottom Sheet) */}
+      <div className="bg-white rounded-t-3xl shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] p-8 min-h-[40vh] flex flex-col justify-between relative z-20 -mt-6">
+        
+        {/* Step 1: Type */}
+        {step === 1 && (
+            <div className="animate-fade-in">
+                <h3 className="text-xl font-medium text-soft-black mb-6">Что будем создавать?</h3>
+                <div className="grid grid-cols-3 gap-4">
+                    {FURNITURE_TYPES.map((item) => (
+                        <button 
+                            key={item.id}
+                            onClick={() => handleSelectType(item.id as FurnitureType)}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 aspect-square",
+                                config.type === item.id 
+                                    ? "border-soft-black bg-warm-white" 
+                                    : "border-stone-beige/30 hover:border-stone-beige"
+                            )}
+                        >
+                            {/* Icon Placeholder */}
+                            <div className="w-8 h-8 bg-stone-beige/20 rounded-full mb-3" />
+                            <span className="text-sm font-medium text-soft-black">{item.label}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
-        </div>
-    );
+        )}
+
+        {/* Step 2: Size */}
+        {step === 2 && (
+            <div className="animate-fade-in">
+                <h3 className="text-xl font-medium text-soft-black mb-6">Выберите размер</h3>
+                <div className="space-y-3">
+                    {SIZES.map((item) => (
+                        <button 
+                            key={item.id}
+                            onClick={() => handleSelectSize(item.id as SizeType)}
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-200 text-left",
+                                config.size === item.id 
+                                    ? "border-soft-black bg-warm-white" 
+                                    : "border-stone-beige/30 hover:border-stone-beige"
+                            )}
+                        >
+                            <span className="text-base font-medium text-soft-black">{item.label}</span>
+                            <span className="text-xs text-muted-gray">{item.desc}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Step 3: Style & Finish */}
+        {step === 3 && (
+            <div className="animate-fade-in flex flex-col h-full">
+                <div className="mb-8">
+                    <h3 className="text-xl font-medium text-soft-black mb-6">Настроение и материал</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                        {STYLES.map((item) => (
+                            <button 
+                                key={item.id}
+                                onClick={() => handleSelectStyle(item.id as StyleType)}
+                                className={cn(
+                                    "flex flex-col items-center gap-3 p-2 rounded-xl transition-all",
+                                    config.style === item.id ? "scale-105" : "opacity-70 hover:opacity-100"
+                                )}
+                            >
+                                <div 
+                                    className={cn(
+                                        "w-16 h-16 rounded-full shadow-sm border-2",
+                                        config.style === item.id ? "border-soft-black" : "border-transparent"
+                                    )}
+                                    style={{ backgroundColor: item.color }} 
+                                />
+                                <span className="text-xs font-medium text-soft-black">{item.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                
+                <div className="mt-auto">
+                    <Button size="lg" className="w-full shadow-lg" onClick={startAR}>
+                        Посмотреть в интерьере
+                    </Button>
+                </div>
+            </div>
+        )}
+      </div>
+    </div>
+  );
 };

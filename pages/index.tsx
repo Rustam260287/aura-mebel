@@ -25,12 +25,13 @@ interface HomePageProps {
 export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
   const { addToast } = useToast();
-  const scenariosRef = useRef<HTMLDivElement>(null); // Ref для скролла
+  const scenariosRef = useRef<HTMLDivElement>(null); 
   
   const {
     quickViewProduct,
     closeQuickView,
     imageModalState,
+    handleImageClick,
     closeImageModal,
   } = useProductModals();
 
@@ -45,7 +46,6 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   const handleNavigate = (view: View) => {
     // LABEL GUIDE: Скролл-переход
     if (view.page === 'catalog' && !router.asPath.includes('products')) {
-        // Если мы на главной и нажали CTA в Hero - скроллим к сценариям
         if (scenariosRef.current) {
             scenariosRef.current.scrollIntoView({ behavior: 'smooth' });
             return;
@@ -73,12 +73,12 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
         {/* 1. Hero Block */}
         <Hero onNavigate={handleNavigate} />
         
-        {/* 2. Scenarios: Выбор намерения (Якорь для скролла) */}
+        {/* 2. Scenarios */}
         <div ref={scenariosRef} className="scroll-mt-24">
              <Scenarios onNavigate={handleNavigate} />
         </div>
 
-        {/* 3. Gallery: Избранные модели */}
+        {/* 3. Gallery */}
         <div className="container mx-auto px-6 pb-24">
             <h2 className="text-2xl font-medium text-soft-black mb-8 pl-1">Избранные модели</h2>
             <Gallery
@@ -88,7 +88,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
             />
         </div>
 
-        {/* 4. How it works (Quiet text) */}
+        {/* 4. How it works */}
         <div className="container mx-auto px-6 pb-24 text-center">
             <div className="max-w-md mx-auto space-y-3 text-muted-gray text-sm font-normal">
                 <p>Выберите мебель</p>
