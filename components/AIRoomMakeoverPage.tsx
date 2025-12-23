@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { Button } from './Button';
 import { PhotoIcon, SparklesIcon, HeartIcon, ArrowDownIcon } from './icons';
-import { BeforeAfterSlider } from './BeforeAfterSlider';
+import BeforeAfterSlider from './BeforeAfterSlider';
 import { useToast } from '../contexts/ToastContext';
 import { useRouter } from 'next/router';
 
