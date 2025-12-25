@@ -1,16 +1,16 @@
-
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowsPointingOutIcon, XMarkIcon } from './icons';
-import type { Product } from '../types';
+import React, { useEffect, useLayoutEffect, useRef, useState, memo, useMemo } from 'react';
+import { ArrowLeftIcon } from './icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useImmersive } from '../contexts/ImmersiveContext';
 
 interface ARViewerProps {
   src: string;
   iosSrc?: string;
   poster?: string;
   alt: string;
-  product?: Product;
+  onClose: () => void;
 }
 
 declare global {
@@ -21,33 +21,37 @@ declare global {
   }
 }
 
-// Умный прокси-роутер
 const toProxyUrl = (src?: string) => {
   if (!src) return undefined;
   if (src.startsWith('blob:') || src.startsWith('/') || src.startsWith('data:')) return src;
-  
+
   const ext = src.split('.').pop()?.toLowerCase().split('?')[0];
 
-  if (ext === 'usdz') {
-    return `/api/proxy-model.usdz?url=${encodeURIComponent(src)}`;
-  }
-  if (ext === 'glb') {
-    return `/api/proxy-model.glb?url=${encodeURIComponent(src)}`;
-  }
-  
+  if (ext === 'usdz') return `/api/proxy-model.usdz?url=${encodeURIComponent(src)}`;
+  if (ext === 'glb') return `/api/proxy-model.glb?url=${encodeURIComponent(src)}`;
+
   return `/api/proxy-model?url=${encodeURIComponent(src)}`;
 };
 
-// LABEL GUIDE: Шаг 5. AR/3D. 
-// Сразу, без объяснений. Без обучения, окон, текста. 
-// Пользователь ставит, двигает, смотрит.
-
-export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) => {
+const ARViewerComponent: React.FC<ARViewerProps> = ({
+  src,
+  iosSrc,
+  poster,
+  alt,
+  onClose,
+}) => {
+  const { setImmersive } = useImmersive();
   const modelViewerRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showHint, setShowHint] = useState(true);
 
   const glbSrc = useMemo(() => toProxyUrl(src), [src]);
   const usdzSrc = useMemo(() => toProxyUrl(iosSrc), [iosSrc]);
+
+  useLayoutEffect(() => {
+    setImmersive(true);
+    return () => setImmersive(false);
+  }, [setImmersive]);
 
   useEffect(() => {
     import('@google/model-viewer').catch(console.error);
@@ -58,41 +62,76 @@ export const ARViewer: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt }) 
     const handleLoad = () => setIsLoading(false);
     viewer.addEventListener('load', handleLoad);
 
+    const hintTimer = setTimeout(() => setShowHint(false), 3500);
+
     return () => {
       viewer.removeEventListener('load', handleLoad);
+      clearTimeout(hintTimer);
     };
   }, []);
 
   return (
-    <div className='relative w-full h-full bg-warm-white'>
-      
+    <div className="fixed inset-0 z-ar bg-warm-white">
+      {/* Loading */}
       {isLoading && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-warm-white/80 backdrop-blur-sm">
-            <div className="flex items-center space-x-3 p-4 rounded-full">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-soft-black"></div>
-                <span className="text-sm font-medium text-soft-black">Загрузка...</span>
-            </div>
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-warm-white/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-3 p-4 rounded-full">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-soft-black" />
+            <span className="text-sm font-medium text-soft-black">
+              Подготовка объекта…
+            </span>
+          </div>
         </div>
       )}
 
+      {/* AR Scene */}
       <model-viewer
         ref={modelViewerRef}
         src={glbSrc}
         ios-src={usdzSrc}
         poster={poster}
         alt={alt}
-        camera-controls
-        touch-action="pan-y"
         ar
         ar-modes="webxr scene-viewer quick-look"
-        style={{ width: '100%', height: '100%', '--poster-color': 'transparent' }}
+        ar-placement="floor"
+        camera-controls
+        disable-pan
+        disable-tap
+        style={{
+          width: '100%',
+          height: '100%',
+          '--poster-color': 'transparent',
+        }}
         className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}
+      />
+
+      {/* Quiet hint */}
+      <AnimatePresence>
+        {showHint && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute bottom-24 left-1/2 -translate-x-1/2
+                       bg-soft-black/60 text-white text-sm
+                       px-4 py-2 rounded-full pointer-events-none z-20"
+          >
+            Используйте жесты для перемещения
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Exit */}
+      <button
+        onClick={onClose}
+        className="absolute top-6 left-6 bg-white/80 backdrop-blur-md
+                   p-3 rounded-full shadow-soft z-20
+                   hover:bg-white transition-colors"
       >
-        {/* Кнопка AR теперь управляется через CSS переменные model-viewer */}
-        <button slot="ar-button" className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-soft-black text-white px-6 py-3 rounded-xl font-medium shadow-soft">
-          Посмотреть в AR
-        </button>
-      </model-viewer>
+        <ArrowLeftIcon className="w-6 h-6 text-soft-black" />
+      </button>
     </div>
   );
 };
+
+export const ARViewer = memo(ARViewerComponent);

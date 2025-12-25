@@ -635,3 +635,276 @@
 [error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
 [debug] [2025-12-23T05:11:05.170Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
 [debug] [2025-12-23T05:11:05.171Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:41.558Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:41.559Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:41.572Z] Checked if tokens are valid: false, expires at: 1766470261552
+[debug] [2025-12-24T18:02:41.573Z] Checked if tokens are valid: false, expires at: 1766470261552
+[debug] [2025-12-24T18:02:41.577Z] > refreshing access token with scopes: []
+[debug] [2025-12-24T18:02:41.614Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-24T18:02:41.614Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-24T18:02:42.033Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:42.034Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:42.036Z] Checked if tokens are valid: false, expires at: 1766470261552
+[debug] [2025-12-24T18:02:42.043Z] Checked if tokens are valid: false, expires at: 1766470261552
+[debug] [2025-12-24T18:02:42.043Z] > refreshing access token with scopes: []
+[debug] [2025-12-24T18:02:42.050Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-24T18:02:42.051Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-24T18:02:42.506Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-24T18:02:42.509Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-24T18:02:42.554Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-24T18:02:42.572Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-24T18:02:42.572Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-24T18:02:42.597Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-24T18:02:42.888Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-24T18:02:42.889Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-24T18:02:42.906Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:42.907Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:42.931Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:42.931Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:42.931Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-24T18:02:42.932Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-24T18:02:42.935Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-24T18:02:42.935Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-24T18:02:43.581Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-24T18:02:43.582Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-24T18:02:43.587Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:43.588Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:43.610Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:43.611Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:43.611Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-24T18:02:43.611Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-24T18:02:43.624Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-24T18:02:43.624Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-24T18:02:44.119Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-24T18:02:44.120Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-24T18:02:44.228Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-24T18:02:44.231Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:44.260Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:44.260Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:44.260Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.260Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.261Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-24T18:02:44.510Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-24T18:02:44.510Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-12-24T18:02:44.549Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-24T18:02:44.551Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-24T18:02:44.869Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-24T18:02:44.871Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:44.884Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:44.884Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:44.946Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:44.946Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:44.947Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.947Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.948Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:44.961Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:44.961Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:44.961Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.961Z] Checked if tokens are valid: true, expires at: 1766602961572
+[debug] [2025-12-24T18:02:44.962Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-24T18:02:45.561Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-24T18:02:45.566Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:45.580Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:45.580Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-24T18:02:45.580Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-24T18:02:45.581Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-24T18:02:45.583Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-24T18:02:45.584Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:04.444Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:04.445Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:04.447Z] Checked if tokens are valid: false, expires at: 1766602961572
+[debug] [2025-12-25T19:12:04.448Z] Checked if tokens are valid: false, expires at: 1766602961572
+[debug] [2025-12-25T19:12:04.449Z] > refreshing access token with scopes: []
+[debug] [2025-12-25T19:12:04.452Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-25T19:12:04.452Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T19:12:04.572Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:04.574Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:04.575Z] Checked if tokens are valid: false, expires at: 1766602961572
+[debug] [2025-12-25T19:12:04.575Z] Checked if tokens are valid: false, expires at: 1766602961572
+[debug] [2025-12-25T19:12:04.576Z] > refreshing access token with scopes: []
+[debug] [2025-12-25T19:12:04.576Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-25T19:12:04.577Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T19:12:04.654Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-25T19:12:04.659Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T19:12:04.707Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T19:12:04.719Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-25T19:12:04.719Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T19:12:04.749Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T19:12:05.429Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T19:12:05.429Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-25T19:12:05.489Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:05.489Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:05.620Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:05.625Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:05.626Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-25T19:12:05.626Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T19:12:05.643Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-25T19:12:05.643Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T19:12:06.308Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T19:12:06.309Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-25T19:12:06.310Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:06.313Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:06.337Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:06.338Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:06.338Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-25T19:12:06.338Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T19:12:06.347Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-25T19:12:06.349Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T19:12:06.696Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-25T19:12:06.697Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-12-25T19:12:06.825Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-25T19:12:06.825Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-25T19:12:07.087Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-25T19:12:07.089Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-25T19:12:07.200Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-25T19:12:07.200Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:07.217Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:07.217Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:07.218Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.218Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.218Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T19:12:07.404Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T19:12:07.406Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:07.420Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:07.420Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:07.485Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:07.485Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:07.486Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.486Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.492Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:07.518Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:07.518Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:07.519Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.519Z] Checked if tokens are valid: true, expires at: 1766693523719
+[debug] [2025-12-25T19:12:07.524Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T19:12:07.648Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T19:12:07.650Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:07.652Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:07.652Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T19:12:08.194Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T19:12:08.195Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T19:12:08.197Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T19:12:08.204Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:10.393Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:10.395Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:10.400Z] Checked if tokens are valid: false, expires at: 1766693523719
+[debug] [2025-12-25T20:27:10.403Z] Checked if tokens are valid: false, expires at: 1766693523719
+[debug] [2025-12-25T20:27:10.405Z] > refreshing access token with scopes: []
+[debug] [2025-12-25T20:27:10.412Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-25T20:27:10.413Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:10.519Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:10.520Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:10.520Z] Checked if tokens are valid: false, expires at: 1766693523719
+[debug] [2025-12-25T20:27:10.520Z] Checked if tokens are valid: false, expires at: 1766693523719
+[debug] [2025-12-25T20:27:10.520Z] > refreshing access token with scopes: []
+[debug] [2025-12-25T20:27:10.521Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-25T20:27:10.521Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T20:27:10.585Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-25T20:27:10.585Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T20:27:10.610Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T20:27:10.615Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-25T20:27:10.615Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-25T20:27:10.630Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T20:27:10.815Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T20:27:10.816Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-25T20:27:10.838Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:10.838Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:10.878Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:10.878Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:10.879Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-25T20:27:10.879Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T20:27:10.885Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-25T20:27:10.886Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T20:27:11.413Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T20:27:11.413Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[debug] [2025-12-25T20:27:11.425Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:11.428Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:11.460Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:11.460Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:11.462Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-12-25T20:27:11.463Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T20:27:11.469Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [none]
+[debug] [2025-12-25T20:27:11.469Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com x-goog-quota-user=projects/aura-mebel-7ec96
+[debug] [2025-12-25T20:27:11.837Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-25T20:27:11.837Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-12-25T20:27:11.921Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-25T20:27:11.921Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-25T20:27:12.286Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com 403
+[debug] [2025-12-25T20:27:12.288Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebaseio.com [omitted]
+[debug] [2025-12-25T20:27:12.429Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-12-25T20:27:12.431Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aura-mebel-7ec96/services/firebasedataconnect.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.447Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.448Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:12.448Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.448Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.449Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T20:27:12.724Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T20:27:12.724Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.735Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.736Z] > authorizing via signed-in user (amin8914@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.764Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.766Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:12.767Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.767Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.767Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.775Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.775Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:12.776Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.776Z] Checked if tokens are valid: true, expires at: 1766698029615
+[debug] [2025-12-25T20:27:12.776Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo [none]
+[debug] [2025-12-25T20:27:12.919Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T20:27:12.919Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.924Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.924Z] > authorizing via signed-in user (amin8914@gmail.com)
+[debug] [2025-12-25T20:27:12.939Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo 200
+[debug] [2025-12-25T20:27:12.939Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/aura-mebel-7ec96/billingInfo {"name":"projects/aura-mebel-7ec96/billingInfo","projectId":"aura-mebel-7ec96","billingAccountName":"billingAccounts/01324C-F5C045-34010D","billingEnabled":true}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-12-25T20:27:12.943Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-12-25T20:27:12.944Z] > authorizing via signed-in user (amin8914@gmail.com)

@@ -1,5 +1,6 @@
 
 import type { Config } from 'tailwindcss';
+import { Z_INDEX } from './lib/zIndex';
 
 const config: Config = {
   content: [
@@ -35,6 +36,15 @@ const config: Config = {
       },
       boxShadow: {
         'soft': '0 10px 30px -10px rgba(28, 28, 28, 0.05)', // Очень мягкая тень
+      },
+      zIndex: {
+        base: `${Z_INDEX.base}`,
+        cta: `${Z_INDEX.cta}`,
+        header: `${Z_INDEX.header}`,
+        ar: `${Z_INDEX.ar}`,
+        menuOverlay: `${Z_INDEX.mobileMenuOverlay}`,
+        menuButton: `${Z_INDEX.mobileMenuButton}`,
+        modal: `${Z_INDEX.systemModal}`,
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out forwards',

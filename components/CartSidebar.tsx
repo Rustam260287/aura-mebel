@@ -34,7 +34,7 @@ const CartSidebarComponent: React.FC<CartSidebarProps> = ({ onNavigate }) => {
 
     return (
         <div 
-          className="fixed inset-0 z-[100]" 
+          className="fixed inset-0 z-modal" 
           aria-label="Корзина покупок" 
         >
             <div 

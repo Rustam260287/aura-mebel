@@ -22,7 +22,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = memo(({ product, on
   };
 
   return (
-    <div className="fixed inset-0 bg-brand-charcoal/80 backdrop-blur-sm z-[200] flex items-center justify-center animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 bg-brand-charcoal/80 backdrop-blur-sm z-modal flex items-center justify-center animate-fade-in" onClick={onClose}>
       <div className="bg-white rounded-sm shadow-2xl w-full max-w-4xl m-4 grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden animate-scale-in relative" onClick={e => e.stopPropagation()}>
         <div className="relative aspect-[4/5] md:aspect-auto bg-[#F9F9F9]">
           <Image 

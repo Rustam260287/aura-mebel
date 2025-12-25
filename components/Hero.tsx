@@ -36,7 +36,8 @@ const HeroComponent: React.FC<HeroProps> = ({ onNavigate }) => {
                 <Button 
                     size="lg" 
                     className="bg-soft-black text-white hover:opacity-90 rounded-xl px-8 h-14 text-[15px] font-medium shadow-sm transition-transform hover:scale-[1.02]" 
-                    onClick={() => onNavigate({ page: 'catalog' })}
+                    // Исправлено: вызываем 'scenarios' для скролла
+                    onClick={() => onNavigate({ page: 'scenarios' } as any)}
                 >
                     Посмотреть в интерьере
                 </Button>

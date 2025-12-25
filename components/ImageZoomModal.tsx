@@ -40,7 +40,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
   
   return (
     <Transition show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-[100]" onClose={onClose}>
+        <Dialog as="div" className="relative z-modal" onClose={onClose}>
             {/* Overlay */}
             <Transition.Child
                 as={Fragment}
@@ -96,7 +96,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         {/* Close Button */}
                         <button 
                             onClick={onClose} 
-                            className="absolute top-4 right-4 sm:-top-12 sm:-right-12 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
+                            className="absolute top-4 right-4 sm:-top-12 sm:-right-12 text-white hover:text-gray-300 z-10 p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                             aria-label="Закрыть"
                         >
                             <XMarkIcon className="w-6 h-6" />
@@ -106,7 +106,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         {images.length > 1 && (
                           <button 
                               onClick={(e) => { e.stopPropagation(); handlePrev(); }} 
-                              className="absolute left-2 sm:-left-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
+                              className="absolute left-2 sm:-left-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                               aria-label="Предыдущее изображение"
                           >
                               <ChevronLeftIcon className="w-8 h-8" />
@@ -117,7 +117,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         {images.length > 1 && (
                           <button 
                               onClick={(e) => { e.stopPropagation(); handleNext(); }} 
-                              className="absolute right-2 sm:-right-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[120] p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
+                              className="absolute right-2 sm:-right-12 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 p-3 bg-black/40 rounded-full backdrop-blur-md transition-all hover:scale-110"
                               aria-label="Следующее изображение"
                           >
                               <ChevronRightIcon className="w-8 h-8" />
@@ -125,7 +125,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                         )}
 
                         {/* Counter */}
-                        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white z-[120] px-4 py-1 bg-black/40 rounded-full text-sm font-medium backdrop-blur-md">
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white z-10 px-4 py-1 bg-black/40 rounded-full text-sm font-medium backdrop-blur-md">
                           {currentIndex + 1} / {images.length}
                         </div>
 

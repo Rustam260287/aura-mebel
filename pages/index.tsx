@@ -44,15 +44,15 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
   }
 
   const handleNavigate = (view: View) => {
-    // LABEL GUIDE: Скролл-переход
-    if (view.page === 'catalog' && !router.asPath.includes('products')) {
+    // 1. Скролл к сценариям (вызывается из Hero)
+    if (view.page === 'scenarios') {
         if (scenariosRef.current) {
             scenariosRef.current.scrollIntoView({ behavior: 'smooth' });
-            return;
         }
+        return;
     }
     
-    // Стандартная навигация
+    // 2. Обычная навигация (вызывается из Scenarios)
     if (view.page === 'catalog') {
         router.push('/products');
     } else if (view.page === 'ai-room-makeover') {

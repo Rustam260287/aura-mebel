@@ -58,6 +58,7 @@ export const HeartIcon = Heart;
 export const ShoppingCartIcon = ShoppingCart;
 export const ShoppingBagIcon = ShoppingBag;
 export const Bars3Icon = Menu;
+export const MenuIcon = Menu;
 export const MagnifyingGlassIcon = Search;
 export const ChatBubbleLeftRightIcon = MessageSquare;
 export const WhatsAppIcon = MessageCircle;

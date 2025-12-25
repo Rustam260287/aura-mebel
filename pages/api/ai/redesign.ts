@@ -5,14 +5,17 @@ import { MediaService } from '../../../lib/media/service';
 import { checkRateLimit } from '../../../lib/rate-limit';
 import { checkIsAdmin } from '../../../lib/auth/admin-check';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const apiKey = process.env.OPENAI_API_KEY;
+if (!apiKey) {
+    console.warn("⚠️ OPENAI_API_KEY is missing. AI features will not work.");
+}
+const openai = new OpenAI({ apiKey });
 
 type ResponseData = {
   original: string | null;
   redesigned: string | null;
   error?: string;
+  imageUrl?: string | null;
 };
 
 export const config = {
@@ -24,39 +27,43 @@ export const config = {
   },
 };
 
-// ЭТАП 1: GPT-4o Vision создает "Текстовый каркас"
-async function analyzeStructureWithGPT(imageUrl: string, targetStyle: string): Promise<string> {
+const SYSTEM_PROMPT = `
+You are an expert AI interior architect. Your task is to write a prompt for an img2img model to subtly redesign furniture while being OBSESSIVE about preserving the room's architecture.
+
+**STRICT PRESERVATION RULES:**
+1.  **WALLS & WINDOWS:** Do not move, add, or change walls, windows, or doors. Keep their exact positions.
+2.  **PERSPECTIVE:** Keep the exact camera angle and perspective of the original room.
+3.  **FURNITURE SWAP:** Only describe the replacement of furniture pieces (sofa, tables, etc.) in the new style.
+4.  **TONE:** "A photorealistic photo of the exact same room, but with new furniture in [STYLE] style. High-end, calm, premium."
+
+**OUTPUT:** ONLY the concise prompt text.
+`;
+
+async function analyzeAndCreatePrompt(imageUrl: string, targetStyle: string, userWish?: string): Promise<string> {
+    if (!apiKey) return `A photorealistic room in ${targetStyle} style`;
+
     try {
-        console.log("GPT-4o Vision: Analyzing room geometry...");
+        console.log("GPT-4o Vision: Analyzing for high-fidelity redesign...");
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                {
-                    role: "system",
-                    content: "You are an interior designer. Describe the room's layout, perspective, and key structural elements (windows, doors, ceiling beams) in detail. Ignore old furniture and mess. Then write a prompt for an image generator to create a STUNNING, HIGH-END renovation of this exact room in the requested style."
-                },
+                { role: "system", content: SYSTEM_PROMPT },
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: `Analyze this room. Write a prompt to redesign it in ${targetStyle} style. Start with: "A high-end interior design photo of a ${targetStyle} room with..." Describe the new materials, lighting, and furniture placement (keeping the same layout).` },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                "url": imageUrl,
-                            },
-                        },
+                        { type: "text", text: `Analyze this room. Write a prompt to replace the current furniture with a "${targetStyle}" style collection. ${userWish ? `User wish: ${userWish}`: ''}. Keep the walls, floor and windows exactly as they are in the photo.` },
+                        { type: "image_url", image_url: { "url": imageUrl } },
                     ],
                 },
             ],
             max_tokens: 250,
         });
         
-        const structure = response.choices[0].message.content;
-        console.log("GPT Generated Prompt:", structure);
-        return structure || `A photorealistic room in ${targetStyle} style`;
+        const generatedPrompt = response.choices[0].message.content;
+        return generatedPrompt || `A photorealistic room in ${targetStyle} style`;
     } catch (error) {
         console.error("GPT Vision failed:", error);
-        return `A photorealistic room in ${targetStyle} style, high quality, 8k`;
+        return `A high-end interior design photo of a room in ${targetStyle} style. Photorealistic, 8k.`;
     }
 }
 
@@ -69,69 +76,63 @@ export default async function handler(
     return res.status(405).end();
   }
 
-  const isAdmin = await checkIsAdmin(req);
-  if (!isAdmin) {
-      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
-      const limitResult = await checkRateLimit(ip, 100, 3600000, 'ai_redesign');
-      if (!limitResult.success) {
-          return res.status(429).json({ original: null, redesigned: null, error: 'Превышен лимит генераций.' });
+  try {
+      const isAdmin = await checkIsAdmin(req);
+      if (!isAdmin) {
+          const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+          const limitResult = await checkRateLimit(ip, 20, 3600000, 'ai_redesign');
+          if (!limitResult.success) {
+              return res.status(429).json({ original: null, redesigned: null, error: 'Лимит превышен.' });
+          }
       }
+  } catch (e) {
+      console.warn("Rate limit check failed", e);
   }
 
-  const { imageUrl, prompt, style } = req.body;
+  const { image, imageUrl, prompt: userWish, style = 'Modern and Calm' } = req.body;
+  const inputImage = image || imageUrl;
 
-  if (!imageUrl) {
-    return res.status(400).json({ original: null, redesigned: null, error: 'Image URL is required' });
+  if (!inputImage) {
+    return res.status(400).json({ original: null, redesigned: null, error: 'Image required' });
   }
 
   try {
-    let redesignedImageUrl: string | null = null;
-    let publicImageUrl = imageUrl;
+    let publicImageUrl = inputImage;
 
-    // 1. Подготовка: Загружаем исходник в облако
-    if (imageUrl.startsWith('data:image')) {
-        console.log("Uploading input to Storage...");
-        const matches = imageUrl.match(/^data:(.+);base64,(.+)$/);
-        if (!matches) throw new Error("Invalid base64");
-        
-        const mimeType = matches[1];
-        const buffer = Buffer.from(matches[2], 'base64');
-        publicImageUrl = await MediaService.uploadBuffer(buffer, 'ai-inputs', mimeType);
+    if (!inputImage.startsWith('http')) {
+        console.log("Uploading input...");
+        let base64Data = inputImage.startsWith('data:') ? inputImage.split(',')[1] : inputImage;
+        const buffer = Buffer.from(base64Data, 'base64');
+        publicImageUrl = await MediaService.uploadBuffer(buffer, 'ai-inputs', 'image/jpeg');
     }
 
-    // 2. Анализ: GPT-4o создает красивый дизайнерский промпт
-    const gptPrompt = await analyzeStructureWithGPT(publicImageUrl, style);
-
-    // 3. Синтез: Формируем финальный промпт
-    const finalPrompt = `${gptPrompt} ${prompt || ''} Cinematic lighting, 8k, architectural digest photo.`;
-    
+    const finalPrompt = await analyzeAndCreatePrompt(publicImageUrl, style, userWish);
     console.log("Final Prompt for Flux:", finalPrompt);
 
-    // 4. Генерация: Pollinations (Flux)
     const seed = Math.floor(Math.random() * 1000000);
     const encodedPrompt = encodeURIComponent(finalPrompt);
     const encodedImage = encodeURIComponent(publicImageUrl);
     
-    // model=flux
-    // enhance=true (пусть Flux улучшает промпт для красоты)
-    // strength=0.75 (Даем волю фантазии! Это сделает настоящий редизайн)
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}&image=${encodedImage}&enhance=true&strength=0.75`;
+    // Setting strength to 0.2 for maximum structure preservation
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}&image=${encodedImage}&enhance=false&strength=0.2`;
+    
+    console.log("Generating with Flux (Strength 0.2)...");
 
-    console.log("Generating URL:", pollinationsUrl);
-
-    console.log("Saving result...");
-    redesignedImageUrl = await MediaService.uploadFromUrl(pollinationsUrl, 'ai-designs');
-    console.log("Saved:", redesignedImageUrl);
-
-    if (!redesignedImageUrl) throw new Error("Failed to process image");
+    const redesignedImageUrl = await MediaService.uploadFromUrl(pollinationsUrl, 'ai-designs');
+    if (!redesignedImageUrl) throw new Error("Image generation failed.");
 
     res.status(200).json({ 
-        original: imageUrl, 
-        redesigned: redesignedImageUrl 
+        original: publicImageUrl, 
+        redesigned: redesignedImageUrl,
+        imageUrl: redesignedImageUrl 
     });
 
   } catch (error: any) {
-    console.error('Pipeline failed:', error);
-    res.status(500).json({ original: null, redesigned: null, error: error.message || "Ошибка генерации" });
+    console.error('AI Redesign pipeline failed:', error);
+    res.status(500).json({ 
+        original: null, 
+        redesigned: null, 
+        error: error.message || "Ошибка генерации изображения" 
+    });
   }
 }

@@ -9,11 +9,11 @@ import { Catalog } from '../../components/Catalog';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import { Button } from '../../components/Button';
-import { ChevronLeftIcon, ChevronRightIcon, SlidersHorizontalIcon } from '../../components/icons';
-import { FilterSidebar } from '../../components/FilterSidebar';
+import { ChevronLeftIcon, ChevronRightIcon } from '../../components/icons';
 import { useToast } from '../../contexts/ToastContext';
 import { useProductModals } from '../../hooks/useProductModals';
 import { SearchService } from '../../lib/services/search.service';
+import { CategoryPills } from '../../components/CategoryPills';
 
 const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
@@ -23,11 +23,9 @@ const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебел
 const DEFAULT_MAX_PRICE = 1_000_000;
 const CATEGORY_IN_LIMIT = 10;
 
+// Упрощенная сортировка для спокойного выбора
 const SORT_CONFIGS: Record<string, { field: string; direction: FirebaseFirestore.OrderByDirection }> = {
   rating_desc: { field: 'rating', direction: 'desc' },
-  price_asc: { field: 'price', direction: 'asc' },
-  price_desc: { field: 'price', direction: 'desc' },
-  name_asc: { field: 'name', direction: 'asc' },
 };
 
 const getSortConfig = (sort: string) => SORT_CONFIGS[sort] ?? SORT_CONFIGS.rating_desc;
@@ -36,15 +34,15 @@ interface CatalogPageProps {
   products: Product[];
   currentPage: number;
   totalPages: number;
-  globalMaxPrice: number;
   error?: string;
   searchQuery?: string;
 }
 
-export default function CatalogPage({ products, currentPage, totalPages, globalMaxPrice, error, searchQuery }: CatalogPageProps) {
+export default function CatalogPage({ products, currentPage, totalPages, error, searchQuery }: CatalogPageProps) {
   const router = useRouter();
   const { addToast } = useToast();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // Filter Sidebar удален для чистоты интерфейса
+  
   const {
     quickViewProduct,
     openQuickView,
@@ -55,42 +53,23 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
   } = useProductModals();
 
   // Filter State from URL
-  const { category, minPrice, maxPrice, sort } = router.query;
+  const { category, sort } = router.query;
   
-  const selectedCategories = Array.isArray(category) ? category : category ? [category] : [];
-  const currentPriceRange: [number, number] = [
-    Number(minPrice) || 0,
-    Number(maxPrice) || globalMaxPrice
-  ];
-  const currentSort = (sort as any) || 'rating_desc';
+  const selectedCategory = Array.isArray(category) ? category[0] : category;
 
-  const handleCategoryChange = (newCategories: string[]) => {
+  const handleCategoryChange = (newCategory: string) => {
     const query = { ...router.query };
-    delete query.category;
     delete query.q;
-    delete query.search; // Clear search
-    if (newCategories.length > 0) {
-      query.category = newCategories;
+    delete query.search;
+    
+    if (newCategory === selectedCategory) {
+        delete query.category; // Toggle off
+    } else {
+        query.category = newCategory;
     }
+    
     query.page = '1';
     router.push({ pathname: '/products', query }, undefined, { scroll: true });
-  };
-
-  const handlePriceChange = (range: [number, number]) => {
-    const query = { ...router.query };
-    query.minPrice = range[0].toString();
-    query.maxPrice = range[1].toString();
-    query.page = '1';
-    router.push({ pathname: '/products', query }, undefined, { scroll: false }); 
-  };
-
-  const handleSortChange = (newSort: string) => {
-    const query = { ...router.query, sort: newSort, page: '1' };
-    router.push({ pathname: '/products', query }, undefined, { scroll: true });
-  };
-
-  const handleReset = () => {
-    router.push('/products');
   };
 
   const handlePageChange = (newPage: number) => {
@@ -101,80 +80,91 @@ export default function CatalogPage({ products, currentPage, totalPages, globalM
   };
 
   const handleVirtualStage = (product: Product) => {
-    addToast(`Примерка AR для "${product.name}" скоро появится!`, 'info');
+    // Этот метод, вероятно, не будет использоваться напрямую из каталога в новой концепции, 
+    // так как вход в AR через карточку товара. Но оставим для совместимости.
+    addToast(`Примерка AR для "${product.name}" доступна на странице объекта`, 'info');
   };
   
   if (error) {
     return (
-        <>
-            <Header />
-            <div className="text-center py-20 text-red-600 container mx-auto">
-                <h2 className="text-2xl font-bold mb-4">Ошибка загрузки каталога</h2>
-                <p>{error}</p>
-                <Button className="mt-4" onClick={() => router.reload()}>Попробовать снова</Button>
-            </div>
-            <Footer />
-        </>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white text-muted-gray">
+             <p>Не удалось загрузить коллекцию. Попробуйте позже.</p>
+        </div>
     );
   }
 
   return (
     <>
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-serif text-brand-brown">
-                {searchQuery ? `Результаты поиска: "${searchQuery}"` : 'Каталог товаров'}
-            </h1>
-            {!searchQuery && (
-                <Button 
-                    variant="outline" 
-                    className="md:hidden flex items-center gap-2"
-                    onClick={() => setIsFilterOpen(true)}
-                >
-                    <SlidersHorizontalIcon className="w-5 h-5" />
-                    Фильтры
-                </Button>
-            )}
-        </div>
-        
-        <div className="flex flex-col md:flex-row gap-8">
-            {!searchQuery && (
-                <aside className="w-full md:w-64 flex-shrink-0">
-                    <FilterSidebar 
-                        allCategories={ALL_CATEGORIES}
-                        selectedCategories={selectedCategories}
-                        onCategoryChange={handleCategoryChange}
-                        priceRange={currentPriceRange}
-                        maxPrice={globalMaxPrice}
-                        onPriceChange={handlePriceChange}
-                        sortOption={currentSort}
-                        onSortChange={handleSortChange}
-                        onReset={handleReset}
-                        isOpen={isFilterOpen}
-                        onClose={() => setIsFilterOpen(false)}
-                    />
-                </aside>
-            )}
-
-            <div className="flex-grow">
-                <Catalog
-                    allProducts={products}
-                    isLoading={false}
-                    onProductSelect={(id) => router.push(`/products/${id}`)}
-                    onQuickView={openQuickView}
-                    onVirtualStage={handleVirtualStage}
-                    onImageClick={handleImageClick}
-                />
-
-                {totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-4 mt-12">
-                        <Button variant="outline" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}><ChevronLeftIcon className="w-5 h-5" /></Button>
-                        <span className="text-brand-charcoal font-medium">Страница {currentPage} из {totalPages}</span>
-                        <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}><ChevronRightIcon className="w-5 h-5" /></Button>
-                    </div>
+      <main className="flex-grow bg-warm-white min-h-screen">
+        <div className="container mx-auto px-6 py-12">
+            
+            {/* Заголовок и поиск */}
+            <div className="text-center mb-12">
+                <h1 className="text-4xl md:text-5xl font-medium text-soft-black mb-4 tracking-tight">
+                    {searchQuery ? `Поиск: "${searchQuery}"` : 'Готовая мебель'}
+                </h1>
+                {!searchQuery && (
+                    <p className="text-muted-gray max-w-lg mx-auto leading-relaxed">
+                        Выберите объект, который хотите увидеть у себя дома.
+                    </p>
                 )}
             </div>
+
+            {/* Категории - как табы, чисто и просто */}
+            {!searchQuery && (
+                <div className="flex justify-center mb-16 overflow-x-auto pb-4 scrollbar-hide">
+                    <div className="flex gap-2">
+                        {ALL_CATEGORIES.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => handleCategoryChange(cat)}
+                                className={`
+                                    px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 border
+                                    ${selectedCategory === cat 
+                                        ? 'bg-soft-black text-white border-soft-black shadow-md' 
+                                        : 'bg-white text-muted-gray border-stone-beige/30 hover:border-soft-black hover:text-soft-black'}
+                                `}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
+            {/* Сетка товаров - Галерея */}
+            <Catalog
+                allProducts={products}
+                isLoading={false}
+                onProductSelect={(id) => router.push(`/products/${id}`)}
+                onQuickView={openQuickView}
+                onVirtualStage={handleVirtualStage}
+                onImageClick={handleImageClick}
+            />
+
+            {/* Пагинация - минималистичная */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-6 mt-20">
+                    <button 
+                        onClick={() => handlePageChange(currentPage - 1)} 
+                        disabled={currentPage <= 1}
+                        className="p-3 rounded-full hover:bg-stone-beige/10 disabled:opacity-30 transition-colors text-soft-black"
+                    >
+                        <ChevronLeftIcon className="w-6 h-6 stroke-1" />
+                    </button>
+                    <span className="text-sm font-medium text-muted-gray tracking-widest">
+                        {currentPage} / {totalPages}
+                    </span>
+                    <button 
+                        onClick={() => handlePageChange(currentPage + 1)} 
+                        disabled={currentPage >= totalPages}
+                        className="p-3 rounded-full hover:bg-stone-beige/10 disabled:opacity-30 transition-colors text-soft-black"
+                    >
+                        <ChevronRightIcon className="w-6 h-6 stroke-1" />
+                    </button>
+                </div>
+            )}
         </div>
       </main>
       <Footer />
@@ -190,15 +180,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!adminDb) throw new Error("Firebase Admin SDK initialization failed.");
 
     const page = Number(context.query.page) || 1;
-    // Support both 'q' and 'search' params
     const qParam = context.query.q || context.query.search;
     const queryParam = qParam ? String(qParam).trim() : '';
     
     let products: Product[] = [];
     let totalItems = 0;
     let totalPages = 1;
-    let globalMaxPrice = DEFAULT_MAX_PRICE;
 
+    // Поиск
     if (queryParam) {
         try {
             products = await SearchService.search({ query: queryParam, limit: 30 });
@@ -213,33 +202,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 products: JSON.parse(JSON.stringify(products)),
                 currentPage: 1,
                 totalPages: 1,
-                globalMaxPrice,
                 searchQuery: queryParam
             }
         };
     }
 
-    try {
-      const maxPriceSnapshot = await adminDb.collection('products').orderBy('price', 'desc').limit(1).get();
-      globalMaxPrice = maxPriceSnapshot.empty ? DEFAULT_MAX_PRICE : maxPriceSnapshot.docs[0].data().price;
-    } catch (e) {
-      console.log("Failed to get max price", e);
-    }
-
     const categoryQuery = context.query.category;
-    const sortParam = (context.query.sort as string) || 'rating_desc';
-    const rawMinPrice = Number(context.query.minPrice);
-    const rawMaxPrice = Number(context.query.maxPrice);
-
-    const hasMinPriceFilter = !Number.isNaN(rawMinPrice) && rawMinPrice > 0;
-    const hasMaxPriceFilter = !Number.isNaN(rawMaxPrice) && rawMaxPrice > 0 && rawMaxPrice < globalMaxPrice;
-    const minPriceFilter = hasMinPriceFilter ? rawMinPrice : undefined;
-    const maxPriceFilter = hasMaxPriceFilter ? rawMaxPrice : undefined;
-    const isPriceFilterActive = Boolean(minPriceFilter !== undefined || maxPriceFilter !== undefined);
+    // Сортировка по умолчанию - по рейтингу (самые популярные)
+    const sortParam = 'rating_desc';
 
     const selectedCategories = Array.isArray(categoryQuery) ? (categoryQuery as string[]) : categoryQuery ? [categoryQuery as string] : [];
 
     let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection('products');
+    
+    // Фильтрация по категории
     if (selectedCategories.length > 0) {
       if (selectedCategories.length === 1) {
         baseQuery = baseQuery.where('category', '==', selectedCategories[0]);
@@ -249,87 +225,44 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     const sortConfig = getSortConfig(sortParam);
-    const canApplyPriceFilterInQuery = isPriceFilterActive && (sortParam === 'price_asc' || sortParam === 'price_desc');
-    const shouldUseLegacyPipeline = sortParam === 'discount_desc' || (isPriceFilterActive && !canApplyPriceFilterInQuery);
-
-    if (!shouldUseLegacyPipeline) {
-      let filteredQuery = baseQuery;
-      if (canApplyPriceFilterInQuery) {
-        if (typeof minPriceFilter === 'number') filteredQuery = filteredQuery.where('price', '>=', minPriceFilter);
-        if (typeof maxPriceFilter === 'number') filteredQuery = filteredQuery.where('price', '<=', maxPriceFilter);
-      }
-
-      const totalItemsSnapshot = await filteredQuery.count().get();
-      totalItems = totalItemsSnapshot.data().count ?? 0;
-      totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
-      const safePage = Math.max(1, Math.min(page, totalPages));
-      const offset = (safePage - 1) * ITEMS_PER_PAGE;
-
-      const sortedQuery = filteredQuery.orderBy(sortConfig.field, sortConfig.direction);
-      const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
-      products = pageSnapshot.docs.map(doc => {
-        const data = doc.data() as Product;
-        const imageUrls = (data.imageUrls || []).map(url => url || '/placeholder.svg');
-        return { ...data, id: doc.id, imageUrls };
-      });
-
-      return {
-        props: {
-          products: JSON.parse(JSON.stringify(products)),
-          currentPage: safePage,
-          totalPages,
-          globalMaxPrice,
-        },
-      };
-    }
-
-    const legacySnapshot = await baseQuery.get();
-    let productsData = legacySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
-
-    if (isPriceFilterActive) {
-      productsData = productsData.filter(product => {
-        const price = product.price || 0;
-        const matchesMin = typeof minPriceFilter === 'number' ? price >= minPriceFilter : true;
-        const matchesMax = typeof maxPriceFilter === 'number' ? price <= maxPriceFilter : true;
-        return matchesMin && matchesMax;
-      });
-    }
-
-    const sortHandlers: Record<string, (a: Product, b: Product) => number> = {
-      price_asc: (a, b) => (a.price ?? 0) - (b.price ?? 0),
-      price_desc: (a, b) => (b.price ?? 0) - (a.price ?? 0),
-      rating_desc: (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
-      name_asc: (a, b) => a.name.localeCompare(b.name),
-      discount_desc: (a, b) => {
-        const discountA = a.originalPrice && a.price ? a.originalPrice - a.price : 0;
-        const discountB = b.originalPrice && b.price ? b.originalPrice - b.price : 0;
-        return discountB - discountA;
-      },
-    };
-
-    productsData.sort(sortHandlers[sortParam] ?? sortHandlers.rating_desc);
-
-    totalItems = productsData.length;
+    
+    // Получаем общее количество для пагинации
+    const totalItemsSnapshot = await baseQuery.count().get();
+    totalItems = totalItemsSnapshot.data().count ?? 0;
     totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
     const safePage = Math.max(1, Math.min(page, totalPages));
-    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
-    const paginatedProducts = productsData
-      .slice(startIndex, startIndex + ITEMS_PER_PAGE)
-      .map(product => ({
-        ...product,
-        imageUrls: (product.imageUrls || []).map(url => url || '/placeholder.svg'),
-      }));
+    const offset = (safePage - 1) * ITEMS_PER_PAGE;
+
+    // Запрос с пагинацией
+    const sortedQuery = baseQuery.orderBy(sortConfig.field, sortConfig.direction);
+    const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
+    
+    products = pageSnapshot.docs.map(doc => {
+      const data = doc.data();
+      // Маппим данные, убирая лишнее на сервере, если нужно, но компонент сам скроет цены
+      const imageUrls = (data.imageUrls || []).map((url: string) => url || '/placeholder.svg');
+      return { 
+          id: doc.id,
+          name: data.name ?? '',
+          price: data.price ?? 0, // Передаем цену, но не показываем в листинге
+          rating: data.rating ?? 0,
+          imageUrls,
+          category: data.category ?? '',
+          description: data.description ?? '',
+          model3dUrl: data.model3dUrl ?? '',
+          // Другие поля по необходимости
+      };
+    }) as Product[];
 
     return {
       props: {
-        products: JSON.parse(JSON.stringify(paginatedProducts)),
+        products: JSON.parse(JSON.stringify(products)),
         currentPage: safePage,
         totalPages,
-        globalMaxPrice,
       },
     };
   } catch (error) {
     console.error("Catalog Error:", error);
-    return { props: { products: [], currentPage: 1, totalPages: 1, globalMaxPrice: 1000000, error: String(error) } };
+    return { props: { products: [], currentPage: 1, totalPages: 1, error: "Сервис временно недоступен" } };
   }
 };
