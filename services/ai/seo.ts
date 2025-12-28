@@ -10,12 +10,12 @@ export type SeoInput = {
 export async function generateSeoDescription(input: SeoInput): Promise<string> {
   const openai = getOpenAIClient();
 
-  const prompt = `Напиши привлекательное и оптимизированное для поисковых систем (SEO) описание (meta description) для товара.
+  const prompt = `Напиши спокойное и оптимизированное для поисковых систем (SEO) описание (meta description) для страницы объекта мебели, который можно примерить в интерьере (3D/AR).
 Название: "${input.name}".
 Категория: "${input.category || ''}".
 Описание: "${input.description || ''}".
 
-Сделай описание длиной от 140 до 160 символов. Используй ключевые слова, призывай к действию, но звучи естественно. Описание должно быть на русском языке. Верни только готовый текст без кавычек.`;
+Сделай описание длиной от 140 до 160 символов. Используй ключевые слова, но без продажных формулировок, без призывов к покупке и без упоминания цены. Описание должно быть на русском языке. Верни только готовый текст без кавычек.`;
 
   const completion = await withRetry(
     () =>
@@ -35,4 +35,3 @@ export async function generateSeoDescription(input: SeoInput): Promise<string> {
 
   return generatedText.trim().replace(/^["']|["']$/g, '');
 }
-

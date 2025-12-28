@@ -31,12 +31,6 @@ service cloud.firestore {
       allow read, write: if isOwner(resource.data.userId) || isAdmin();
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
-
-    // Orders: Owner can read/write, Admin can read/write
-    match /orders/{orderId} {
-      allow read, write: if isOwner(resource.data.userId) || isAdmin();
-      allow create: if true; 
-    }
     
     // Default deny for everything else
     match /{document=**} {

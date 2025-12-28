@@ -12,7 +12,8 @@ const config: Config = {
   // ИСПРАВЛЕНИЕ: ссылка на .js файл
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.firebase/', '<rootDir>/node_modules/'],
+  modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.firebase/'],
   moduleNameMapper: {
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/pages/(.*)$': '<rootDir>/pages/$1',

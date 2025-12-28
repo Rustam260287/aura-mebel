@@ -4,16 +4,14 @@ import type { Product } from '../types';
 import { Button } from './Button';
 import {
   ArrowLeftIcon,
-  HeartIcon,
-  ShareIcon,
   CheckCircleIcon,
 } from './icons';
+import { useRouter } from 'next/router';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
 import { ARViewer } from './ARViewer';
 import Image from 'next/image';
 import { Transition } from '@headlessui/react';
-import { cn } from '../utils';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface ProductDetailProps {
@@ -25,12 +23,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
   product,
   onBack,
 }) => {
+  const router = useRouter();
   const [isAROpen, setIsAROpen] = useState(false);
   const [experienceCompleted, setExperienceCompleted] = useState(false);
+  const [postArSheetOpen, setPostArSheetOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [show3DHint, setShow3DHint] = useState(false);
 
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isInWishlist, addToWishlist } = useWishlist();
   const { addToast } = useToast();
   const isWished = isInWishlist(product.id);
 
@@ -45,24 +45,17 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
   const closeAR = () => {
     setIsAROpen(false);
     setExperienceCompleted(true);
+    setPostArSheetOpen(true);
   };
 
-  const handleWishlistClick = () => {
-    if (isWished) {
-      removeFromWishlist(product.id);
-      addToast(`${product.name} убран из сохранённых`, 'info');
-    } else {
+  const handleSaveToWishlist = () => {
+    if (!isWished) {
       addToWishlist(product.id);
       addToast(`${product.name} сохранён`, 'success');
     }
   };
 
-  const handleAskPrice = () => {
-    addToast(
-      `Менеджер свяжется с вами по поводу "${product.name}"`,
-      'success'
-    );
-  };
+  const handleOpenWishlist = () => router.push('/wishlist');
 
   useEffect(() => {
     if (
@@ -133,9 +126,6 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
   const ctaWrapperClass = isMobile
     ? 'fixed bottom-4 left-4 right-4 z-cta md:static md:mt-12'
     : 'mt-auto';
-  const experienceExtrasClass = isMobile
-    ? 'flex flex-col gap-3 pt-6 mt-4'
-    : 'flex flex-col gap-3 pt-4 mt-4';
 
   if (isAROpen && product.model3dUrl) {
     return (
@@ -148,6 +138,14 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
       />
     );
   }
+
+  const primaryCta =
+    !product.model3dUrl
+      ? { label: isWished ? 'Открыть подборку' : 'Сохранить в подборку', onClick: isWished ? handleOpenWishlist : handleSaveToWishlist }
+      : {
+          label: experienceCompleted ? 'Примерить ещё раз' : 'Поставить в комнату',
+          onClick: handleTryAR,
+        };
 
   return (
     <div className="bg-warm-white min-h-screen">
@@ -237,53 +235,74 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
 
             <div className={ctaWrapperClass}>
               <Button
-                onClick={handleTryAR}
+                onClick={primaryCta.onClick}
                 size="lg"
                 className="w-full h-14 text-base font-medium rounded-xl shadow-lg shadow-soft-black/10"
               >
-                {experienceCompleted
-                  ? 'Посмотреть ещё раз'
-                  : 'Поставить в комнату'}
+                {primaryCta.label}
               </Button>
             </div>
 
-            <Transition
-              show={experienceCompleted}
-              as="div"
-              className={experienceExtrasClass}
-              enter="transition-all duration-700 delay-100 ease-out"
-              enterFrom="opacity-0 translate-y-4"
-              enterTo="opacity-100 translate-y-0"
-            >
-              <Button
-                variant="secondary"
-                className="w-full h-14 text-base font-medium rounded-xl border-stone-beige/30 hover:border-soft-black"
-                onClick={handleAskPrice}
-              >
-                Узнать стоимость
-              </Button>
-
-              <div className="flex items-center justify-center gap-8 mt-4">
-                <button
-                  onClick={handleWishlistClick}
-                  className="flex items-center gap-2 text-sm text-muted-gray hover:text-soft-black transition-colors group"
+            <AnimatePresence>
+              {experienceCompleted && postArSheetOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[90] bg-soft-black/20 backdrop-blur-sm"
+                  onClick={() => setPostArSheetOpen(false)}
+                  role="dialog"
+                  aria-modal="true"
                 >
-                  <HeartIcon
-                    className={cn(
-                      'w-5 h-5 group-hover:scale-110 transition-transform',
-                      isWished &&
-                        'fill-current text-brand-terracotta'
-                    )}
-                  />
-                  <span>{isWished ? 'В подборке' : 'Сохранить'}</span>
-                </button>
+                  <motion.div
+                    initial={{ y: 24, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 24, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+                    className="absolute bottom-0 left-0 right-0 bg-warm-white rounded-t-3xl border-t border-stone-beige/30 shadow-soft p-5 sm:p-6"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div>
+                        <div className="inline-flex items-center gap-2 text-sm text-soft-black/70">
+                          <CheckCircleIcon className="w-4 h-4 text-brand-gold" />
+                          Спокойно зафиксируем впечатление
+                        </div>
+                        <h2 className="text-xl font-medium text-soft-black mt-2">
+                          Хотите сохранить этот объект?
+                        </h2>
+                      </div>
+                    </div>
 
-                <button className="flex items-center gap-2 text-sm text-muted-gray hover:text-soft-black transition-colors group">
-                  <ShareIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>Поделиться</span>
-                </button>
-              </div>
-            </Transition>
+                    <Button
+                      size="lg"
+                      className="w-full h-14 text-base font-medium rounded-xl shadow-lg shadow-soft-black/10"
+                      onClick={() => {
+                        if (isWished) {
+                          handleOpenWishlist();
+                        } else {
+                          handleSaveToWishlist();
+                        }
+                      }}
+                    >
+                      {isWished ? 'Открыть подборку' : 'Сохранить в подборку'}
+                    </Button>
+
+                    <button
+                      type="button"
+                      className="w-full mt-4 text-sm text-muted-gray hover:text-soft-black transition-colors"
+                      onClick={() => setPostArSheetOpen(false)}
+                    >
+                      Продолжить без сохранения
+                    </button>
+
+                    <p className="mt-5 text-xs text-muted-gray leading-relaxed">
+                      Если захочется обсудить детали, напишите в чат — без спешки.
+                    </p>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

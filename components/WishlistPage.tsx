@@ -1,9 +1,10 @@
 
 import React, { memo } from 'react';
 import type { Product, View } from '../types';
-import { Gallery } from './Gallery';
 import { Button } from './Button';
 import { HeartIcon } from './icons';
+import { ProductCard } from './ProductCard';
+import { ProductCardSkeleton } from './ProductCardSkeleton';
 
 interface WishlistPageProps {
   products: Product[];
@@ -20,16 +21,25 @@ const WishlistPageComponent: React.FC<WishlistPageProps> = ({ products, isLoadin
   return (
     <div className="bg-warm-white min-h-[70vh] py-12 md:py-20">
       <div className="container mx-auto px-6">
-        <h1 className="text-3xl md:text-4xl font-medium text-soft-black mb-12 tracking-tight">Ваша подборка</h1>
+        <h1 className="text-3xl md:text-4xl font-medium text-soft-black mb-12 tracking-tight">Сохранено</h1>
 
-        {hasItems ? (
-          <Gallery 
-            products={products}
-            isLoading={isLoading}
-            onProductSelect={(id) => onNavigate({ page: 'product', productId: id })}
-          />
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : hasItems ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onProductSelect={(id) => onNavigate({ page: 'product', productId: id })}
+              />
+            ))}
+          </div>
         ) : (
-          !isLoading && (
             <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-soft">
                  <HeartIcon className="w-8 h-8 text-stone-beige stroke-1" />
@@ -46,7 +56,6 @@ const WishlistPageComponent: React.FC<WishlistPageProps> = ({ products, isLoadin
                 Перейти в галерею
               </Button>
             </div>
-          )
         )}
       </div>
     </div>

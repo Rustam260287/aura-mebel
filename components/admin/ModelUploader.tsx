@@ -10,7 +10,7 @@ import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../icons';
 const storage = getStorage(app);
 
 interface ModelUploaderProps {
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (url: string, ext: 'glb' | 'usdz') => void;
 }
 
 export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess }) => {
@@ -27,6 +27,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
         setError('Пожалуйста, загрузите файл .glb или .usdz');
         return;
     }
+    const normalizedExt = ext as 'glb' | 'usdz';
 
     setIsLoading(true);
     setError(null);
@@ -60,7 +61,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
             setIsLoading(false);
             setUploadProgress(null);
             setUploadTask(null);
-            onUploadSuccess(url);
+            onUploadSuccess(url, normalizedExt);
           }
         );
     } catch (e: any) {

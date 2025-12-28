@@ -8,6 +8,7 @@ import { ProductDetail } from '../../components/ProductDetail';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import { SEO } from '../../components/SEO';
+import { toPublicProduct } from '../../lib/publicProduct';
 
 interface ProductPageProps {
   product?: Product;
@@ -30,10 +31,10 @@ export default function ProductPage({ product, error }: ProductPageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Header />
         <div className="text-center py-20 px-4">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки товара</h1>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки объекта</h1>
             <p className="text-gray-600 mb-6">{error}</p>
             <button onClick={() => router.push('/products')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
-                Вернуться в каталог
+                Вернуться в галерею
             </button>
         </div>
         <Footer />
@@ -46,10 +47,10 @@ export default function ProductPage({ product, error }: ProductPageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Header />
         <div className="text-center py-20 px-4">
-            <h1 className="text-3xl font-serif text-brand-charcoal mb-4">Товар не найден</h1>
-            <p className="text-gray-500 mb-8">К сожалению, запрашиваемый товар не существует или был удален.</p>
+            <h1 className="text-3xl font-serif text-brand-charcoal mb-4">Объект не найден</h1>
+            <p className="text-gray-500 mb-8">К сожалению, запрашиваемый объект не существует или был удален.</p>
             <button onClick={() => router.push('/products')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
-                Перейти в каталог
+                Перейти в галерею
             </button>
         </div>
         <Footer />
@@ -70,7 +71,7 @@ export default function ProductPage({ product, error }: ProductPageProps) {
     <>
       <SEO 
         title={product.name} 
-        description={seoDescription || `Купить ${product.name} по выгодной цене.`}
+        description={seoDescription || `Примерьте ${product.name} в вашем интерьере.`}
         image={seoImage}
         url={`/products/${product.id}`}
       />
@@ -145,11 +146,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
       return { notFound: true };
     }
 
-    // Собираем данные. Приоритет ID: реальный ключ документа
-    const productData = { 
-        ...productDocSnapshot.data(), 
-        id: productDocSnapshot.id // Перезаписываем id, чтобы он всегда был ключом документа
-    } as Product;
+    const raw = productDocSnapshot.data();
+    const productData = toPublicProduct(raw, productDocSnapshot.id);
 
     // Обработка картинок
     if (Array.isArray(productData.imageUrls)) {
@@ -184,7 +182,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     console.error(`Error fetching product ${id}:`, errorMessage);
     return {
-      props: { error: `Не удалось загрузить товар. Возможно, он был удален.` },
+      props: { error: `Не удалось загрузить объект. Возможно, он был удален.` },
     };
   }
 };

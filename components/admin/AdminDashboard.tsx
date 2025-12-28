@@ -109,8 +109,7 @@ export const AdminDashboard: React.FC<
   });
 
   const strangeProducts = products.filter((p) => {
-    const badPrice = !p.price || p.price <= 0;
-    return badPrice || hasStrangeDescription(p.description);
+    return hasStrangeDescription(p.description);
   });
 
   return (
@@ -152,13 +151,10 @@ export const AdminDashboard: React.FC<
         <ProblemList
           title="Странные данные"
           products={strangeProducts}
-          emptyLabel="Подозрительных цен и описаний не найдено."
+          emptyLabel="Подозрительных описаний не найдено."
           onEditProduct={onEditProduct}
           getReason={(product) => {
             const reasons: string[] = [];
-            if (!product.price || product.price <= 0) {
-              reasons.push('подозрительная цена');
-            }
             if (hasStrangeDescription(product.description)) {
               reasons.push('текст: «уточните у консультанта»');
             }

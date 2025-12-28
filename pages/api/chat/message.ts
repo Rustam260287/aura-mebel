@@ -7,6 +7,29 @@ import { Product } from '../../../types';
 import { checkRateLimit } from '../../../lib/rate-limit';
 import { checkIsAdmin } from '../../../lib/auth/admin-check';
 
+type ProductMini = {
+  id: string;
+  name: string;
+  category?: string;
+  imageUrls?: string[];
+  model3dUrl?: string;
+  model3dIosUrl?: string;
+};
+
+const toProductMini = (product: Product): ProductMini => ({
+  id: product.id,
+  name: product.name,
+  category: product.category,
+  imageUrls: product.imageUrls,
+  model3dUrl: product.model3dUrl,
+  model3dIosUrl: product.model3dIosUrl,
+});
+
+const toAiCatalogLine = (product: Product) => {
+  const has3d = Boolean(product.model3dUrl || product.model3dIosUrl);
+  return `ID: ${product.id}; ${product.name}; ${product.category}; 3D: ${has3d ? 'yes' : 'no'}`;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
 
@@ -61,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Search products
         products = await SearchService.search({ query: searchQuery, limit: 15 });
         contextVariables.catalog = products.length > 0 
-            ? products.map(p => `ID: ${p.id}; ${p.name}; ${p.price} руб.; ${p.category}`).join('\n')
+            ? products.map(toAiCatalogLine).join('\n')
             : "Ничего не найдено.";
         promptKey = 'AGENT_CATALOG';
     } 
@@ -101,8 +124,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json({ 
         reply: response.reply, 
-        products: recommendedProducts, 
-        offerCustom: Boolean(response.offerCustom),
+        products: recommendedProducts.map(toProductMini),
+        quickReplies: Array.isArray(response.quickReplies) ? response.quickReplies : undefined,
         intent 
     });
 

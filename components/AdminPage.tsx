@@ -1,10 +1,9 @@
 import React, { useState, memo, useEffect } from 'react';
-import type { Product, BlogPost, View, ChatMessage, AdminView, Order } from '../types';
+import type { Product, BlogPost, View, ChatMessage, AdminView } from '../types';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { AdminDashboard } from '../components/admin/AdminDashboard';
 import { AdminProducts } from '../components/admin/AdminProducts';
 import { AdminBlog } from '../components/admin/AdminBlog';
-import { AdminOrders } from '../components/admin/AdminOrders';
 import { ProductEditModal } from '../components/ProductEditModal';
 import { BlogEditModal } from '../components/BlogEditModal';
 import { AdminHeader } from '../components/admin/AdminHeader';
@@ -13,7 +12,6 @@ import { AdminChatAnalytics } from '../components/admin/AdminChatAnalytics';
 interface AdminPageProps {
   allProducts: Product[];
   blogPosts: BlogPost[];
-  orders: Order[];
   chatLogs: ChatMessage[][];
   onNavigate: (view: View) => void;
   onUpdateProduct: (updatedProduct: Product) => Promise<void>;
@@ -21,16 +19,13 @@ interface AdminPageProps {
   onUpdateBlogPost: (updatedPost: BlogPost) => Promise<void>;
   onDeleteBlogPost: (postId: string) => Promise<void>;
   onDeleteProduct: (productId: string) => Promise<void>;
-  onUpdateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
   onBulkGenerateSeo: (ids: string[]) => Promise<void>;
-  onBulkUpdatePrices: (ids: string[], percent: number) => Promise<void>;
   onBulkGenerateDescriptions: (ids: string[]) => Promise<void>;
 }
 
 const AdminPageComponent: React.FC<AdminPageProps> = ({ 
   allProducts, 
   blogPosts,
-  orders,
   chatLogs,
   onNavigate,
   onUpdateProduct,
@@ -38,9 +33,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   onUpdateBlogPost,
   onDeleteBlogPost,
   onDeleteProduct,
-  onUpdateOrderStatus,
   onBulkGenerateSeo,
-  onBulkUpdatePrices,
   onBulkGenerateDescriptions,
 }) => {
   const [adminView, setAdminView] = useState<AdminView>('products');
@@ -73,7 +66,6 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
             onDeleteProduct={onDeleteProduct}
             onAddProduct={() => setIsAddModalOpen(true)}
             onBulkGenerateSeo={onBulkGenerateSeo}
-            onBulkUpdatePrices={onBulkUpdatePrices}
             onBulkGenerateDescriptions={onBulkGenerateDescriptions}
           />
         );
@@ -85,8 +77,6 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
                   onDeletePost={onDeleteBlogPost}
                   onUpdatePost={onUpdateBlogPost}
                 />;
-      case 'orders':
-        return <AdminOrders orders={orders} onUpdateStatus={onUpdateOrderStatus} />;
       case 'chat-analytics':
         return <AdminChatAnalytics chatLogs={chatLogs} />;
       default:

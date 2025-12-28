@@ -74,10 +74,10 @@ const FooterComponent: React.FC = () => {
           <div>
             <h4 className="font-medium text-soft-black mb-6">Навигация</h4>
             <ul className="space-y-3 text-sm text-muted-gray">
-              <li><Link href="/products" className="hover:text-soft-black transition-colors">Каталог</Link></li>
+              <li><Link href="/products" className="hover:text-soft-black transition-colors">Галерея</Link></li>
               <li><Link href="/wishlist" className="hover:text-soft-black transition-colors">Сохранено</Link></li>
+              <li><Link href="/about" className="hover:text-soft-black transition-colors">О нас</Link></li>
               <li><Link href="/contacts" className="hover:text-soft-black transition-colors">Контакты</Link></li>
-              <li><Link href="/shipping" className="hover:text-soft-black transition-colors">Доставка и оплата</Link></li>
                {isAdmin && (
                   <li><Link href="/admin" className="text-red-500 hover:text-red-700 font-medium">Админ-панель</Link></li>
               )}

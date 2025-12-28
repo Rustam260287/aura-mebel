@@ -39,11 +39,11 @@ export const MobileMenuOverlay = ({
         >
           <div className="h-full flex flex-col justify-center items-center gap-10 text-lg">
             <button onClick={onCatalog} className="text-soft-black" type="button">
-              Каталог
+              Галерея
             </button>
 
             <button onClick={onWishlist} className="text-soft-black" type="button">
-              Сохранённое
+              Сохранено
             </button>
 
             <button onClick={onAbout} className="text-muted-gray" type="button">

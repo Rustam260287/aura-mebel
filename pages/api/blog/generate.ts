@@ -7,12 +7,11 @@ import OpenAI from 'openai';
 async function getAllProductsSummary() {
     const db = getAdminDb();
     if (!db) return [];
-    const snapshot = await db.collection('products').select('name', 'category', 'price', 'imageUrls').get();
+    const snapshot = await db.collection('products').select('name', 'category', 'imageUrls').get();
     return snapshot.docs.map(doc => ({ 
         id: doc.id, 
         name: doc.data().name, 
         category: doc.data().category,
-        price: doc.data().price,
         imageUrls: doc.data().imageUrls || [] 
     }));
 }

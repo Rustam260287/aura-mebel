@@ -1,9 +1,67 @@
 
 // pages/api/products/[id].ts
 import { NextApiRequest, NextApiResponse } from 'next';
+import admin from 'firebase-admin';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import { Product } from '../../../types';
 import { verifyIdToken, isAdmin } from '../../../lib/authMiddleware';
+
+const getModelUrlExtension = (url: unknown) => {
+  if (typeof url !== 'string') return undefined;
+
+  const cleaned = url.split('#')[0];
+
+  try {
+    const parsed = new URL(cleaned);
+    const lastSegment = parsed.pathname.split('/').pop() || '';
+    const decoded = decodeURIComponent(lastSegment);
+    return decoded.split('.').pop()?.toLowerCase();
+  } catch {
+    const withoutQuery = cleaned.split('?')[0];
+    const lastSegment = withoutQuery.split('/').pop() || '';
+    try {
+      const decoded = decodeURIComponent(lastSegment);
+      return decoded.split('.').pop()?.toLowerCase();
+    } catch {
+      return lastSegment.split('.').pop()?.toLowerCase();
+    }
+  }
+};
+
+const normalizeModelUrls = (dataToUpdate: Partial<Product>) => {
+  const model3dUrlExt = getModelUrlExtension(dataToUpdate.model3dUrl);
+  const model3dIosUrlExt = getModelUrlExtension(dataToUpdate.model3dIosUrl);
+
+  const patch: Partial<Product> & {
+    model3dUrl?: string | admin.firestore.FieldValue;
+    model3dIosUrl?: string | admin.firestore.FieldValue;
+    has3D?: boolean;
+  } = { ...dataToUpdate };
+
+  if (model3dUrlExt === 'usdz' && typeof dataToUpdate.model3dUrl === 'string') {
+    if (!patch.model3dIosUrl || model3dIosUrlExt !== 'usdz') {
+      patch.model3dIosUrl = dataToUpdate.model3dUrl;
+    }
+    patch.model3dUrl = admin.firestore.FieldValue.delete();
+  } else if (model3dUrlExt === 'glb' && typeof dataToUpdate.model3dUrl === 'string') {
+    // ok
+  }
+
+  if (model3dIosUrlExt === 'glb' && typeof dataToUpdate.model3dIosUrl === 'string') {
+    if (!patch.model3dUrl || model3dUrlExt !== 'glb') {
+      patch.model3dUrl = dataToUpdate.model3dIosUrl;
+    }
+    patch.model3dIosUrl = admin.firestore.FieldValue.delete();
+  } else if (model3dIosUrlExt === 'usdz' && typeof dataToUpdate.model3dIosUrl === 'string') {
+    // ok
+  }
+
+  const normalizedGlb = typeof patch.model3dUrl === 'string' ? patch.model3dUrl : undefined;
+  const normalizedUsdz = typeof patch.model3dIosUrl === 'string' ? patch.model3dIosUrl : undefined;
+  patch.has3D = Boolean(normalizedGlb || normalizedUsdz);
+
+  return patch;
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
@@ -39,23 +97,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       const { id: _, ...dataToUpdate } = updatedProduct; // Exclude ID from data being written
+      const normalizedUpdate = normalizeModelUrls(dataToUpdate);
 
       const docRef = db.collection('products').doc(id as string);
       console.info(`[api/products/${id}] Updating product`, {
-        model3dUrl: dataToUpdate.model3dUrl,
-        model3dIosUrl: dataToUpdate.model3dIosUrl,
-        has3D: dataToUpdate.has3D,
+        model3dUrl: normalizedUpdate.model3dUrl,
+        model3dIosUrl: normalizedUpdate.model3dIosUrl,
+        has3D: normalizedUpdate.has3D,
       });
 
       await docRef.set({
-          ...dataToUpdate,
+          ...normalizedUpdate,
           updatedAt: new Date().toISOString()
       }, { merge: true });
 
       const savedDoc = await docRef.get();
       const savedProduct = {
-        id: savedDoc.id,
         ...savedDoc.data(),
+        id: savedDoc.id,
       } as Product;
 
       res.status(200).json(savedProduct);

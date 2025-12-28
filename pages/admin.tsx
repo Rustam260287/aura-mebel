@@ -2,7 +2,7 @@
 // pages/admin.tsx
 import { GetServerSideProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { Product, BlogPost, Order } from '../types';
+import type { Product, BlogPost } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
@@ -17,16 +17,14 @@ const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mo
 interface AdminContainerProps {
   initialProducts: Product[];
   initialBlogPosts: BlogPost[];
-  initialOrders: Order[];
 }
 
-function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: AdminContainerProps) {
+function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const { addToast } = useToast();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
 
   const getAuthToken = async () => {
     const auth = getAuth();
@@ -60,10 +58,10 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
       
       const savedProduct = responseData as Product;
       setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
-      addToast('Товар успешно обновлен', 'success');
+      addToast('Объект успешно обновлен', 'success');
     } catch (error) {
       console.error(error);
-      addToast('Ошибка обновления товара', 'error');
+      addToast('Ошибка обновления объекта', 'error');
     }
   }, [addToast]);
 
@@ -83,10 +81,10 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
       
       const newProduct: Product = await res.json();
       setProducts(prev => [...prev, newProduct]);
-      addToast('Товар успешно добавлен', 'success');
+      addToast('Объект успешно добавлен', 'success');
     } catch (error) {
       console.error(error);
-      addToast('Ошибка добавления товара', 'error');
+      addToast('Ошибка добавления объекта', 'error');
     }
   }, [addToast]);
 
@@ -126,35 +124,6 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
         console.error('Bulk SEO error:', data);
         throw new Error(data?.error || 'Failed to bulk-generate SEO');
       }
-    },
-    [],
-  );
-
-  const handleBulkUpdatePrices = useCallback(
-    async (productIds: string[], percent: number) => {
-      const token = await getAuthToken();
-      const res = await fetch('/api/admin/products/bulk-update-prices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productIds, percent }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        console.error('Bulk price update error:', data);
-        throw new Error(data?.error || 'Failed to bulk update prices');
-      }
-
-      setProducts(prev =>
-        prev.map(p => {
-          if (!productIds.includes(p.id) || !p.price || p.price <= 0) return p;
-          const newPrice = Math.round(p.price * (1 + percent / 100));
-          return { ...p, price: newPrice };
-        }),
-      );
     },
     [],
   );
@@ -222,28 +191,6 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
     }
   }, [addToast]);
 
-  const handleUpdateOrderStatus = useCallback(async (orderId: string, status: Order['status']) => {
-    try {
-      const token = await getAuthToken();
-      const res = await fetch(`/api/orders/${orderId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!res.ok) throw new Error('Failed to update order status');
-      
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      addToast('Статус заказа обновлен', 'success');
-    } catch (error) {
-      console.error(error);
-      addToast('Ошибка обновления статуса заказа', 'error');
-    }
-  }, [addToast]);
-
   return (
     <>
       <div className="absolute top-4 right-4 z-20">
@@ -252,18 +199,15 @@ function AdminContainer({ initialProducts, initialBlogPosts, initialOrders }: Ad
       <AdminPage 
         allProducts={products}
         blogPosts={blogPosts}
-        orders={orders}
         chatLogs={[]}
         onNavigate={handleNavigate}
         onUpdateProduct={handleUpdateProduct}
         onAddProduct={handleAddProduct}
         onDeleteProduct={handleDeleteProduct}
         onBulkGenerateSeo={handleBulkGenerateSeo}
-        onBulkUpdatePrices={handleBulkUpdatePrices}
         onBulkGenerateDescriptions={handleBulkGenerateDescriptions}
         onUpdateBlogPost={handleUpdateBlogPost}
         onDeleteBlogPost={handleDeleteBlogPost}
-        onUpdateOrderStatus={handleUpdateOrderStatus}
       />
     </>
   );
@@ -282,15 +226,17 @@ export default function AdminPageContainer(props: AdminContainerProps) {
 export const getServerSideProps: GetServerSideProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
-    return { props: { initialProducts: [], initialBlogPosts: [], initialOrders: [], error: "Admin DB not initialized" } };
+    return { props: { initialProducts: [], initialBlogPosts: [], error: "Admin DB not initialized" } };
   }
   try {
     const productsSnapshot = await dbAdmin.collection('products').orderBy('name').get();
-    const initialProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+    // IMPORTANT: some legacy imports contain an `id` field in document data (slug),
+    // so ensure the Firestore document ID always wins for editing/saving.
+    const initialProducts = productsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
     
     // ИСПРАВЛЕНИЕ: Убираем orderBy('date'), так как поле может отсутствовать
     const blogSnapshot = await dbAdmin.collection('blog').get();
-    const allBlogPosts = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+    const allBlogPosts = blogSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as BlogPost[];
     
     // Сортировка в памяти (по createdAt или id)
     const initialBlogPosts = allBlogPosts.sort((a, b) => {
@@ -299,19 +245,15 @@ export const getServerSideProps: GetServerSideProps = async () => {
         return dateB - dateA;
     });
 
-    const ordersSnapshot = await dbAdmin.collection('orders').orderBy('createdAt', 'desc').get();
-    const initialOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-
     return {
       props: { 
         initialProducts: JSON.parse(JSON.stringify(initialProducts)),
         initialBlogPosts: JSON.parse(JSON.stringify(initialBlogPosts)),
-        initialOrders: JSON.parse(JSON.stringify(initialOrders)),
       },
     };
   } catch (error) {
     console.error("Error fetching admin data:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return { props: { initialProducts: [], initialBlogPosts: [], initialOrders: [], error: errorMessage } };
+    return { props: { initialProducts: [], initialBlogPosts: [], error: errorMessage } };
   }
 };

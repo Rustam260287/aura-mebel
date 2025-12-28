@@ -1,7 +1,6 @@
 
 import React, { useRef } from 'react';
 import { GetStaticProps } from 'next';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import type { Product, View } from '../types';
@@ -11,11 +10,6 @@ import { Gallery } from '../components/Gallery';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { SEO } from '../components/SEO';
-import { useToast } from '../contexts/ToastContext';
-import { useProductModals } from '../hooks/useProductModals';
-
-const QuickViewModal = dynamic(() => import('../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
-const ImageZoomModal = dynamic(() => import('../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
 interface HomePageProps {
   popularProducts: Product[];
@@ -24,16 +18,7 @@ interface HomePageProps {
 
 export default function HomePage({ popularProducts, error }: HomePageProps) {
   const router = useRouter();
-  const { addToast } = useToast();
   const scenariosRef = useRef<HTMLDivElement>(null); 
-  
-  const {
-    quickViewProduct,
-    closeQuickView,
-    imageModalState,
-    handleImageClick,
-    closeImageModal,
-  } = useProductModals();
 
   if (error) {
     return (
@@ -91,31 +76,14 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
         {/* 4. How it works */}
         <div className="container mx-auto px-6 pb-24 text-center">
             <div className="max-w-md mx-auto space-y-3 text-muted-gray text-sm font-normal">
-                <p>Выберите мебель</p>
+                <p>Выберите объект</p>
                 <p>Посмотрите в комнате</p>
-                <p>Узнайте стоимость, если захотите</p>
+                <p>Обсудите с менеджером, если захотите</p>
             </div>
         </div>
 
       </main>
       <Footer />
-      
-      {/* Modals */}
-      {quickViewProduct && (
-        <QuickViewModal
-          product={quickViewProduct}
-          onClose={closeQuickView}
-          onViewDetails={(id) => router.push(`/products/${id}`)}
-        />
-      )}
-      <ImageZoomModal
-        key={`${imageModalState.productName}-${imageModalState.initialIndex}`}
-        isOpen={imageModalState.isOpen}
-        images={imageModalState.images}
-        initialIndex={imageModalState.initialIndex}
-        productName={imageModalState.productName}
-        onClose={closeImageModal}
-      />
     </>
   );
 }
@@ -125,8 +93,8 @@ export const getStaticProps: GetStaticProps = async () => {
     const adminDb = getAdminDb();
     if (!adminDb) return { props: { popularProducts: [] } };
 
-    const productsSnapshot = await adminDb.collection('products')
-      .orderBy('rating', 'desc')
+    const productsSnapshot = await adminDb
+      .collection('products')
       .limit(8)
       .select('name', 'imageUrls', 'category', 'model3dUrl')
       .get();
@@ -139,7 +107,7 @@ export const getStaticProps: GetStaticProps = async () => {
         imageUrls: data.imageUrls ?? [],
         category: data.category ?? '',
         model3dUrl: data.model3dUrl ?? '',
-        price: 0,
+        description: '',
       };
     }) as Product[];
     

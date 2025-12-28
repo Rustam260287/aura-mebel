@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { AuthProvider } from '../contexts/AuthContext';
-import { CartProvider } from '../contexts/CartContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { WishlistProvider } from '../contexts/WishlistContext';
 import { ToastContainer } from './ToastContainer';
@@ -15,7 +14,6 @@ import { FloatingMenuButton } from './FloatingMenuButton';
 import { MobileMenuOverlay } from './MobileMenuOverlay';
 import { ImmersiveProvider, useImmersive } from '../contexts/ImmersiveContext';
 
-const QuickViewModal = dynamic(() => import('./QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('./ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
 const MobileMenuChrome: React.FC = () => {
@@ -82,12 +80,10 @@ const MobileMenuChrome: React.FC = () => {
 export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   
   const {
-    quickViewProduct,
-    closeQuickView,
     imageModalState,
     closeImageModal,
   } = useProductModals();
-  const router = useRouter();
+  void useRouter();
   
   useEffect(() => {
     // This is a workaround for iOS Safari's viewport height issue.
@@ -104,20 +100,13 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
     <ImmersiveProvider>
       <AuthProvider>
         <ToastProvider>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-              <ToastContainer />
-              <ChatWidget />
-              <MobileMenuChrome />
-              {quickViewProduct && <QuickViewModal 
-                  product={quickViewProduct} 
-                  onClose={closeQuickView}
-                  onViewDetails={(id) => router.push(`/products/${id}`)}
-              />}
-              <ImageZoomModal {...imageModalState} onClose={closeImageModal} />
-            </WishlistProvider>
-          </CartProvider>
+          <WishlistProvider>
+            {children}
+            <ToastContainer />
+            <ChatWidget />
+            <MobileMenuChrome />
+            <ImageZoomModal {...imageModalState} onClose={closeImageModal} />
+          </WishlistProvider>
         </ToastProvider>
       </AuthProvider>
     </ImmersiveProvider>

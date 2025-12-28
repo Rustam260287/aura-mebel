@@ -5,8 +5,6 @@ import admin from 'firebase-admin';
 
 export interface ProductFilter {
   category?: string[];
-  minPrice?: number;
-  maxPrice?: number;
   sort?: string;
   limit?: number;
   offset?: number;
@@ -26,7 +24,7 @@ export class ProductService {
     try {
       const doc = await this.getCollection().doc(id).get();
       if (!doc.exists) return null;
-      return { id: doc.id, ...doc.data() } as Product;
+      return { ...doc.data(), id: doc.id } as Product;
     } catch (error) {
       console.error(`ProductService.getById(${id}) error:`, error);
       return null;
@@ -49,14 +47,6 @@ export class ProductService {
         }
       }
 
-      // Price filters
-      if (filter.minPrice !== undefined) {
-        query = query.where('price', '>=', filter.minPrice);
-      }
-      if (filter.maxPrice !== undefined) {
-        query = query.where('price', '<=', filter.maxPrice);
-      }
-
       // Count total matching documents BEFORE applying limit/offset
       const countSnapshot = await query.count().get();
       const total = countSnapshot.data().count;
@@ -66,7 +56,7 @@ export class ProductService {
 
       // Apply pagination
       const snapshot = await query.limit(limit).offset(offset).get();
-      const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      const products = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
       
       return { products, total };
 

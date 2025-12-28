@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { WishlistPage as WishlistPageComponent } from '../components/WishlistPage';
-import { CartSidebar } from '../components/CartSidebar';
 import { useRouter } from 'next/router';
 import type { Product, View } from '../types';
 import { useWishlist } from '../contexts/WishlistContext';
@@ -61,10 +60,6 @@ export default function Wishlist() {
         />
       </main>
       <Footer />
-      <CartSidebar onNavigate={(view) => {
-          if (view.page === 'checkout') router.push('/checkout');
-          if (view.page === 'catalog') router.push('/products');
-      }} />
     </>
   );
 }

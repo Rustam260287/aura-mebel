@@ -1,82 +1,64 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MediaService } from '../../../lib/media/service';
+import { checkIsAdmin } from '../../../lib/auth/admin-check';
 import sharp from 'sharp';
-import { verifyAdmin } from '../../../lib/auth/admin-check';
 
 export const config = {
   api: {
-    bodyParser: false, // Отключаем стандартный парсер, чтобы читать поток
+    bodyParser: false, // Отключаем, чтобы получить stream
   },
 };
 
-// Функция для чтения всего тела запроса в буфер
-async function getRawBody(req: NextApiRequest): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk) => {
-      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+const streamToBuffer = (stream: NodeJS.ReadableStream): Promise<Buffer> => {
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', chunk => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        stream.on('error', reject);
     });
-    req.on('end', () => {
-      resolve(Buffer.concat(chunks));
-    });
-    req.on('error', (err) => {
-      reject(err);
-    });
-  });
-}
+};
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+const sanitizeFolder = (folder?: string) => {
+  if (!folder) return 'products';
+  return folder.replace(/[^a-zA-Z0-9\-_/]/g, '') || 'products';
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end();
+  }
 
   try {
-    // 1. Проверяем админа
-    const isAdmin = await verifyAdmin(req, res);
-    if (!isAdmin) return; // verifyAdmin сам отправляет 401/403
-
-    const folder = req.query.folder as string || 'uploads';
-    const mimeType = req.headers['content-type'] || 'application/octet-stream';
-    
-    // 2. Читаем файл
-    // ВАЖНО: Мы читаем raw body, так как клиент отправляет файл напрямую в body
-    const buffer = await getRawBody(req);
-    
-    if (buffer.length === 0) {
-        return res.status(400).json({ error: 'Empty file' });
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    let finalMimeType = mimeType;
-    let finalBuffer = buffer;
-    
-    // 3. Оптимизация (только для картинок)
-    if (mimeType.startsWith('image/') && !mimeType.includes('svg') && !mimeType.includes('gif')) {
-        try {
-            console.log(`Optimizing image (${mimeType})...`);
-            finalBuffer = await sharp(buffer)
-                .rotate()
-                .resize({ 
-                    width: 1920, 
-                    height: 1920, 
-                    fit: 'inside', 
-                    withoutEnlargement: true 
-                })
-                .webp({ quality: 80, effort: 3 }) // Уменьшил effort для скорости
-                .toBuffer();
-            
-            finalMimeType = 'image/webp';
-        } catch (e) {
-            console.error('Image optimization failed, uploading original:', e);
-        }
+    const contentType = req.headers['content-type'];
+    if (!contentType || !contentType.startsWith('image/')) {
+      return res.status(415).json({ error: 'Только изображения поддерживаются для этого загрузчика' });
     }
 
-    // 4. Загрузка в Storage
-    const url = await MediaService.uploadBuffer(finalBuffer, folder, finalMimeType);
+    const buffer = await streamToBuffer(req);
+    const folder = sanitizeFolder(req.query.folder as string);
+
+    // Конвертация в WebP
+    const webpBuffer = await sharp(buffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    // Загружаем WebP в Storage
+    const url = await MediaService.uploadBuffer(webpBuffer, folder, 'image/webp');
     
     res.status(200).json({ url });
 
   } catch (error: any) {
-    console.error('Upload API Error:', error);
-    // Важно вернуть JSON, а не HTML страницу ошибки Next.js
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    console.error('Upload Error:', error);
+    res.status(500).json({ error: error.message || "Failed to upload file." });
   }
 }

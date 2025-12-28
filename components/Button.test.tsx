@@ -8,21 +8,25 @@ describe('Button Component', () => {
     render(<Button>Click me</Button>);
     const button = screen.getByRole('button', { name: /click me/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('bg-brand-brown text-white');
+    expect(button).toHaveClass('bg-soft-black');
+    expect(button).toHaveClass('text-white');
   });
 
   it('renders outline variant correctly', () => {
     render(<Button variant="outline">Outline Button</Button>);
     const button = screen.getByRole('button', { name: /outline button/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('border border-brand-brown/50 text-brand-brown');
+    expect(button).toHaveClass('border');
+    expect(button).toHaveClass('border-soft-black/20');
+    expect(button).toHaveClass('text-soft-black');
   });
 
   it('renders ghost variant correctly', () => {
     render(<Button variant="ghost">Ghost Button</Button>);
     const button = screen.getByRole('button', { name: /ghost button/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('text-brand-charcoal hover:bg-brand-cream-dark');
+    expect(button).toHaveClass('text-soft-black');
+    expect(button).toHaveClass('hover:bg-stone-beige/10');
   });
 
   it('calls onClick handler when clicked', () => {

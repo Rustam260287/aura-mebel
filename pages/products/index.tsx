@@ -14,21 +14,13 @@ import { useToast } from '../../contexts/ToastContext';
 import { useProductModals } from '../../hooks/useProductModals';
 import { SearchService } from '../../lib/services/search.service';
 import { CategoryPills } from '../../components/CategoryPills';
+import { toPublicProduct } from '../../lib/publicProduct';
 
-const QuickViewModal = dynamic(() => import('../../components/QuickViewModal').then(mod => mod.QuickViewModal), { ssr: false });
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
 const ITEMS_PER_PAGE = 12;
 const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
-const DEFAULT_MAX_PRICE = 1_000_000;
 const CATEGORY_IN_LIMIT = 10;
-
-// Упрощенная сортировка для спокойного выбора
-const SORT_CONFIGS: Record<string, { field: string; direction: FirebaseFirestore.OrderByDirection }> = {
-  rating_desc: { field: 'rating', direction: 'desc' },
-};
-
-const getSortConfig = (sort: string) => SORT_CONFIGS[sort] ?? SORT_CONFIGS.rating_desc;
 
 interface CatalogPageProps {
   products: Product[];
@@ -44,16 +36,13 @@ export default function CatalogPage({ products, currentPage, totalPages, error, 
   // Filter Sidebar удален для чистоты интерфейса
   
   const {
-    quickViewProduct,
-    openQuickView,
-    closeQuickView,
     imageModalState,
     handleImageClick,
     closeImageModal,
   } = useProductModals();
 
   // Filter State from URL
-  const { category, sort } = router.query;
+  const { category } = router.query;
   
   const selectedCategory = Array.isArray(category) ? category[0] : category;
 
@@ -102,7 +91,7 @@ export default function CatalogPage({ products, currentPage, totalPages, error, 
             {/* Заголовок и поиск */}
             <div className="text-center mb-12">
                 <h1 className="text-4xl md:text-5xl font-medium text-soft-black mb-4 tracking-tight">
-                    {searchQuery ? `Поиск: "${searchQuery}"` : 'Готовая мебель'}
+                    {searchQuery ? `Поиск: "${searchQuery}"` : 'Коллекция для примерки'}
                 </h1>
                 {!searchQuery && (
                     <p className="text-muted-gray max-w-lg mx-auto leading-relaxed">
@@ -134,14 +123,13 @@ export default function CatalogPage({ products, currentPage, totalPages, error, 
             )}
             
             {/* Сетка товаров - Галерея */}
-            <Catalog
-                allProducts={products}
-                isLoading={false}
-                onProductSelect={(id) => router.push(`/products/${id}`)}
-                onQuickView={openQuickView}
-                onVirtualStage={handleVirtualStage}
-                onImageClick={handleImageClick}
-            />
+	            <Catalog
+	                allProducts={products}
+	                isLoading={false}
+	                onProductSelect={(id) => router.push(`/products/${id}`)}
+	                onVirtualStage={handleVirtualStage}
+	                onImageClick={handleImageClick}
+	            />
 
             {/* Пагинация - минималистичная */}
             {totalPages > 1 && (
@@ -168,7 +156,6 @@ export default function CatalogPage({ products, currentPage, totalPages, error, 
         </div>
       </main>
       <Footer />
-      {quickViewProduct && (<QuickViewModal product={quickViewProduct} onClose={closeQuickView} onViewDetails={(id) => router.push(`/products/${id}`)} />)}
       <ImageZoomModal key={`${imageModalState.productName}-${imageModalState.initialIndex}-${imageModalState.isOpen ? 'open' : 'closed'}`} isOpen={imageModalState.isOpen} images={imageModalState.images} initialIndex={imageModalState.initialIndex} productName={imageModalState.productName} onClose={closeImageModal} />
     </>
   );
@@ -190,7 +177,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // Поиск
     if (queryParam) {
         try {
-            products = await SearchService.search({ query: queryParam, limit: 30 });
+            const found = await SearchService.search({ query: queryParam, limit: 30 });
+            products = found.map((p) => toPublicProduct(p, p.id));
             totalItems = products.length;
             totalPages = 1; 
         } catch (e) {
@@ -208,8 +196,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     const categoryQuery = context.query.category;
-    // Сортировка по умолчанию - по рейтингу (самые популярные)
-    const sortParam = 'rating_desc';
 
     const selectedCategories = Array.isArray(categoryQuery) ? (categoryQuery as string[]) : categoryQuery ? [categoryQuery as string] : [];
 
@@ -224,8 +210,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       }
     }
 
-    const sortConfig = getSortConfig(sortParam);
-    
     // Получаем общее количество для пагинации
     const totalItemsSnapshot = await baseQuery.count().get();
     totalItems = totalItemsSnapshot.data().count ?? 0;
@@ -234,7 +218,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const offset = (safePage - 1) * ITEMS_PER_PAGE;
 
     // Запрос с пагинацией
-    const sortedQuery = baseQuery.orderBy(sortConfig.field, sortConfig.direction);
+    const sortedQuery = baseQuery.orderBy('name', 'asc');
     const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
     
     products = pageSnapshot.docs.map(doc => {
@@ -244,8 +228,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       return { 
           id: doc.id,
           name: data.name ?? '',
-          price: data.price ?? 0, // Передаем цену, но не показываем в листинге
-          rating: data.rating ?? 0,
           imageUrls,
           category: data.category ?? '',
           description: data.description ?? '',

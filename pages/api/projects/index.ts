@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       const snapshot = await db.collection('projects').where('userId', '==', userId).orderBy('updatedAt', 'desc').get();
-      const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const projects = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       res.status(200).json(projects);
     } catch (e: any) {
       res.status(500).json({ error: e.message });

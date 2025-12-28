@@ -7,8 +7,6 @@ interface ProposalTemplateProps {
 }
 
 export const ProposalTemplate: React.FC<ProposalTemplateProps> = ({ project }) => {
-  const total = project.items.reduce((sum, item) => sum + (item.price || 0), 0);
-
   return (
     <html lang="ru">
       <head>
@@ -23,15 +21,13 @@ export const ProposalTemplate: React.FC<ProposalTemplateProps> = ({ project }) =
           .item img { width: 100px; height: 100px; object-fit: cover; margin-right: 20px; border-radius: 8px; }
           .item-info { flex-grow: 1; }
           .item-name { font-weight: bold; }
-          .item-price { text-align: right; font-weight: bold; }
-          .total { text-align: right; font-size: 20px; font-weight: bold; margin-top: 30px; }
         `}</style>
       </head>
       <body>
         <div className="container">
           <div className="header">
             <div className="logo">Labelcom</div>
-            <div>Коммерческое предложение</div>
+            <div>Подборка для обсуждения</div>
           </div>
           <h1 className="title">Проект: {project.name}</h1>
           
@@ -43,13 +39,8 @@ export const ProposalTemplate: React.FC<ProposalTemplateProps> = ({ project }) =
                   <div className="item-name">{item.name}</div>
                   <div className="text-sm text-gray-500">{item.category}</div>
                 </div>
-                <div className="item-price">{item.price?.toLocaleString('ru-RU')} ₽</div>
               </div>
             ))}
-          </div>
-
-          <div className="total">
-            Итого: {total.toLocaleString('ru-RU')} ₽
           </div>
         </div>
       </body>

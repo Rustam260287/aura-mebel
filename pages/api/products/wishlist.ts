@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import { Product } from '../../../types';
+import { toPublicProduct } from '../../../lib/publicProduct';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -37,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     for (const chunk of chunks) {
       const snap = await db.collection('products').where('__name__', 'in', chunk).get();
       snap.forEach(doc => {
-        results.push({ id: doc.id, ...doc.data() } as Product);
+        results.push(toPublicProduct(doc.data(), doc.id));
       });
     }
 

@@ -10,7 +10,8 @@ import { useRouter } from 'next/router';
 interface ProductMini {
     id: string;
     name: string;
-    price: number;
+    category?: string;
+    model3dUrl?: string;
     imageUrls?: string[];
 }
 
@@ -18,8 +19,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   products?: ProductMini[];
-  customOffer?: boolean;
-  hideCustomCta?: boolean;
   quickReplies?: string[];
   timestamp?: number;
   isTyping?: boolean;
@@ -62,13 +61,13 @@ export const ChatWidget: React.FC = () => {
               const loadedMessages = JSON.parse(saved);
               setMessages(loadedMessages);
               messagesRef.current = loadedMessages;
-          } else {
-              const initial = [{ role: 'assistant', content: 'Здравствуйте! Я ваш AI Ассистент Labelcom. Пришлите фото интерьера или опишите задачу — помогу подобрать мебель или оформить изготовление на заказ.', customOffer: false } as Message];
-              setMessages(initial);
-              messagesRef.current = initial;
-          }
-      } catch (e) { console.error("Failed to load chat history", e); }
-  }, [mounted]);
+		          } else {
+		              const initial = [{ role: 'assistant', content: 'Здравствуйте! Я помощник Label. Пришлите фото интерьера или опишите задачу — помогу понять, подойдёт ли объект, и подскажу, что лучше примерить в комнате.' } as Message];
+		              setMessages(initial);
+		              messagesRef.current = initial;
+		          }
+		      } catch (e) { console.error("Failed to load chat history", e); }
+	  }, [mounted]);
 
   useEffect(() => {
       if (!mounted) return;
@@ -78,15 +77,13 @@ export const ChatWidget: React.FC = () => {
       }
   }, [messages, mounted]);
 
-  const typeMessage = useCallback((fullText: string, products: ProductMini[] = [], customOffer = false, hideCustomCta = false, quickReplies: string[] = []) => {
+  const typeMessage = useCallback((fullText: string, products: ProductMini[] = [], quickReplies: string[] = []) => {
     let currentIndex = 0;
     
     setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: '', 
         products: [], 
-        customOffer,
-        hideCustomCta,
         quickReplies: [],
         timestamp: Date.now(),
         isTyping: true 
@@ -105,14 +102,14 @@ export const ChatWidget: React.FC = () => {
             
             currentIndex = nextIndex;
 
-            if (currentIndex >= fullText.length) {
-                if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-                return prev.map((msg, idx) => 
-                    idx === prev.length - 1 
-                        ? { ...msg, content: fullText, products: products, customOffer, hideCustomCta, quickReplies, isTyping: false } 
-                        : msg
-                );
-            }
+	            if (currentIndex >= fullText.length) {
+	                if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+	                return prev.map((msg, idx) => 
+	                    idx === prev.length - 1 
+	                        ? { ...msg, content: fullText, products: products, quickReplies, isTyping: false } 
+	                        : msg
+	                );
+	            }
 
             return prev.map((msg, idx) => 
                 idx === prev.length - 1 ? { ...msg, content: nextContent } : msg
@@ -137,12 +134,12 @@ export const ChatWidget: React.FC = () => {
         }),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        typeMessage(data.reply, data.products, data.offerCustom, data.hideCustomCta, data.quickReplies);
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Простите, произошла ошибка.', timestamp: Date.now() }]);
-      }
+	      const data = await res.json();
+	      if (res.ok) {
+	        typeMessage(data.reply, data.products, data.quickReplies);
+	      } else {
+	        setMessages(prev => [...prev, { role: 'assistant', content: 'Простите, произошла ошибка.', timestamp: Date.now() }]);
+	      }
     } catch (error) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Ошибка соединения.', timestamp: Date.now() }]);
     } finally {
@@ -313,7 +310,7 @@ export const ChatWidget: React.FC = () => {
 
   const clearHistory = () => {
       if (confirm('Начать новую консультацию?')) {
-          const initialMsg: Message = { role: 'assistant', content: 'Новый чат начат. Я слушаю вас.', customOffer: false };
+          const initialMsg: Message = { role: 'assistant', content: 'Новый чат начат. Я слушаю вас.' };
           setMessages([initialMsg]);
           if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
       }
@@ -397,44 +394,19 @@ export const ChatWidget: React.FC = () => {
                                         >
                                             <EyeIcon className="w-4 h-4" />
                                         </button>
-                                    </div>
-                                    <h4 className="text-xs font-bold text-gray-800 truncate leading-tight mb-1">{prod.name}</h4>
-                                    <p className="text-xs text-brand-terracotta font-serif font-bold">{prod.price.toLocaleString()} ₽</p>
-                                </div>
-                            ))}
-                        </div>
+	                                    </div>
+	                                    <h4 className="text-xs font-bold text-gray-800 truncate leading-tight mb-1">{prod.name}</h4>
+	                                    <p className="text-[11px] text-gray-500">{prod.category || 'Объект интерьера'}</p>
+	                                </div>
+	                            ))}
+	                        </div>
                     </div>
                 )}
 
-                {/* Custom Offer Box */}
-                {!msg.isTyping && msg.customOffer && (
-                  <div className="mt-3 w-full max-w-[95%] animate-fade-in-up">
-                    <div className="bg-brand-cream text-brand-charcoal rounded-xl p-4 border border-brand-brown/10 shadow-sm space-y-3 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-brand-terracotta/10 rounded-bl-full -mr-8 -mt-8"></div>
-                      
-                      <div className="flex items-center gap-2 text-sm font-bold text-brand-brown z-10 relative">
-                        <SparklesIcon className="w-4 h-4 text-brand-terracotta" /> Индивидуальный заказ
-                      </div>
-                      <p className="text-xs text-gray-600 leading-relaxed z-10 relative">
-                        Не нашли идеальный вариант? Наши мастера изготовят мебель любой сложности по вашему фото или эскизу.
-                      </p>
-                      {!msg.hideCustomCta && (
-                        <button
-                          type="button"
-                          onClick={() => sendQuickPrompt('Хочу рассчитать изготовление по фото. Что для этого нужно?')}
-                          className="w-full bg-white border border-brand-brown/20 text-brand-brown hover:bg-brand-brown hover:text-white text-xs font-bold py-2.5 rounded-lg transition-all duration-300 z-10 relative"
-                        >
-                          Рассчитать стоимость
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Quick Replies */}
-                {!msg.isTyping && msg.quickReplies && msg.quickReplies.length > 0 && (
-                   <div className="mt-3 flex flex-wrap gap-2 w-full animate-fade-in-up">
-                      {msg.quickReplies.map((reply, i) => (
+	                {/* Quick Replies */}
+	                {!msg.isTyping && msg.quickReplies && msg.quickReplies.length > 0 && (
+	                   <div className="mt-3 flex flex-wrap gap-2 w-full animate-fade-in-up">
+	                      {msg.quickReplies.map((reply, i) => (
                         <button
                           key={i}
                           onClick={() => sendQuickPrompt(reply)}

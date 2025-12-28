@@ -1,6 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
+import { toPublicProduct } from '../../../lib/publicProduct';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -29,10 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.json({ products: [] });
     }
 
-    let allProducts = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-    })) as any[];
+    const allProducts = snapshot.docs.map(doc => toPublicProduct(doc.data(), doc.id));
 
     // --- Простая фильтрация по стилю (если в описании есть слова) ---
     // Это улучшит релевантность
@@ -69,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Если не сортировали по релевантности (или все равны), перемешиваем топ-10
     // Чтобы каждый раз были разные
     const topSelection = allProducts.slice(0, 10).sort(() => 0.5 - Math.random());
-    const selected = topSelection.slice(0, 4); // Возвращаем 4 товара
+    const selected = topSelection.slice(0, 4); // Возвращаем 4 объекта
 
     res.status(200).json({ products: selected });
   } catch (error) {

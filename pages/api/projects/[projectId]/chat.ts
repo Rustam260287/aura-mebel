@@ -77,7 +77,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const newUserMessage = { role: 'user', content: message };
-    const aiResponseMessage = { role: 'assistant', content: response.reply, products: response.recommendedProductIds };
+    const recommendedIds: string[] = Array.isArray(response.recommendedProductIds) ? response.recommendedProductIds : [];
+    const aiResponseMessage = {
+      role: 'assistant',
+      content: response.reply,
+      products: products
+        .filter((p) => recommendedIds.includes(p.id))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          imageUrls: p.imageUrls,
+          model3dUrl: p.model3dUrl,
+          model3dIosUrl: p.model3dIosUrl,
+        })),
+    };
 
     await projectRef.update({
         chatHistory: admin.firestore.FieldValue.arrayUnion(newUserMessage, aiResponseMessage),
