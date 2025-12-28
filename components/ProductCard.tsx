@@ -115,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(
           </button>
 
           {/* AR indicator */}
-          {product.model3dUrl && (
+          {product.models?.glb && (
             <div className="absolute bottom-3 right-3 text-soft-black/50 bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm pointer-events-none">
               <CubeTransparentIcon className="w-4 h-4" />
             </div>

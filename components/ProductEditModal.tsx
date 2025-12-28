@@ -158,27 +158,80 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({ isOpen, onCl
                         <Tab.Panels>
                             <Tab.Panel className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1\">Название</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
                                     <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1\">Цена (₽)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Цена (₽)</label>
                                         <input type="number" name="price" value={formData.price || 0} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1\">Категория</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Категория</label>
                                         <input type="text" name="category" value={formData.category || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="flex justify-between items-center mb-1\"><label className="block text-sm font-medium text-gray-700\">Описание</label></div>
-                                    <textarea name=\"description\" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed\" />
+                                    <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
+                                    <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
                                 </div>
                             </Tab.Panel>
-                            <Tab.Panel className=\"space-y-6\">
+                            <Tab.Panel className="space-y-6">
                                 {/* ... existing specs panel */}
                             </Tab.Panel>
-                            <Tab.Panel className=\"space-y-6\">
-                                <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
-                                    <div className=\"space-y-4\">\n                                        <h4 className=\"font-semibold text-gray-800 flex items-center gap-2\"><CubeIcon className=\"w-5 h-5\" />Загрузка 3D</h4>\n                                        <ModelUploader onUploadSuccess={handle3DUpload} />\n                                        <div className=\"mt-4\">\n                                            <label className=\"block text-sm font-medium text-gray-700 mb-1\">3D модель (GLB - Android/Web)</label>\n                                            <input type=\"text\" name=\"models.glb\" value={formData.models?.glb || ''} onChange={handleChange} className=\"w-full p-2 border border-gray-300 rounded-lg text-xs\" placeholder=\"https://...\" />\n                                            <p className=\"text-xs text-gray-500 mt-1\">GLB используется для Android и WebAR.</p>\n                                        </div>\n                                        <div>\n                                            <label className=\"block text-sm font-medium text-gray-700 mb-1\">3D модель (USDZ - iPhone)</label>\n                                            <input type=\"text\" name=\"models.usdz\" value={formData.models?.usdz || ''} onChange={handleChange} className=\"w-full p-2 border border-gray-300 rounded-lg text-xs\" placeholder=\"https://...\" />\n                                            <p className=\"text-xs text-gray-500 mt-1\">USDZ используется только для iOS (AR Quick Look).</p>\n                                        </div>\n                                    </div>\n                                    <div className=\"bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]\">\n                                        {/* ... existing 3D preview */}\n                                    </div>\n                                </div>\n                            </Tab.Panel>\n                            <Tab.Panel>\n                                <h4 className=\"font-semibold text-gray-800 flex items-center gap-2 mb-4\"><PhotoIcon className=\"w-5 h-5\" />Галерея изображений</h4>\n                                <div className=\"grid grid-cols-4 gap-4\">\n                                    {(formData.imageUrls || []).map((url, index) => (\n                                        <div key={index} className=\"relative group aspect-square\">\n                                            <img src={url} alt={`Image ${index + 1}`} className=\"w-full h-full object-cover rounded-lg\" />\n                                            <button onClick={() => handleRemoveImage(index)} className=\"absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity\">\n                                                <XMarkIcon className=\"w-4 h-4\" />\n                                            </button>\n                                        </div>\n                                    ))}\n                                    <MediaUploader onUploadSuccess={handleMediaUpload}>\n                                        {(open, isLoading) => (\n                                            <button onClick={open} disabled={isLoading} className=\"border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 aspect-square\">\n                                                {isLoading ? '...' : <PlusIcon className=\"w-8 h-8 text-gray-400\" />}\n                                            </button>\n                                        )}\n                                    </MediaUploader>\n                                </div>\n                            </Tab.Panel>\n                        </Tab.Panels>\n                    </Tab.Group>\n                </div>\n                <div className=\"p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3\">\n                  <button onClick={onClose} className=\"px-6 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors\">Отмена</button>\n                  <button onClick={handleSave} className=\"px-6 py-2.5 rounded-xl font-bold bg-brand-brown text-white hover:bg-brand-charcoal transition-all shadow-lg shadow-brand-brown/20\">Сохранить</button>\n                </div>\n              </Dialog.Panel>\n            </Transition.Child>\n          </div>\n        </div>\n      </Dialog>\n    </Transition>\n  );\n};
+                            <Tab.Panel className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-gray-800 flex items-center gap-2"><CubeIcon className="w-5 h-5" />Загрузка 3D</h4>
+                                        <ModelUploader onUploadSuccess={handle3DUpload} />
+                                        <div className="mt-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">3D модель (GLB - Android/Web)</label>
+                                            <input type="text" name="models.glb" value={formData.models?.glb || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
+                                            <p className="text-xs text-gray-500 mt-1">GLB используется для Android и WebAR.</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">3D модель (USDZ - iPhone)</label>
+                                            <input type="text" name="models.usdz" value={formData.models?.usdz || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
+                                            <p className="text-xs text-gray-500 mt-1">USDZ используется только для iOS (AR Quick Look).</p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">
+                                        {/* ... existing 3D preview */}
+                                    </div>
+                                </div>
+                            </Tab.Panel>
+                            <Tab.Panel>
+                                <h4 className="font-semibold text-gray-800 flex items-center gap-2 mb-4"><PhotoIcon className="w-5 h-5" />Галерея изображений</h4>
+                                <div className="grid grid-cols-4 gap-4">
+                                    {(formData.imageUrls || []).map((url, index) => (
+                                        <div key={index} className="relative group aspect-square">
+                                            <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
+                                            <button onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <XMarkIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <MediaUploader onUploadSuccess={handleMediaUpload}>
+                                        {(open, isLoading) => (
+                                            <button onClick={open} disabled={isLoading} className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 aspect-square">
+                                                {isLoading ? '...' : <PlusIcon className="w-8 h-8 text-gray-400" />}
+                                            </button>
+                                        )}
+                                    </MediaUploader>
+                                </div>
+                            </Tab.Panel>
+                        </Tab.Panels>
+                    </Tab.Group>
+                </div>
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                  <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">Отмена</button>
+                  <button onClick={handleSave} className="px-6 py-2.5 rounded-xl font-bold bg-brand-brown text-white hover:bg-brand-charcoal transition-all shadow-lg shadow-brand-brown/20">Сохранить</button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+};

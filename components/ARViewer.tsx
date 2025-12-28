@@ -1,146 +1,109 @@
 
-'use client';
-
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, memo } from 'react';
-import { ArrowLeftIcon } from './icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useImmersive } from '../contexts/ImmersiveContext';
-
-interface ARViewerProps {
-  src: string;
-  iosSrc?: string;
-  poster?: string;
-  alt: string;
-  onClose: () => void;
-}
+import React, { useRef, useEffect, useState, memo } from 'react';
+import { Product } from '../types';
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'model-viewer': any;
+      'model-viewer': ModelViewerElement & React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     }
   }
 }
 
-const toProxyUrl = (src?: string) => {
-  if (!src) return undefined;
-  if (src.startsWith('blob:') || src.startsWith('/') || src.startsWith('data:')) return src;
-  
-  const ext = src.split('.').pop()?.toLowerCase().split('?')[0];
+interface ModelViewerElement extends HTMLElement {
+  src?: string;
+  'ios-src'?: string;
+  alt?: string;
+  poster?: string;
+  'camera-controls'?: boolean;
+  'disable-pan'?: boolean;
+  'disable-tap'?: boolean;
+  'auto-rotate'?: boolean;
+  'ar'?: boolean;
+  'ar-modes'?: string;
+  'ar-scale'?: string;
+}
 
-  if (ext === 'usdz') return `/api/proxy-model.usdz?url=${encodeURIComponent(src)}`;
-  if (ext === 'glb') return `/api/proxy-model.glb?url=${encodeURIComponent(src)}`;
-  
-  return `/api/proxy-model?url=${encodeURIComponent(src)}`;
-};
+interface ARViewerProps {
+  product: Product;
+  onClose: () => void;
+}
 
-const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, poster, alt, onClose }) => {
-  const { setImmersive } = useImmersive();
-  const modelViewerRef = useRef<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showHint, setShowHint] = useState(true);
-  const [isInArSession, setIsInArSession] = useState(false);
-
-  const glbSrc = useMemo(() => toProxyUrl(src), [src]);
-  const usdzSrc = useMemo(() => toProxyUrl(iosSrc), [iosSrc]);
-
-  useLayoutEffect(() => {
-    setImmersive(true);
-    return () => setImmersive(false);
-  }, [setImmersive]);
+const ARViewerComponent: React.FC<ARViewerProps> = ({ product, onClose }) => {
+  const modelViewerRef = useRef<ModelViewerElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    setIsIOS(/iPhone|iPad|iPod/i.test(navigator.userAgent));
     import('@google/model-viewer').catch(console.error);
-    const viewer = modelViewerRef.current;
-    if (!viewer) return;
+  }, []);
+  
+  const modelUrl = isIOS ? product.models?.usdz : product.models?.glb;
+  const hasAr = !!modelUrl;
 
-    const handleLoad = () => setIsLoading(false);
-    viewer.addEventListener('load', handleLoad);
+  const handleModelLoad = () => setIsLoaded(true);
 
-    const handleArStatus = (event: any) => {
-      const status = event?.detail?.status;
-      if (status === 'session-started') setIsInArSession(true);
-      if (status === 'session-ended' || status === 'not-presenting' || status === 'failed') {
-        setIsInArSession(false);
-      }
-    };
-    viewer.addEventListener('ar-status', handleArStatus);
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') setIsInArSession(false);
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    const hintTimer = setTimeout(() => setShowHint(false), 3500);
-
-    return () => {
-      viewer.removeEventListener('load', handleLoad);
-      viewer.removeEventListener('ar-status', handleArStatus);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      clearTimeout(hintTimer);
-    };
+  useEffect(() => {
+    const modelViewer = modelViewerRef.current;
+    if (modelViewer) {
+      modelViewer.addEventListener('load', handleModelLoad);
+      return () => modelViewer.removeEventListener('load', handleModelLoad);
+    }
   }, []);
 
+  const handleActivateAR = () => {
+    if (modelViewerRef.current && 'activateAR' in modelViewerRef.current) {
+        (modelViewerRef.current as any).activateAR();
+    }
+  };
+
   return (
-    <div className='fixed inset-0 z-[100] bg-warm-white'>
+    <div className="fixed inset-0 z-[100] bg-warm-white flex items-center justify-center">
+      {/* Model Viewer */}
+      <model-viewer
+        ref={modelViewerRef}
+        src={product.models?.glb}
+        ios-src={product.models?.usdz}
+        alt={product.name}
+        poster={product.imageUrls?.[0]}
+        camera-controls
+        disable-pan
+        disable-tap
+        auto-rotate
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        ar-scale="fixed"
+        className="w-full h-full"
+      />
       
-      {isLoading && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-warm-white/80 backdrop-blur-sm">
-            <div className="flex items-center space-x-3 p-4 rounded-full">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-soft-black"></div>
-                <span className="text-sm font-medium text-soft-black">Загрузка объекта...</span>
-            </div>
+      {/* Dim overlay while loading */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-warm-white/80 backdrop-blur-sm flex items-center justify-center transition-opacity duration-500">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown" />
         </div>
       )}
 
-      <model-viewer
-        ref={modelViewerRef}
-        src={glbSrc}
-        ios-src={usdzSrc}
-        poster={poster}
-        alt={alt}
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        ar-placement="floor"
-        camera-controls
-        style={{
-          width: '100%',
-          height: '100%',
-          '--poster-color': 'transparent',
-        }}
-        className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}
-      >
-        {!isInArSession && (
-          <button
-            slot="ar-button"
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-soft-black text-white px-6 py-3 rounded-xl font-medium shadow-soft"
-          >
-            Посмотреть в комнате
-          </button>
-        )}
-      </model-viewer>
-
-      <AnimatePresence>
-        {showHint && !isInArSession && (
-            <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-soft-black/60 text-white text-sm px-4 py-2 rounded-full pointer-events-none z-20"
+      {/* AR Button */}
+      {hasAr && isLoaded && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <button 
+                onClick={handleActivateAR}
+                className="bg-brand-brown text-white px-8 py-4 rounded-xl shadow-lg flex items-center gap-3 font-medium hover:bg-brand-charcoal transition-colors"
             >
-            Используйте жесты для перемещения
-            </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {!isInArSession && (
-        <button
-          onClick={onClose}
-          className="absolute top-6 left-6 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft z-20 hover:bg-white transition-colors"
-        >
-          <ArrowLeftIcon className="w-6 h-6 text-soft-black" />
-        </button>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Поставить в комнате
+            </button>
+        </div>
       )}
+      
+      {/* Close Button */}
+       <button 
+            onClick={onClose} 
+            className="absolute top-6 left-6 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft z-20 hover:bg-white transition-colors"
+        >
+           <svg className="w-5 h-5 text-soft-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        </button>
     </div>
   );
 };

@@ -2,12 +2,8 @@
 'use client'
 
 import React, { useState } from 'react';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { app } from '../../firebaseConfig'; 
 import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../icons';
-
-// Инициализируем Storage
-const storage = getStorage(app);
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ModelUploaderProps {
   onUploadSuccess: (url: string, ext: 'glb' | 'usdz') => void;
@@ -19,6 +15,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadTask, setUploadTask] = useState<any>(null);
+  const { user } = useAuth();
 
   const processFile = async (file: File) => {
     // Валидация расширения
@@ -34,38 +31,28 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
     setUploadProgress(0);
     
     try {
-        // Создаем уникальное имя файла
-        const fileName = `${Date.now()}-${file.name}`;
-        const storageRef = ref(storage, `models/${fileName}`);
-        
-        // Запускаем загрузку (Resumable upload)
-        const task = uploadBytesResumable(storageRef, file);
-        setUploadTask(task);
+        const token = await user?.getIdToken();
+        const response = await fetch('/api/admin/upload-model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': file.type,
+                'Authorization': `Bearer ${token}`,
+                'x-file-extension': normalizedExt,
+            },
+            body: file,
+        });
 
-        task.on('state_changed',
-          (snapshot) => {
-            // Вычисляем прогресс
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error("Upload Error:", error);
-            setError(`Ошибка загрузки: ${error.message}`);
-            setIsLoading(false);
-            setUploadProgress(null);
-            setUploadTask(null);
-          },
-          async () => {
-            // Загрузка завершена
-            const url = await getDownloadURL(task.snapshot.ref);
-            setIsLoading(false);
-            setUploadProgress(null);
-            setUploadTask(null);
-            onUploadSuccess(url, normalizedExt);
-          }
-        );
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Upload failed');
+        }
+
+        const { url } = await response.json();
+        onUploadSuccess(url, normalizedExt);
+
     } catch (e: any) {
         setError(e.message);
+    } finally {
         setIsLoading(false);
         setUploadProgress(null);
     }
@@ -124,7 +111,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
                     />
                 </div>
                 <p className="text-sm font-bold text-brand-brown">
-                    Загрузка {Math.round(uploadProgress || 0)}%
+                    Загрузка...
                 </p>
                 <button 
                     onClick={(e) => { e.stopPropagation(); cancelUpload(); }}

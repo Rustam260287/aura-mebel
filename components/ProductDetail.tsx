@@ -35,7 +35,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
   const isWished = isInWishlist(product.id);
 
   const handleTryAR = () => {
-    if (product.model3dUrl) {
+    if (product.models?.glb) {
       setIsAROpen(true);
     } else {
       addToast('3D-модель для этого объекта пока не готова', 'info');
@@ -82,7 +82,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
     if (
       typeof window === 'undefined' ||
       !isMobile ||
-      !product.model3dUrl
+      !product.models?.glb
     ) {
       return undefined;
     }
@@ -90,13 +90,13 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
     import('@google/model-viewer').catch(console.error);
 
     return undefined;
-  }, [isMobile, product.model3dUrl]);
+  }, [isMobile, product.models?.glb]);
 
   useEffect(() => {
     if (
       typeof window === 'undefined' ||
       !isMobile ||
-      !product.model3dUrl
+      !product.models?.glb
     ) {
       setShow3DHint(false);
       return undefined;
@@ -121,17 +121,17 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [isMobile, product.model3dUrl]);
+  }, [isMobile, product.models?.glb]);
 
   const ctaWrapperClass = isMobile
     ? 'fixed bottom-4 left-4 right-4 z-cta md:static md:mt-12'
     : 'mt-auto';
 
-  if (isAROpen && product.model3dUrl) {
+  if (isAROpen && product.models?.glb) {
     return (
       <ARViewer
-        src={product.model3dUrl}
-        iosSrc={product.model3dIosUrl}
+        src={product.models.glb}
+        iosSrc={product.models.usdz}
         alt={product.name}
         poster={product.imageUrls?.[0]}
         onClose={closeAR}
@@ -140,7 +140,7 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
   }
 
   const primaryCta =
-    !product.model3dUrl
+    !product.models?.glb
       ? { label: isWished ? 'Открыть подборку' : 'Сохранить в подборку', onClick: isWished ? handleOpenWishlist : handleSaveToWishlist }
       : {
           label: experienceCompleted ? 'Примерить ещё раз' : 'Поставить в комнату',
@@ -163,11 +163,11 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
           {/* Visual block */}
           <div className="flex flex-col gap-16">
-            {isMobile && product.model3dUrl && (
+            {isMobile && product.models?.glb && (
               <div className="relative w-full h-[70vh] max-h-[520px] mb-10">
                 <model-viewer
-                  src={product.model3dUrl}
-                  ios-src={product.model3dIosUrl}
+                  src={product.models.glb}
+                  ios-src={product.models.usdz}
                   poster={product.imageUrls?.[0]}
                   alt={product.name}
                   camera-controls
