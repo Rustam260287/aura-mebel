@@ -456,6 +456,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                       field-of-view="30deg"
                       exposure="1"
                       shadow-intensity="0.3"
+                      style={{ touchAction: 'pan-y' }}
                       className="w-full h-full bg-white rounded-2xl"
                     />
                   </div>

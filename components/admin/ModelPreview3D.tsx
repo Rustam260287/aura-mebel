@@ -125,6 +125,7 @@ export const ModelPreview3D: React.FC<Props> = ({ glbUrl, usdzUrl, posterUrl, na
             field-of-view="30deg"
             shadow-intensity="0.8"
             exposure="1.0"
+            style={{ touchAction: 'pan-y' }}
             className="w-full h-full rounded-lg"
           />
           {(loadState === 'loading' || loadState === 'idle') && (

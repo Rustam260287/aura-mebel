@@ -172,12 +172,13 @@ const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, 
           alt={alt}
           poster={poster}
           camera-controls
-          disable-pan
-          disable-tap
           auto-rotate
+          interaction-prompt="none"
+          scale="1 1 1"
           ar
           ar-modes="webxr scene-viewer quick-look"
-          ar-scale="fixed"
+          ar-scale="auto"
+          style={{ touchAction: 'pan-y' }}
           className="w-full h-full"
         />
       ) : (
