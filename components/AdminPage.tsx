@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import type { AdminView, JournalEntry, ObjectAdmin, View } from '../types';
+import type { AdminView, JournalEntry, ObjectAdmin, ScenePresetAdmin, View } from '../types';
 import { AdminSidebar } from './admin/AdminSidebar';
 import { AdminDashboard } from './admin/AdminDashboard';
 import { AdminHeader } from './admin/AdminHeader';
@@ -17,14 +17,20 @@ import { AdminSavedInsights } from './admin/journey/AdminSavedInsights';
 import { AdminHandoffContacts } from './admin/journey/AdminHandoffContacts';
 import { AdminHandoffDetail } from './admin/journey/AdminHandoffDetail';
 import { getAuth } from 'firebase/auth';
+import { AdminScenes } from './admin/AdminScenes';
+import { SceneEditModal } from './admin/SceneEditModal';
 
 interface AdminPageProps {
   allObjects: ObjectAdmin[];
+  allScenes: ScenePresetAdmin[];
   journalEntries: JournalEntry[];
   onNavigate: (view: View) => void;
   onUpdateObject: (updatedObject: ObjectAdmin) => Promise<void>;
   onAddObject: (objectData: Omit<ObjectAdmin, 'id'>) => Promise<void>;
   onDeleteObject: (objectId: string) => Promise<void>;
+  onAddScene: (sceneData: Omit<ScenePresetAdmin, 'id'>) => Promise<void>;
+  onUpdateScene: (updatedScene: ScenePresetAdmin) => Promise<void>;
+  onDeleteScene: (sceneId: string) => Promise<void>;
   onBulkGenerateDescriptions: (ids: string[]) => Promise<void>;
   onUpdateJournalEntry: (updatedEntry: JournalEntry) => Promise<void>;
   onDeleteJournalEntry: (entryId: string) => Promise<void>;
@@ -32,11 +38,15 @@ interface AdminPageProps {
 
 const AdminPageComponent: React.FC<AdminPageProps> = ({ 
   allObjects,
+  allScenes,
   journalEntries,
   onNavigate,
   onUpdateObject,
   onAddObject,
   onDeleteObject,
+  onAddScene,
+  onUpdateScene,
+  onDeleteScene,
   onBulkGenerateDescriptions,
   onUpdateJournalEntry,
   onDeleteJournalEntry,
@@ -47,8 +57,10 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
   const [selectedVisitorId, setSelectedVisitorId] = useState<string | null>(null);
   const [visitorJourneyBackView, setVisitorJourneyBackView] = useState<AdminView>('activeVisitors');
   const [editingObject, setEditingObject] = useState<ObjectAdmin | null>(null);
+  const [editingScene, setEditingScene] = useState<ScenePresetAdmin | null>(null);
   const [editingJournalEntry, setEditingJournalEntry] = useState<JournalEntry | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddSceneModalOpen, setIsAddSceneModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentJournalEntries, setCurrentJournalEntries] = useState(journalEntries);
 
@@ -165,6 +177,16 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
             />
           </div>
         );
+      case 'scenes':
+        return (
+          <AdminScenes
+            scenes={allScenes}
+            objects={allObjects}
+            onAddScene={() => setIsAddSceneModalOpen(true)}
+            onEditScene={setEditingScene}
+            onDeleteScene={onDeleteScene}
+          />
+        );
       case 'assets':
         return (
           <AdminAssets
@@ -233,6 +255,30 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
           onSave={async (updatedObject) => {
             await onUpdateObject(updatedObject as ObjectAdmin);
             setEditingObject(null);
+          }}
+        />
+      )}
+      {isAddSceneModalOpen && (
+        <SceneEditModal
+          isOpen={isAddSceneModalOpen}
+          scene={null}
+          allObjects={allObjects}
+          onClose={() => setIsAddSceneModalOpen(false)}
+          onSave={async (sceneData) => {
+            await onAddScene(sceneData as Omit<ScenePresetAdmin, 'id'>);
+            setIsAddSceneModalOpen(false);
+          }}
+        />
+      )}
+      {editingScene && (
+        <SceneEditModal
+          isOpen={!!editingScene}
+          scene={editingScene}
+          allObjects={allObjects}
+          onClose={() => setEditingScene(null)}
+          onSave={async (updatedScene) => {
+            await onUpdateScene(updatedScene as ScenePresetAdmin);
+            setEditingScene(null);
           }}
         />
       )}

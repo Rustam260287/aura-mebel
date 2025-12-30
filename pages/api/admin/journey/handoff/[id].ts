@@ -126,11 +126,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const refs = Array.from(objectIds).map((id) => db.collection(COLLECTIONS.objects).doc(id));
     const docs = refs.length > 0 ? await db.getAll(...refs) : [];
     const idToName = new Map<string, string>();
+    const missingIds: string[] = [];
     for (const doc of docs) {
-      if (!doc.exists) continue;
+      if (!doc.exists) {
+        missingIds.push(doc.id);
+        continue;
+      }
       const data = doc.data() as { name?: unknown } | undefined;
       const name = typeof data?.name === 'string' ? data.name : '';
       if (name) idToName.set(doc.id, name);
+    }
+
+    if (missingIds.length > 0) {
+      const sceneRefs = missingIds.map((id) => db.collection(COLLECTIONS.scenePresets).doc(id));
+      const sceneDocs = sceneRefs.length > 0 ? await db.getAll(...sceneRefs) : [];
+      for (const doc of sceneDocs) {
+        if (!doc.exists) continue;
+        const data = doc.data() as { title?: unknown } | undefined;
+        const title = typeof data?.title === 'string' ? data.title : '';
+        if (title) idToName.set(doc.id, title);
+      }
     }
 
     const path: HandoffDetailResponse['path'] = rawEvents.map((e) => ({
@@ -163,4 +178,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: message });
   }
 }
-

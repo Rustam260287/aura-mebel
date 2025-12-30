@@ -7,6 +7,7 @@ export type AdminView =
   | 'savedInsights'
   | 'handoffContacts'
   | 'objects'
+  | 'scenes'
   | 'assets'
   | 'media'
   | 'handoff';
@@ -15,6 +16,8 @@ export type View =
   | { page: 'home' }
   | { page: 'objects'; objectType?: string }
   | { page: 'object'; objectId: string }
+  | { page: 'scenes' }
+  | { page: 'scene'; sceneId: string }
   | { page: 'saved' }
   | { page: 'journal' }
   | { page: 'journal-list' }
@@ -55,6 +58,40 @@ export interface ObjectAdmin extends ObjectPublic {
   configurationOptions?: unknown[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export type Object3DCategory = 'sofa' | 'armchair' | 'table' | 'chair' | (string & {});
+
+export interface Object3D {
+  id: string;
+  title: string;
+  category: Object3DCategory;
+  modelGlbUrl?: string;
+  modelUsdzUrl?: string;
+  thumbnailUrl: string;
+}
+
+export type SceneObjectTransform = {
+  objectId: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+};
+
+export interface ScenePresetPublic {
+  id: string;
+  title: string;
+  description?: string;
+  objects: SceneObjectTransform[];
+  coverImageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SceneStatus = 'draft' | 'ready' | 'archived';
+
+export interface ScenePresetAdmin extends ScenePresetPublic {
+  status?: SceneStatus;
 }
 
 export interface JournalEntry {

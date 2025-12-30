@@ -2,7 +2,7 @@
 // pages/admin.tsx
 import { GetServerSideProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { ObjectAdmin, JournalEntry } from '../types';
+import type { ObjectAdmin, JournalEntry, ScenePresetAdmin } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
@@ -13,19 +13,22 @@ import { Button } from '../components/Button';
 import { getAuth } from 'firebase/auth';
 import { toAdminObject } from '../lib/adminObject';
 import { COLLECTIONS } from '../lib/db/collections';
+import { toScenePresetAdmin } from '../lib/scenePreset';
 
 const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mod.AdminPage), { ssr: false });
 
 interface AdminContainerProps {
   initialObjects: ObjectAdmin[];
+  initialScenes: ScenePresetAdmin[];
   initialJournalEntries: JournalEntry[];
 }
 
-function AdminContainer({ initialObjects, initialJournalEntries }: AdminContainerProps) {
+function AdminContainer({ initialObjects, initialScenes, initialJournalEntries }: AdminContainerProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const { addToast } = useToast();
   const [objects, setObjects] = useState<ObjectAdmin[]>(initialObjects);
+  const [scenes, setScenes] = useState<ScenePresetAdmin[]>(initialScenes);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(initialJournalEntries);
 
   const getAuthToken = async () => {
@@ -135,6 +138,82 @@ function AdminContainer({ initialObjects, initialJournalEntries }: AdminContaine
     }
   }, []);
 
+  const handleAddScene = useCallback(
+    async (sceneData: Omit<ScenePresetAdmin, 'id'>) => {
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/admin/scenes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(sceneData),
+        });
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(data?.error || 'Failed to create scene');
+        }
+        const created = toScenePresetAdmin(data, typeof data?.id === 'string' ? data.id : '');
+        setScenes((prev) => [created, ...prev]);
+      } catch (error) {
+        console.error(error);
+        const message = error instanceof Error ? error.message : 'Ошибка добавления сцены';
+        throw new Error(message);
+      }
+    },
+    [],
+  );
+
+  const handleUpdateScene = useCallback(
+    async (updatedScene: ScenePresetAdmin) => {
+      try {
+        const token = await getAuthToken();
+        const res = await fetch(`/api/admin/scenes/${updatedScene.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatedScene),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(data?.error || 'Failed to update scene');
+        }
+        const normalized = toScenePresetAdmin(data, updatedScene.id);
+        setScenes((prev) => prev.map((s) => (s.id === normalized.id ? normalized : s)));
+      } catch (error) {
+        console.error(error);
+        const message = error instanceof Error ? error.message : 'Ошибка обновления сцены';
+        throw new Error(message);
+      }
+    },
+    [],
+  );
+
+  const handleDeleteScene = useCallback(async (sceneId: string) => {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/admin/scenes/${sceneId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to delete scene');
+      }
+      setScenes((prev) => prev.filter((s) => s.id !== sceneId));
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : 'Ошибка удаления сцены';
+      throw new Error(message);
+    }
+  }, []);
+
   const handleBulkGenerateDescriptions = useCallback(
     async (objectIds: string[]) => {
       const token = await getAuthToken();
@@ -215,11 +294,15 @@ function AdminContainer({ initialObjects, initialJournalEntries }: AdminContaine
       </div>
       <AdminPage 
         allObjects={objects}
+        allScenes={scenes}
         journalEntries={journalEntries}
         onNavigate={handleNavigate}
         onUpdateObject={handleUpdateObject}
         onAddObject={handleAddObject}
         onDeleteObject={handleDeleteObject}
+        onAddScene={handleAddScene}
+        onUpdateScene={handleUpdateScene}
+        onDeleteScene={handleDeleteScene}
         onBulkGenerateDescriptions={handleBulkGenerateDescriptions}
         onUpdateJournalEntry={handleUpdateJournalEntry}
         onDeleteJournalEntry={handleDeleteJournalEntry}
@@ -241,7 +324,7 @@ export default function AdminPageContainer(props: AdminContainerProps) {
 export const getServerSideProps: GetServerSideProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
-    return { props: { initialObjects: [], initialJournalEntries: [], error: "Admin DB not initialized" } };
+    return { props: { initialObjects: [], initialScenes: [], initialJournalEntries: [], error: "Admin DB not initialized" } };
   }
   try {
     const objectsSnapshot = await dbAdmin.collection(COLLECTIONS.objects).orderBy('name').get();
@@ -260,15 +343,21 @@ export const getServerSideProps: GetServerSideProps = async () => {
         return dateB - dateA;
     });
 
+    const scenesSnapshot = await dbAdmin.collection(COLLECTIONS.scenePresets).get();
+    const initialScenes = scenesSnapshot.docs
+      .map((doc) => toScenePresetAdmin(doc.data(), doc.id))
+      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
     return {
       props: { 
         initialObjects: JSON.parse(JSON.stringify(initialObjects)),
+        initialScenes: JSON.parse(JSON.stringify(initialScenes)),
         initialJournalEntries: JSON.parse(JSON.stringify(initialJournalEntries)),
       },
     };
   } catch (error) {
     console.error("Error fetching admin data:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return { props: { initialObjects: [], initialJournalEntries: [], error: errorMessage } };
+    return { props: { initialObjects: [], initialScenes: [], initialJournalEntries: [], error: errorMessage } };
   }
 };

@@ -102,6 +102,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <NavLink label="Объекты" isActive={activeView === 'objects'} onClick={() => setView('objects')}>
                 <CubeIcon className="h-6 w-6" />
               </NavLink>
+              <NavLink
+                label="Сцены / комплекты"
+                isActive={activeView === 'scenes'}
+                onClick={() => setView('scenes')}
+              >
+                <CubeIcon className="h-6 w-6" />
+              </NavLink>
               <NavLink label="3D и AR" isActive={activeView === 'assets'} onClick={() => setView('assets')}>
                 <CubeTransparentIcon className="h-6 w-6" />
               </NavLink>

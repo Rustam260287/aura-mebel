@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { getAdminDb } from '../../lib/firebaseAdmin';
 import { COLLECTIONS } from '../../lib/db/collections';
-import type { ObjectPublic } from '../../types';
+import type { ObjectPublic, ScenePresetPublic } from '../../types';
 import { Catalog } from '../../components/Catalog';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
@@ -14,6 +14,8 @@ import { useObjectModals } from '../../hooks/useObjectModals';
 import { SearchService } from '../../lib/services/search.service';
 import { toPublicObject } from '../../lib/publicObject';
 import { useExperience } from '../../contexts/ExperienceContext';
+import { SceneCard } from '../../components/SceneCard';
+import { toScenePresetPublic } from '../../lib/scenePreset';
 
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
@@ -23,13 +25,14 @@ const CATEGORY_IN_LIMIT = 10;
 
 interface CatalogPageProps {
   objects: ObjectPublic[];
+  scenes: ScenePresetPublic[];
   currentPage: number;
   totalPages: number;
   error?: string;
   searchQuery?: string;
 }
 
-export default function CatalogPage({ objects, currentPage, totalPages, error, searchQuery }: CatalogPageProps) {
+export default function CatalogPage({ objects, scenes, currentPage, totalPages, error, searchQuery }: CatalogPageProps) {
   const router = useRouter();
   // Filter Sidebar удален для чистоты интерфейса
   const { emitEvent } = useExperience();
@@ -120,12 +123,39 @@ export default function CatalogPage({ objects, currentPage, totalPages, error, s
             )}
             
 	            {/* Сетка объектов — Галерея */}
-	            <Catalog
-	                allObjects={objects}
-	                isLoading={false}
-	                onObjectSelect={(id) => router.push(`/objects/${id}`)}
-	                onImageClick={handleImageClick}
-	            />
+              {!searchQuery && scenes.length > 0 && (
+                <section className="mb-20">
+                  <div className="flex items-end justify-between gap-6 mb-8">
+                    <div>
+                      <h2 className="text-2xl md:text-3xl font-medium text-soft-black tracking-tight">
+                        Комплекты
+                      </h2>
+                      <p className="text-sm text-muted-gray mt-2">
+                        Набор отдельных предметов. В AR каждый можно двигать и масштабировать отдельно.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-14 md:gap-y-20">
+                    {scenes.map((scene, index) => (
+                      <div
+                        key={scene.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 60}ms` }}
+                      >
+                        <SceneCard scene={scene} onSelect={(id) => router.push(`/scenes/${id}`)} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <Catalog
+                allObjects={objects}
+                isLoading={false}
+                onObjectSelect={(id) => router.push(`/objects/${id}`)}
+                onImageClick={handleImageClick}
+              />
 
             {/* Пагинация - минималистичная */}
             {totalPages > 1 && (
@@ -174,6 +204,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const queryParam = qParam ? String(qParam).trim() : '';
     
     let objects: ObjectPublic[] = [];
+    let scenes: ScenePresetPublic[] = [];
     let totalItems = 0;
     let totalPages = 1;
 
@@ -191,6 +222,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return {
             props: {
                 objects: JSON.parse(JSON.stringify(objects)),
+                scenes: [],
                 currentPage: 1,
                 totalPages: 1,
                 searchQuery: queryParam
@@ -239,15 +271,53 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }) as ObjectPublic[];
 
+    // Scenes / presets (not paginated)
+    try {
+      const scenesSnap = await adminDb
+        .collection(COLLECTIONS.scenePresets)
+        .where('status', '==', 'ready')
+        .get();
+
+      const rawScenes = scenesSnap.docs.map((doc) => toScenePresetPublic(doc.data(), doc.id));
+      const neededCoverObjectIds = new Set<string>();
+      for (const s of rawScenes) {
+        if (s.coverImageUrl) continue;
+        const first = s.objects?.[0]?.objectId;
+        if (first) neededCoverObjectIds.add(first);
+      }
+
+      const refs = Array.from(neededCoverObjectIds).map((id) => adminDb.collection(COLLECTIONS.objects).doc(id));
+      const docs = refs.length > 0 ? await adminDb.getAll(...refs) : [];
+      const coverByObjectId = new Map<string, string>();
+      for (const doc of docs) {
+        if (!doc.exists) continue;
+        const d = doc.data() as { imageUrls?: unknown } | undefined;
+        const imageUrls = Array.isArray(d?.imageUrls) ? d?.imageUrls : [];
+        const firstUrl = typeof imageUrls?.[0] === 'string' ? (imageUrls[0] as string) : '';
+        if (firstUrl) coverByObjectId.set(doc.id, firstUrl);
+      }
+
+      scenes = rawScenes.map((s) => {
+        if (s.coverImageUrl) return s;
+        const first = s.objects?.[0]?.objectId;
+        const derived = first ? coverByObjectId.get(first) : undefined;
+        return { ...s, ...(derived ? { coverImageUrl: derived } : {}) };
+      });
+    } catch (e) {
+      console.error('Scenes fetch failed:', e);
+      scenes = [];
+    }
+
     return {
       props: {
         objects: JSON.parse(JSON.stringify(objects)),
+        scenes: JSON.parse(JSON.stringify(scenes)),
         currentPage: safePage,
         totalPages,
       },
     };
   } catch (error) {
     console.error("Objects Error:", error);
-    return { props: { objects: [], currentPage: 1, totalPages: 1, error: "Сервис временно недоступен" } };
+    return { props: { objects: [], scenes: [], currentPage: 1, totalPages: 1, error: "Сервис временно недоступен" } };
   }
 };
