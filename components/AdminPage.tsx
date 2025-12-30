@@ -1,84 +1,192 @@
-import React, { useState, memo, useEffect } from 'react';
-import type { Product, BlogPost, View, ChatMessage, AdminView } from '../types';
-import { AdminSidebar } from '../components/admin/AdminSidebar';
-import { AdminDashboard } from '../components/admin/AdminDashboard';
-import { AdminProducts } from '../components/admin/AdminProducts';
-import { AdminBlog } from '../components/admin/AdminBlog';
-import { ProductEditModal } from '../components/ProductEditModal';
-import { BlogEditModal } from '../components/BlogEditModal';
-import { AdminHeader } from '../components/admin/AdminHeader';
-import { AdminChatAnalytics } from '../components/admin/AdminChatAnalytics';
+import React, { memo, useEffect, useMemo, useState } from 'react';
+import type { AdminView, JournalEntry, ObjectAdmin, View } from '../types';
+import { AdminSidebar } from './admin/AdminSidebar';
+import { AdminDashboard } from './admin/AdminDashboard';
+import { AdminHeader } from './admin/AdminHeader';
+import { AdminObjects } from './admin/AdminObjects';
+import { ObjectEditModal } from './ObjectEditModal';
+import { JournalEditModal } from './JournalEditModal';
+import { AdminAssets } from './admin/AdminAssets';
+import { AdminMedia } from './admin/AdminMedia';
+import { AdminHandoff } from './admin/AdminHandoff';
+import { AdminJourneyFunnel } from './admin/journey/AdminJourneyFunnel';
+import { AdminActiveVisitors } from './admin/journey/AdminActiveVisitors';
+import { AdminVisitorJourney } from './admin/journey/AdminVisitorJourney';
+import { AdminObjectInterest } from './admin/journey/AdminObjectInterest';
+import { AdminSavedInsights } from './admin/journey/AdminSavedInsights';
+import { AdminHandoffContacts } from './admin/journey/AdminHandoffContacts';
+import { AdminHandoffDetail } from './admin/journey/AdminHandoffDetail';
+import { getAuth } from 'firebase/auth';
 
 interface AdminPageProps {
-  allProducts: Product[];
-  blogPosts: BlogPost[];
-  chatLogs: ChatMessage[][];
+  allObjects: ObjectAdmin[];
+  journalEntries: JournalEntry[];
   onNavigate: (view: View) => void;
-  onUpdateProduct: (updatedProduct: Product) => Promise<void>;
-  onAddProduct: (productData: Omit<Product, 'id'>) => Promise<void>;
-  onUpdateBlogPost: (updatedPost: BlogPost) => Promise<void>;
-  onDeleteBlogPost: (postId: string) => Promise<void>;
-  onDeleteProduct: (productId: string) => Promise<void>;
-  onBulkGenerateSeo: (ids: string[]) => Promise<void>;
+  onUpdateObject: (updatedObject: ObjectAdmin) => Promise<void>;
+  onAddObject: (objectData: Omit<ObjectAdmin, 'id'>) => Promise<void>;
+  onDeleteObject: (objectId: string) => Promise<void>;
   onBulkGenerateDescriptions: (ids: string[]) => Promise<void>;
+  onUpdateJournalEntry: (updatedEntry: JournalEntry) => Promise<void>;
+  onDeleteJournalEntry: (entryId: string) => Promise<void>;
 }
 
 const AdminPageComponent: React.FC<AdminPageProps> = ({ 
-  allProducts, 
-  blogPosts,
-  chatLogs,
+  allObjects,
+  journalEntries,
   onNavigate,
-  onUpdateProduct,
-  onAddProduct,
-  onUpdateBlogPost,
-  onDeleteBlogPost,
-  onDeleteProduct,
-  onBulkGenerateSeo,
+  onUpdateObject,
+  onAddObject,
+  onDeleteObject,
   onBulkGenerateDescriptions,
+  onUpdateJournalEntry,
+  onDeleteJournalEntry,
 }) => {
-  const [adminView, setAdminView] = useState<AdminView>('products');
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editingBlogPost, setEditingBlogPost] = useState<BlogPost | null>(null);
+  const [adminView, setAdminView] = useState<AdminView>('objects');
+  const [adminRole, setAdminRole] = useState<'owner' | 'manager' | null>(null);
+  const [autoViewSet, setAutoViewSet] = useState(false);
+  const [selectedVisitorId, setSelectedVisitorId] = useState<string | null>(null);
+  const [visitorJourneyBackView, setVisitorJourneyBackView] = useState<AdminView>('activeVisitors');
+  const [editingObject, setEditingObject] = useState<ObjectAdmin | null>(null);
+  const [editingJournalEntry, setEditingJournalEntry] = useState<JournalEntry | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentBlogPosts, setCurrentBlogPosts] = useState(blogPosts);
+  const [currentJournalEntries, setCurrentJournalEntries] = useState(journalEntries);
 
   useEffect(() => {
-      setCurrentBlogPosts(blogPosts);
-  }, [blogPosts]);
+    setCurrentJournalEntries(journalEntries);
+  }, [journalEntries]);
+
+  useEffect(() => {
+    let isActive = true;
+    const loadRole = async () => {
+      try {
+        const user = getAuth().currentUser;
+        if (!user) return;
+        const token = await user.getIdToken();
+        const res = await fetch('/api/admin/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = (await res.json().catch(() => ({}))) as { role?: unknown };
+        if (!isActive) return;
+        setAdminRole(data.role === 'manager' || data.role === 'owner' ? data.role : 'owner');
+      } catch {
+        if (isActive) setAdminRole('owner');
+      }
+    };
+    void loadRole();
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (autoViewSet) return;
+    if (!adminRole) return;
+    setAdminView(adminRole === 'manager' ? 'handoffContacts' : 'journey');
+    setAutoViewSet(true);
+  }, [adminRole, autoViewSet]);
+
+  useEffect(() => {
+    if (adminRole !== 'manager') return;
+    if (adminView === 'handoffContacts') return;
+    setAdminView('handoffContacts');
+  }, [adminRole, adminView]);
+
+  const openVisitorJourney = (visitorId: string, backView: AdminView) => {
+    setSelectedVisitorId(visitorId);
+    setVisitorJourneyBackView(backView);
+    setAdminView('visitorJourney');
+    setIsSidebarOpen(false);
+  };
+
+  const openHandoffDetail = (visitorId: string) => {
+    setSelectedVisitorId(visitorId);
+    setAdminView('handoffDetail');
+    setIsSidebarOpen(false);
+  };
+
+  const objectsWith3D = useMemo(
+    () => allObjects.filter(o => Boolean(o.modelGlbUrl || o.modelUsdzUrl)),
+    [allObjects],
+  );
+  const objectsWithout3D = useMemo(
+    () => allObjects.filter(o => !o.modelGlbUrl && !o.modelUsdzUrl),
+    [allObjects],
+  );
+  const objectsWithoutImages = useMemo(
+    () => allObjects.filter(o => !o.imageUrls || o.imageUrls.length === 0),
+    [allObjects],
+  );
 
   const renderContent = () => {
     switch (adminView) {
-      case 'dashboard':
+      case 'journey':
+        return <AdminJourneyFunnel />;
+      case 'activeVisitors':
+        return <AdminActiveVisitors onOpenVisitor={(id) => openVisitorJourney(id, 'activeVisitors')} />;
+      case 'visitorJourney':
+        if (!selectedVisitorId) return <div className="text-sm text-gray-500">Выберите посетителя.</div>;
         return (
-          <AdminDashboard
-            products={allProducts}
-            posts={currentBlogPosts}
-            onEditProduct={setEditingProduct}
-            onAutoFixProblems={onBulkGenerateDescriptions}
+          <AdminVisitorJourney
+            visitorId={selectedVisitorId}
+            onBack={() => setAdminView(visitorJourneyBackView)}
           />
         );
-      case 'products':
+      case 'handoffDetail':
+        if (!selectedVisitorId) return <div className="text-sm text-gray-500">Выберите hand-off.</div>;
+        return <AdminHandoffDetail visitorId={selectedVisitorId} onBack={() => setAdminView('handoffContacts')} />;
+      case 'objectInterest':
+        return <AdminObjectInterest />;
+      case 'savedInsights':
+        return <AdminSavedInsights />;
+      case 'handoffContacts':
         return (
-          <AdminProducts
-            products={allProducts}
-            onEditProduct={setEditingProduct}
-            onDeleteProduct={onDeleteProduct}
-            onAddProduct={() => setIsAddModalOpen(true)}
-            onBulkGenerateSeo={onBulkGenerateSeo}
-            onBulkGenerateDescriptions={onBulkGenerateDescriptions}
+          <AdminHandoffContacts
+            onOpenVisitor={
+              adminRole === 'owner' ? (id) => openVisitorJourney(id, 'handoffContacts') : (id) => openHandoffDetail(id)
+            }
           />
         );
-      case 'blog':
-        return <AdminBlog 
-                  posts={currentBlogPosts}
-                  setBlogPosts={setCurrentBlogPosts}
-                  onEditPost={setEditingBlogPost}
-                  onDeletePost={onDeleteBlogPost}
-                  onUpdatePost={onUpdateBlogPost}
-                />;
-      case 'chat-analytics':
-        return <AdminChatAnalytics chatLogs={chatLogs} />;
+      case 'objects':
+        return (
+          <div className="space-y-8">
+            <AdminDashboard
+              objects={allObjects}
+              onEditObject={setEditingObject}
+              onAutoFixProblems={onBulkGenerateDescriptions}
+            />
+            <AdminObjects
+              objects={allObjects}
+              onEditObject={setEditingObject}
+              onDeleteObject={onDeleteObject}
+              onAddObject={() => setIsAddModalOpen(true)}
+              onBulkGenerateDescriptions={onBulkGenerateDescriptions}
+            />
+          </div>
+        );
+      case 'assets':
+        return (
+          <AdminAssets
+            objectsWith3D={objectsWith3D}
+            objectsWithout3D={objectsWithout3D}
+            onOpenObject={setEditingObject}
+          />
+        );
+      case 'media':
+        return (
+          <AdminMedia
+            objectsWithoutImages={objectsWithoutImages}
+            journalEntries={currentJournalEntries}
+            setJournalEntries={setCurrentJournalEntries}
+            onOpenObject={setEditingObject}
+            onEditJournalEntry={setEditingJournalEntry}
+            onDeleteJournalEntry={onDeleteJournalEntry}
+            onUpdateJournalEntry={onUpdateJournalEntry}
+          />
+        );
+      case 'handoff':
+        return <AdminHandoff />;
       default:
         return null;
     }
@@ -95,6 +203,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
         activeView={adminView} 
         setView={handleSetView} 
         onNavigate={onNavigate}
+        role={adminRole}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
@@ -106,43 +215,34 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
       </div>
       
       {isAddModalOpen && (
-        <ProductEditModal
+        <ObjectEditModal
           isOpen={isAddModalOpen}
-          product={null}
+          object={null}
           onClose={() => setIsAddModalOpen(false)}
-          onSave={async (productData) => {
-            await onAddProduct(productData as Omit<Product, 'id'>);
+          onSave={async (objectData) => {
+            await onAddObject(objectData as Omit<ObjectAdmin, 'id'>);
             setIsAddModalOpen(false);
           }}
         />
       )}
-      {editingProduct && (
-        <ProductEditModal
-          isOpen={!!editingProduct}
-          product={editingProduct}
-          onClose={() => setEditingProduct(null)}
-          onSave={async (updatedProduct) => {
-            await onUpdateProduct(updatedProduct as Product);
-            setEditingProduct(null);
+      {editingObject && (
+        <ObjectEditModal
+          isOpen={!!editingObject}
+          object={editingObject}
+          onClose={() => setEditingObject(null)}
+          onSave={async (updatedObject) => {
+            await onUpdateObject(updatedObject as ObjectAdmin);
+            setEditingObject(null);
           }}
         />
       )}
-      {editingBlogPost && (
-        <BlogEditModal
-          post={editingBlogPost}
-          onClose={() => setEditingBlogPost(null)}
-          onSave={async (updatedPost) => {
-            await onUpdateBlogPost(updatedPost);
-            // We update local state in AdminPage, but AdminBlog also has local state?
-            // Actually AdminBlog receives state via props now? 
-            // In renderContent, we pass 'posts={currentBlogPosts}' and 'setBlogPosts'.
-            // But we also update 'currentBlogPosts' here.
-            // Let's rely on 'blogPosts' prop update from parent (pages/admin.tsx) which updates 'initialBlogPosts' ?
-            // No, pages/admin.tsx has local state 'blogPosts'.
-            // When onUpdateBlogPost is called, pages/admin.tsx updates its state.
-            // And that new state is passed down to AdminPage as 'blogPosts'.
-            // So we need a useEffect to sync props to local state if we keep local state here.
-            setEditingBlogPost(null);
+      {editingJournalEntry && (
+        <JournalEditModal
+          entry={editingJournalEntry}
+          onClose={() => setEditingJournalEntry(null)}
+          onSave={async (updatedEntry) => {
+            await onUpdateJournalEntry(updatedEntry);
+            setEditingJournalEntry(null);
           }}
         />
       )}

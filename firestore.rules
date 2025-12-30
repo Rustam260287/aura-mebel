@@ -1,18 +1,39 @@
-rules_version='2'
-
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Objects: publicly readable, admin-only writes.
+    match /objects/{objectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Legacy: allow reads from old collection while migrating.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Journal entries (editorial content)
+    match /blog/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Visitor journey analytics: admin-only.
+    match /visitors/{visitorId} {
+      allow read, write: if isAdmin();
+    }
+    match /journeyEvents/{eventId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Settings, jobs, and everything else: admin-only.
     match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 1, 2);
+      allow read, write: if isAdmin();
     }
   }
 }

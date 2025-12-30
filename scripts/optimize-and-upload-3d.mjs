@@ -12,7 +12,8 @@ import admin from 'firebase-admin';
  * Оптимизированный файл загружается обратно в Firebase Storage, а Firestore-документ обновляется.
  *
  * Использование:
- *   node scripts/optimize-and-upload-3d.mjs --product <id>
+ *   node scripts/optimize-and-upload-3d.mjs --object <id>
+ *   node scripts/optimize-and-upload-3d.mjs --product <id> (legacy)
  *   node scripts/optimize-and-upload-3d.mjs --all
  *
  * Перед запуском убедитесь, что:
@@ -24,20 +25,20 @@ import admin from 'firebase-admin';
 const [, , ...args] = process.argv;
 
 if (args.length === 0) {
-  console.error('Usage: node scripts/optimize-and-upload-3d.mjs --product <id> | --all');
+  console.error('Usage: node scripts/optimize-and-upload-3d.mjs --object <id> | --all');
   process.exit(1);
 }
 
 const options = {
-  productIds: new Set(),
+  objectIds: new Set(),
   processAll: false,
   dryRun: false,
 };
 
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
-  if (arg === '--product' && args[i + 1]) {
-    options.productIds.add(args[++i]);
+  if ((arg === '--object' || arg === '--product') && args[i + 1]) {
+    options.objectIds.add(args[++i]);
   } else if (arg === '--all') {
     options.processAll = true;
   } else if (arg === '--dry') {
@@ -47,8 +48,8 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-if (!options.processAll && options.productIds.size === 0) {
-  console.error('Please specify at least one product (--product <id>) or --all.');
+if (!options.processAll && options.objectIds.size === 0) {
+  console.error('Please specify at least one object (--object <id>) or --all.');
   process.exit(1);
 }
 
@@ -73,7 +74,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
-const tmpDir = path.join(os.tmpdir(), 'aura-3d-opt');
+const tmpDir = path.join(os.tmpdir(), 'labelcom-3d-opt');
 fs.mkdirSync(tmpDir, { recursive: true });
 
 const gltfArgs = [
@@ -189,48 +190,53 @@ const parseStoragePath = (url) => {
   }
 };
 
-const processProduct = async (productId) => {
-  const docRef = db.collection('products').doc(productId);
+const processObject = async (objectId) => {
+  const docRef = db.collection('products').doc(objectId);
   const doc = await docRef.get();
   if (!doc.exists) {
-    console.log('skip missing product', productId);
+    console.log('skip missing object', objectId);
     return;
   }
 
   const data = doc.data() || {};
-  const sourceUrl = data.model3dUrl;
+  const sourceUrl = data.modelGlbUrl || data.model3dUrl;
   const storagePath = parseStoragePath(sourceUrl);
   if (!storagePath) {
-    console.log('skip, no storage path for', productId);
+    console.log('skip, no storage path for', objectId);
     return;
   }
 
-  console.log('processing', productId, storagePath);
+  console.log('processing', objectId, storagePath);
 
-  const tmpSource = path.join(tmpDir, `${productId}.glb`);
-  const tmpOptimized = path.join(tmpDir, `${productId}.optimized.glb`);
+  const tmpSource = path.join(tmpDir, `${objectId}.glb`);
+  const tmpOptimized = path.join(tmpDir, `${objectId}.optimized.glb`);
   await downloadFile(storagePath, tmpSource);
 
   await runGltfPipeline(tmpSource, tmpOptimized);
 
-  const destPath = `models/optimized/${productId}.glb`;
+  const destPath = `models/optimized/${objectId}.glb`;
   const newGlbUrl = options.dryRun
     ? sourceUrl
     : await uploadFile(tmpOptimized, destPath, 'model/gltf-binary');
 
-  let usdzUrl = data.model3dIosUrl;
+  let usdzUrl = data.modelUsdzUrl || data.model3dIosUrl;
   if (!options.dryRun) {
-    const usdzOutput = path.join(tmpDir, `${productId}.usdz`);
+    const usdzOutput = path.join(tmpDir, `${objectId}.usdz`);
     const converted = await runUsdConversion(tmpOptimized, usdzOutput);
     if (converted && fs.existsSync(usdzOutput)) {
-      usdzUrl = await uploadFile(usdzOutput, `models/optimized/${productId}.usdz`, 'model/vnd.usdz+zip');
+      usdzUrl = await uploadFile(
+        usdzOutput,
+        `models/optimized/${objectId}.usdz`,
+        'model/vnd.usdz+zip',
+      );
     }
   }
 
   if (!options.dryRun) {
     await docRef.update({
-      model3dUrl: newGlbUrl,
-      model3dIosUrl: usdzUrl,
+      modelGlbUrl: newGlbUrl,
+      modelUsdzUrl: usdzUrl,
+      has3D: true,
       model3dOptimizedAt: new Date().toISOString(),
     });
   }
@@ -240,10 +246,10 @@ const run = async () => {
   const targets = options.processAll
     ? (await db.collection('products').where('has3D', '==', true).get())
         .docs.map(doc => doc.id)
-    : Array.from(options.productIds);
+    : Array.from(options.objectIds);
 
-  for (const productId of targets) {
-    await processProduct(productId);
+  for (const objectId of targets) {
+    await processObject(objectId);
   }
 };
 

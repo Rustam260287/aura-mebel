@@ -2,9 +2,10 @@ import React from 'react';
 
 interface AdminHeaderProps {
     onMenuClick: () => void;
+    title?: string;
 }
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick, title }) => {
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-white px-4 shadow-sm md:hidden">
             <button
@@ -17,7 +18,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
                 </svg>
             </button>
             <div className="text-lg font-serif text-brand-brown">
-                Aura / Админ-панель
+                {title || 'Labelcom / Studio'}
             </div>
         </header>
     );

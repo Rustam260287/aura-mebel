@@ -7,13 +7,13 @@ export const MobileMenuOverlay = ({
   open,
   onClose,
   onCatalog,
-  onWishlist,
+  onSaved,
   onAbout,
 }: {
   open: boolean;
   onClose: () => void;
   onCatalog: () => void;
-  onWishlist: () => void;
+  onSaved: () => void;
   onAbout: () => void;
 }) => {
   useEffect(() => {
@@ -42,7 +42,7 @@ export const MobileMenuOverlay = ({
               Галерея
             </button>
 
-            <button onClick={onWishlist} className="text-soft-black" type="button">
+            <button onClick={onSaved} className="text-soft-black" type="button">
               Сохранено
             </button>
 

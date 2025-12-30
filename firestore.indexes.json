@@ -54,6 +54,22 @@
         { "fieldPath": "category", "mode": "ASCENDING" },
         { "fieldPath": "name", "mode": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "objects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "mode": "ASCENDING" },
+        { "fieldPath": "name", "mode": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journeyEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "visitorId", "mode": "ASCENDING" },
+        { "fieldPath": "createdAt", "mode": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

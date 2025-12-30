@@ -2,7 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-const ALLOWED_HOSTS = new Set(['firebasestorage.googleapis.com', 'storage.googleapis.com']);
+const staticAllowedHosts = new Set(['firebasestorage.googleapis.com', 'storage.googleapis.com']);
+
+function getAllowedHosts(): Set<string> {
+  const bucketHost = (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '').trim().toLowerCase();
+  const fromEnv = bucketHost ? new Set([bucketHost]) : new Set<string>();
+  return new Set([...staticAllowedHosts, ...fromEnv]);
+}
 
 function setCorsHeaders(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -65,7 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Invalid URL protocol' });
   }
 
-  if (!ALLOWED_HOSTS.has(target.hostname)) {
+  const allowedHosts = getAllowedHosts();
+  const hostname = target.hostname.toLowerCase();
+  if (!allowedHosts.has(hostname)) {
     return res.status(400).json({ error: 'URL host is not allowed' });
   }
 

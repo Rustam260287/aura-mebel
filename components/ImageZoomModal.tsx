@@ -9,11 +9,12 @@ interface ImageZoomModalProps {
   isOpen: boolean;
   images: string[];
   initialIndex?: number;
-  productName: string;
+  objectTitle: string;
   onClose: () => void;
 }
 
-export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, images = [], initialIndex = 0, productName, onClose }) => {
+export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(
+  ({ isOpen, images = [], initialIndex = 0, objectTitle, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
   const handleNext = useCallback(() => {
@@ -83,7 +84,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = memo(({ isOpen, ima
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img 
                                             src={images[currentIndex]} 
-                                            alt={`${productName} - ${currentIndex + 1}`}
+                                            alt={`${objectTitle} - ${currentIndex + 1}`}
                                             className="max-w-full max-h-full object-contain"
                                         />
                                     </div>

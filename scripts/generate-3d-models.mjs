@@ -28,7 +28,7 @@ const replicate = new Replicate({
 });
 
 const DRY_RUN = false; 
-const LIMIT = 5; // Пройдемся по 5 товарам, чтобы перезаписать старые ссылки
+const LIMIT = 5; // Пройдемся по 5 объектам, чтобы перезаписать старые ссылки
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -83,13 +83,13 @@ async function outputToDataUri(output) {
     return `data:image/png;base64,${Buffer.from(buffer).toString('base64')}`;
 }
 
-async function processProduct(doc) {
-    const product = doc.data();
-    const productId = doc.id;
+async function processObject(doc) {
+    const object = doc.data();
+    const objectId = doc.id;
     
-    console.log(`\n📦 Processing (Final Fix): ${product.name} (${productId})`);
+    console.log(`\n📦 Processing (Final Fix): ${object.name} (${objectId})`);
 
-    const imageUrl = product.imageUrls?.[0];
+    const imageUrl = object.imageUrls?.[0];
     if (!imageUrl) {
         console.log(`   ⚠️ Skipped: No image found`);
         return;
@@ -122,16 +122,16 @@ async function processProduct(doc) {
         console.log(`   ⬇️ Downloading and Uploading GLB...`);
         
         if (!DRY_RUN) {
-            const storagePath = `models/${productId}.glb`;
+            const storagePath = `models/${objectId}.glb`;
             const signedUrl = await uploadToStorage(modelOutput, storagePath);
-            await db.collection('products').doc(productId).update({ model3dUrl: signedUrl, has3D: true });
+            await db.collection('products').doc(objectId).update({ modelGlbUrl: signedUrl, has3D: true });
             console.log(`   ✅ Done! Correct Signed URL created.`);
         } else {
             console.log(`   👀 Dry Run: Model generated at ${modelOutput}`);
         }
 
     } catch (error) {
-        console.error(`   ❌ Error processing ${productId}:`, error.message);
+        console.error(`   ❌ Error processing ${objectId}:`, error.message);
     }
 }
 
@@ -139,10 +139,10 @@ async function main() {
     console.log(`🚀 Starting 3D Model Generation (with Signed URL fix)...`);
     const snapshot = await db.collection('products').limit(LIMIT).get();
     
-    if (snapshot.empty) return console.log("No products found.");
+    if (snapshot.empty) return console.log("No objects found.");
     
     for (const doc of snapshot.docs) {
-        await processProduct(doc);
+        await processObject(doc);
         console.log("   💤 Cooling down for 5s...");
         await sleep(5000); 
     }

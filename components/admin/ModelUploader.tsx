@@ -1,21 +1,44 @@
 
 'use client'
 
-import React, { useState } from 'react';
-import { CubeIcon, ArrowUpTrayIcon, XMarkIcon } from '../icons';
+import React, { useRef, useState } from 'react';
+import { CubeIcon } from '../icons';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ModelUploaderProps {
   onUploadSuccess: (url: string, ext: 'glb' | 'usdz') => void;
+  onUploadStateChange?: (state: { isLoading: boolean; progress: number | null }) => void;
 }
 
-export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess }) => {
+const MAX_MODEL_SIZE = 100 * 1024 * 1024; // 100MB
+
+const asModelKind = (value: unknown): 'glb' | 'usdz' | undefined => {
+  if (value === 'glb' || value === 'usdz') return value;
+  return undefined;
+};
+
+export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, onUploadStateChange }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadTask, setUploadTask] = useState<any>(null);
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
   const { user } = useAuth();
+
+  const setLoadingState = (next: { isLoading: boolean; progress: number | null }) => {
+    setIsLoading(next.isLoading);
+    setUploadProgress(next.progress);
+    onUploadStateChange?.(next);
+  };
+
+  const parseJsonSafely = (text: string): any | null => {
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return null;
+    }
+  };
 
   const processFile = async (file: File) => {
     // Валидация расширения
@@ -25,47 +48,98 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
         return;
     }
     const normalizedExt = ext as 'glb' | 'usdz';
+    const normalizedContentType =
+      normalizedExt === 'glb' ? 'model/gltf-binary' : 'model/vnd.usdz+zip';
 
-    setIsLoading(true);
+    if (!user) {
+      setError('Вы не авторизованы');
+      return;
+    }
+
+    if (file.size > MAX_MODEL_SIZE) {
+      setError('Файл слишком большой. Максимальный размер 100 МБ.');
+      return;
+    }
+
+    setLoadingState({ isLoading: true, progress: 0 });
     setError(null);
-    setUploadProgress(0);
     
     try {
-        const token = await user?.getIdToken();
-        const response = await fetch('/api/admin/upload-model', {
-            method: 'POST',
-            headers: {
-                'Content-Type': file.type,
-                'Authorization': `Bearer ${token}`,
-                'x-file-extension': normalizedExt,
-            },
-            body: file,
-        });
+        const token = await user.getIdToken();
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Upload failed');
+        if (xhrRef.current) {
+          try {
+            xhrRef.current.abort();
+          } catch {}
         }
 
-        const { url } = await response.json();
-        onUploadSuccess(url, normalizedExt);
+        const xhr = new XMLHttpRequest();
+        xhrRef.current = xhr;
+        xhr.open('POST', '/api/admin/upload-model', true);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.setRequestHeader('Content-Type', file.type || normalizedContentType);
+        xhr.setRequestHeader('x-file-extension', normalizedExt);
+
+        xhr.upload.onprogress = (e) => {
+          if (!e.lengthComputable) return;
+          const percent = Math.max(0, Math.min(100, Math.round((e.loaded * 100) / e.total)));
+          setLoadingState({ isLoading: true, progress: percent });
+        };
+
+        const complete = () => {
+          xhrRef.current = null;
+        };
+
+        const failWithMessage = (message: string) => {
+          complete();
+          setError(message);
+          setLoadingState({ isLoading: false, progress: null });
+        };
+
+        xhr.onerror = () => {
+          failWithMessage('Ошибка сети при загрузке');
+        };
+
+        xhr.onabort = () => {
+          failWithMessage('Загрузка отменена');
+        };
+
+        xhr.onload = () => {
+          const responseText = typeof xhr.responseText === 'string' ? xhr.responseText : '';
+          const data = parseJsonSafely(responseText);
+
+          if (xhr.status < 200 || xhr.status >= 300) {
+            const serverError = data?.error;
+            failWithMessage(typeof serverError === 'string' ? serverError : `Ошибка загрузки (${xhr.status})`);
+            return;
+          }
+
+          const url = data?.url;
+          const serverKind = asModelKind(data?.kind);
+          if (!url || typeof url !== 'string') {
+            failWithMessage('Ошибка загрузки: некорректный ответ сервера');
+            return;
+          }
+
+          complete();
+          setLoadingState({ isLoading: false, progress: null });
+          onUploadSuccess(url, serverKind || normalizedExt);
+        };
+
+        xhr.send(file);
 
     } catch (e: any) {
-        setError(e.message);
-    } finally {
-        setIsLoading(false);
-        setUploadProgress(null);
+        setError(e?.message ? String(e.message) : 'Ошибка загрузки');
+        setLoadingState({ isLoading: false, progress: null });
     }
   };
 
   const cancelUpload = () => {
-      if (uploadTask) {
-          uploadTask.cancel();
-          setUploadTask(null);
-          setIsLoading(false);
-          setUploadProgress(null);
-          setError("Загрузка отменена");
-      }
+    if (xhrRef.current) {
+      try {
+        xhrRef.current.abort();
+      } catch {}
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -111,7 +185,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess })
                     />
                 </div>
                 <p className="text-sm font-bold text-brand-brown">
-                    Загрузка...
+                    Загрузка{typeof uploadProgress === 'number' ? ` ${uploadProgress}%` : '...'}
                 </p>
                 <button 
                     onClick={(e) => { e.stopPropagation(); cancelUpload(); }}

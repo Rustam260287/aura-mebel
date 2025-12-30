@@ -2,9 +2,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
 import { askAI } from '../../../../lib/ai/core';
-import { DesignService } from '../../../../lib/ai/design.service';
 import admin from 'firebase-admin';
 import { verifyAdmin } from '../../../../lib/auth/admin-check';
+import { COLLECTIONS } from '../../../../lib/db/collections';
 
 const BATCH_SIZE = 1; 
 
@@ -48,30 +48,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`[Worker] Processing job ${jobId}, items ${startIndex} to ${endIndex}`);
 
-    for (const productId of batchIds) {
+    for (const objectId of batchIds) {
         try {
-            const productRef = db.collection('products').doc(productId);
-            const productSnap = await productRef.get();
+            const objectRef = db.collection(COLLECTIONS.objects).doc(objectId);
+            const objectSnap = await objectRef.get();
             
-            if (!productSnap.exists) {
+            if (!objectSnap.exists) {
                 processedCount++;
                 continue;
             }
 
-            const product = productSnap.data() as any;
+            const object = objectSnap.data() as any;
 
             if (job.type === 'bulk_ai_specs') {
-                const description = product.description || product.description_main || '';
+                const description = object.description || object.description_main || '';
                 
                 if (description && description.length > 10) {
                     const specs = await askAI({
-                        key: 'PRODUCT_ANALYZE',
+                        key: 'OBJECT_ANALYZE',
                         variables: { data: description }, // FIXED: was { description }
                         responseFormat: 'json',
                         model: 'gpt-3.5-turbo' 
                     });
                     
-                    const newSpecs = { ...(product.specs || {}) };
+                    const newSpecs = { ...(object.specs || {}) };
                     if (specs.width) newSpecs['Ширина'] = `${specs.width} см`;
                     if (specs.depth) newSpecs['Глубина'] = `${specs.depth} см`;
                     if (specs.height) newSpecs['Высота'] = `${specs.height} см`;
@@ -79,33 +79,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     if (specs.color) newSpecs['Цвет'] = specs.color;
                     if (specs.sleeping_area) newSpecs['Спальное место'] = specs.sleeping_area;
                     
-                    await productRef.update({ specs: newSpecs });
-                }
-            } 
-            
-            else if (job.type === 'bulk_generate_interior_photos') {
-                const sourceImage = product.imageUrls?.[0];
-                if (!sourceImage) throw new Error("No source image found");
-
-                const style = 'Modern minimalist interior, soft beige tones';
-                const url = await DesignService.generateInterior({
-                    imageUrl: sourceImage,
-                    style: style,
-                    mode: 'product-in-room'
-                });
-
-                if (url) {
-                    await productRef.update({
-                        imageUrls: admin.firestore.FieldValue.arrayUnion(url)
-                    });
+                    await objectRef.update({ specs: newSpecs });
                 }
             }
             
             processedCount++;
 
         } catch (e: any) {
-            console.error(`Error processing product ${productId}:`, e);
-            newErrors.push(`ID ${productId}: ${e.message}`);
+            console.error(`Error processing object ${objectId}:`, e);
+            newErrors.push(`ID ${objectId}: ${e.message}`);
             processedCount++;
         }
     }

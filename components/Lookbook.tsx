@@ -13,10 +13,10 @@ const LookbookItem: React.FC<{
   imageUrl: string;
   title: string;
   description: string;
-  products: string[];
+  objects: string[];
   index: number;
   onNavigate: (view: View) => void;
-}> = ({ imageUrl, title, description, products, index, onNavigate }) => {
+}> = ({ imageUrl, title, description, objects, index, onNavigate }) => {
   const ref = useRef<HTMLDivElement>(null!);
   const isVisible = useIntersectionObserver(ref, { threshold: 0.2 });
 
@@ -48,7 +48,7 @@ const LookbookItem: React.FC<{
                 variant="outline" 
                 size="sm"
                 className="border-white text-white hover:bg-white hover:text-brand-charcoal text-[10px] uppercase tracking-widest px-6"
-                onClick={() => onNavigate({ page: 'catalog' })} // В будущем можно фильтровать по коллекции
+                onClick={() => onNavigate({ page: 'objects' })} // В будущем можно фильтровать по подборке
              >
                 Смотреть образ
              </Button>
@@ -64,19 +64,19 @@ const LookbookComponent: React.FC<LookbookProps> = ({ onNavigate }) => {
       title: "Скандинавский Утро",
       description: "Светлые тона, натуральное дерево и функциональность. Идеально для начала дня.",
       imageUrl: "https://images.unsplash.com/photo-1594026112284-02bb6f3352fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      products: ["chair-1", "table-2"]
+      objects: ["chair-1", "table-2"]
     },
     {
       title: "Лофт Эстетика",
       description: "Грубые текстуры бетона в сочетании с мягкостью велюра. Смелый выбор.",
       imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      products: ["sofa-3", "lamp-1"]
+      objects: ["sofa-3", "lamp-1"]
     },
      {
       title: "Современная Классика",
       description: "Элегантность форм и благородство материалов. Вне времени.",
       imageUrl: "https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      products: ["sofa-3", "lamp-1"]
+      objects: ["sofa-3", "lamp-1"]
     }
   ];
 
@@ -93,7 +93,7 @@ const LookbookComponent: React.FC<LookbookProps> = ({ onNavigate }) => {
                     Идеи для вашего дома
                 </h2>
             </div>
-             <Button variant="link" onClick={() => onNavigate({ page: 'blog' })} className="hidden md:flex text-brand-terracotta hover:text-brand-terracotta-dark">
+             <Button variant="link" onClick={() => onNavigate({ page: 'journal' })} className="hidden md:flex text-brand-terracotta hover:text-brand-terracotta-dark">
                 Больше идей в журнале →
              </Button>
         </div>
@@ -110,7 +110,7 @@ const LookbookComponent: React.FC<LookbookProps> = ({ onNavigate }) => {
         </div>
         
          <div className="mt-12 text-center md:hidden">
-            <Button variant="text" onClick={() => onNavigate({ page: 'blog' })} className="text-brand-terracotta">
+            <Button variant="text" onClick={() => onNavigate({ page: 'journal' })} className="text-brand-terracotta">
                 Больше идей в журнале →
              </Button>
          </div>

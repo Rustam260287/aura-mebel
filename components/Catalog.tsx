@@ -1,29 +1,29 @@
 
 import React, { memo } from 'react';
-import type { Product } from '../types';
-import { ProductCard } from './ProductCard';
-import { ProductCardSkeleton } from './ProductCardSkeleton';
+import type { ObjectPublic } from '../types';
+import { ObjectCard } from './ObjectCard';
+import { ObjectCardSkeleton } from './ObjectCardSkeleton';
 import { Button } from './Button';
 
 interface CatalogProps {
-  allProducts: Product[];
+  allObjects: ObjectPublic[];
   isLoading: boolean;
-  onProductSelect: (productId: string) => void;
-  onQuickView?: (product: Product) => void;
-  onVirtualStage?: (product: Product) => void;
-  onImageClick?: (product: Product, index: number) => void;
+  onObjectSelect: (objectId: string) => void;
+  onQuickView?: (object: ObjectPublic) => void;
+  onVirtualStage?: (object: ObjectPublic) => void;
+  onImageClick?: (object: ObjectPublic, index: number) => void;
   isHomePage?: boolean;
 }
 
 const CatalogComponent: React.FC<CatalogProps> = ({
-  allProducts,
+  allObjects,
   isLoading,
-  onProductSelect,
+  onObjectSelect,
   isHomePage = false,
 }) => {
   const renderSkeletons = (count: number) =>
     Array.from({ length: count }).map((_, i) => (
-      <ProductCardSkeleton key={i} />
+      <ObjectCardSkeleton key={i} />
     ));
 
   return (
@@ -32,18 +32,18 @@ const CatalogComponent: React.FC<CatalogProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-14 md:gap-y-20">
           {renderSkeletons(isHomePage ? 6 : 8)}
         </div>
-      ) : allProducts.length > 0 ? (
+      ) : allObjects.length > 0 ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-14 md:gap-y-20">
-            {allProducts.map((product, index) => (
+            {allObjects.map((object, index) => (
               <div
-                key={product.id}
+                key={object.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
-                <ProductCard
-                  product={product}
-                  onProductSelect={onProductSelect}
+                <ObjectCard
+                  object={object}
+                  onObjectSelect={onObjectSelect}
                 />
               </div>
             ))}

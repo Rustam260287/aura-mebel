@@ -14,22 +14,20 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Products: Everyone can read, only Admin can write
+    // Objects: Everyone can read, only Admin can write (legacy: /products)
+    match /objects/{objectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
     // Blog Posts: Everyone can read, only Admin can write
-    match /blog_posts/{postId} {
+    match /blog/{postId} {
       allow read: if true;
       allow write: if isAdmin();
-    }
-
-    // Projects: Owner can read/write, Admin can read/write
-    match /projects/{projectId} {
-      allow read, write: if isOwner(resource.data.userId) || isAdmin();
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
     
     // Default deny for everything else

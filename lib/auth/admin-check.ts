@@ -1,8 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminAuth } from '../firebaseAdmin';
-
-const ADMIN_EMAILS = ['amin8914@gmail.com', 'admin@labelcom.store'];
+import { isAdminToken } from './admin-emails';
 
 /**
  * Тихая проверка прав админа (без отправки ответа).
@@ -22,11 +21,7 @@ export async function checkIsAdmin(req: NextApiRequest): Promise<boolean> {
     if (!auth) return false;
 
     const decodedToken = await auth.verifyIdToken(token);
-    
-    if (decodedToken.admin === true) return true;
-    if (decodedToken.email && ADMIN_EMAILS.includes(decodedToken.email)) return true;
-
-    return false;
+    return isAdminToken(decodedToken);
 
   } catch (error) {
     return false;

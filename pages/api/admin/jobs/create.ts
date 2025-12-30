@@ -2,6 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
 import { verifyAdmin } from '../../../../lib/auth/admin-check';
+import { COLLECTIONS } from '../../../../lib/db/collections';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { type } = req.body;
   
-  if (!['bulk_ai_specs', 'bulk_rewrite_desc', 'bulk_generate_interior_photos'].includes(type)) {
+  if (!['bulk_ai_specs'].includes(type)) {
       return res.status(400).json({ error: 'Invalid job type' });
   }
 
@@ -21,11 +22,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!db) return res.status(500).json({ error: 'Database not available' });
 
   try {
-    const snapshot = await db.collection('products').select().get();
+    const snapshot = await db.collection(COLLECTIONS.objects).select().get();
     const targetIds = snapshot.docs.map(doc => doc.id);
 
     if (targetIds.length === 0) {
-        return res.status(400).json({ error: 'No products found' });
+        return res.status(400).json({ error: 'No objects found' });
     }
 
     const newJob = {

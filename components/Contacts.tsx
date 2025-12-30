@@ -2,6 +2,8 @@
 import React, { memo } from 'react';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ClockIcon, WhatsAppIcon, TelegramIcon } from './icons'; 
 import Image from 'next/image';
+import { trackJourneyEvent } from '../lib/journey/client';
+import { useExperience } from '../contexts/ExperienceContext';
 
 const addresses = [
   {
@@ -26,10 +28,13 @@ const waLink = `https://wa.me/${cleanedPhone}`;
 const tgLink = `https://t.me/+${cleanedPhone}`;
 
 export const Contacts: React.FC = memo(() => {
+  const { state, emitEvent } = useExperience();
   const openChat = (text: string) => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('openStylistChat', { detail: { text } }));
+    void text;
+    if (state === 'THREE_D_ACTIVE') {
+      emitEvent({ type: 'EXIT_3D' });
     }
+    emitEvent({ type: 'OPEN_ASSISTANT' });
   };
 
   return (
@@ -97,19 +102,31 @@ export const Contacts: React.FC = memo(() => {
                 <div className="mt-12">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Связаться с нами</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <a href={waLink} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all font-bold uppercase text-xs tracking-widest">
+                        <a
+                          href={waLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER' })}
+                          className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all font-bold uppercase text-xs tracking-widest"
+                        >
                             <WhatsAppIcon className="w-5 h-5" /> WhatsApp
                         </a>
-                        <a href={tgLink} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#0088cc] text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-all font-bold uppercase text-xs tracking-widest">
+                        <a
+                          href={tgLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER' })}
+                          className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#0088cc] text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-all font-bold uppercase text-xs tracking-widest"
+                        >
                             <TelegramIcon className="w-5 h-5" /> Telegram
                         </a>
                     </div>
                     <button
-                        onClick={() => openChat('Здравствуйте! Помогите с выбором.')}
+                        onClick={() => openChat('')}
                         className="w-full mt-4 flex items-center justify-center gap-3 py-4 rounded-sm bg-brand-charcoal text-white hover:bg-brand-brown transition-all font-bold uppercase text-xs tracking-widest shadow-lg shadow-brand-charcoal/20"
                     >
                         <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                        Онлайн-чат
+                        Задать вопрос
                     </button>
                 </div>
             </div>

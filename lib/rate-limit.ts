@@ -23,7 +23,13 @@ export async function checkRateLimit(
   windowMs: number,
   action: string
 ): Promise<RateLimitResult> {
-  const db = getAdminDb();
+  let db;
+  try {
+    db = getAdminDb();
+  } catch (error) {
+    console.error('Rate limit error: failed to initialize DB', error);
+    return { success: true, remaining: 1, reset: Date.now() + windowMs };
+  }
   if (!db) {
       console.warn("Rate limit skipped: DB not available");
       return { success: true, remaining: 1, reset: Date.now() + windowMs };

@@ -4,9 +4,6 @@ import {
   Clock, 
   Phone, 
   Mail, 
-  Star, 
-  Truck, 
-  ShieldCheck, 
   ChevronLeft, 
   ChevronRight, 
   ChevronDown, 
@@ -18,8 +15,6 @@ import {
   CheckCircle2, 
   X, 
   Heart, 
-  ShoppingCart, 
-  ShoppingBag, 
   Menu, 
   Search, 
   MessageSquare, 
@@ -41,9 +36,6 @@ export const MapPinIcon = MapPin;
 export const ClockIcon = Clock;
 export const PhoneIcon = Phone;
 export const EnvelopeIcon = Mail;
-export const StarIcon = Star;
-export const TruckIcon = Truck;
-export const ShieldCheckIcon = ShieldCheck;
 export const ChevronLeftIcon = ChevronLeft;
 export const ChevronRightIcon = ChevronRight;
 export const ChevronDownIcon = ChevronDown;
@@ -55,8 +47,6 @@ export const SparklesIcon = Sparkles;
 export const CheckCircleIcon = CheckCircle2;
 export const XMarkIcon = X;
 export const HeartIcon = Heart;
-export const ShoppingCartIcon = ShoppingCart;
-export const ShoppingBagIcon = ShoppingBag;
 export const Bars3Icon = Menu;
 export const MenuIcon = Menu;
 export const MagnifyingGlassIcon = Search;

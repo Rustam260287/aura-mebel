@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import type { View } from '../types';
 import { CubeTransparentIcon } from './icons';
-import { FEATURE_FLAGS } from '../lib/featureFlags';
 
 interface ScenariosProps {
   onNavigate: (view: View) => void;
@@ -11,11 +10,11 @@ const ScenariosComponent: React.FC<ScenariosProps> = ({ onNavigate }) => {
   const allCards = [
     {
       id: 'ready',
-      title: "Готовая мебель",
-      desc: "Посмотрите, как мебель будет выглядеть в вашем интерьере",
+      title: "Галерея объектов",
+      desc: "Выберите объект и примерьте его в комнате через AR",
       icon: CubeTransparentIcon,
-      action: () => onNavigate({ page: 'catalog' }),
-      enabled: FEATURE_FLAGS.READY_FURNITURE_SCENARIO,
+      action: () => onNavigate({ page: 'objects' }),
+      enabled: true,
     },
   ];
 

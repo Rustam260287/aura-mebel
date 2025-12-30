@@ -9,50 +9,66 @@ export const config = {
   },
 };
 
-const streamToBuffer = (stream: NodeJS.ReadableStream): Promise<Buffer> => {
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        stream.on('data', chunk => chunks.push(chunk));
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-        stream.on('error', reject);
-    });
+const MAX_MODEL_SIZE = 100 * 1024 * 1024; // 100MB
+
+const normalizeExtension = (value: unknown): 'glb' | 'usdz' | undefined => {
+  if (typeof value !== 'string') return undefined;
+  const ext = value.trim().toLowerCase().replace(/^\./, '');
+  if (ext === 'glb' || ext === 'usdz') return ext;
+  return undefined;
+};
+
+const inferModelKind = (contentType: unknown, extension: unknown): 'glb' | 'usdz' | undefined => {
+  const ct = typeof contentType === 'string' ? contentType.toLowerCase().split(';')[0].trim() : '';
+  const ext = normalizeExtension(extension);
+
+  if (ct === 'model/gltf-binary') return 'glb';
+  if (ct === 'model/vnd.usdz+zip') return 'usdz';
+  if (ext === 'glb' || ext === 'usdz') return ext;
+
+  return undefined;
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end();
-  }
-
   try {
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Allow', ['POST', 'OPTIONS']);
+      return res.status(200).json({ ok: true });
+    }
+
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', ['POST', 'OPTIONS']);
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
     const isAdmin = await checkIsAdmin(req);
     if (!isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
+    const contentLengthHeader = req.headers['content-length'];
+    const contentLength = typeof contentLengthHeader === 'string' ? Number(contentLengthHeader) : undefined;
+    if (typeof contentLength === 'number' && Number.isFinite(contentLength) && contentLength > MAX_MODEL_SIZE) {
+      return res.status(413).json({ error: 'File too large' });
+    }
+
     const contentType = req.headers['content-type'];
     const extension = req.headers['x-file-extension'];
-
-    if (extension === 'glb' && contentType !== 'model/gltf-binary') {
-      return res.status(415).json({ error: 'Invalid GLB file format.' });
+    const kind = inferModelKind(contentType, extension);
+    if (!kind) {
+      return res.status(415).json({ error: 'Unsupported file type' });
     }
 
-    if (extension === 'usdz' && contentType !== 'model/vnd.usdz+zip') {
-      return res.status(415).json({ error: 'Invalid USDZ file format.' });
-    }
-
-    const buffer = await streamToBuffer(req);
-
-    // Загружаем WebP в Storage
-    const url = await MediaService.uploadBuffer(buffer, 'models', contentType as string);
+    const normalizedContentType = kind === 'glb' ? 'model/gltf-binary' : 'model/vnd.usdz+zip';
+    const url = await MediaService.uploadStream(req, 'models', normalizedContentType);
     
-    res.status(200).json({ url });
+    return res.status(200).json({ url, kind });
 
   } catch (error: any) {
     console.error('Upload Error:', error);
-    res.status(500).json({ error: error.message || "Failed to upload file." });
+    return res.status(500).json({ error: error?.message ? String(error.message) : 'Internal Server Error' });
   }
 }

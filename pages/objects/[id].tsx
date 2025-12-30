@@ -1,0 +1,189 @@
+
+// pages/objects/[id].tsx
+import { GetStaticPaths, GetStaticProps } from 'next';
+import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
+import type { ObjectPublic } from '../../types';
+import { useRouter } from 'next/router';
+import { ObjectDetail } from '../../components/ObjectDetail';
+import { Header } from '../../components/Header';
+import { Footer } from '../../components/Footer';
+import { Meta } from '../../components/Meta';
+import { toPublicObject } from '../../lib/publicObject';
+import { COLLECTIONS } from '../../lib/db/collections';
+
+interface ObjectPageProps {
+  object?: ObjectPublic;
+  error?: string;
+}
+
+export default function ObjectPage({ object, error }: ObjectPageProps) {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown"></div>
+        </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Header />
+        <div className="text-center py-20 px-4">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки объекта</h1>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button onClick={() => router.push('/objects')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
+                Вернуться в галерею
+            </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!object) {
+     return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Header />
+        <div className="text-center py-20 px-4">
+            <h1 className="text-3xl font-serif text-brand-charcoal mb-4">Объект не найден</h1>
+            <p className="text-gray-500 mb-8">К сожалению, запрашиваемый объект не существует или был удален.</p>
+            <button onClick={() => router.push('/objects')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
+                Перейти в галерею
+            </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const descriptionText = object.description || '';
+  const seoDescription = descriptionText.length > 160 
+    ? descriptionText.substring(0, 157) + '...' 
+    : descriptionText;
+    
+  const seoImage = (object.imageUrls && object.imageUrls.length > 0) 
+    ? object.imageUrls[0] 
+    : undefined;
+
+  return (
+    <>
+      <Meta 
+        title={object.name} 
+        description={seoDescription || `Примерьте ${object.name} в вашем интерьере.`}
+        image={seoImage}
+        url={`/objects/${object.id}`}
+      />
+      <Header />
+      <main className="bg-white min-h-screen">
+        <ObjectDetail 
+          object={object} 
+          onBack={() => router.back()}
+        />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+        return { paths: [], fallback: 'blocking' };
+    }
+    
+	    try {
+	        const objectsSnapshot = await adminDb.collection(COLLECTIONS.objects).select().get();
+	        const paths = objectsSnapshot.docs.map(doc => ({
+	            params: { id: doc.id },
+	        }));
+        
+        return { paths, fallback: 'blocking' };
+    } catch (e) {
+        console.error("Error generating paths:", e);
+        return { paths: [], fallback: 'blocking' };
+    }
+};
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { params } = context;
+  if (!params?.id) {
+    return { props: { error: "Object ID not found." } };
+  }
+  const { id } = params;
+  
+  // Разрешаем любые ID, так как теперь мы ищем и по slug
+  const adminDb = getAdminDb();
+  const adminStorage = getAdminStorage();
+
+  if (!adminDb || !adminStorage) {
+    return { props: { error: "Firebase Admin SDK initialization failed." } };
+  }
+
+  try {
+    let objectDocSnapshot;
+    const objectId = id as string;
+
+	    // 1. Попытка найти по ID документа (стандартный Firestore ID)
+	    const docRef = adminDb.collection(COLLECTIONS.objects).doc(objectId);
+	    objectDocSnapshot = await docRef.get();
+
+	    // 2. Если не найдено, пробуем найти по полю 'id' (slug из старого импорта)
+	    if (!objectDocSnapshot.exists) {
+	        console.log(`Object with doc ID ${objectId} not found. Searching by 'id' field...`);
+	        const querySnapshot = await adminDb.collection(COLLECTIONS.objects).where('id', '==', objectId).limit(1).get();
+	        
+	        if (!querySnapshot.empty) {
+	            objectDocSnapshot = querySnapshot.docs[0];
+	            // Важно: используем реальный ID документа для дальнейшей работы, 
+	            // но в объект запишем тот ID, который ожидает клиент (или реальный)
+	            // Лучше использовать реальный ID документа как основной.
+	        }
+	    }
+
+    if (!objectDocSnapshot || !objectDocSnapshot.exists) {
+      return { notFound: true };
+    }
+
+    const raw = objectDocSnapshot.data();
+    const objectData = toPublicObject(raw, objectDocSnapshot.id);
+
+    // Обработка картинок
+    if (Array.isArray(objectData.imageUrls)) {
+        const bucket = adminStorage.bucket();
+        objectData.imageUrls = await Promise.all(objectData.imageUrls.map(async (url) => {
+            if (url && url.startsWith('gs://')) {
+                const path = url.substring(url.indexOf('/', 5) + 1);
+                try {
+                    const [signedUrl] = await bucket.file(path).getSignedUrl({
+                        action: 'read',
+                        expires: '03-09-2491'
+                    });
+                    return signedUrl;
+                } catch (e) {
+                    console.error(`Error getting signed URL for ${path}:`, e instanceof Error ? e.message : e);
+                    return '/placeholder.svg';
+                }
+            }
+            return url || '/placeholder.svg';
+        }));
+    } else {
+        objectData.imageUrls = ['/placeholder.svg'];
+    }
+    
+    return {
+      props: {
+        object: JSON.parse(JSON.stringify(objectData)),
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    console.error(`Error fetching object ${id}:`, errorMessage);
+    return {
+      props: { error: `Не удалось загрузить объект. Возможно, он был удален.` },
+    };
+  }
+};

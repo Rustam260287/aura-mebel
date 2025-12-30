@@ -6,13 +6,16 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/ToastContext';
-import { WishlistProvider } from '../contexts/WishlistContext';
+import { SavedProvider } from '../contexts/SavedContext';
 import { ToastContainer } from './ToastContainer';
 import { ChatWidget } from './ChatWidget';
-import { useProductModals } from '../hooks/useProductModals';
+import { useObjectModals } from '../hooks/useObjectModals';
 import { FloatingMenuButton } from './FloatingMenuButton';
 import { MobileMenuOverlay } from './MobileMenuOverlay';
 import { ImmersiveProvider, useImmersive } from '../contexts/ImmersiveContext';
+import { pingVisitor } from '../lib/journey/client';
+import { ExperienceProvider } from '../contexts/ExperienceContext';
+import { ExperienceStateOrchestrator } from './ExperienceStateOrchestrator';
 
 const ImageZoomModal = dynamic(() => import('./ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
@@ -62,11 +65,11 @@ const MobileMenuChrome: React.FC = () => {
         onClose={() => setOpen(false)}
         onCatalog={() => {
           setOpen(false);
-          router.push('/products');
+          router.push('/objects');
         }}
-        onWishlist={() => {
+        onSaved={() => {
           setOpen(false);
-          router.push('/wishlist');
+          router.push('/saved');
         }}
         onAbout={() => {
           setOpen(false);
@@ -82,8 +85,8 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
   const {
     imageModalState,
     closeImageModal,
-  } = useProductModals();
-  void useRouter();
+  } = useObjectModals();
+  const router = useRouter();
   
   useEffect(() => {
     // This is a workaround for iOS Safari's viewport height issue.
@@ -96,17 +99,100 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
     return () => window.removeEventListener('resize', setVh);
   }, []);
 
+  useEffect(() => {
+    void pingVisitor();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const isChunkLoadError = (error: unknown) => {
+      if (!error) return false;
+      if (error instanceof Error) {
+        const message = (error.message || '').toLowerCase();
+        const name = (error.name || '').toLowerCase();
+        if (name.includes('chunkloaderror')) return true;
+        if (message.includes('failed to load chunk')) return true;
+        if (message.includes('loading chunk')) return true;
+      }
+      const raw = String(error).toLowerCase();
+      return raw.includes('chunkloaderror') || raw.includes('failed to load chunk') || raw.includes('loading chunk');
+    };
+
+    const reloadOnceForUrl = (url: string) => {
+      try {
+        const key = `label_chunk_reload:${url}`;
+        if (window.sessionStorage.getItem(key)) return false;
+        window.sessionStorage.setItem(key, '1');
+      } catch {
+        // If sessionStorage is blocked, still attempt a single reload.
+      }
+      window.location.href = url;
+      return true;
+    };
+
+    const handleRouteChangeError = (err: unknown, url: string) => {
+      if (!isChunkLoadError(err)) return;
+      reloadOnceForUrl(url);
+    };
+
+    router.events.on('routeChangeError', handleRouteChangeError);
+    return () => {
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router.events]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    if (typeof window === 'undefined') return;
+
+    const cleanupDevServiceWorker = async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((r) => r.unregister()));
+        }
+      } catch {
+        // ignore
+      }
+
+      try {
+        if ('caches' in window) {
+          const keys = await window.caches.keys();
+          await Promise.all(
+            keys
+              .filter((key) => key.includes('workbox') || key.includes('next-pwa'))
+              .map((key) => window.caches.delete(key)),
+          );
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    void cleanupDevServiceWorker();
+  }, []);
+
   return (
     <ImmersiveProvider>
       <AuthProvider>
         <ToastProvider>
-          <WishlistProvider>
-            {children}
-            <ToastContainer />
-            <ChatWidget />
-            <MobileMenuChrome />
-            <ImageZoomModal {...imageModalState} onClose={closeImageModal} />
-          </WishlistProvider>
+          <ExperienceProvider>
+            <SavedProvider>
+              {children}
+              <ToastContainer />
+              <ExperienceStateOrchestrator />
+              <ChatWidget />
+              <MobileMenuChrome />
+              <ImageZoomModal
+                isOpen={imageModalState.isOpen}
+                images={imageModalState.images}
+                initialIndex={imageModalState.initialIndex}
+                objectTitle={imageModalState.objectName}
+                onClose={closeImageModal}
+              />
+            </SavedProvider>
+          </ExperienceProvider>
         </ToastProvider>
       </AuthProvider>
     </ImmersiveProvider>

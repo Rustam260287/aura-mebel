@@ -2,7 +2,7 @@
 // pages/admin.tsx
 import { GetServerSideProps } from 'next';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { Product, BlogPost } from '../types';
+import type { ObjectAdmin, JournalEntry } from '../types';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
@@ -11,20 +11,22 @@ import { AuthGuard } from '../components/AuthGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
 import { getAuth } from 'firebase/auth';
+import { toAdminObject } from '../lib/adminObject';
+import { COLLECTIONS } from '../lib/db/collections';
 
 const AdminPage = dynamic(() => import('../components/AdminPage').then(mod => mod.AdminPage), { ssr: false });
 
 interface AdminContainerProps {
-  initialProducts: Product[];
-  initialBlogPosts: BlogPost[];
+  initialObjects: ObjectAdmin[];
+  initialJournalEntries: JournalEntry[];
 }
 
-function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerProps) {
+function AdminContainer({ initialObjects, initialJournalEntries }: AdminContainerProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const { addToast } = useToast();
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [objects, setObjects] = useState<ObjectAdmin[]>(initialObjects);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(initialJournalEntries);
 
   const getAuthToken = async () => {
     const auth = getAuth();
@@ -39,105 +41,110 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
     router.push('/');
   };
 
-  const handleUpdateProduct = useCallback(async (updatedProduct: Product) => {
+  const handleUpdateObject = useCallback(async (updatedObject: ObjectAdmin) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/products/${updatedProduct.id}`, {
+      const { modelGlbUrl, modelUsdzUrl, ...rest } = updatedObject as any;
+      const payload: Partial<ObjectAdmin> = {
+        ...rest,
+        ...(modelGlbUrl ? { modelGlbUrl } : {}),
+        ...(modelUsdzUrl ? { modelUsdzUrl } : {}),
+      };
+      console.info('[admin] update object payload', {
+        id: updatedObject.id,
+        modelGlbUrl: payload.modelGlbUrl,
+        modelUsdzUrl: payload.modelUsdzUrl,
+      });
+      const res = await fetch(`/api/objects/${updatedObject.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedProduct),
+        body: JSON.stringify(payload),
       });
 
       const responseData = await res.json();
       if (!res.ok) {
-        throw new Error(responseData?.error || 'Failed to update product');
+        throw new Error(responseData?.error || 'Failed to update object');
       }
       
-      const savedProduct = responseData as Product;
-      setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
-      addToast('Объект успешно обновлен', 'success');
+      const normalizedObject = toAdminObject(responseData, updatedObject.id);
+      setObjects(prev => prev.map(o => o.id === normalizedObject.id ? normalizedObject : o));
     } catch (error) {
       console.error(error);
-      addToast('Ошибка обновления объекта', 'error');
+      const message = error instanceof Error ? error.message : 'Ошибка обновления объекта';
+      throw new Error(message);
     }
   }, [addToast]);
 
-  const handleAddProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
+  const handleAddObject = useCallback(async (objectData: Omit<ObjectAdmin, 'id'>) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch('/api/products', {
+      const { modelGlbUrl, modelUsdzUrl, ...rest } = objectData as any;
+      const payload: Partial<Omit<ObjectAdmin, 'id'>> = {
+        ...rest,
+        ...(modelGlbUrl ? { modelGlbUrl } : {}),
+        ...(modelUsdzUrl ? { modelUsdzUrl } : {}),
+      };
+      console.info('[admin] add object payload', {
+        modelGlbUrl: payload.modelGlbUrl,
+        modelUsdzUrl: payload.modelUsdzUrl,
+      });
+      const res = await fetch('/api/objects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to add product');
+      if (!res.ok) {
+        const responseData = await res.json().catch(() => null);
+        throw new Error(responseData?.error || 'Failed to add object');
+      }
       
-      const newProduct: Product = await res.json();
-      setProducts(prev => [...prev, newProduct]);
-      addToast('Объект успешно добавлен', 'success');
+      const responseData = await res.json();
+      const id = typeof responseData?.id === 'string' ? responseData.id : '';
+      const normalizedObject = toAdminObject(responseData, id);
+      setObjects(prev => [...prev, normalizedObject]);
     } catch (error) {
       console.error(error);
-      addToast('Ошибка добавления объекта', 'error');
+      const message = error instanceof Error ? error.message : 'Ошибка добавления объекта';
+      throw new Error(message);
     }
   }, [addToast]);
 
-  const handleDeleteProduct = useCallback(async (productId: string) => {
+  const handleDeleteObject = useCallback(async (objectId: string) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/products/${productId}`, {
+      const res = await fetch(`/api/objects/${objectId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) throw new Error('Failed to delete product');
+      if (!res.ok) throw new Error('Failed to delete object');
       
-      setProducts(prev => prev.filter(p => p.id !== productId));
+      setObjects(prev => prev.filter(p => p.id !== objectId));
     } catch (error) {
       console.error(error);
       throw error;
     }
   }, []);
 
-  const handleBulkGenerateSeo = useCallback(
-    async (productIds: string[]) => {
-      const token = await getAuthToken();
-      const res = await fetch('/api/admin/products/bulk-generate-seo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productIds }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        console.error('Bulk SEO error:', data);
-        throw new Error(data?.error || 'Failed to bulk-generate SEO');
-      }
-    },
-    [],
-  );
-
   const handleBulkGenerateDescriptions = useCallback(
-    async (productIds: string[]) => {
+    async (objectIds: string[]) => {
       const token = await getAuthToken();
-      const res = await fetch('/api/admin/products/bulk-generate-description', {
+      const res = await fetch('/api/admin/objects/bulk-generate-description', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ productIds }),
+        body: JSON.stringify({ objectIds }),
       });
 
       const data = await res.json();
@@ -149,45 +156,55 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
     [],
   );
 
-  const handleUpdateBlogPost = useCallback(async (updatedPost: BlogPost) => {
+  const handleUpdateJournalEntry = useCallback(async (updatedEntry: JournalEntry) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/blog/${updatedPost.id}`, {
+      const res = await fetch(`/api/journal/${updatedEntry.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedPost),
+        body: JSON.stringify(updatedEntry),
       });
 
-      if (!res.ok) throw new Error('Failed to update blog post');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to update journal entry');
+      }
       
-      setBlogPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
-      addToast('Пост успешно обновлен', 'success');
+      setJournalEntries(prev => {
+        const idx = prev.findIndex(p => p.id === updatedEntry.id);
+        if (idx === -1) return [updatedEntry, ...prev];
+        const next = [...prev];
+        next[idx] = updatedEntry;
+        return next;
+      });
     } catch (error) {
       console.error(error);
-      addToast('Ошибка обновления поста', 'error');
+      addToast('Ошибка обновления записи', 'error');
     }
   }, [addToast]);
 
-  const handleDeleteBlogPost = useCallback(async (postId: string) => {
+  const handleDeleteJournalEntry = useCallback(async (entryId: string) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/blog/${postId}`, {
+      const res = await fetch(`/api/journal/${entryId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) throw new Error('Failed to delete blog post');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to delete journal entry');
+      }
       
-      setBlogPosts(prev => prev.filter(p => p.id !== postId));
-      addToast('Пост успешно удален', 'success');
+      setJournalEntries(prev => prev.filter(p => p.id !== entryId));
     } catch (error) {
       console.error(error);
-      addToast('Ошибка удаления поста', 'error');
+      addToast('Ошибка удаления записи', 'error');
     }
   }, [addToast]);
 
@@ -197,17 +214,15 @@ function AdminContainer({ initialProducts, initialBlogPosts }: AdminContainerPro
         <Button onClick={logout} variant="outline">Выйти</Button>
       </div>
       <AdminPage 
-        allProducts={products}
-        blogPosts={blogPosts}
-        chatLogs={[]}
+        allObjects={objects}
+        journalEntries={journalEntries}
         onNavigate={handleNavigate}
-        onUpdateProduct={handleUpdateProduct}
-        onAddProduct={handleAddProduct}
-        onDeleteProduct={handleDeleteProduct}
-        onBulkGenerateSeo={handleBulkGenerateSeo}
+        onUpdateObject={handleUpdateObject}
+        onAddObject={handleAddObject}
+        onDeleteObject={handleDeleteObject}
         onBulkGenerateDescriptions={handleBulkGenerateDescriptions}
-        onUpdateBlogPost={handleUpdateBlogPost}
-        onDeleteBlogPost={handleDeleteBlogPost}
+        onUpdateJournalEntry={handleUpdateJournalEntry}
+        onDeleteJournalEntry={handleDeleteJournalEntry}
       />
     </>
   );
@@ -226,20 +241,20 @@ export default function AdminPageContainer(props: AdminContainerProps) {
 export const getServerSideProps: GetServerSideProps = async () => {
   const dbAdmin = getAdminDb();
   if (!dbAdmin) {
-    return { props: { initialProducts: [], initialBlogPosts: [], error: "Admin DB not initialized" } };
+    return { props: { initialObjects: [], initialJournalEntries: [], error: "Admin DB not initialized" } };
   }
   try {
-    const productsSnapshot = await dbAdmin.collection('products').orderBy('name').get();
+    const objectsSnapshot = await dbAdmin.collection(COLLECTIONS.objects).orderBy('name').get();
     // IMPORTANT: some legacy imports contain an `id` field in document data (slug),
     // so ensure the Firestore document ID always wins for editing/saving.
-    const initialProducts = productsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
+    const initialObjects = objectsSnapshot.docs.map(doc => toAdminObject(doc.data(), doc.id)) as ObjectAdmin[];
     
     // ИСПРАВЛЕНИЕ: Убираем orderBy('date'), так как поле может отсутствовать
-    const blogSnapshot = await dbAdmin.collection('blog').get();
-    const allBlogPosts = blogSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as BlogPost[];
+    const journalSnapshot = await dbAdmin.collection('blog').get();
+    const allJournalEntries = journalSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as JournalEntry[];
     
     // Сортировка в памяти (по createdAt или id)
-    const initialBlogPosts = allBlogPosts.sort((a, b) => {
+    const initialJournalEntries = allJournalEntries.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.id).getTime();
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.id).getTime();
         return dateB - dateA;
@@ -247,13 +262,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
     return {
       props: { 
-        initialProducts: JSON.parse(JSON.stringify(initialProducts)),
-        initialBlogPosts: JSON.parse(JSON.stringify(initialBlogPosts)),
+        initialObjects: JSON.parse(JSON.stringify(initialObjects)),
+        initialJournalEntries: JSON.parse(JSON.stringify(initialJournalEntries)),
       },
     };
   } catch (error) {
     console.error("Error fetching admin data:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return { props: { initialProducts: [], initialBlogPosts: [], error: errorMessage } };
+    return { props: { initialObjects: [], initialJournalEntries: [], error: errorMessage } };
   }
 };

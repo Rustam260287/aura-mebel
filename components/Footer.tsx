@@ -8,7 +8,7 @@ import { Button } from './Button';
 import { cn } from '../utils';
 
 // Список email-адресов администраторов
-const ADMIN_EMAILS = ['amin8914@gmail.com', 'admin@labelcom.store']; 
+const ADMIN_EMAILS = ['amin8914@gmail.com', 'daniyagizatulina005@gmail.com', 'admin@labelcom.store']; 
 
 const FooterComponent: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,13 +35,13 @@ const FooterComponent: React.FC = () => {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         addToast(
             <div>
                 <p className="font-bold">Вы подписаны!</p>
-                <p>Мы будем держать вас в курсе новинок.</p>
+                <p>Мы будем держать вас в курсе обновлений.</p>
             </div>, 
             'success',
             5000
@@ -66,7 +66,7 @@ const FooterComponent: React.FC = () => {
           <div className="space-y-4">
             <Logo variant="dark" />
             <p className="text-sm text-muted-gray leading-relaxed font-light">
-              Мебель, вдохновлённая уютом и людьми.
+              Сервис 3D/AR‑примерки для спокойного визуального выбора и обсуждения решения.
             </p>
           </div>
 
@@ -74,8 +74,8 @@ const FooterComponent: React.FC = () => {
           <div>
             <h4 className="font-medium text-soft-black mb-6">Навигация</h4>
             <ul className="space-y-3 text-sm text-muted-gray">
-              <li><Link href="/products" className="hover:text-soft-black transition-colors">Галерея</Link></li>
-              <li><Link href="/wishlist" className="hover:text-soft-black transition-colors">Сохранено</Link></li>
+              <li><Link href="/objects" className="hover:text-soft-black transition-colors">Галерея</Link></li>
+              <li><Link href="/saved" className="hover:text-soft-black transition-colors">Сохранено</Link></li>
               <li><Link href="/about" className="hover:text-soft-black transition-colors">О нас</Link></li>
               <li><Link href="/contacts" className="hover:text-soft-black transition-colors">Контакты</Link></li>
                {isAdmin && (
@@ -99,7 +99,7 @@ const FooterComponent: React.FC = () => {
           <div>
             <h4 className="font-medium text-soft-black mb-6">Обновления</h4>
             <p className="text-sm text-muted-gray mb-6 font-light">
-              Узнавайте о новых моделях и возможностях примерки.
+              Узнавайте о новых объектах и улучшениях 3D/AR‑примерки.
             </p>
             <form className="flex" onSubmit={handleSubscribe}>
               <input 
@@ -128,7 +128,7 @@ const FooterComponent: React.FC = () => {
           <p>© {new Date().getFullYear()} Labelcom. Все права защищены.</p>
            <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-soft-black transition-colors">Политика конфиденциальности</Link>
-              <Link href="/terms" className="hover:text-soft-black transition-colors">Публичная оферта</Link>
+              <Link href="/terms" className="hover:text-soft-black transition-colors">Условия использования</Link>
           </div>
         </div>
       </div>

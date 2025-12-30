@@ -6,7 +6,7 @@ import { join } from 'path';
 // --- Инициализация Firebase ---
 try {
   const serviceAccount = JSON.parse(readFileSync('./serviceAccountKey.json', 'utf8'));
-  // ИСПРАВЛЕНИЕ: Используем правильный формат имени корзины
+  // ИСПРАВЛЕНИЕ: Используем правильный формат имени bucket
   const BUCKET_NAME = `${serviceAccount.project_id}.appspot.com`;
 
   if (!admin.apps.length) {
@@ -26,7 +26,7 @@ const bucket = admin.storage().bucket();
 // --- Основная функция ---
 async function uploadLocalModel(productId, fileName) {
   if (!productId || !fileName) {
-    console.error('❌ ОШИБКА: ID товара и имя файла должны быть указаны.');
+    console.error('❌ ОШИБКА: ID объекта и имя файла должны быть указаны.');
     return;
   }
 
@@ -37,7 +37,7 @@ async function uploadLocalModel(productId, fileName) {
     return;
   }
 
-  console.log(`🚀 Начинаю загрузку модели '${fileName}' для товара '${productId}'...`);
+  console.log(`🚀 Начинаю загрузку модели '${fileName}' для объекта '${productId}'...`);
 
   const timestamp = new Date().getTime();
   const storagePath = `models/local/${productId}_${timestamp}.glb`;
@@ -60,16 +60,16 @@ async function uploadLocalModel(productId, fileName) {
       expires: '03-01-2125'
     });
 
-    // 3. Обновление документа товара в Firestore
-    console.log(`   📄 Обновляю товар в Firestore...`);
+    // 3. Обновление документа объекта в Firestore
+    console.log(`   📄 Обновляю объект в Firestore...`);
     await db.collection('products').doc(productId).update({
-      model3dUrl: signedUrl,
+      modelGlbUrl: signedUrl,
       has3D: true,
       modelSource: 'local_upload'
     });
 
-    console.log('✅ Готово! Модель успешно загружена и привязана к товару.');
-    console.log(`   📦 ID Товара: ${productId}`);
+    console.log('✅ Готово! Модель успешно загружена и привязана к объекту.');
+    console.log(`   📦 ID объекта: ${productId}`);
     console.log(`   🔗 Новая ссылка на модель: ${signedUrl}`);
 
   } catch (error) {
@@ -83,7 +83,7 @@ const productIdArg = args[0];
 const fileNameArg = args[1];
 
 if (!productIdArg || !fileNameArg) {
-    console.log("ИСПОЛЬЗОВАНИЕ: node scripts/upload_local_model.mjs <ID_ТОВАРА> <ИМЯ_ФАЙЛА>");
+    console.log("ИСПОЛЬЗОВАНИЕ: node scripts/upload_local_model.mjs <ID_ОБЪЕКТА> <ИМЯ_ФАЙЛА>");
     console.log("Пример: node scripts/upload_local_model.mjs K76YLoU4Co4T4RkF9xJG \"my_model.glb\"");
 } else {
     uploadLocalModel(productIdArg, fileNameArg);

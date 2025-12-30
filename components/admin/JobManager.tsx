@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { SparklesIcon, PlayIcon, CheckCircleIcon, ExclamationTriangleIcon, PauseIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, PlayIcon, CheckCircleIcon, ExclamationTriangleIcon, PauseIcon } from '@heroicons/react/24/outline';
 import { getAuth } from 'firebase/auth';
 
 export const JobManager = () => {
@@ -64,7 +64,7 @@ export const JobManager = () => {
       }
   };
 
-  const startJob = async (type: 'bulk_ai_specs' | 'bulk_generate_interior_photos') => {
+  const startJob = async (type: 'bulk_ai_specs') => {
       setIsLoading(true);
       setErrorMsg(null);
       try {
@@ -114,9 +114,9 @@ export const JobManager = () => {
   if (!activeJob && !isLoading) {
       return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Автоматизация Каталога</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Автоматизация объектов</h3>
             <p className="text-sm text-gray-500 mb-4">
-                Запустите AI-агентов для улучшения качества каталога. Выберите задачу:
+                Помогает привести карточки объектов к единому аккуратному виду, без лишней лексики и давления.
             </p>
             <div className="flex gap-4 flex-wrap">
                 <button 
@@ -125,14 +125,6 @@ export const JobManager = () => {
                 >
                     <SparklesIcon className="w-5 h-5" />
                     Заполнить характеристики (AI)
-                </button>
-                
-                <button 
-                    onClick={() => startJob('bulk_generate_interior_photos')}
-                    className="flex items-center gap-2 bg-brand-brown text-white px-4 py-2 rounded-lg hover:bg-brand-charcoal transition-all font-bold text-sm shadow-md hover:shadow-lg"
-                >
-                    <PhotoIcon className="w-5 h-5" />
-                    Сгенерировать интерьеры (AI)
                 </button>
             </div>
 

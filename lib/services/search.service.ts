@@ -2,7 +2,8 @@
 import OpenAI from 'openai';
 import { getAdminDb } from '../firebaseAdmin';
 import admin from 'firebase-admin';
-import { Product } from '../../types';
+import type { ObjectAdmin } from '../../types';
+import { COLLECTIONS } from '../db/collections';
 
 // Helper types
 interface SearchOptions {
@@ -18,21 +19,22 @@ const openai = new OpenAI({
 export class SearchService {
   
   /**
-   * Умный поиск товаров (Гибридный: Векторы + Теги + Размеры + Точное название)
+   * Умный поиск объектов (Гибридный: Векторы + Теги + Размеры + Точное название)
    */
-  static async search(options: SearchOptions): Promise<Product[]> {
+  static async search(options: SearchOptions): Promise<ObjectAdmin[]> {
     const { query, limit = 10 } = options;
     const db = getAdminDb();
     if (!db) return [];
 
     // 1. Подготовка (Кеширование в памяти для скорости)
-    const snapshot = await db.collection('products').limit(300).get();
-    const allProducts = snapshot.docs.map(doc => {
+    const snapshot = await db.collection(COLLECTIONS.objects).limit(300).get();
+    const allObjects = snapshot.docs.map(doc => {
       const d = doc.data();
       return {
         id: doc.id,
         ...d,
-        _searchTags: this.extractProductTags(d),
+        objectType: d.objectType ?? d.category ?? '',
+        _searchTags: this.extractObjectTags(d),
         _dims: this.parseDimensions((d.description || d.description_main || '').toString())
       } as any;
     });
@@ -44,7 +46,7 @@ export class SearchService {
     const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
 
     // 2. Векторный поиск (если есть ключ)
-    let candidates = allProducts;
+    let candidates = allObjects;
     let embeddingsMap = new Map<string, number>();
 
     if (process.env.OPENAI_API_KEY) {
@@ -157,7 +159,7 @@ export class SearchService {
       return Array.from(tags);
   }
 
-  private static extractProductTags(data: any) {
+  private static extractObjectTags(data: any) {
       const tags = new Set<string>();
       if (Array.isArray(data.tags)) data.tags.forEach((t: string) => tags.add(t.toLowerCase()));
       return Array.from(tags);

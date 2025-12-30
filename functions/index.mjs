@@ -8,16 +8,16 @@ import fs from 'node:fs/promises';
 admin.initializeApp();
 
 const BUCKET_NAME = 'aura-mebel-7ec96.firebasestorage.app';
-const TARGET_FOLDER = 'products/';
+const TARGET_FOLDERS = ['media/', 'objects/', 'products/']; // 'products/' kept for legacy uploads
 const METADATA_FLAG = 'convertedToWebp';
 
-export const convertProductImagesToWebp = onObjectFinalized(
+export const convertMediaImagesToWebp = onObjectFinalized(
   { bucket: BUCKET_NAME, region: 'us-west1' },
   async (object) => {
     const { bucket: bucketName, name, contentType, metadata } = object;
     if (!bucketName || !name || !contentType) return;
 
-    if (!name.startsWith(TARGET_FOLDER)) {
+    if (!TARGET_FOLDERS.some((prefix) => name.startsWith(prefix))) {
       return;
     }
 
@@ -29,7 +29,8 @@ export const convertProductImagesToWebp = onObjectFinalized(
       return;
     }
 
-    if (contentType === 'image/webp' && metadata?.[METADATA_FLAG] === 'true') {
+    // Already WebP — nothing to do.
+    if (contentType === 'image/webp') {
       return;
     }
 

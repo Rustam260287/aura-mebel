@@ -4,21 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0",
+    "dev": "next dev --hostname 0.0.0.0 --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
     "optimize:3d": "node scripts/optimize-and-upload-3d.mjs",
-    "blog:daily": "node smart-blog-openai-replicate.mjs",
-    "blog:daily:dry": "DRY_RUN=1 node smart-blog-openai-replicate.mjs",
-    "embeddings:generate": "node scripts/generate-product-embeddings.mjs",
-    "products:improve": "node improve-product-content.mjs",
-    "products:improve:dry": "DRY_RUN=1 node improve-product-content.mjs",
-    "products:manual": "node manual-update-products.mjs",
-    "products:fix-missing": "node fix-missing-from-catalog.mjs",
-    "products:specs": "node sync-catalog-specs.mjs",
     "generate:3d": "node scripts/generate-3d-models.mjs"
   },
   "dependencies": {

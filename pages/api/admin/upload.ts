@@ -20,20 +20,25 @@ const streamToBuffer = (stream: NodeJS.ReadableStream): Promise<Buffer> => {
 };
 
 const sanitizeFolder = (folder?: string) => {
-  if (!folder) return 'products';
-  return folder.replace(/[^a-zA-Z0-9\-_/]/g, '') || 'products';
+  if (!folder) return 'media';
+  return folder.replace(/[^a-zA-Z0-9\-_/]/g, '') || 'media';
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end();
-  }
-
   try {
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Allow', ['POST', 'OPTIONS']);
+      return res.status(200).json({ ok: true });
+    }
+
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', ['POST', 'OPTIONS']);
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
     const isAdmin = await checkIsAdmin(req);
     if (!isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
@@ -41,7 +46,7 @@ export default async function handler(
 
     const contentType = req.headers['content-type'];
     if (!contentType || !contentType.startsWith('image/')) {
-      return res.status(415).json({ error: 'Только изображения поддерживаются для этого загрузчика' });
+      return res.status(415).json({ error: 'Unsupported file type' });
     }
 
     const buffer = await streamToBuffer(req);
@@ -59,6 +64,6 @@ export default async function handler(
 
   } catch (error: any) {
     console.error('Upload Error:', error);
-    res.status(500).json({ error: error.message || "Failed to upload file." });
+    res.status(500).json({ error: error?.message ? String(error.message) : 'Internal Server Error' });
   }
 }

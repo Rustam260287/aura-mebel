@@ -1,24 +1,31 @@
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
 import { getAdminDb } from '../lib/firebaseAdmin';
-import type { Product, View } from '../types';
+import { COLLECTIONS } from '../lib/db/collections';
+import type { ObjectPublic, View } from '../types';
 import { Hero } from '../components/Hero';
 import { Scenarios } from '../components/Scenarios';
 import { Gallery } from '../components/Gallery';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
-import { SEO } from '../components/SEO';
+import { Meta } from '../components/Meta';
+import { useExperience } from '../contexts/ExperienceContext';
 
 interface HomePageProps {
-  popularProducts: Product[];
+  featuredObjects: ObjectPublic[];
   error?: string;
 }
 
-export default function HomePage({ popularProducts, error }: HomePageProps) {
+export default function HomePage({ featuredObjects, error }: HomePageProps) {
   const router = useRouter();
   const scenariosRef = useRef<HTMLDivElement>(null); 
+  const { emitEvent } = useExperience();
+
+  useEffect(() => {
+    emitEvent({ type: 'ENTER_GALLERY' });
+  }, [emitEvent]);
 
   if (error) {
     return (
@@ -38,12 +45,8 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
     }
     
     // 2. Обычная навигация (вызывается из Scenarios)
-    if (view.page === 'catalog') {
-        router.push('/products');
-    } else if (view.page === 'ai-room-makeover') {
-        router.push('/ai-room-makeover');
-    } else if (view.page === 'furniture-from-photo') {
-        router.push('/furniture-from-photo');
+    if (view.page === 'objects') {
+        router.push('/objects');
     } else if (view.page === 'about') {
         router.push('/about');
     }
@@ -51,7 +54,7 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
 
   return (
     <>
-      <SEO title="Label — Мебель в вашем доме" description="Спокойное пространство выбора мебели без давления и маркетинга." />
+      <Meta title="Label — Мебель в вашем доме" description="Спокойное пространство выбора мебели без давления и маркетинга." />
       <Header />
       <main className="flex-grow bg-warm-white">
         
@@ -67,9 +70,9 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
         <div className="container mx-auto px-6 pb-24">
             <h2 className="text-2xl font-medium text-soft-black mb-8 pl-1">Избранные модели</h2>
             <Gallery
-                products={popularProducts}
+                objects={featuredObjects}
                 isLoading={router.isFallback}
-                onProductSelect={(id) => router.push(`/products/${id}`)}
+                onObjectSelect={(id) => router.push(`/objects/${id}`)}
             />
         </div>
 
@@ -91,33 +94,34 @@ export default function HomePage({ popularProducts, error }: HomePageProps) {
 export const getStaticProps: GetStaticProps = async () => {
   try {
     const adminDb = getAdminDb();
-    if (!adminDb) return { props: { popularProducts: [] } };
+    if (!adminDb) return { props: { featuredObjects: [] } };
 
-    const productsSnapshot = await adminDb
-      .collection('products')
+    const objectsSnapshot = await adminDb
+      .collection(COLLECTIONS.objects)
       .limit(8)
-      .select('name', 'imageUrls', 'category', 'model3dUrl')
+      .select('name', 'imageUrls', 'objectType', 'category', 'modelGlbUrl', 'modelUsdzUrl')
       .get();
       
-    const popularProducts = productsSnapshot.docs.map(doc => {
+    const featuredObjects = objectsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
         name: data.name ?? '',
         imageUrls: data.imageUrls ?? [],
-        category: data.category ?? '',
-        model3dUrl: data.model3dUrl ?? '',
+        objectType: data.objectType ?? data.category ?? '',
+        modelGlbUrl: data.modelGlbUrl ?? '',
+        modelUsdzUrl: data.modelUsdzUrl ?? '',
         description: '',
       };
-    }) as Product[];
+    }) as ObjectPublic[];
     
     return {
       props: { 
-        popularProducts: JSON.parse(JSON.stringify(popularProducts)) 
+        featuredObjects: JSON.parse(JSON.stringify(featuredObjects)) 
       },
       revalidate: 3600,
     };
   } catch (error) {
-    return { props: { popularProducts: [] } };
+    return { props: { featuredObjects: [] } };
   }
 };

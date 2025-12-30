@@ -16,10 +16,7 @@ const nextConfig = {
     scrollRestoration: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
+    ignoreBuildErrors: false,
   },
   turbopack: {},
   images: {
@@ -31,9 +28,18 @@ const nextConfig = {
       { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'replicate.delivery' },
-      // ДОБАВЛЕНО: домен для изображений товаров
+      // Домен для изображений (legacy assets)
       { protocol: 'https', hostname: 'label-com.ru' }, 
     ],
+  },
+  async redirects() {
+    return [
+      { source: '/products', destination: '/objects', permanent: true },
+      { source: '/products/:path*', destination: '/objects/:path*', permanent: true },
+      { source: '/wishlist', destination: '/saved', permanent: true },
+      { source: '/blog', destination: '/journal', permanent: true },
+      { source: '/blog/:path*', destination: '/journal/:path*', permanent: true },
+    ];
   },
   devIndicators: {
     buildActivity: true,

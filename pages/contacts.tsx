@@ -2,9 +2,11 @@
 import React, { memo } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { SEO } from '../components/SEO';
+import { Meta } from '../components/Meta';
 import { Button } from '../components/Button';
 import { WhatsAppIcon, TelegramIcon, ChatBubbleLeftRightIcon } from '../components/icons';
+import { trackJourneyEvent } from '../lib/journey/client';
+import { useExperience } from '../contexts/ExperienceContext';
 
 const ALMETYEVSK_MAP_URL = "https://yandex.ru/map-widget/v1/?ll=52.298522%2C54.901576&mode=search&ol=geo&ouri=ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgg1NzQ1MzAzORJG0KDQvtGB0YHQuNGPLCDQoNC10YHQv9GD0LHQu9C40LrQsCDQotCw0YLQsNGA0YHRgtCw0L0sINCQ0LvRjNC80LXRgtGM0LXQstGB0LosINGD0LvQuNGG0LAg0JvQtdC90LjQvdCwLCA4NUEiCg2hQlFCFcRyUUI%2C&z=17.09";
 
@@ -22,15 +24,18 @@ const addresses = [
 ];
 
 const ContactsPage: React.FC = memo(() => {
+    const { state, emitEvent } = useExperience();
     const openChat = (text: string) => {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('openStylistChat', { detail: { text } }));
-        }
+      void text;
+      if (state === 'THREE_D_ACTIVE') {
+        emitEvent({ type: 'EXIT_3D' });
+      }
+      emitEvent({ type: 'OPEN_ASSISTANT' });
     };
 
   return (
     <>
-      <SEO
+      <Meta
         title="Контакты — Labelcom"
         description="Мы на связи, когда вам удобно. Выберите удобный способ связи, и мы ответим спокойно и без спешки."
       />

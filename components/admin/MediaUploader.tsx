@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MediaUploaderProps {
-  onUploadSuccess: (url: string, type: 'image' | 'video') => void;
+  onUploadSuccess: (url: string) => void;
   accept?: string;
   folder?: string;
   children: (open: () => void, isLoading: boolean) => React.ReactNode;
@@ -13,14 +13,14 @@ interface MediaUploaderProps {
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const sanitizeFolder = (folder?: string) => {
-  if (!folder) return 'products';
-  return folder.replace(/[^a-zA-Z0-9\-_/]/g, '') || 'products';
+  if (!folder) return 'media';
+  return folder.replace(/[^a-zA-Z0-9\-_/]/g, '') || 'media';
 };
 
 export const MediaUploader: React.FC<MediaUploaderProps> = ({
   onUploadSuccess,
   accept = 'image/*',
-  folder = 'products',
+  folder = 'media',
   children,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +62,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
         if (!res.ok) throw new Error('Upload failed');
 
         const data = await res.json();
-        onUploadSuccess(data.url, 'image');
+        onUploadSuccess(data.url);
       } catch (error) {
         console.error('Upload failed', error);
         alert('Ошибка загрузки файла: ' + (error as any).message);

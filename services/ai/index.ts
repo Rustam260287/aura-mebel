@@ -1,6 +1,5 @@
 export { DEFAULT_TEXT_MODEL, getOpenAIClient } from './openaiClient';
-export { analyzeProductDescription } from './analyzeProduct';
+export { analyzeObjectDescription } from './analyzeObject';
 export { AIConfigError, AIError, toErrorMessage } from './errors';
-export { generateImprovedProductDescription } from './productDescription';
-export { generateSeoDescription } from './seo';
+export { generateImprovedObjectDescription } from './objectDescription';
 export { withRetry } from './retry';

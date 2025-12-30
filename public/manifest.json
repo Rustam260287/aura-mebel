@@ -1,13 +1,13 @@
 {
   "short_name": "Labelcom",
-  "name": "Labelcom Мебель",
-  "description": "Современный интернет-магазин стильной и качественной мебели. Наш ИИ-помощник поможет вам создать интерьер мечты.",
+  "name": "Labelcom — 3D/AR примерка",
+  "description": "3D и AR примерка мебели для спокойного визуального принятия решений. ИИ‑помощник помогает собрать подборку и обсудить решение.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#5D4037",
   "background_color": "#FBF9F4",
-  "categories": ["shopping", "lifestyle", "productivity"],
+  "categories": ["lifestyle", "productivity"],
   "icons": [
     {
       "src": "/icons/favicon-16x16.png",

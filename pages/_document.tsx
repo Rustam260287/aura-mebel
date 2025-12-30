@@ -46,6 +46,37 @@ const splashBodyScript = `(function(){
   }, motionMs);
 })();`;
 
+const DEV_SW_CLEANUP_KEY = 'labelcom:dev:sw-cleanup:v1';
+const devServiceWorkerCleanupScript = `(function(){
+  try {
+    var key = '${DEV_SW_CLEANUP_KEY}';
+    try { if (sessionStorage.getItem(key)) return; } catch (e) {}
+    if (!('serviceWorker' in navigator)) return;
+
+    Promise.all([
+      navigator.serviceWorker.getRegistrations().catch(function(){ return []; }),
+      (typeof caches !== 'undefined' && caches.keys ? caches.keys().catch(function(){ return []; }) : Promise.resolve([])),
+    ]).then(function(res){
+      var regs = res[0] || [];
+      var cacheKeys = res[1] || [];
+      if ((!regs || regs.length === 0) && (!cacheKeys || cacheKeys.length === 0)) return;
+
+      var p = Promise.resolve();
+      if (regs && regs.length) {
+        p = p.then(function(){ return Promise.all(regs.map(function(r){ return r.unregister(); })).catch(function(){}); });
+      }
+      if (cacheKeys && cacheKeys.length && typeof caches !== 'undefined' && caches.delete) {
+        p = p.then(function(){ return Promise.all(cacheKeys.map(function(k){ return caches.delete(k); })).catch(function(){}); });
+      }
+
+      return p.then(function(){
+        try { sessionStorage.setItem(key, '1'); } catch (e) {}
+        location.reload();
+      });
+    }).catch(function(){});
+  } catch (e) {}
+})();`;
+
 const splashCss = `
 /* PWA premium splash (first launch only) */
 #pwa-splash {
@@ -226,6 +257,9 @@ export default function Document() {
 
         {/* PWA Splash (critical CSS + early decision to avoid flicker) */}
         <script dangerouslySetInnerHTML={{ __html: splashHeadScript }} />
+        {process.env.NODE_ENV !== 'production' ? (
+          <script dangerouslySetInnerHTML={{ __html: devServiceWorkerCleanupScript }} />
+        ) : null}
         <style id="pwa-splash-css" dangerouslySetInnerHTML={{ __html: splashCss }} />
         <link rel="preload" as="image" href="/splash/labelcom-medallion.svg" type="image/svg+xml" />
 

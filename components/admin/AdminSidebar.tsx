@@ -1,11 +1,23 @@
 import React from 'react';
-import { ArrowLeftIcon, ChatBubbleLeftRightIcon } from '../icons';
+import {
+  ArrowLeftIcon,
+  ArrowsUpDownIcon,
+  ChatBubbleLeftRightIcon,
+  CubeIcon,
+  CubeTransparentIcon,
+  EyeIcon,
+  HeartIcon,
+  PhoneIcon,
+  PhotoIcon,
+  SlidersHorizontalIcon,
+} from '../icons';
 import type { View, AdminView } from '../../types';
 
 interface AdminSidebarProps {
   activeView: AdminView;
   setView: (view: AdminView) => void;
   onNavigate: (view: View) => void;
+  role: 'owner' | 'manager' | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -29,7 +41,14 @@ const NavLink: React.FC<{
   </button>
 );
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setView, onNavigate, isOpen, onClose }) => {
+export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  activeView,
+  setView,
+  onNavigate,
+  role,
+  isOpen,
+  onClose,
+}) => {
   return (
     <>
       {/* Overlay for mobile */}
@@ -39,21 +58,65 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setView,
       />
       <aside className={`fixed inset-y-0 left-0 w-64 bg-white z-50 shadow-lg flex flex-col transition-transform transform md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="px-6 py-4 border-b flex items-center justify-between">
-          <h2 className="text-2xl font-serif text-brand-brown">Aura / Админ</h2>
+          <h2 className="text-2xl font-serif text-brand-brown">Labelcom / Studio</h2>
         </div>
         <nav className="flex-grow mt-6">
-          <NavLink label="Аналитика" isActive={activeView === 'dashboard'} onClick={() => setView('dashboard')}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-          </NavLink>
-          <NavLink label="Товары" isActive={activeView === 'products'} onClick={() => setView('products')}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-          </NavLink>
-          <NavLink label="Блог" isActive={activeView === 'blog'} onClick={() => setView('blog')}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-          </NavLink>
-           <NavLink label="Аналитика чатов" isActive={activeView === 'chat-analytics'} onClick={() => setView('chat-analytics')}>
+          <div className="px-4 pb-2 text-xs uppercase tracking-wider text-muted-gray">
+            Опыт
+          </div>
+          {role !== 'manager' ? (
+            <>
+              <NavLink label="Путь посетителей" isActive={activeView === 'journey'} onClick={() => setView('journey')}>
+                <ArrowsUpDownIcon className="h-6 w-6" />
+              </NavLink>
+              <NavLink
+                label="Объекты → интерес"
+                isActive={activeView === 'objectInterest'}
+                onClick={() => setView('objectInterest')}
+              >
+                <SlidersHorizontalIcon className="h-6 w-6" />
+              </NavLink>
+              <NavLink
+                label="Сохранено (агрегировано)"
+                isActive={activeView === 'savedInsights'}
+                onClick={() => setView('savedInsights')}
+              >
+                <HeartIcon className="h-6 w-6" />
+              </NavLink>
+            </>
+          ) : (
+            <NavLink
+              label="Запросы менеджеру (hand-off)"
+              isActive={activeView === 'handoffContacts'}
+              onClick={() => setView('handoffContacts')}
+            >
               <ChatBubbleLeftRightIcon className="h-6 w-6" />
-          </NavLink>
+            </NavLink>
+          )}
+
+          {role !== 'manager' && (
+            <>
+              <div className="mt-6 px-4 pb-2 text-xs uppercase tracking-wider text-muted-gray">
+                Контент
+              </div>
+              <NavLink label="Объекты" isActive={activeView === 'objects'} onClick={() => setView('objects')}>
+                <CubeIcon className="h-6 w-6" />
+              </NavLink>
+              <NavLink label="3D и AR" isActive={activeView === 'assets'} onClick={() => setView('assets')}>
+                <CubeTransparentIcon className="h-6 w-6" />
+              </NavLink>
+              <NavLink label="Медиа" isActive={activeView === 'media'} onClick={() => setView('media')}>
+                <PhotoIcon className="h-6 w-6" />
+              </NavLink>
+              <NavLink
+                label="Hand-off настройки"
+                isActive={activeView === 'handoff'}
+                onClick={() => setView('handoff')}
+              >
+                <PhoneIcon className="h-6 w-6" />
+              </NavLink>
+            </>
+          )}
         </nav>
         <div className="p-4 border-t">
           <button

@@ -6,13 +6,10 @@ import { useRouter } from 'next/router';
 import { HeartIcon } from './icons';
 import { Logo } from './Logo';
 import { cn } from '../utils';
-import { FEATURE_FLAGS } from '../lib/featureFlags';
 
 const navLinks = [
-  { label: 'Галерея', href: '/products', enabled: FEATURE_FLAGS.READY_FURNITURE_SCENARIO },
-  { label: 'Создать', href: '/furniture-from-photo', enabled: FEATURE_FLAGS.CUSTOM_FURNITURE_SCENARIO },
-  { label: 'Комната', href: '/ai-room-makeover', enabled: FEATURE_FLAGS.AI_REDESIGN_SCENARIO },
-  { label: 'О проекте', href: '/about', enabled: true },
+  { label: 'Галерея', href: '/objects' },
+  { label: 'О проекте', href: '/about' },
 ];
 
 const HeaderComponent: React.FC = () => {
@@ -22,8 +19,6 @@ const HeaderComponent: React.FC = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
-  
-  const visibleNavLinks = navLinks.filter(link => link.enabled);
 
   return (
     <>
@@ -38,7 +33,7 @@ const HeaderComponent: React.FC = () => {
             {/* Defer rendering of this block until client-side mount to prevent hydration mismatch */}
             {mounted && (
               <nav className="flex items-center gap-8 text-[15px] font-medium text-soft-black">
-                {visibleNavLinks.map(link => (
+                {navLinks.map(link => (
                   <Link
                     key={link.href}
                     href={link.href}
@@ -52,7 +47,7 @@ const HeaderComponent: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-5 text-soft-black z-10 ml-auto lg:ml-0">
-            <button onClick={() => router.push('/wishlist')} className="hover:opacity-70 transition-opacity p-1">
+            <button onClick={() => router.push('/saved')} className="hover:opacity-70 transition-opacity p-1">
                 <HeartIcon className="w-6 h-6 stroke-1" />
             </button>
           </div>

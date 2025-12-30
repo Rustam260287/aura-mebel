@@ -3,12 +3,12 @@ import React, { memo } from 'react';
 import Image from 'next/image';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { SEO } from '../components/SEO';
+import { Meta } from '../components/Meta';
 
 const AboutPage: React.FC = memo(() => {
   return (
     <>
-      <SEO
+      <Meta
         title="О нас — Labelcom"
         description="Мы создаем мебель, которую можно сначала увидеть у себя дома. И только потом — решить, подходит ли она вам."
       />

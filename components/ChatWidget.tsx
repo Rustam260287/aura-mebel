@@ -1,515 +1,500 @@
-
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { PaperAirplaneIcon, XMarkIcon, PhotoIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon } from '@heroicons/react/24/solid';
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Transition } from '@headlessui/react';
+import { PhotoIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
+import { useExperience } from '../contexts/ExperienceContext';
+import { useSaved } from '../contexts/SavedContext';
+import { trackJourneyEvent } from '../lib/journey/client';
 
-interface ProductMini {
-    id: string;
-    name: string;
-    category?: string;
-    model3dUrl?: string;
-    imageUrls?: string[];
-}
-
-interface Message {
+type Message = {
   role: 'user' | 'assistant';
   content: string;
-  products?: ProductMini[];
-  quickReplies?: string[];
-  timestamp?: number;
-  isTyping?: boolean;
+  timestamp: number;
+};
+
+const PRICING_HANDOFF_REPLY =
+  'Я передал ваш вопрос менеджеру.\nОн уже видит, какой объект вы смотрели.';
+
+function getHandoffReason(input: string): 'pricing' | 'purchase' | null {
+  const t = (input || '').toLowerCase();
+  if (!t.trim()) return null;
+  return (
+    /\bprice\b/.test(t) ||
+    /\bcost\b/.test(t) ||
+    /сколько\s+стоит/.test(t) ||
+    /цена\b/.test(t) ||
+    /стоимост/.test(t) ||
+    /прайс/.test(t) ||
+    /доставк/.test(t) ||
+    /скидк/.test(t) ||
+    /оплат/.test(t)
+      ? 'pricing'
+      : /как\s+заказат/.test(t) || /заказат/.test(t) || /купит/.test(t) || /покупк/.test(t) || /оформит/.test(t) || /\border\b/.test(t) || /\bbuy\b/.test(t)
+        ? 'purchase'
+        : null
+  );
 }
 
-const STORAGE_KEY = 'labelcom_chat_history_v1';
-
 export const ChatWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { state, data, emitEvent } = useExperience();
+  const { isSaved, addToSaved } = useSaved();
+
+  const isBlocked = state === 'THREE_D_ACTIVE' || state === 'AR_ACTIVE';
+  const isActive = state === 'ASSISTANT_OPEN';
+  const isVisible = state === 'ASSISTANT_OPEN' || state === 'HANDOFF_REQUESTED';
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  
+  const [handoffLocked, setHandoffLocked] = useState(false);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
+  const conversationIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Ref для хранения актуального состояния сообщений
-  const messagesRef = useRef<Message[]>([]);
+  const [handoffLinks, setHandoffLinks] = useState<{ whatsapp?: string; telegram?: string; email?: string } | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-      messagesRef.current = messages;
-  }, [messages]);
-
-  useEffect(() => {
-      if (!mounted) return;
-      try {
-          const saved = localStorage.getItem(STORAGE_KEY);
-          if (saved) {
-              const loadedMessages = JSON.parse(saved);
-              setMessages(loadedMessages);
-              messagesRef.current = loadedMessages;
-		          } else {
-		              const initial = [{ role: 'assistant', content: 'Здравствуйте! Я помощник Label. Пришлите фото интерьера или опишите задачу — помогу понять, подойдёт ли объект, и подскажу, что лучше примерить в комнате.' } as Message];
-		              setMessages(initial);
-		              messagesRef.current = initial;
-		          }
-		      } catch (e) { console.error("Failed to load chat history", e); }
-	  }, [mounted]);
-
-  useEffect(() => {
-      if (!mounted) return;
-      const completedMessages = messages.filter(m => !m.isTyping);
-      if (completedMessages.length > 0) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(completedMessages));
-      }
-  }, [messages, mounted]);
-
-  const typeMessage = useCallback((fullText: string, products: ProductMini[] = [], quickReplies: string[] = []) => {
-    let currentIndex = 0;
-    
-    setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: '', 
-        products: [], 
-        quickReplies: [],
-        timestamp: Date.now(),
-        isTyping: true 
-    }]);
-
-    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-
-    typingIntervalRef.current = setInterval(() => {
-        setMessages(prev => {
-            const lastMsg = prev[prev.length - 1];
-            if (!lastMsg || lastMsg.role !== 'assistant') return prev;
-
-            const charsToAdd = Math.floor(Math.random() * 4) + 2; 
-            const nextIndex = Math.min(currentIndex + charsToAdd, fullText.length);
-            const nextContent = fullText.substring(0, nextIndex);
-            
-            currentIndex = nextIndex;
-
-	            if (currentIndex >= fullText.length) {
-	                if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-	                return prev.map((msg, idx) => 
-	                    idx === prev.length - 1 
-	                        ? { ...msg, content: fullText, products: products, quickReplies, isTyping: false } 
-	                        : msg
-	                );
-	            }
-
-            return prev.map((msg, idx) => 
-                idx === prev.length - 1 ? { ...msg, content: nextContent } : msg
-            );
-        });
-    }, 20); 
-  }, []);
-
-  const sendToAi = useCallback(async (text: string, currentMessages: Message[], imageUrl?: string) => {
-    setIsLoading(true);
+  const close = useCallback(() => {
+    conversationIdRef.current += 1;
     try {
-      const res = await fetch('/api/chat/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            message: text,
-            imageUrl: imageUrl, 
-            history: currentMessages.slice(-6).map(m => ({ 
-                role: m.role, 
-                content: m.content.replace(/<[^>]*>?/gm, '') 
-            }))
-        }),
-      });
+      abortRef.current?.abort();
+    } catch {}
+    abortRef.current = null;
+    setHandoffLocked(false);
+    setIsLoading(false);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setInput('');
+    setMessages([]);
+    emitEvent({ type: 'CLOSE_ASSISTANT' });
+  }, [emitEvent]);
 
-	      const data = await res.json();
-	      if (res.ok) {
-	        typeMessage(data.reply, data.products, data.quickReplies);
-	      } else {
-	        setMessages(prev => [...prev, { role: 'assistant', content: 'Простите, произошла ошибка.', timestamp: Date.now() }]);
-	      }
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Ошибка соединения.', timestamp: Date.now() }]);
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (isBlocked && isVisible) {
+      close();
     }
-  }, [typeMessage]);
-
-  const sendQuickPrompt = useCallback((text: string) => {
-    if (!text.trim() || isLoading) return;
-    const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() };
-    const newHistory = [...messagesRef.current, userMsg];
-    setMessages(newHistory);
-    // Remove quick replies from previous messages
-    setMessages(prev => prev.map(m => ({...m, quickReplies: undefined}))); 
-    
-    setIsOpen(true);
-    sendToAi(text, newHistory);
-  }, [isLoading, sendToAi]);
-  
-  useEffect(() => {
-    if (!mounted) return;
-    const handleStartChat = (event: CustomEvent) => {
-      const { imageUrl, text } = event.detail;
-      
-      const lastMsg = messagesRef.current[messagesRef.current.length - 1];
-      if (lastMsg && lastMsg.role === 'user' && lastMsg.content.includes(imageUrl)) {
-          return; 
-      }
-
-      const messageContent = `<img src="${imageUrl}" alt="Сгенерированный дизайн" class="rounded-lg mb-2 border border-gray-200" /><p>${text}</p>`;
-      const userMsg: Message = { role: 'user', content: messageContent, timestamp: Date.now() };
-      
-      const newHistory = [...messagesRef.current, userMsg];
-      setMessages(newHistory);
-      setIsOpen(true);
-      
-      sendToAi(text, newHistory, imageUrl);
-    };
-
-    window.addEventListener('startChatWithImage', handleStartChat as EventListener);
-    return () => {
-      window.removeEventListener('startChatWithImage', handleStartChat as EventListener);
-    };
-  }, [mounted, sendToAi]);
+  }, [close, isBlocked, isVisible]);
 
   useEffect(() => {
-    if (!mounted) return;
-    const handleOpenChat = (event: CustomEvent<{ text?: string }>) => {
-      const text = event.detail?.text || 'Здравствуйте! Нужна помощь экспертов.';
-      const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() };
-      const newHistory = [...messagesRef.current, userMsg];
-      setMessages(newHistory);
-      setIsOpen(true);
-      sendToAi(text, newHistory);
-    };
+    if (!isVisible) return;
+    conversationIdRef.current += 1;
+    abortRef.current = null;
+    setMessages([]);
+    setInput('');
+    setIsLoading(false);
+    setHandoffLocked(false);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setHandoffLinks(null);
+  }, [isVisible]);
 
-    window.addEventListener('openStylistChat', handleOpenChat as EventListener);
-    return () => window.removeEventListener('openStylistChat', handleOpenChat as EventListener);
-  }, [mounted, sendToAi]);
+  const objectContext = useMemo(
+    () => ({
+      id: data.activeObjectId || '',
+      name: data.activeObjectName || '',
+      objectType: data.activeObjectType || '',
+    }),
+    [data.activeObjectId, data.activeObjectName, data.activeObjectType],
+  );
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (!chatContainerRef.current) return;
+    const node = chatContainerRef.current;
+    if (!node) return;
     requestAnimationFrame(() => {
-      const node = chatContainerRef.current;
-      if (!node) return;
       node.scrollTo({ top: node.scrollHeight, behavior });
     });
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
-    const timer = setTimeout(() => scrollToBottom('auto'), 0);
-    return () => clearTimeout(timer);
-  }, [isOpen, scrollToBottom]);
-
-  useEffect(() => {
-    if (!isOpen || !chatContainerRef.current) return;
-    const container = chatContainerRef.current;
-    const isTyping = messages.length > 0 && messages[messages.length - 1].isTyping;
-    const behavior = isTyping ? 'auto' : 'smooth';
-    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 250; 
-
-    if (isAtBottom) {
-        scrollToBottom(behavior);
-    }
-  }, [messages, isOpen, previewUrl, scrollToBottom]);
+    if (!isVisible) return;
+    scrollToBottom('auto');
+  }, [isVisible, messages.length, scrollToBottom]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-          const file = e.target.files[0];
-          setSelectedFile(file);
-          setPreviewUrl(URL.createObjectURL(file));
-      }
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleRemoveFile = () => {
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const userMessage = input.trim();
-    if ((!userMessage && !selectedFile) || isLoading) return;
-    
-    setIsLoading(true);
-    setInput('');
-    
-    // Clear previous quick replies
-    setMessages(prev => prev.map(m => ({...m, quickReplies: undefined})));
+  const appendMessage = useCallback((msg: Omit<Message, 'timestamp'>) => {
+    setMessages((prev) => [...prev, { ...msg, timestamp: Date.now() }]);
+  }, []);
 
-    let uploadedImageUrl = undefined;
-    let finalMessageContent = userMessage;
+  const requestHandoff = useCallback(
+    (reason: 'pricing' | 'purchase' | 'contact', lastUserMessage: string) => {
+      appendMessage({ role: 'assistant', content: PRICING_HANDOFF_REPLY });
+      setHandoffLocked(true);
+      emitEvent({ type: 'HANDOFF_REQUESTED', reason, lastUserMessage });
+    },
+    [appendMessage, emitEvent],
+  );
 
-    if (selectedFile) {
-        try {
-            const reader = new FileReader();
-            const base64Promise = new Promise<string>((resolve, reject) => {
-                reader.onload = () => resolve(reader.result as string);
-                reader.onerror = reject;
-                reader.readAsDataURL(selectedFile);
-            });
-            const base64Image = await base64Promise;
-
-            const uploadRes = await fetch('/api/ai/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: base64Image }),
-            });
-            
-            if (uploadRes.ok) {
-                const uploadData = await uploadRes.json();
-                uploadedImageUrl = uploadData.url;
-                finalMessageContent = `<img src="${uploadedImageUrl}" alt="Загруженное фото" class="rounded-lg mb-2 border border-gray-200" /><p>${userMessage}</p>`;
-            }
-        } catch (err) {
-            console.error("Upload failed", err);
-        }
-        handleRemoveFile();
-    }
-
-    const userMsg: Message = { role: 'user', content: finalMessageContent, timestamp: Date.now() };
-    const newHistory = [...messagesRef.current, userMsg];
-    setMessages(newHistory);
-    
-    sendToAi(userMessage || "Проанализируй это изображение", newHistory, uploadedImageUrl);
-  };
-
-  const handleProductClick = (id: string) => {
-      setIsOpen(false);
-      router.push(`/products/${id}`);
-  };
-
-  const handleTryOn = (e: React.MouseEvent, product: ProductMini) => {
-    e.stopPropagation();
-    setIsOpen(false);
-    
-    // Создаем событие для открытия модалки примерки
-    const event = new CustomEvent('openFurnitureTryOn', {
-        detail: {
-            productImage: product.imageUrls?.[0],
-            productName: product.name
-        }
-    });
-    window.dispatchEvent(event);
-  };
-
-  const clearHistory = () => {
-      if (confirm('Начать новую консультацию?')) {
-          const initialMsg: Message = { role: 'assistant', content: 'Новый чат начат. Я слушаю вас.' };
-          setMessages([initialMsg]);
-          if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+  useEffect(() => {
+    if (!isVisible) return;
+    if (state !== 'HANDOFF_REQUESTED') return;
+    let isActive = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/handoff');
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json) return;
+        const whatsapp =
+          typeof json.whatsapp === 'string' && json.whatsapp.trim() ? json.whatsapp.trim() : undefined;
+        const telegram =
+          typeof json.telegram === 'string' && json.telegram.trim() ? json.telegram.trim() : undefined;
+        const email = typeof json.email === 'string' && json.email.trim() ? json.email.trim() : undefined;
+        if (isActive) setHandoffLinks({ whatsapp, telegram, email });
+      } catch {
+        // ignore
       }
-  };
+    };
+    void load();
+    return () => {
+      isActive = false;
+    };
+  }, [isVisible, state]);
 
+  const uploadImage = useCallback(async (file: File): Promise<string | null> => {
+    const reader = new FileReader();
+    const base64Image = await new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
-  if (!mounted) return null;
+    const uploadRes = await fetch('/api/chat/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64Image }),
+    });
+
+    if (!uploadRes.ok) return null;
+    const payload = await uploadRes.json().catch(() => null);
+    return typeof payload?.url === 'string' ? payload.url : null;
+  }, []);
+
+  const sendToAi = useCallback(
+    async (text: string, imageUrl?: string) => {
+      const conversationId = conversationIdRef.current;
+      const safeHistory = messages.slice(-6).map((m) => ({
+        role: m.role,
+        content: (m.content || '').replace(/<[^>]*>?/gm, ''),
+      }));
+
+      try {
+        abortRef.current?.abort();
+      } catch {}
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      let res: Response;
+      try {
+        res = await fetch('/api/chat/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            message: text,
+            history: safeHistory,
+            imageUrl,
+            objectContext,
+          }),
+        });
+      } catch (err) {
+        if (conversationId !== conversationIdRef.current) return;
+        if (state !== 'ASSISTANT_OPEN') return;
+        // Abort is an expected path when user enters 3D/AR or closes the assistant.
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      if (conversationId !== conversationIdRef.current) return;
+      if (state !== 'ASSISTANT_OPEN') return;
+      if (!res.ok) {
+        appendMessage({
+          role: 'assistant',
+          content: 'Сейчас не получилось ответить. Можно попробовать ещё раз чуть позже.',
+        });
+        return;
+      }
+
+      if (data?.handoffRequired) {
+        const reason = getHandoffReason(text) || 'pricing';
+        requestHandoff(reason, text);
+        return;
+      }
+
+      const reply = typeof data?.reply === 'string' ? data.reply : '';
+      if (!reply.trim()) return;
+      appendMessage({ role: 'assistant', content: reply });
+    },
+    [appendMessage, messages, objectContext, requestHandoff, state],
+  );
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!isActive || isBlocked || handoffLocked || isLoading) return;
+
+      const text = input.trim();
+      if (!text && !selectedFile) return;
+
+      setIsLoading(true);
+      setInput('');
+
+      let imageUrl: string | undefined;
+      if (selectedFile) {
+        try {
+          const url = await uploadImage(selectedFile);
+          if (url) {
+            imageUrl = url;
+            appendMessage({
+              role: 'user',
+              content: `<img src="${url}" alt="Фото" class="rounded-lg mb-2 border border-gray-200" /><p>${text}</p>`,
+            });
+          } else {
+            appendMessage({ role: 'user', content: text || 'Фото' });
+          }
+        } catch {
+          appendMessage({ role: 'user', content: text || 'Фото' });
+        } finally {
+          handleRemoveFile();
+        }
+      } else {
+        appendMessage({ role: 'user', content: text });
+      }
+
+      emitEvent({ type: 'ASSISTANT_QUESTION', text });
+
+      const handoffReason = getHandoffReason(text);
+      if (handoffReason) {
+        requestHandoff(handoffReason, text);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        await sendToAi(text || 'Опиши впечатление и масштаб', imageUrl);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      appendMessage,
+      handoffLocked,
+      handleRemoveFile,
+      input,
+      isActive,
+      isBlocked,
+      isLoading,
+      requestHandoff,
+      selectedFile,
+      sendToAi,
+      uploadImage,
+    ],
+  );
+
+  if (!isVisible || isBlocked) return null;
+
+  const activeObjectSaved = data.activeObjectId ? isSaved(data.activeObjectId) : false;
 
   return (
     <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end">
-      <Transition show={isOpen} enter="transition ease-out duration-300" enterFrom="opacity-0 translate-y-10 scale-95" enterTo="opacity-100 translate-y-0 scale-100" leave="transition ease-in duration-200" leaveFrom="opacity-100 translate-y-0 scale-100" leaveTo="opacity-0 translate-y-10 scale-95">
-        <div className="bg-white w-[calc(100vw-2rem)] md:w-96 h-[75vh] max-h-[calc(100vh-80px)] md:h-[680px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 mb-4 overflow-hidden ring-1 ring-black/5 origin-bottom-right font-sans">
-          
-          {/* Header */}
+      <Transition
+        show={isVisible}
+        enter="transition ease-out duration-300"
+        enterFrom="opacity-0 translate-y-6 scale-95"
+        enterTo="opacity-100 translate-y-0 scale-100"
+        leave="transition ease-in duration-200"
+        leaveFrom="opacity-100 translate-y-0 scale-100"
+        leaveTo="opacity-0 translate-y-6 scale-95"
+      >
+        <div className="bg-white w-[calc(100vw-2rem)] md:w-96 h-[70vh] max-h-[calc(100vh-100px)] md:h-[640px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 overflow-hidden ring-1 ring-black/5 origin-bottom-right font-sans">
           <div className="bg-gradient-to-r from-brand-charcoal to-brand-brown/90 text-white p-4 flex justify-between items-center shadow-md z-10 flex-shrink-0">
-            <div className="flex items-center gap-3">
-                <div className="relative w-9 h-9 flex items-center justify-center bg-white/10 rounded-full backdrop-blur-sm border border-white/20">
-                    <SparklesIcon className="w-5 h-5 text-brand-terracotta animate-pulse" />
-                </div>
-                <div>
-                    <h3 className="font-serif font-bold tracking-wide text-base leading-tight">AI Ассистент</h3>
-                    <p className="text-[10px] text-white/60 uppercase tracking-widest font-medium">Labelcom Intelligence</p>
-                </div>
+            <div className="min-w-0">
+              <h3 className="font-serif font-bold tracking-wide text-base leading-tight">Помощник</h3>
+              <p className="text-[10px] text-white/60 uppercase tracking-widest font-medium truncate">
+                Спокойно про ощущения, масштаб, уместность
+              </p>
             </div>
             <div className="flex items-center gap-1">
-                <button onClick={clearHistory} className="hover:bg-white/20 p-2 rounded-full transition-colors text-white/70 hover:text-white" title="Очистить историю">
-                    <TrashIcon className="w-4 h-4" />
+              {isActive && data.activeObjectId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!data.activeObjectId) return;
+                    if (activeObjectSaved) return;
+                    addToSaved(data.activeObjectId);
+                  }}
+                  className="hover:bg-white/20 px-3 py-2 rounded-full transition-colors text-white/90 hover:text-white text-xs font-semibold"
+                >
+                  {activeObjectSaved ? 'Сохранено' : 'Сохранить'}
                 </button>
-                <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-2 rounded-full transition-colors text-white/90 hover:text-white">
-                  <XMarkIcon className="w-5 h-5" />
+              )}
+              {isActive && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lastUser = messages.filter((m) => m.role === 'user').slice(-1)[0]?.content || '';
+                    const text = (lastUser || '').replace(/<[^>]*>?/gm, '').trim();
+                    requestHandoff('contact', text);
+                  }}
+                  className="hover:bg-white/20 px-3 py-2 rounded-full transition-colors text-white/90 hover:text-white text-xs font-semibold"
+                >
+                  Связаться
                 </button>
+              )}
+              <button
+                type="button"
+                onClick={close}
+                className="hover:bg-white/20 p-2 rounded-full transition-colors text-white/90 hover:text-white"
+                aria-label="Закрыть"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
             </div>
           </div>
-          
-          {/* Chat Area */}
-          <div 
-            ref={chatContainerRef} 
-            className="flex-1 overflow-y-auto p-4 space-y-6 bg-brand-cream-dark/30 min-h-0 custom-scrollbar scroll-smooth"
-          >
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                
-                {/* Message Bubble */}
-                <div className={`prose prose-sm max-w-[90%] p-4 rounded-2xl leading-relaxed shadow-sm relative transition-all ${
-                  msg.role === 'user' 
-                    ? 'bg-brand-charcoal text-white rounded-tr-sm prose-invert' 
-                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
-                }`}>
-                  <div dangerouslySetInnerHTML={{ __html: msg.content }} />
-                  {msg.isTyping && (
-                      <span className="inline-block w-1.5 h-4 ml-1 align-middle bg-brand-terracotta animate-pulse"></span>
-                  )}
-                </div>
 
-                {/* Recommended Products Carousel */}
-                {!msg.isTyping && msg.products && msg.products.length > 0 && (
-                    <div className="mt-3 w-full max-w-[95%] space-y-2 animate-fade-in-up">
-                        <p className="text-[10px] text-brand-charcoal/40 ml-1 font-bold uppercase tracking-widest flex items-center gap-1">
-                            <SparklesIcon className="w-3 h-3 text-brand-terracotta" />
-                            Рекомендации
-                        </p>
-                        <div className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x scrollbar-hide px-1">
-                            {msg.products.map(prod => (
-                                <div 
-                                    key={prod.id} 
-                                    onClick={() => handleProductClick(prod.id)}
-                                    className="min-w-[150px] w-[150px] bg-white p-2 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 snap-start flex-shrink-0 group relative"
-                                >
-                                    <div className="relative aspect-[4/3] rounded overflow-hidden bg-brand-cream-dark/50 mb-2">
-                                        <Image 
-                                            src={prod.imageUrls?.[0] || '/placeholder.svg'} 
-                                            alt={prod.name} 
-                                            fill 
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500" 
-                                            sizes="150px"
-                                        />
-                                        <button 
-                                            onClick={(e) => handleTryOn(e, prod)}
-                                            className="absolute bottom-1 right-1 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:bg-brand-terracotta hover:text-white transition-colors opacity-0 group-hover:opacity-100"
-                                            title="Примерить в комнате"
-                                        >
-                                            <EyeIcon className="w-4 h-4" />
-                                        </button>
-	                                    </div>
-	                                    <h4 className="text-xs font-bold text-gray-800 truncate leading-tight mb-1">{prod.name}</h4>
-	                                    <p className="text-[11px] text-gray-500">{prod.category || 'Объект интерьера'}</p>
-	                                </div>
-	                            ))}
-	                        </div>
-                    </div>
-                )}
-
-	                {/* Quick Replies */}
-	                {!msg.isTyping && msg.quickReplies && msg.quickReplies.length > 0 && (
-	                   <div className="mt-3 flex flex-wrap gap-2 w-full animate-fade-in-up">
-	                      {msg.quickReplies.map((reply, i) => (
-                        <button
-                          key={i}
-                          onClick={() => sendQuickPrompt(reply)}
-                          className="bg-white border border-brand-brown/10 text-brand-charcoal/70 text-[10px] uppercase tracking-wide font-bold px-3 py-2 rounded-full hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors shadow-sm"
-                        >
-                          {reply}
-                        </button>
-                      ))}
-                   </div>
-                )}
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-brand-cream-dark/30 min-h-0">
+            {messages.length === 0 ? (
+              <div className="text-xs text-gray-500 leading-relaxed bg-white/70 border border-gray-100 rounded-xl p-4">
+                Задайте вопрос про ощущение, визуальный вес и масштаб. Я отвечу коротко и без давления.
               </div>
-            ))}
-            
-            {/* Loading Indicator */}
-            {isLoading && !messages[messages.length-1]?.isTyping && (
-              <div className="flex justify-start animate-fade-in">
-                <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm flex gap-1.5 items-center">
-                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-1.5 h-1.5 bg-brand-terracotta/60 rounded-full animate-bounce delay-200"></div>
+            ) : (
+              messages.map((msg, idx) => (
+                <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div
+                    className={`prose prose-sm max-w-[92%] p-4 rounded-2xl leading-relaxed shadow-sm border ${
+                      msg.role === 'user'
+                        ? 'bg-brand-charcoal text-white rounded-tr-sm prose-invert border-brand-charcoal/10'
+                        : 'bg-white text-gray-800 rounded-tl-sm border-gray-100'
+                    }`}
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: msg.content }} />
+                  </div>
+                </div>
+              ))
+            )}
+
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm text-xs text-gray-500">
+                  Думаю…
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
-          {/* Image Preview */}
-          {previewUrl && (
-              <div className="px-4 py-3 bg-white flex items-center border-t border-gray-100">
-                  <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                      <Image src={previewUrl} alt="Preview" fill className="object-cover" />
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <button 
-                          onClick={handleRemoveFile}
-                          className="absolute top-1 right-1 bg-black/60 text-white p-0.5 rounded-full hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                          <XMarkIcon className="w-3 h-3" />
-                      </button>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-xs font-medium text-gray-700">Изображение добавлено</p>
-                    <p className="text-[10px] text-gray-400">Будет отправлено вместе с сообщением</p>
-                  </div>
+          {state === 'HANDOFF_REQUESTED' && (
+            <div className="px-4 py-3 bg-white border-t border-gray-100 text-xs text-gray-600">
+              <div className="font-medium text-gray-800">Связь с менеджером</div>
+              <div className="mt-1 text-gray-600">Если удобно, напишите любым способом:</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {handoffLinks?.whatsapp && (
+                  <a
+                    href={handoffLinks.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER', objectId: data.activeObjectId })}
+                    className="text-xs px-3 py-2 rounded-full bg-white border border-gray-200 text-brand-charcoal hover:border-brand-charcoal/40 transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                )}
+                {handoffLinks?.telegram && (
+                  <a
+                    href={handoffLinks.telegram}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER', objectId: data.activeObjectId })}
+                    className="text-xs px-3 py-2 rounded-full bg-white border border-gray-200 text-brand-charcoal hover:border-brand-charcoal/40 transition-colors"
+                  >
+                    Telegram
+                  </a>
+                )}
+                {handoffLinks?.email && (
+                  <a
+                    href={`mailto:${handoffLinks.email}`}
+                    onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER', objectId: data.activeObjectId })}
+                    className="text-xs px-3 py-2 rounded-full bg-white border border-gray-200 text-brand-charcoal hover:border-brand-charcoal/40 transition-colors"
+                  >
+                    Email
+                  </a>
+                )}
               </div>
+            </div>
           )}
 
-          {/* Input Area */}
+          {previewUrl && (
+            <div className="px-4 py-3 bg-white flex items-center border-t border-gray-100">
+              <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <Image src={previewUrl} alt="Preview" fill className="object-cover" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-700">Фото добавлено</p>
+                <p className="text-[10px] text-gray-400">Отправлю вместе с сообщением</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveFile}
+                className="ml-auto text-gray-400 hover:text-brand-terracotta transition-colors p-2 rounded-full"
+                aria-label="Убрать фото"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
             className="p-3 bg-white border-t border-gray-100 flex gap-2 items-center flex-shrink-0"
             style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
           >
             <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-gray-400 hover:text-brand-terracotta hover:bg-brand-brown/5 transition-all p-2.5 rounded-full flex-shrink-0"
-                title="Загрузить фото"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-gray-400 hover:text-brand-terracotta hover:bg-brand-brown/5 transition-all p-2.5 rounded-full flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Добавить фото"
+              disabled={handoffLocked || isLoading}
             >
-                <PhotoIcon className="w-6 h-6" />
+              <PhotoIcon className="w-6 h-6" />
             </button>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleFileSelect} 
-            />
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileSelect} />
 
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Спросите AI..."
-              className="flex-1 min-w-0 bg-gray-50 text-gray-800 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-terracotta focus:bg-white transition-all placeholder-gray-400 border border-transparent"
+              placeholder="Задать вопрос…"
+              disabled={!isActive || handoffLocked}
+              className="flex-1 min-w-0 bg-gray-50 text-gray-800 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-terracotta focus:bg-white transition-all placeholder-gray-400 border border-transparent disabled:opacity-60"
             />
-            
-            <button 
-              type="submit" 
-              disabled={(!input.trim() && !selectedFile) || isLoading || (messages.length > 0 && messages[messages.length-1].isTyping)}
+
+            <button
+              type="submit"
+              disabled={!isActive || handoffLocked || isLoading || (!input.trim() && !selectedFile)}
               className="bg-brand-charcoal text-white p-2.5 rounded-full hover:bg-brand-brown transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 flex items-center justify-center"
+              aria-label="Отправить"
             >
               <PaperAirplaneIcon className="w-5 h-5 -ml-0.5 mt-0.5 transform -rotate-45" />
             </button>
           </form>
         </div>
       </Transition>
-
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`group relative flex items-center justify-center transition-all duration-500 outline-none z-50 ${isOpen ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}`}
-      >
-        <div className="absolute inset-0 rounded-full bg-brand-terracotta/20 animate-ping duration-[3s]"></div>
-        <div className="absolute inset-0 rounded-full bg-brand-brown/10 animate-pulse duration-[2s]"></div>
-        
-        <div className="relative w-14 h-14 md:w-16 md:h-16 bg-brand-charcoal rounded-full shadow-2xl flex items-center justify-center overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300">
-            <SparklesIcon className="w-7 h-7 md:w-8 md:h-8 text-brand-terracotta animate-pulse drop-shadow-lg" />
-        </div>
-
-        <div className="absolute right-full mr-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0 hidden md:block">
-            <span className="text-brand-charcoal font-bold text-sm whitespace-nowrap">AI Ассистент</span>
-        </div>
-      </button>
     </div>
   );
 };

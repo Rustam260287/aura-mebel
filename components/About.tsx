@@ -68,21 +68,21 @@ export const About: React.FC = memo(() => {
                 <p className="text-brand-charcoal/70 font-light">Мы любим то, что делаем, и хотим, чтобы вы почувствовали эту заботу в каждой детали.</p>
             </div>
         </div>
-        
-        <div className="text-center bg-brand-charcoal text-white rounded-2xl p-12 md:p-20 relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                 <Image src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="bg" fill className="object-cover" />
-             </div>
-             <div className="relative z-10">
-                <h2 className="text-3xl md:text-5xl font-serif mb-6">Готовы преобразить свой дом?</h2>
-                <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10 font-light">
-                    Посмотрите наш каталог и найдите то, что идеально дополнит ваш интерьер.
-                </p>
-                <Button size="lg" className="bg-white text-brand-charcoal hover:bg-brand-terracotta hover:text-white border-none" onClick={() => router.push('/products')}>
-                    Перейти в каталог
-                </Button>
-             </div>
-        </div>
+	        
+	        <div className="text-center bg-brand-charcoal text-white rounded-2xl p-12 md:p-20 relative overflow-hidden">
+	             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+	                 <Image src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="bg" fill className="object-cover" />
+	             </div>
+	             <div className="relative z-10">
+	                <h2 className="text-3xl md:text-5xl font-serif mb-6">Хотите примерить объект в комнате?</h2>
+	                <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10 font-light">
+	                    Откройте галерею, посмотрите в 3D и примерьте в AR — спокойно, без спешки.
+	                </p>
+	                <Button size="lg" className="bg-white text-brand-charcoal hover:bg-brand-terracotta hover:text-white border-none" onClick={() => router.push('/objects')}>
+	                    Открыть галерею
+	                </Button>
+	             </div>
+	        </div>
       </div>
     </div>
   );
