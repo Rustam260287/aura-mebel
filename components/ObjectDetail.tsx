@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom';
 import { useRouter } from 'next/router';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
-import { ArrowLeftIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons';
+import { ArrowLeftIcon, ChatBubbleLeftRightIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons';
 import { useSaved } from '../contexts/SavedContext';
 import { useToast } from '../contexts/ToastContext';
 import { ARViewer, type ARViewerHandle } from './ARViewer';
@@ -27,7 +27,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   onBack,
 }) => {
   const router = useRouter();
-  const { emitEvent } = useExperience();
+  const { state: experienceState, emitEvent } = useExperience();
   const [isAROpen, setIsAROpen] = useState(false);
   const [uiState, setUiState] = useState<ObjectPageUiState>('DEFAULT');
   const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
@@ -376,6 +376,14 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     addToSaved(object.id);
   }, [addToSaved, isObjectSaved, object.id, removeFromSaved]);
 
+  const handleOpenAssistant = useCallback(() => {
+    if (experienceState === 'AR_ACTIVE') return;
+    if (experienceState === 'THREE_D_ACTIVE') {
+      emitEvent({ type: 'EXIT_3D' });
+    }
+    emitEvent({ type: 'OPEN_ASSISTANT' });
+  }, [emitEvent, experienceState]);
+
   const handleOpenAr = useCallback(() => {
     const isIOSDevice =
       typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -524,6 +532,16 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             >
               Посмотреть в интерьере
             </Button>
+
+            {uiState === 'POST_AR' && experienceState !== 'THREE_D_ACTIVE' && (
+              <button
+                onClick={handleOpenAssistant}
+                aria-label="Задать вопрос"
+                className="h-14 w-14 rounded-xl bg-white text-soft-black/80 border border-stone-beige/40 hover:border-soft-black/40 transition-colors flex items-center justify-center"
+              >
+                <ChatBubbleLeftRightIcon className="w-6 h-6" />
+              </button>
+            )}
 
             <button
               onClick={handleSaveToggle}
