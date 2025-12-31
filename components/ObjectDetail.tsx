@@ -2,6 +2,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { flushSync } from 'react-dom';
+import { useRouter } from 'next/router';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
 import { ArrowLeftIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons';
@@ -19,17 +20,21 @@ interface ObjectDetailProps {
 
 type Inline3DState = 'idle' | 'loading' | 'loaded' | 'error';
 type MediaMode = 'photo' | '3d';
+type ObjectPageUiState = 'DEFAULT' | 'IN_AR' | 'POST_AR';
 
 const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   object,
   onBack,
 }) => {
+  const router = useRouter();
   const { emitEvent } = useExperience();
   const [isAROpen, setIsAROpen] = useState(false);
+  const [uiState, setUiState] = useState<ObjectPageUiState>('DEFAULT');
   const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
   const [inline3dState, setInline3dState] = useState<Inline3DState>('idle');
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
+  const [postArHintVisible, setPostArHintVisible] = useState(false);
 
   const { isSaved, addToSaved, removeFromSaved } = useSaved();
   const { addToast } = useToast();
@@ -56,11 +61,68 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 
   const closeAR = useCallback(
     (durationSec?: number) => {
+      setUiState('POST_AR');
       setIsAROpen(false);
       emitEvent({ type: 'EXIT_AR', durationSec });
     },
     [emitEvent],
   );
+
+  useEffect(() => {
+    const reset = () => {
+      setUiState('DEFAULT');
+      setPostArHintVisible(false);
+    };
+    router.events.on('routeChangeStart', reset);
+    return () => {
+      router.events.off('routeChangeStart', reset);
+    };
+  }, [router.events]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    if (uiState !== 'IN_AR') return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [uiState]);
+
+  useEffect(() => {
+    if (uiState !== 'POST_AR') {
+      setPostArHintVisible(false);
+      return undefined;
+    }
+
+    if (isObjectSaved) {
+      setPostArHintVisible(false);
+      return undefined;
+    }
+
+    if (typeof window === 'undefined') return undefined;
+    const key = `label_post_ar_hint:${object.id}`;
+
+    try {
+      if (window.localStorage.getItem(key)) {
+        setPostArHintVisible(false);
+        return undefined;
+      }
+    } catch {
+      setPostArHintVisible(false);
+      return undefined;
+    }
+
+    setPostArHintVisible(true);
+    const timer = window.setTimeout(() => {
+      setPostArHintVisible(false);
+      try {
+        window.localStorage.setItem(key, '1');
+      } catch {}
+    }, 2600);
+
+    return () => window.clearTimeout(timer);
+  }, [isObjectSaved, object.id, uiState]);
 
 
   useEffect(() => {
@@ -325,23 +387,13 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     }
 
     emitEvent({ type: 'ENTER_AR' });
-    flushSync(() => setIsAROpen(true));
+    flushSync(() => {
+      setPostArHintVisible(false);
+      setUiState('IN_AR');
+      setIsAROpen(true);
+    });
     arViewerRef.current?.activateAR();
   }, [addToast, emitEvent, hasGlb, hasUsdz]);
-
-  if (isAROpen && (object.modelGlbUrl || object.modelUsdzUrl)) {
-    return (
-      <ARViewer
-        ref={arViewerRef}
-        src={object.modelGlbUrl}
-        iosSrc={object.modelUsdzUrl}
-        alt={object.name}
-        poster={object.imageUrls?.[0]}
-        objectId={object.id}
-        onClose={closeAR}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-warm-white">
@@ -441,14 +493,34 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       </section>
 
       {/* Sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+      <div
+        className={[
+          'fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]',
+          'transition-[opacity,transform] duration-300 ease-out will-change-transform',
+          uiState === 'IN_AR' || isAROpen ? 'opacity-0 translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0',
+        ].join(' ')}
+      >
         <div className="mx-auto max-w-md">
+          {uiState === 'POST_AR' && !isObjectSaved && (
+            <div
+              className={[
+                'pointer-events-none mb-2 px-3 text-center text-xs text-soft-black/50',
+                'transition-opacity duration-300 ease-out',
+                postArHintVisible ? 'opacity-100' : 'opacity-0',
+              ].join(' ')}
+            >
+              Можно сохранить, чтобы вернуться позже.
+            </div>
+          )}
           <div className="rounded-2xl bg-white/80 backdrop-blur-md border border-stone-beige/30 shadow-soft p-2 flex items-center gap-2">
             <Button
               onClick={handleOpenAr}
               size="lg"
               variant="primary"
-              className="flex-1 h-14 rounded-xl shadow-none"
+              className={[
+                'flex-1 h-14 rounded-xl shadow-none',
+                uiState === 'POST_AR' ? 'bg-soft-black/85 text-white/90 hover:bg-soft-black/90' : '',
+              ].join(' ')}
             >
               Посмотреть в интерьере
             </Button>
@@ -465,6 +537,19 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           </div>
         </div>
       </div>
+
+      {/* AR overlay (keep page mounted to avoid scroll jumps) */}
+      {isAROpen && (object.modelGlbUrl || object.modelUsdzUrl) && (
+        <ARViewer
+          ref={arViewerRef}
+          src={object.modelGlbUrl}
+          iosSrc={object.modelUsdzUrl}
+          alt={object.name}
+          poster={object.imageUrls?.[0]}
+          objectId={object.id}
+          onClose={closeAR}
+        />
+      )}
     </div>
   );
 };
