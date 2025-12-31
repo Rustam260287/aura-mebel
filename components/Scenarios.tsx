@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import type { View } from '../types';
-import { CubeTransparentIcon } from './icons';
+import { ChevronRightIcon, CubeTransparentIcon } from './icons';
 
 interface ScenariosProps {
   onNavigate: (view: View) => void;
@@ -22,7 +22,7 @@ const ScenariosComponent: React.FC<ScenariosProps> = ({ onNavigate }) => {
   const single = visibleCards.length === 1;
 
   return (
-    <div className="bg-warm-white py-16 md:py-24">
+    <div className="bg-warm-white py-10 md:py-16">
       <div className="container mx-auto px-6">
         <div
           className={
@@ -35,22 +35,32 @@ const ScenariosComponent: React.FC<ScenariosProps> = ({ onNavigate }) => {
             <div
               key={card.id}
               onClick={card.action}
-              className="bg-white max-w-md w-full rounded-2xl p-10 cursor-pointer shadow-soft hover:shadow-lg transition-all duration-300 group border border-transparent hover:border-stone-beige/20 transform hover:-translate-y-1"
+              className={[
+                'group w-full max-w-md cursor-pointer',
+                'rounded-2xl p-6 md:p-8',
+                'bg-white/70 backdrop-blur-md',
+                'border border-stone-beige/20',
+                'shadow-soft hover:shadow-md transition-all duration-300',
+                'active:scale-[0.99]',
+              ].join(' ')}
             >
-              <div className="w-14 h-14 bg-warm-white rounded-full flex items-center justify-center text-soft-black mb-8 group-hover:bg-soft-black group-hover:text-white transition-colors duration-300">
-                <card.icon className="w-7 h-7 stroke-[1.5]" />
-              </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 min-w-0">
+                  <div className="w-11 h-11 rounded-full bg-white/80 border border-stone-beige/20 flex items-center justify-center text-soft-black/80">
+                    <card.icon className="w-5 h-5 stroke-[1.5]" />
+                  </div>
 
-              <h3 className="text-xl font-medium text-soft-black mb-3">
-                {card.title}
-              </h3>
+                  <div className="min-w-0">
+                    <h3 className="text-lg md:text-xl font-medium text-soft-black tracking-tight">
+                      {card.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-gray leading-relaxed">
+                      {card.desc}
+                    </p>
+                  </div>
+                </div>
 
-              <p className="text-muted-gray text-base leading-relaxed mb-6">
-                {card.desc}
-              </p>
-
-              <div className="text-soft-black text-sm font-medium">
-                Посмотреть в интерьере →
+                <ChevronRightIcon className="w-5 h-5 text-muted-gray/60 group-hover:text-soft-black/70 transition-colors mt-1 shrink-0" />
               </div>
             </div>
           ))}

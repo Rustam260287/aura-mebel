@@ -78,15 +78,25 @@ export const ObjectCard: React.FC<ObjectCardProps> = memo(
 
     return (
       <div
-        className="group cursor-pointer flex flex-col gap-3 animate-fade-in"
+        className="group cursor-pointer flex flex-col gap-2 animate-fade-in"
         onClick={handleCardClick}
       >
         {/* Preview */}
-        <div className="relative w-full aspect-[4/5] bg-white rounded-xl overflow-hidden shadow-soft transition-transform duration-500 ease-out group-hover:scale-[1.015]">
+        <div
+          className={cn(
+            'relative w-full aspect-[4/5] bg-white rounded-2xl overflow-hidden shadow-soft',
+            'transition-transform duration-500 ease-out',
+            'active:scale-[0.99]',
+            isViewed ? 'ring-1 ring-soft-black/10' : 'ring-0',
+          )}
+        >
           <Image
             src={displayImage}
             alt={object.name || 'Object'}
-            className="object-cover w-full h-full opacity-95 group-hover:opacity-100 transition-opacity duration-500"
+            className={cn(
+              'object-cover w-full h-full transition-opacity duration-500',
+              isViewed ? 'opacity-90 saturate-90' : 'opacity-95',
+            )}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
@@ -96,19 +106,17 @@ export const ObjectCard: React.FC<ObjectCardProps> = memo(
             onClick={handleSavedToggle}
             className={cn(
               'absolute top-3 right-3 p-2 rounded-full transition-all duration-300 z-10',
-              'text-soft-black hover:text-brand-terracotta',
-              saved
-                ? 'opacity-100'
-                : 'opacity-50 lg:opacity-0 lg:group-hover:opacity-100',
+              'bg-white/70 backdrop-blur-md shadow-sm border border-stone-beige/20',
+              saved ? 'opacity-100' : 'opacity-60',
               isHeartAnimating ? 'scale-110' : 'scale-100'
             )}
           >
             <HeartIcon
               className={cn(
-                'w-6 h-6 transition-colors duration-300',
+                'w-5 h-5 transition-colors duration-300',
                 saved
-                  ? 'fill-brand-terracotta text-brand-terracotta'
-                  : 'text-white drop-shadow-sm'
+                  ? 'fill-soft-black/80 text-soft-black/80'
+                  : 'text-soft-black/55'
               )}
               strokeWidth={1.5}
             />
@@ -116,24 +124,14 @@ export const ObjectCard: React.FC<ObjectCardProps> = memo(
 
           {/* AR indicator */}
           {(object.modelGlbUrl || object.modelUsdzUrl) && (
-            <div className="absolute bottom-3 right-3 text-soft-black/50 bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm pointer-events-none">
-              <CubeTransparentIcon className="w-4 h-4" />
-            </div>
-          )}
-
-          {isViewed && (
-            <div className="absolute top-3 left-3 px-2 py-0.5 text-[11px] uppercase tracking-[0.3em] bg-white/70 rounded-full text-muted-gray">
-              Уже смотрели
+            <div className="absolute bottom-3 right-3 text-soft-black/45 bg-white/70 backdrop-blur-md rounded-full p-1.5 shadow-sm border border-stone-beige/20 pointer-events-none">
+              <CubeTransparentIcon className="w-4 h-4 stroke-[1.5]" />
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-1 px-1">
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-gray">
-            <span>{object.objectType || 'Объект интерьера'}</span>
-          </div>
-
-          <h3 className="text-lg font-semibold text-soft-black leading-tight">
+        <div className="px-1">
+          <h3 className="text-[15px] font-medium text-soft-black/90 leading-tight truncate">
             {object.name}
           </h3>
         </div>

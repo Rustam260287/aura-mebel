@@ -2,19 +2,14 @@
 import { Skeleton } from './Skeleton';
 
 export const ObjectCardSkeleton = () => (
-  <div className="group w-full flex flex-col h-full border border-gray-100 rounded-sm p-4 bg-white shadow-sm">
-    <Skeleton className="w-full aspect-[4/5] rounded-sm mb-4" />
-    <div className="space-y-3 flex-grow">
-         <div className="flex justify-between">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-3 w-12" />
-         </div>
-         <Skeleton className="h-5 w-full" />
-         <Skeleton className="h-4 w-2/3" />
+  <div className="w-full flex flex-col gap-2">
+    <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-white shadow-soft">
+      <Skeleton className="absolute inset-0" />
+      <div className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/70 border border-stone-beige/20" />
+      <div className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/60 border border-stone-beige/20" />
     </div>
-    <div className="pt-4 mt-auto border-t border-gray-50 flex justify-between items-end">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-4 w-16" />
+    <div className="px-1">
+      <Skeleton className="h-4 w-3/4 rounded" />
     </div>
   </div>
 );

@@ -68,11 +68,12 @@ export default function HomePage({ featuredObjects, error }: HomePageProps) {
 
         {/* 3. Gallery */}
         <div className="container mx-auto px-6 pb-24">
-            <h2 className="text-2xl font-medium text-soft-black mb-8 pl-1">Избранные модели</h2>
+            <h2 className="text-xl md:text-2xl font-medium text-soft-black mb-6 tracking-tight">Избранные модели</h2>
             <Gallery
                 objects={featuredObjects}
                 isLoading={router.isFallback}
                 onObjectSelect={(id) => router.push(`/objects/${id}`)}
+                onBrowseGallery={() => router.push('/objects')}
             />
         </div>
 
