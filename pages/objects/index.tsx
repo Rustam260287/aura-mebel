@@ -102,22 +102,39 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
 
             {/* Категории - как табы, чисто и просто */}
             {!searchQuery && (
-                <div className="flex justify-center mb-16 overflow-x-auto pb-4 scrollbar-hide">
-                    <div className="flex gap-2">
-                        {ALL_CATEGORIES.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => handleCategoryChange(cat)}
-                                className={`
-                                    px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 border
-                                    ${selectedCategory === cat 
-                                        ? 'bg-soft-black text-white border-soft-black shadow-md' 
-                                        : 'bg-white text-muted-gray border-stone-beige/30 hover:border-soft-black hover:text-soft-black'}
-                                `}
-                            >
-                                {cat}
-                            </button>
-                        ))}
+                <div className="-mx-6 mb-16">
+                    <div className="relative">
+                        <div
+                            className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                            style={{
+                                WebkitOverflowScrolling: 'touch',
+                                paddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
+                                paddingRight: 'calc(env(safe-area-inset-right) + 24px)',
+                                scrollPaddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
+                                scrollPaddingRight: 'calc(env(safe-area-inset-right) + 24px)',
+                            }}
+                        >
+                            <div className="flex w-max gap-2 pb-4">
+                                {ALL_CATEGORIES.map((cat) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => handleCategoryChange(cat)}
+                                        className={`
+                                            snap-start shrink-0 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 border
+                                            ${selectedCategory === cat
+                                                ? 'bg-soft-black text-white border-soft-black shadow-md'
+                                                : 'bg-white text-muted-gray border-stone-beige/30 hover:border-soft-black hover:text-soft-black'}
+                                        `}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Subtle edge fade to hint scrollability */}
+                        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-warm-white to-transparent" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-warm-white to-transparent" />
                     </div>
                 </div>
             )}
