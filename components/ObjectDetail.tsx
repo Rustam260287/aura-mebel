@@ -296,20 +296,6 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     };
   }, [inline3dState, threeDSrcUrl]);
 
-  if (isAROpen && (object.modelGlbUrl || object.modelUsdzUrl)) {
-    return (
-      <ARViewer
-        ref={arViewerRef}
-        src={object.modelGlbUrl}
-        iosSrc={object.modelUsdzUrl}
-        alt={object.name}
-        poster={object.imageUrls?.[0]}
-        objectId={object.id}
-        onClose={closeAR}
-      />
-    );
-  }
-
   const images = useMemo(
     () => (object.imageUrls?.length ? object.imageUrls : ['/placeholder.svg']),
     [object.imageUrls],
@@ -342,6 +328,20 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     flushSync(() => setIsAROpen(true));
     arViewerRef.current?.activateAR();
   }, [addToast, emitEvent, hasGlb, hasUsdz]);
+
+  if (isAROpen && (object.modelGlbUrl || object.modelUsdzUrl)) {
+    return (
+      <ARViewer
+        ref={arViewerRef}
+        src={object.modelGlbUrl}
+        iosSrc={object.modelUsdzUrl}
+        alt={object.name}
+        poster={object.imageUrls?.[0]}
+        objectId={object.id}
+        onClose={closeAR}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-warm-white">
