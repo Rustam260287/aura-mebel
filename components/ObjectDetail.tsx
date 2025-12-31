@@ -1,18 +1,13 @@
 
-import React, { useState, memo, useEffect, useRef } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { flushSync } from 'react-dom';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
-import {
-  ArrowLeftIcon,
-  CheckCircleIcon,
-} from './icons';
-import { useRouter } from 'next/router';
+import { ArrowLeftIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons';
 import { useSaved } from '../contexts/SavedContext';
 import { useToast } from '../contexts/ToastContext';
-import { ARViewer } from './ARViewer';
-import Image from 'next/image';
-import { Transition } from '@headlessui/react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { ARViewer, type ARViewerHandle } from './ARViewer';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
@@ -23,26 +18,24 @@ interface ObjectDetailProps {
 }
 
 type Inline3DState = 'idle' | 'loading' | 'loaded' | 'error';
+type MediaMode = 'photo' | '3d';
 
 const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   object,
   onBack,
 }) => {
-  const router = useRouter();
-  const { state: experienceState, emitEvent } = useExperience();
+  const { emitEvent } = useExperience();
   const [isAROpen, setIsAROpen] = useState(false);
-  const [experienceCompleted, setExperienceCompleted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [show3DHint, setShow3DHint] = useState(false);
+  const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
   const [inline3dState, setInline3dState] = useState<Inline3DState>('idle');
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
 
-  const { isSaved, addToSaved } = useSaved();
+  const { isSaved, addToSaved, removeFromSaved } = useSaved();
   const { addToast } = useToast();
-  const alreadySaved = isSaved(object.id);
+  const isObjectSaved = isSaved(object.id);
   const inlineModelViewerRef = useRef<HTMLElement | null>(null);
+  const arViewerRef = useRef<ARViewerHandle | null>(null);
   const open3dLoggedForObjectRef = useRef<string | null>(null);
 
   const hasGlb = Boolean(object.modelGlbUrl);
@@ -51,6 +44,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const threeDSrcUrl = hasGlb
     ? `/api/proxy-model?url=${encodeURIComponent(object.modelGlbUrl!)}`
     : undefined;
+  const canPreview3d = Boolean(threeDSrcUrl);
 
   useEffect(() => {
     trackJourneyEvent({ type: 'VIEW_OBJECT', objectId: object.id });
@@ -60,54 +54,14 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     emitEvent({ type: 'VIEW_OBJECT', objectId: object.id, name: object.name, objectType: object.objectType });
   }, [emitEvent, object.id, object.name, object.objectType]);
 
-  const handleTryAR = () => {
-    if (!canStartAr) {
-      addToast('AR‑примерка сейчас недоступна для этого устройства', 'info');
-      return;
-    }
-    emitEvent({ type: 'ENTER_AR' });
-    setIsAROpen(true);
-  };
+  const closeAR = useCallback(
+    (durationSec?: number) => {
+      setIsAROpen(false);
+      emitEvent({ type: 'EXIT_AR', durationSec });
+    },
+    [emitEvent],
+  );
 
-  const closeAR = (durationSec?: number) => {
-    setIsAROpen(false);
-    setExperienceCompleted(true);
-    emitEvent({ type: 'EXIT_AR', durationSec });
-  };
-
-  const handleSaveToSaved = () => {
-    if (!alreadySaved) {
-      addToSaved(object.id);
-    }
-  };
-
-  const handleOpenSaved = () => router.push('/saved');
-
-  useEffect(() => {
-    if (
-      typeof window === 'undefined' ||
-      typeof window.matchMedia !== 'function'
-    ) {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-    const updateIsMobile = (event?: MediaQueryListEvent) => {
-      setIsMobile(event ? event.matches : mediaQuery.matches);
-    };
-    updateIsMobile();
-
-    mediaQuery.addEventListener('change', updateIsMobile);
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateIsMobile);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    setIsIOS(/iPhone|iPad|iPod/i.test(navigator.userAgent));
-  }, []);
 
   useEffect(() => {
     if (
@@ -125,7 +79,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   useEffect(() => {
     setInline3dError(null);
     setInline3dProgress(null);
-    if (!hasGlb || !threeDSrcUrl) {
+    if (mediaMode !== '3d' || !hasGlb || !threeDSrcUrl) {
       setInline3dState('idle');
       return undefined;
     }
@@ -303,7 +257,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       el.removeEventListener('touchcancel', exit3d as any);
       exit3d();
     };
-  }, [emitEvent, object.id, hasGlb, threeDSrcUrl]);
+  }, [emitEvent, mediaMode, object.id, hasGlb, threeDSrcUrl]);
 
   useEffect(() => {
     const el = inlineModelViewerRef.current as any;
@@ -342,45 +296,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     };
   }, [inline3dState, threeDSrcUrl]);
 
-  useEffect(() => {
-    if (
-      typeof window === 'undefined' ||
-      !hasGlb
-    ) {
-      setShow3DHint(false);
-      return undefined;
-    }
-
-    try {
-      if (localStorage.getItem('label_3d_hint_shown')) {
-        setShow3DHint(false);
-        return undefined;
-      }
-    } catch {
-      setShow3DHint(false);
-      return undefined;
-    }
-
-    setShow3DHint(true);
-    const timer = setTimeout(() => {
-      setShow3DHint(false);
-      try {
-        localStorage.setItem('label_3d_hint_shown', '1');
-      } catch {}
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, [hasGlb]);
-
-  const ctaWrapperClass = isMobile
-    ? 'fixed bottom-4 left-4 right-4 z-cta md:static md:mt-12'
-    : 'mt-auto';
-
-  const canStartAr = isMobile ? (isIOS ? hasUsdz : hasGlb) : hasGlb;
-
-  if (isAROpen && canStartAr && (object.modelGlbUrl || object.modelUsdzUrl)) {
+  if (isAROpen && (object.modelGlbUrl || object.modelUsdzUrl)) {
     return (
       <ARViewer
+        ref={arViewerRef}
         src={object.modelGlbUrl}
         iosSrc={object.modelUsdzUrl}
         alt={object.name}
@@ -391,132 +310,92 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     );
   }
 
-  const primaryCta =
-    experienceCompleted
-      ? {
-          label: 'Задать вопрос',
-          onClick: () => {
-            if (experienceState === 'THREE_D_ACTIVE') {
-              emitEvent({ type: 'EXIT_3D' });
-            }
-            emitEvent({ type: 'OPEN_ASSISTANT' });
-          },
-        }
-      : !canStartAr
-        ? {
-            label: alreadySaved ? 'Открыть подборку' : 'Сохранить в подборку',
-            onClick: alreadySaved ? handleOpenSaved : handleSaveToSaved,
-          }
-        : {
-            label: 'Примерить в комнате',
-            onClick: handleTryAR,
-          };
+  const images = useMemo(
+    () => (object.imageUrls?.length ? object.imageUrls : ['/placeholder.svg']),
+    [object.imageUrls],
+  );
 
-  const ctaVariant: 'primary' | 'secondary' =
-    experienceCompleted ? 'primary' : canStartAr ? (isMobile ? 'primary' : 'secondary') : 'primary';
+  const handleToggle3d = useCallback(() => {
+    if (!canPreview3d) return;
+    setMediaMode((prev) => (prev === 'photo' ? '3d' : 'photo'));
+  }, [canPreview3d]);
+
+  const handleSaveToggle = useCallback(() => {
+    if (isObjectSaved) {
+      removeFromSaved(object.id);
+      return;
+    }
+    addToSaved(object.id);
+  }, [addToSaved, isObjectSaved, object.id, removeFromSaved]);
+
+  const handleOpenAr = useCallback(() => {
+    const isIOSDevice =
+      typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb;
+
+    if (!canStartArNow) {
+      addToast('AR‑примерка сейчас недоступна для этого устройства', 'info');
+      return;
+    }
+
+    emitEvent({ type: 'ENTER_AR' });
+    flushSync(() => setIsAROpen(true));
+    arViewerRef.current?.activateAR();
+  }, [addToast, emitEvent, hasGlb, hasUsdz]);
 
   return (
-    <div className="bg-warm-white min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="mb-8">
-          <button
-            onClick={onBack}
-            className="group inline-flex items-center text-sm text-muted-gray hover:text-soft-black transition-colors"
-          >
-            <ArrowLeftIcon className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-            Назад
-          </button>
-        </div>
+    <div className="min-h-screen bg-warm-white">
+      <section className="relative">
+        <div className="relative w-full h-[62vh] max-h-[640px] bg-white">
+          {mediaMode === '3d' && canPreview3d ? (
+            <>
+              <model-viewer
+                key={threeDSrcUrl}
+                ref={inlineModelViewerRef as any}
+                src={threeDSrcUrl}
+                poster={images[0]}
+                alt={object.name}
+                crossorigin="anonymous"
+                camera-controls
+                disable-pan
+                disable-tap
+                interaction-prompt="none"
+                bounds="tight"
+                camera-target="auto auto auto"
+                field-of-view="30deg"
+                exposure="1"
+                shadow-intensity="0.3"
+                scale="1 1 1"
+                style={{ touchAction: 'pan-y' }}
+                className="w-full h-full"
+              />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-          {/* Visual block */}
-          <div className="flex flex-col gap-16">
-            <div
-              className={[
-                'relative w-full mb-10 rounded-2xl bg-white shadow-soft ring-1 ring-black/5',
-                isMobile ? 'h-[70vh] max-h-[520px]' : 'aspect-[4/3] min-h-[360px]',
-              ].join(' ')}
-            >
-              {hasGlb && threeDSrcUrl ? (
-                <>
-                  <div className="absolute inset-0 p-4">
-                    <model-viewer
-                      key={threeDSrcUrl}
-                      ref={inlineModelViewerRef as any}
-                      src={threeDSrcUrl}
-                      poster={object.imageUrls?.[0]}
-                      alt={object.name}
-                      crossorigin="anonymous"
-                      camera-controls
-                      disable-pan
-                      disable-tap
-                      interaction-prompt="none"
-                      bounds="tight"
-                      camera-target="auto auto auto"
-                      field-of-view="30deg"
-                      exposure="1"
-                      shadow-intensity="0.3"
-                      style={{ touchAction: 'pan-y' }}
-                      className="w-full h-full bg-white rounded-2xl"
-                    />
-                  </div>
-
-                  {(inline3dState === 'loading' || inline3dState === 'idle') && (
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center rounded-2xl">
-                      <div className="flex flex-col items-center gap-2 text-center px-6">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-brown" />
-                        <div className="text-sm font-medium text-soft-black/70">
-                          {inline3dProgress != null && inline3dProgress > 0
-                            ? `Загружаю 3D… ${Math.round(inline3dProgress * 100)}%`
-                            : 'Загружаю 3D…'}
-                        </div>
-                        <div className="text-xs text-muted-gray">Можно спокойно подождать пару секунд.</div>
-                      </div>
+              {(inline3dState === 'loading' || inline3dState === 'idle') && (
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2 text-center px-6">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-brown" />
+                    <div className="text-sm font-medium text-soft-black/70">
+                      {inline3dProgress != null && inline3dProgress > 0
+                        ? `Загружаю 3D… ${Math.round(inline3dProgress * 100)}%`
+                        : 'Загружаю 3D…'}
                     </div>
-                  )}
-
-                  {inline3dState === 'error' && (
-                    <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center rounded-2xl">
-                      <div className="flex flex-col items-center gap-2 text-center px-6">
-                        <div className="text-sm font-medium text-soft-black">3D сейчас недоступно</div>
-                        <div className="text-xs text-muted-gray">{inline3dError || 'Попробуйте обновить страницу.'}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <AnimatePresence>
-                    {show3DHint && inline3dState === 'loaded' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute bottom-6 left-1/2 -translate-x-1/2
-                                   bg-soft-black/60 text-white text-xs
-                                   px-4 py-2 rounded-full pointer-events-none"
-                      >
-                        Поверните объект, чтобы рассмотреть
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center px-6 text-center">
-                  <div className="max-w-sm">
-                    <div className="text-sm font-medium text-soft-black">3D‑модель готовится</div>
-                    <p className="mt-2 text-xs text-muted-gray leading-relaxed">
-                      Этот объект уже можно рассмотреть по фото. 3D‑просмотр для браузера добавим, как только модель будет готова.
-                    </p>
                   </div>
                 </div>
               )}
-            </div>
 
-            {(object.imageUrls?.length ? object.imageUrls : ['/placeholder.svg']).map(
-              (src, index) => (
-                <div
-                  key={index}
-                  className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white shadow-soft"
-                >
+              {inline3dState === 'error' && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2 text-center px-6">
+                    <div className="text-sm font-medium text-soft-black">3D сейчас недоступно</div>
+                    <div className="text-xs text-muted-gray">{inline3dError || 'Попробуйте обновить страницу.'}</div>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex">
+              {images.map((src, index) => (
+                <div key={`${src}:${index}`} className="relative min-w-full h-full snap-center bg-white">
                   <Image
                     src={src}
                     alt={`${object.name} — view ${index + 1}`}
@@ -526,38 +405,63 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                     className="object-contain"
                   />
                 </div>
-              )
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex flex-col pt-4 justify-center pb-32 md:pb-0">
-            <Transition
-              show={experienceCompleted}
-              enter="transition-all duration-500 ease-out"
-              enterFrom="opacity-0 -translate-y-2"
-              enterTo="opacity-100 translate-y-0"
-            >
-              <div className="inline-flex items-center gap-2 mb-6 text-sm text-soft-black/60 bg-white/50 px-3 py-1.5 rounded-full border border-stone-beige/20 w-fit">
-                <CheckCircleIcon className="w-4 h-4 text-brand-gold" />
-                Вы примерили этот объект
-              </div>
-            </Transition>
-
-            <h1 className="text-3xl md:text-4xl font-medium text-soft-black mb-10 leading-tight tracking-tight">
-              {object.name}
-            </h1>
-
-            <div className={ctaWrapperClass}>
-              <Button
-                onClick={primaryCta.onClick}
-                size="lg"
-                variant={ctaVariant}
-                className="w-full h-14 text-base font-medium rounded-xl shadow-lg shadow-soft-black/10"
-              >
-                {primaryCta.label}
-              </Button>
+              ))}
             </div>
+          )}
+
+          {/* Soft overlay for controls legibility */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/5" />
+
+          {/* Back */}
+          <button
+            onClick={onBack}
+            aria-label="Назад"
+            className="absolute top-4 left-4 z-10 rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+          </button>
+
+          {/* 3D toggle (icon only) */}
+          {canPreview3d && (
+            <button
+              onClick={handleToggle3d}
+              aria-label={mediaMode === 'photo' ? 'Открыть 3D‑просмотр' : 'Показать фото'}
+              className="absolute top-4 right-4 z-10 rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+            >
+              {mediaMode === 'photo' ? <CubeIcon className="w-5 h-5" /> : <PhotoIcon className="w-5 h-5" />}
+            </button>
+          )}
+        </div>
+
+        <div className="px-5 pt-5 pb-28">
+          <h1 className="text-[15px] font-medium text-soft-black/80 tracking-tight truncate">
+            {object.name}
+          </h1>
+        </div>
+      </section>
+
+      {/* Sticky action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+        <div className="mx-auto max-w-md">
+          <div className="rounded-2xl bg-white/80 backdrop-blur-md border border-stone-beige/30 shadow-soft p-2 flex items-center gap-2">
+            <Button
+              onClick={handleOpenAr}
+              size="lg"
+              variant="primary"
+              className="flex-1 h-14 rounded-xl shadow-none"
+            >
+              Посмотреть в интерьере
+            </Button>
+
+            <button
+              onClick={handleSaveToggle}
+              aria-label={isObjectSaved ? 'Убрать из сохранённых' : 'Сохранить'}
+              className="h-14 w-14 rounded-xl bg-white text-soft-black border border-stone-beige/40 hover:border-soft-black/40 transition-colors flex items-center justify-center"
+            >
+              <HeartIcon
+                className={isObjectSaved ? 'w-6 h-6 fill-brand-brown text-brand-brown' : 'w-6 h-6'}
+              />
+            </button>
           </div>
         </div>
       </div>

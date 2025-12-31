@@ -1,6 +1,7 @@
 
-import React, { useRef, useEffect, useState, memo, useCallback } from 'react';
+import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { trackJourneyEvent } from '../lib/journey/client';
+import { useImmersive } from '../contexts/ImmersiveContext';
 
 interface ModelViewerElement extends HTMLElement {
   src?: string;
@@ -25,20 +26,51 @@ interface ARViewerProps {
   onClose?: (arDurationSec?: number) => void;
 }
 
-const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, objectId, onClose }) => {
+export type ARViewerHandle = {
+  activateAR: () => void;
+};
+
+const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
+  ({ src, iosSrc, alt, poster, objectId, onClose }, ref) => {
   const modelViewerRef = useRef<ModelViewerElement>(null);
+  const quickLookRef = useRef<HTMLAnchorElement | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [isIOS] = useState(() =>
+    typeof navigator !== 'undefined' ? /iPhone|iPad|iPod/i.test(navigator.userAgent) : false,
+  );
   const [isPresentingAr, setIsPresentingAr] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const open3dLoggedRef = useRef(false);
   const arStartLoggedRef = useRef(false);
   const arStartMsRef = useRef<number | null>(null);
   const arFinishedRef = useRef(false);
   const wasPresentingRef = useRef(false);
+  const { setImmersive } = useImmersive();
 
   useEffect(() => {
-    setIsIOS(/iPhone|iPad|iPod/i.test(navigator.userAgent));
     import('@google/model-viewer').catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    setImmersive(true);
+    return () => setImmersive(false);
+  }, [setImmersive]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    try {
+      if (window.localStorage.getItem('label_ar_floor_hint_shown')) return undefined;
+    } catch {
+      return undefined;
+    }
+    setShowHint(true);
+    const timer = window.setTimeout(() => {
+      setShowHint(false);
+      try {
+        window.localStorage.setItem('label_ar_floor_hint_shown', '1');
+      } catch {}
+    }, 2600);
+    return () => window.clearTimeout(timer);
   }, []);
   
   const proxiedSrc = src ? `/api/proxy-model?url=${encodeURIComponent(src)}` : undefined;
@@ -156,10 +188,22 @@ const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, 
       arStartLoggedRef.current = true;
       trackJourneyEvent({ type: 'START_AR', objectId });
     }
+    if (isIOS && !canPreview3d && iosSrc) {
+      quickLookRef.current?.click();
+      return;
+    }
     if (modelViewerRef.current && 'activateAR' in modelViewerRef.current) {
       (modelViewerRef.current as any).activateAR();
     }
   };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      activateAR: handleActivateAR,
+    }),
+    [handleActivateAR],
+  );
 
   return (
     <div className="fixed inset-0 z-[100] bg-warm-white flex items-center justify-center">
@@ -191,6 +235,18 @@ const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, 
           </div>
         </div>
       )}
+
+      {/* Hidden Quick Look anchor for iOS-only (USDZ) models */}
+      {iosSrc && (
+        <a
+          ref={quickLookRef}
+          href={iosSrc}
+          rel="ar"
+          className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+      )}
       
       {/* Dim overlay while loading */}
       {canPreview3d && !isLoaded && (
@@ -199,28 +255,10 @@ const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, 
         </div>
       )}
 
-      {/* AR Button */}
-      {canStartAr && (isLoaded || !canPreview3d) && !isPresentingAr && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-            {isIOS && !canPreview3d ? (
-              <a
-                href={iosSrc}
-                rel="ar"
-                onClick={handleActivateAR}
-                className="bg-brand-brown text-white px-8 py-4 rounded-xl shadow-lg inline-flex items-center gap-3 font-medium hover:bg-brand-charcoal transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Примерить в комнате
-              </a>
-            ) : (
-              <button 
-                  onClick={handleActivateAR}
-                  className="bg-brand-brown text-white px-8 py-4 rounded-xl shadow-lg flex items-center gap-3 font-medium hover:bg-brand-charcoal transition-colors"
-              >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Примерить в комнате
-              </button>
-            )}
+      {/* Quiet one-time hint */}
+      {showHint && !isPresentingAr && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-soft-black/65 text-white text-xs backdrop-blur-md">
+          Наведите камеру на пол
         </div>
       )}
       
@@ -238,6 +276,6 @@ const ARViewerComponent: React.FC<ARViewerProps> = ({ src, iosSrc, alt, poster, 
       )}
     </div>
   );
-};
+});
 
 export const ARViewer = memo(ARViewerComponent);
