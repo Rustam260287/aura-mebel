@@ -47,7 +47,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const hasUsdz = Boolean(object.modelUsdzUrl);
   // Use same-origin proxy to avoid CORS/Range issues when model-viewer streams GLB (Range requests).
   const threeDSrcUrl = hasGlb
-    ? `/api/proxy-model?url=${encodeURIComponent(object.modelGlbUrl!)}`
+    ? `/api/proxy-model.glb?url=${encodeURIComponent(object.modelGlbUrl!)}`
     : undefined;
   const canPreview3d = Boolean(threeDSrcUrl);
 

@@ -80,8 +80,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     return () => window.clearTimeout(timer);
   }, [open]);
   
-  const proxiedSrc = src ? `/api/proxy-model?url=${encodeURIComponent(src)}` : undefined;
-  const proxiedIosSrc = iosSrc ? `/api/proxy-model?url=${encodeURIComponent(iosSrc)}` : undefined;
+  // Scene Viewer / Quick Look are more reliable when the URL ends with the correct extension.
+  const proxiedSrc = src ? `/api/proxy-model.glb?url=${encodeURIComponent(src)}` : undefined;
+  const proxiedIosSrc = iosSrc ? `/api/proxy-model.usdz?url=${encodeURIComponent(iosSrc)}` : undefined;
   const effectiveIosSrc = proxiedIosSrc || iosSrc;
 
   const canPreview3d = Boolean(proxiedSrc);

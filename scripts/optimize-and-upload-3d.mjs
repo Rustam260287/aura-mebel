@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import admin from 'firebase-admin';
+import sharp from 'sharp';
 
 /**
  * Скрипт оптимизирует существующие GLB (draco + удаление лишних атрибутов) и, при наличии,
@@ -76,6 +77,8 @@ const bucket = admin.storage().bucket();
 
 const tmpDir = path.join(os.tmpdir(), 'labelcom-3d-opt');
 fs.mkdirSync(tmpDir, { recursive: true });
+
+const MAX_TEXTURE_SIZE = Number(process.env.LABELCOM_MAX_TEXTURE_SIZE || 2048);
 
 const gltfArgs = [
   '-i',
@@ -177,17 +180,175 @@ const uploadFile = async (localPath, destPath, contentType) => {
 const parseStoragePath = (url) => {
   if (!url) return null;
   if (url.startsWith('gs://')) {
-    return url.replace('gs://', '');
+    const withoutScheme = url.slice('gs://'.length);
+    const parts = withoutScheme.split('/').filter(Boolean);
+    if (parts.length < 2) return null;
+    const [maybeBucket, ...rest] = parts;
+    if (maybeBucket === bucket.name) return rest.join('/');
+    // Fallback: assume already a bucket-relative path.
+    return parts.slice(1).join('/') || null;
   }
   try {
     const parsed = new URL(url);
+    // Firebase Storage download URL format:
+    // https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<path>
     const [, objectPath] = parsed.pathname.split('/o/');
-    if (!objectPath) return null;
-    return decodeURIComponent(objectPath);
+    if (objectPath) return decodeURIComponent(objectPath);
+
+    // Public GCS URL format:
+    // https://storage.googleapis.com/<bucket>/<path>
+    if (parsed.hostname === 'storage.googleapis.com') {
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (parts.length < 2) return null;
+      return parts.slice(1).join('/');
+    }
+
+    return null;
   } catch (error) {
     console.warn('failed to parse storage path from', url, error);
     return null;
   }
+};
+
+const padTo4 = (buffer, padByte = 0x00) => {
+  const pad = (4 - (buffer.length % 4)) % 4;
+  if (!pad) return buffer;
+  return Buffer.concat([buffer, Buffer.alloc(pad, padByte)]);
+};
+
+const downscaleEmbeddedTextures = async (inputPath, outputPath) => {
+  if (!Number.isFinite(MAX_TEXTURE_SIZE) || MAX_TEXTURE_SIZE <= 0) {
+    fs.copyFileSync(inputPath, outputPath);
+    return { changed: false, resized: 0 };
+  }
+
+  const fileBuffer = fs.readFileSync(inputPath);
+  if (fileBuffer.toString('utf8', 0, 4) !== 'glTF') {
+    throw new Error('Invalid GLB (missing magic header)');
+  }
+
+  const jsonChunkLength = fileBuffer.readUInt32LE(12);
+  const jsonChunkType = fileBuffer.readUInt32LE(16);
+  if (jsonChunkType !== 0x4E4F534A) {
+    throw new Error('Invalid GLB (missing JSON chunk)');
+  }
+  const jsonStart = 20;
+  const jsonEnd = jsonStart + jsonChunkLength;
+  const gltf = JSON.parse(fileBuffer.slice(jsonStart, jsonEnd).toString('utf8'));
+
+  const binHeaderOffset = jsonEnd;
+  const binChunkLength = fileBuffer.readUInt32LE(binHeaderOffset);
+  const binChunkType = fileBuffer.readUInt32LE(binHeaderOffset + 4);
+  if (binChunkType !== 0x004E4942) {
+    throw new Error('Invalid GLB (missing BIN chunk)');
+  }
+  const binStart = binHeaderOffset + 8;
+  const bin = fileBuffer.slice(binStart, binStart + binChunkLength);
+
+  const images = Array.isArray(gltf.images) ? gltf.images : [];
+  const bufferViews = Array.isArray(gltf.bufferViews) ? gltf.bufferViews : [];
+
+  const replacements = new Map();
+  let resized = 0;
+
+  for (const image of images) {
+    if (typeof image?.bufferView !== 'number') continue;
+    const bufferViewIndex = image.bufferView;
+    const view = bufferViews[bufferViewIndex];
+    if (!view) continue;
+    if (typeof view.byteLength !== 'number') continue;
+    if (view.buffer != null && view.buffer !== 0) continue;
+
+    const start = Number(view.byteOffset || 0);
+    const end = start + Number(view.byteLength);
+    const imageBytes = bin.slice(start, end);
+
+    let meta;
+    try {
+      meta = await sharp(imageBytes).metadata();
+    } catch {
+      continue;
+    }
+
+    const w = Number(meta.width || 0);
+    const h = Number(meta.height || 0);
+    const maxDim = Math.max(w, h);
+    if (!Number.isFinite(maxDim) || maxDim <= 0) continue;
+    if (maxDim <= MAX_TEXTURE_SIZE) continue;
+
+    const mime = String(image.mimeType || '').toLowerCase();
+    const pipeline = sharp(imageBytes).resize({
+      width: MAX_TEXTURE_SIZE,
+      height: MAX_TEXTURE_SIZE,
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
+
+    let out;
+    if (mime === 'image/jpeg') {
+      out = await pipeline.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
+      image.mimeType = 'image/jpeg';
+    } else {
+      out = await pipeline.png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
+      image.mimeType = 'image/png';
+    }
+
+    replacements.set(bufferViewIndex, out);
+    resized += 1;
+  }
+
+  if (replacements.size === 0) {
+    fs.copyFileSync(inputPath, outputPath);
+    return { changed: false, resized: 0 };
+  }
+
+  let cursor = 0;
+  const newBinParts = [];
+  for (let i = 0; i < bufferViews.length; i++) {
+    const view = bufferViews[i];
+    if (!view) continue;
+    if (view.buffer != null && view.buffer !== 0) continue;
+    const originalStart = Number(view.byteOffset || 0);
+    const originalEnd = originalStart + Number(view.byteLength || 0);
+    const replacement = replacements.get(i);
+    const bytes = replacement ? Buffer.from(replacement) : bin.slice(originalStart, originalEnd);
+
+    view.byteOffset = cursor;
+    view.byteLength = bytes.length;
+    newBinParts.push(bytes);
+    cursor += bytes.length;
+
+    const pad = (4 - (cursor % 4)) % 4;
+    if (pad) {
+      newBinParts.push(Buffer.alloc(pad));
+      cursor += pad;
+    }
+  }
+
+  if (Array.isArray(gltf.buffers) && gltf.buffers[0]) {
+    gltf.buffers[0].byteLength = cursor;
+  }
+
+  const jsonText = JSON.stringify(gltf);
+  const jsonChunk = padTo4(Buffer.from(jsonText, 'utf8'), 0x20);
+  const binChunk = padTo4(Buffer.concat(newBinParts), 0x00);
+
+  const totalLength = 12 + 8 + jsonChunk.length + 8 + binChunk.length;
+  const header = Buffer.alloc(12);
+  header.write('glTF', 0);
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(totalLength, 8);
+
+  const jsonHeader = Buffer.alloc(8);
+  jsonHeader.writeUInt32LE(jsonChunk.length, 0);
+  jsonHeader.writeUInt32LE(0x4E4F534A, 4);
+
+  const binHeader = Buffer.alloc(8);
+  binHeader.writeUInt32LE(binChunk.length, 0);
+  binHeader.writeUInt32LE(0x004E4942, 4);
+
+  fs.writeFileSync(outputPath, Buffer.concat([header, jsonHeader, jsonChunk, binHeader, binChunk]));
+  return { changed: true, resized };
 };
 
 const processObject = async (objectId) => {
@@ -210,19 +371,25 @@ const processObject = async (objectId) => {
 
   const tmpSource = path.join(tmpDir, `${objectId}.glb`);
   const tmpOptimized = path.join(tmpDir, `${objectId}.optimized.glb`);
+  const tmpFinal = path.join(tmpDir, `${objectId}.optimized.final.glb`);
   await downloadFile(storagePath, tmpSource);
 
   await runGltfPipeline(tmpSource, tmpOptimized);
 
+  const textureResult = await downscaleEmbeddedTextures(tmpOptimized, tmpFinal);
+  if (textureResult.changed) {
+    console.log(`textures resized: ${textureResult.resized} (max ${MAX_TEXTURE_SIZE}px)`);
+  }
+
   const destPath = `models/optimized/${objectId}.glb`;
   const newGlbUrl = options.dryRun
     ? sourceUrl
-    : await uploadFile(tmpOptimized, destPath, 'model/gltf-binary');
+    : await uploadFile(tmpFinal, destPath, 'model/gltf-binary');
 
   let usdzUrl = data.modelUsdzUrl || data.model3dIosUrl;
   if (!options.dryRun) {
     const usdzOutput = path.join(tmpDir, `${objectId}.usdz`);
-    const converted = await runUsdConversion(tmpOptimized, usdzOutput);
+    const converted = await runUsdConversion(tmpFinal, usdzOutput);
     if (converted && fs.existsSync(usdzOutput)) {
       usdzUrl = await uploadFile(
         usdzOutput,

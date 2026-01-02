@@ -189,7 +189,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
     let done = 0;
     await Promise.all(
       unique.map(async ([objectId, glbUrl]) => {
-        const proxied = `/api/proxy-model?url=${encodeURIComponent(glbUrl)}`;
+        const proxied = `/api/proxy-model.glb?url=${encodeURIComponent(glbUrl)}`;
         const gltf = await new Promise<THREE.Object3D>((resolve, reject) => {
           loader.load(
             proxied,

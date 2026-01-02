@@ -21,7 +21,7 @@ const toRadians = (deg: number) => (deg * Math.PI) / 180;
 type SceneItemProps = Omit<ScenePreviewItem, 'instanceKey'>;
 
 const SceneItem: React.FC<SceneItemProps> = ({ glbUrl, position, rotation, scale }) => {
-  const proxied = useMemo(() => `/api/proxy-model?url=${encodeURIComponent(glbUrl)}`, [glbUrl]);
+  const proxied = useMemo(() => `/api/proxy-model.glb?url=${encodeURIComponent(glbUrl)}`, [glbUrl]);
   const gltf = useGLTF(proxied);
   const scene = useMemo(() => {
     const root = gltf.scene.clone(true);

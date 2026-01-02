@@ -39,12 +39,12 @@ export const ModelPreview3D: React.FC<Props> = ({ glbUrl, usdzUrl, posterUrl, na
 
   const proxiedGlbUrl = useMemo(() => {
     if (!hasGlb) return undefined;
-    return `/api/proxy-model?url=${encodeURIComponent(glbUrl!)}`;
+    return `/api/proxy-model.glb?url=${encodeURIComponent(glbUrl!)}`;
   }, [glbUrl, hasGlb]);
 
   const proxiedUsdzUrl = useMemo(() => {
     if (!hasUsdz) return undefined;
-    return `/api/proxy-model?url=${encodeURIComponent(usdzUrl!)}`;
+    return `/api/proxy-model.usdz?url=${encodeURIComponent(usdzUrl!)}`;
   }, [usdzUrl, hasUsdz]);
 
   useEffect(() => {
