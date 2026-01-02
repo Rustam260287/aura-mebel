@@ -11,6 +11,7 @@ interface ModelUploaderProps {
 }
 
 const MAX_MODEL_SIZE = 100 * 1024 * 1024; // 100MB
+const BIG_FILE_HINT_MB = 30;
 
 const asModelKind = (value: unknown): 'glb' | 'usdz' | undefined => {
   if (value === 'glb' || value === 'usdz') return value;
@@ -22,6 +23,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [softHint, setSoftHint] = useState<string | null>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
   const { user } = useAuth();
 
@@ -63,9 +65,49 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
 
     setLoadingState({ isLoading: true, progress: 0 });
     setError(null);
+    setSoftHint(null);
     
     try {
         const token = await user.getIdToken();
+
+        const sizeMb = Math.round((file.size / (1024 * 1024)) * 10) / 10;
+        if (sizeMb >= BIG_FILE_HINT_MB) {
+          setSoftHint('Большие файлы загружаются напрямую в Storage — это может занять немного времени.');
+        }
+
+        const urlRes = await fetch('/api/admin/upload-model-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            size: file.size,
+            extension: normalizedExt,
+            contentType: file.type || normalizedContentType,
+          }),
+        });
+
+        const urlData = await urlRes.json().catch(() => null);
+        if (!urlRes.ok) {
+          const serverError = urlData?.error;
+          setError(typeof serverError === 'string' ? serverError : `Ошибка подготовки загрузки (${urlRes.status})`);
+          setLoadingState({ isLoading: false, progress: null });
+          return;
+        }
+
+        const uploadUrl = typeof urlData?.uploadUrl === 'string' ? urlData.uploadUrl : '';
+        const filePath = typeof urlData?.filePath === 'string' ? urlData.filePath : '';
+        const serverContentType =
+          typeof urlData?.contentType === 'string' ? urlData.contentType : file.type || normalizedContentType;
+        const serverKind = asModelKind(urlData?.kind) || normalizedExt;
+
+        if (!uploadUrl || !filePath) {
+          setError('Ошибка загрузки: некорректный ответ сервера');
+          setLoadingState({ isLoading: false, progress: null });
+          return;
+        }
 
         if (xhrRef.current) {
           try {
@@ -75,14 +117,12 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
 
         const xhr = new XMLHttpRequest();
         xhrRef.current = xhr;
-        xhr.open('POST', '/api/admin/upload-model', true);
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        xhr.setRequestHeader('Content-Type', file.type || normalizedContentType);
-        xhr.setRequestHeader('x-file-extension', normalizedExt);
+        xhr.open('PUT', uploadUrl, true);
+        xhr.setRequestHeader('Content-Type', serverContentType);
 
         xhr.upload.onprogress = (e) => {
           if (!e.lengthComputable) return;
-          const percent = Math.max(0, Math.min(100, Math.round((e.loaded * 100) / e.total)));
+          const percent = Math.max(0, Math.min(99, Math.round((e.loaded * 100) / e.total)));
           setLoadingState({ isLoading: true, progress: percent });
         };
 
@@ -104,26 +144,39 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
           failWithMessage('Загрузка отменена');
         };
 
-        xhr.onload = () => {
-          const responseText = typeof xhr.responseText === 'string' ? xhr.responseText : '';
-          const data = parseJsonSafely(responseText);
-
+        xhr.onload = async () => {
           if (xhr.status < 200 || xhr.status >= 300) {
-            const serverError = data?.error;
-            failWithMessage(typeof serverError === 'string' ? serverError : `Ошибка загрузки (${xhr.status})`);
+            failWithMessage(`Ошибка загрузки (${xhr.status})`);
             return;
           }
 
-          const url = data?.url;
-          const serverKind = asModelKind(data?.kind);
-          if (!url || typeof url !== 'string') {
-            failWithMessage('Ошибка загрузки: некорректный ответ сервера');
-            return;
+          setLoadingState({ isLoading: true, progress: 99 });
+          try {
+            const finalizeRes = await fetch('/api/admin/upload-model-finalize', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ filePath, contentType: serverContentType }),
+            });
+            const finalizeData = await finalizeRes.json().catch(() => null);
+            if (!finalizeRes.ok) {
+              const serverError = finalizeData?.error;
+              failWithMessage(typeof serverError === 'string' ? serverError : `Ошибка финализации (${finalizeRes.status})`);
+              return;
+            }
+            const url = finalizeData?.url;
+            if (!url || typeof url !== 'string') {
+              failWithMessage('Ошибка загрузки: некорректный ответ сервера');
+              return;
+            }
+            complete();
+            setLoadingState({ isLoading: false, progress: null });
+            onUploadSuccess(url, serverKind);
+          } catch (e: any) {
+            failWithMessage(e?.message ? String(e.message) : 'Ошибка финализации');
           }
-
-          complete();
-          setLoadingState({ isLoading: false, progress: null });
-          onUploadSuccess(url, serverKind || normalizedExt);
         };
 
         xhr.send(file);
@@ -208,6 +261,12 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
             </div>
         )}
       </div>
+      {softHint && !error && !isLoading && (
+        <p className="text-[11px] text-gray-400 mt-2 text-center">{softHint}</p>
+      )}
+      {softHint && isLoading && (
+        <p className="text-[11px] text-gray-400 mt-2 text-center">{softHint}</p>
+      )}
       {error && <p className="text-xs text-red-500 mt-2 text-center">{error}</p>}
     </div>
   );
