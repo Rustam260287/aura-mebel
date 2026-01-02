@@ -116,6 +116,11 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
   const canPreview3d = Boolean(proxiedSrc);
   const canStartAr = isIOS ? Boolean(effectiveIosSrc) : Boolean(proxiedSrc);
+  const canSnapshot =
+    open &&
+    isPresentingAr &&
+    canPreview3d &&
+    (typeof document === 'undefined' ? true : document.visibilityState === 'visible');
 
   const handleModelLoad = () => setIsLoaded(true);
 
@@ -162,7 +167,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     const handleArStatus = (event: any) => {
       const status = event?.detail?.status as unknown;
 
-      if (status === 'session-started') {
+      if (status === 'session-started' || status === 'object-placed') {
         wasPresentingRef.current = true;
         setIsPresentingAr(true);
         if (objectId && !arStartLoggedRef.current) {
@@ -414,7 +419,33 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           ar-scale="auto"
           style={{ touchAction: 'pan-y' }}
           className="w-full h-full"
-        />
+        >
+          {/* Snapshot button (WebXR in-page only). Must be inside model-viewer DOM overlay on Android. */}
+          {canSnapshot && (
+            <button
+              type="button"
+              onClick={handleSnapshot}
+              aria-label="Сделать снимок"
+              disabled={isCapturing}
+              className="pointer-events-auto absolute z-20 left-4 top-[calc(env(safe-area-inset-top)+14px)] bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft hover:bg-white transition-colors disabled:opacity-60"
+            >
+              <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 7h3l2-2h6l2 2h3v12H4V7z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 17a4 4 0 100-8 4 4 0 000 8z"
+                />
+              </svg>
+            </button>
+          )}
+        </model-viewer>
       ) : (
         <div className="w-full h-full flex items-center justify-center px-6 text-center">
           <div className="max-w-sm">
@@ -450,27 +481,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         <div className="absolute top-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-soft-black/65 text-white text-xs backdrop-blur-md">
           Наведите камеру на пол
         </div>
-      )}
-
-      {/* Snapshot button (only while WebXR AR is presenting in-page) */}
-      {open && isPresentingAr && canPreview3d && (
-        <button
-          type="button"
-          onClick={handleSnapshot}
-          aria-label="Сделать снимок"
-          disabled={isCapturing}
-          className="absolute z-20 right-6 top-[calc(env(safe-area-inset-top)+14px)] bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft hover:bg-white transition-colors disabled:opacity-60"
-        >
-          <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 7h3l2-2h6l2 2h3v12H4V7z"
-            />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 17a4 4 0 100-8 4 4 0 000 8z" />
-          </svg>
-        </button>
       )}
       
       {/* Close Button */}
