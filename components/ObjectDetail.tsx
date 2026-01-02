@@ -1,7 +1,6 @@
 
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { flushSync } from 'react-dom';
 import { useRouter } from 'next/router';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
@@ -395,11 +394,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     }
 
     emitEvent({ type: 'ENTER_AR' });
-    flushSync(() => {
-      setPostArHintVisible(false);
-      setUiState('IN_AR');
-      setIsAROpen(true);
-    });
+    setPostArHintVisible(false);
+    setUiState('IN_AR');
+    setIsAROpen(true);
     arViewerRef.current?.activateAR();
   }, [addToast, emitEvent, hasGlb, hasUsdz]);
 
@@ -556,10 +553,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         </div>
       </div>
 
-      {/* AR overlay (keep page mounted to avoid scroll jumps) */}
-      {isAROpen && (object.modelGlbUrl || object.modelUsdzUrl) && (
+      {/* AR overlay (keep viewer mounted so iOS/Android can start AR without flushSync) */}
+      {(object.modelGlbUrl || object.modelUsdzUrl) && (
         <ARViewer
           ref={arViewerRef}
+          open={isAROpen}
           src={object.modelGlbUrl}
           iosSrc={object.modelUsdzUrl}
           alt={object.name}

@@ -15,6 +15,7 @@ interface ModelViewerElement extends HTMLElement {
   'ar'?: boolean;
   'ar-modes'?: string;
   'ar-scale'?: string;
+  activateAR?: () => void;
 }
 
 interface ARViewerProps {
@@ -23,6 +24,7 @@ interface ARViewerProps {
   alt: string;
   poster?: string;
   objectId?: string;
+  open?: boolean;
   onClose?: (arDurationSec?: number) => void;
 }
 
@@ -31,7 +33,7 @@ export type ARViewerHandle = {
 };
 
 const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
-  ({ src, iosSrc, alt, poster, objectId, onClose }, ref) => {
+  ({ src, iosSrc, alt, poster, objectId, open = false, onClose }, ref) => {
   const modelViewerRef = useRef<ModelViewerElement>(null);
   const quickLookRef = useRef<HTMLAnchorElement | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -52,9 +54,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   }, []);
 
   useEffect(() => {
-    setImmersive(true);
+    setImmersive(open);
     return () => setImmersive(false);
-  }, [setImmersive]);
+  }, [open, setImmersive]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -74,7 +76,8 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   }, []);
   
   const proxiedSrc = src ? `/api/proxy-model?url=${encodeURIComponent(src)}` : undefined;
-  const canPreview3d = Boolean(proxiedSrc);
+  // On iOS we avoid loading GLB in-page: Quick Look uses USDZ and loading heavy GLBs can fail or delay AR.
+  const canPreview3d = !isIOS && Boolean(proxiedSrc);
   const canStartAr = isIOS ? Boolean(iosSrc) : Boolean(proxiedSrc);
 
   const handleModelLoad = () => setIsLoaded(true);
@@ -188,12 +191,26 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       arStartLoggedRef.current = true;
       trackJourneyEvent({ type: 'START_AR', objectId });
     }
-    if (isIOS && !canPreview3d && iosSrc) {
+    if (isIOS && iosSrc) {
+      // Quick Look must be opened from a direct user gesture; keep this call synchronous.
+      // Allows content scaling (pinch) in Quick Look.
       quickLookRef.current?.click();
       return;
     }
-    if (modelViewerRef.current && 'activateAR' in modelViewerRef.current) {
-      (modelViewerRef.current as any).activateAR();
+    const modelViewer = modelViewerRef.current as any;
+    if (!modelViewer) return;
+    // Ensure `src` is set synchronously (avoid preloading large GLBs until user taps AR).
+    if (proxiedSrc && typeof modelViewer.src !== 'string') {
+      try {
+        modelViewer.src = proxiedSrc;
+      } catch {}
+    } else if (proxiedSrc && modelViewer.src !== proxiedSrc) {
+      try {
+        modelViewer.src = proxiedSrc;
+      } catch {}
+    }
+    if (typeof modelViewer.activateAR === 'function') {
+      modelViewer.activateAR();
     }
   };
 
@@ -206,12 +223,19 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   );
 
   return (
-    <div className="fixed inset-0 z-[100] bg-warm-white flex items-center justify-center">
+    <div
+      className={[
+        'fixed inset-0 z-[100] bg-warm-white flex items-center justify-center',
+        'transition-opacity duration-200 ease-out',
+        open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+      ].join(' ')}
+      aria-hidden={!open}
+    >
       {/* Model Viewer */}
       {canPreview3d ? (
         <model-viewer
           ref={modelViewerRef}
-          src={proxiedSrc}
+          src={open ? proxiedSrc : undefined}
           ios-src={iosSrc}
           alt={alt}
           poster={poster}
@@ -240,16 +264,16 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       {iosSrc && (
         <a
           ref={quickLookRef}
-          href={iosSrc}
+          href={`${iosSrc.split('#')[0]}#allowsContentScaling=1`}
           rel="ar"
-          className="hidden"
+          className="sr-only"
           aria-hidden="true"
           tabIndex={-1}
         />
       )}
       
       {/* Dim overlay while loading */}
-      {canPreview3d && !isLoaded && (
+      {open && canPreview3d && !isLoaded && (
         <div className="absolute inset-0 bg-warm-white/80 backdrop-blur-sm flex items-center justify-center transition-opacity duration-500">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown" />
         </div>
@@ -263,7 +287,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       )}
       
       {/* Close Button */}
-      {onClose && !isPresentingAr && (
+      {open && onClose && !isPresentingAr && (
         <button
           onClick={() => {
             const durationSec = finishArIfNeeded();
