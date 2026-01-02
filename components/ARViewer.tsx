@@ -48,6 +48,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   const arFinishedRef = useRef(false);
   const wasPresentingRef = useRef(false);
   const { setImmersive } = useImmersive();
+  const pendingActivateRef = useRef(false);
 
   useEffect(() => {
     import('@google/model-viewer').catch(console.error);
@@ -76,9 +77,11 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   }, []);
   
   const proxiedSrc = src ? `/api/proxy-model?url=${encodeURIComponent(src)}` : undefined;
-  // On iOS we avoid loading GLB in-page: Quick Look uses USDZ and loading heavy GLBs can fail or delay AR.
-  const canPreview3d = !isIOS && Boolean(proxiedSrc);
-  const canStartAr = isIOS ? Boolean(iosSrc) : Boolean(proxiedSrc);
+  const proxiedIosSrc = iosSrc ? `/api/proxy-model?url=${encodeURIComponent(iosSrc)}` : undefined;
+  const effectiveIosSrc = proxiedIosSrc || iosSrc;
+
+  const canPreview3d = Boolean(proxiedSrc);
+  const canStartAr = isIOS ? Boolean(effectiveIosSrc) : Boolean(proxiedSrc);
 
   const handleModelLoad = () => setIsLoaded(true);
 
@@ -181,6 +184,20 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [finishArIfNeeded, onClose]);
 
+  const ensureModelViewerReady = useCallback(async () => {
+    if (typeof window === 'undefined') return false;
+    if (!window.customElements?.whenDefined) return true;
+    try {
+      await Promise.race([
+        window.customElements.whenDefined('model-viewer'),
+        new Promise((_, reject) => window.setTimeout(() => reject(new Error('timeout')), 6000)),
+      ]);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
   const handleActivateAR = () => {
     if (!canStartAr) return;
     if (objectId && arStartMsRef.current == null) {
@@ -191,27 +208,47 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       arStartLoggedRef.current = true;
       trackJourneyEvent({ type: 'START_AR', objectId });
     }
-    if (isIOS && iosSrc) {
-      // Quick Look must be opened from a direct user gesture; keep this call synchronous.
-      // Allows content scaling (pinch) in Quick Look.
-      quickLookRef.current?.click();
-      return;
-    }
-    const modelViewer = modelViewerRef.current as any;
-    if (!modelViewer) return;
-    // Ensure `src` is set synchronously (avoid preloading large GLBs until user taps AR).
-    if (proxiedSrc && typeof modelViewer.src !== 'string') {
-      try {
-        modelViewer.src = proxiedSrc;
-      } catch {}
-    } else if (proxiedSrc && modelViewer.src !== proxiedSrc) {
-      try {
-        modelViewer.src = proxiedSrc;
-      } catch {}
-    }
-    if (typeof modelViewer.activateAR === 'function') {
-      modelViewer.activateAR();
-    }
+    pendingActivateRef.current = true;
+
+    const tryActivate = async () => {
+      const ok = await ensureModelViewerReady();
+      const modelViewer = modelViewerRef.current as any;
+      if (!modelViewer) return false;
+      if (!ok) return false;
+
+      if (isIOS) {
+        // Prefer model-viewer Quick Look integration to avoid navigation to raw storage URLs.
+        if (typeof modelViewer.activateAR === 'function') {
+          try {
+            modelViewer.activateAR();
+            return true;
+          } catch {
+            // fall through
+          }
+        }
+        // Fallback: direct Quick Look link (same-origin proxy) with content scaling.
+        quickLookRef.current?.click();
+        return true;
+      }
+
+      if (proxiedSrc) {
+        try {
+          if (modelViewer.src !== proxiedSrc) modelViewer.src = proxiedSrc;
+        } catch {}
+      }
+      if (typeof modelViewer.activateAR === 'function') {
+        try {
+          modelViewer.activateAR();
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    };
+
+    // Start immediately; if model-viewer isn't upgraded yet we'll retry once it is.
+    void tryActivate();
   };
 
   useImperativeHandle(
@@ -222,6 +259,50 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     [handleActivateAR],
   );
 
+  useEffect(() => {
+    if (!open) return;
+    if (!pendingActivateRef.current) return;
+    if (typeof window === 'undefined') return;
+
+    let cancelled = false;
+    void (async () => {
+      const ok = await ensureModelViewerReady();
+      if (!ok || cancelled) return;
+      const modelViewer = modelViewerRef.current as any;
+      if (!modelViewer) return;
+
+      // Retry activation once the custom element is definitely upgraded.
+      if (isIOS) {
+        if (typeof modelViewer.activateAR === 'function') {
+          try {
+            modelViewer.activateAR();
+            pendingActivateRef.current = false;
+            return;
+          } catch {}
+        }
+        quickLookRef.current?.click();
+        pendingActivateRef.current = false;
+        return;
+      }
+
+      if (proxiedSrc) {
+        try {
+          if (modelViewer.src !== proxiedSrc) modelViewer.src = proxiedSrc;
+        } catch {}
+      }
+      if (typeof modelViewer.activateAR === 'function') {
+        try {
+          modelViewer.activateAR();
+          pendingActivateRef.current = false;
+        } catch {}
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
+
   return (
     <div
       className={[
@@ -231,12 +312,12 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       ].join(' ')}
       aria-hidden={!open}
     >
-      {/* Model Viewer */}
-      {canPreview3d ? (
+      {/* Model Viewer (single entrypoint for Web/Android + iOS Quick Look via ios-src) */}
+      {canPreview3d || isIOS ? (
         <model-viewer
           ref={modelViewerRef}
-          src={open ? proxiedSrc : undefined}
-          ios-src={iosSrc}
+          src={open && !isIOS ? proxiedSrc : undefined}
+          ios-src={effectiveIosSrc}
           alt={alt}
           poster={poster}
           camera-controls
@@ -244,7 +325,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           interaction-prompt="none"
           scale="1 1 1"
           ar
-          ar-modes="webxr scene-viewer quick-look"
+          ar-modes="scene-viewer webxr quick-look"
           ar-scale="auto"
           style={{ touchAction: 'pan-y' }}
           className="w-full h-full"
@@ -264,7 +345,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       {iosSrc && (
         <a
           ref={quickLookRef}
-          href={`${iosSrc.split('#')[0]}#allowsContentScaling=1`}
+          href={`${(effectiveIosSrc || iosSrc).split('#')[0]}#allowsContentScaling=1`}
           rel="ar"
           className="sr-only"
           aria-hidden="true"

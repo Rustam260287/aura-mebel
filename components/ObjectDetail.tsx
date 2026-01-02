@@ -156,14 +156,27 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 
     if (typeof window !== 'undefined') {
       upgradeTimer = window.setTimeout(() => {
-        try {
-          const defined = typeof window.customElements?.get === 'function' && window.customElements.get('model-viewer');
-          if (!defined) {
-            setInline3dState('error');
-            setInline3dError('Не удалось инициализировать 3D‑просмотр. Обновите страницу.');
+        const ready = async () => {
+          try {
+            if (typeof window.customElements?.whenDefined === 'function') {
+              await Promise.race([
+                window.customElements.whenDefined('model-viewer'),
+                new Promise((_, reject) => window.setTimeout(() => reject(new Error('timeout')), 6000)),
+              ]);
+              return true;
+            }
+            const defined = typeof window.customElements?.get === 'function' && window.customElements.get('model-viewer');
+            return Boolean(defined);
+          } catch {
+            return false;
           }
-        } catch {}
-      }, 2500);
+        };
+        void ready().then((ok) => {
+          if (ok) return;
+          setInline3dState('error');
+          setInline3dError('Не удалось инициализировать 3D‑просмотр. Обновите страницу.');
+        });
+      }, 300);
 
       slowTimer = window.setTimeout(() => {
         setInline3dState((prev) => {

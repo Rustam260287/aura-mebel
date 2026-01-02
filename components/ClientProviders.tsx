@@ -104,6 +104,11 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   useEffect(() => {
+    // Ensure <model-viewer> is defined early to avoid race conditions when users tap AR/3D quickly.
+    import('@google/model-viewer').catch(console.error);
+  }, []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const isChunkLoadError = (error: unknown) => {
