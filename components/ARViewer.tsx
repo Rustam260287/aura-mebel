@@ -2,6 +2,9 @@
 import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { useImmersive } from '../contexts/ImmersiveContext';
+import { useToast } from '../contexts/ToastContext';
+import { createArSessionId } from '../lib/journey/arSession';
+import { createArSnapshot } from '../lib/journey/snapshotsClient';
 
 interface ModelViewerElement extends HTMLElement {
   src?: string;
@@ -16,6 +19,7 @@ interface ModelViewerElement extends HTMLElement {
   'ar-modes'?: string;
   'ar-scale'?: string;
   activateAR?: () => void;
+  toDataURL?: (type?: string, encoderOptions?: number) => string | Promise<string>;
 }
 
 interface ARViewerProps {
@@ -50,6 +54,10 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   const { setImmersive } = useImmersive();
   const pendingActivateRef = useRef(false);
   const hintArmedRef = useRef(false);
+  const { addToast } = useToast();
+  const [arSessionId, setArSessionId] = useState<string | null>(null);
+  const arSessionIdRef = useRef<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   useEffect(() => {
     import('@google/model-viewer').catch(console.error);
@@ -59,6 +67,27 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     setImmersive(open);
     return () => setImmersive(false);
   }, [open, setImmersive]);
+
+  useEffect(() => {
+    if (!open) {
+      setArSessionId(null);
+      arSessionIdRef.current = null;
+      return;
+    }
+    setArSessionId((prev) => {
+      const next = prev || createArSessionId();
+      arSessionIdRef.current = next;
+      return next;
+    });
+  }, [open]);
+
+  const ensureArSession = useCallback(() => {
+    if (arSessionIdRef.current) return arSessionIdRef.current;
+    const next = createArSessionId();
+    arSessionIdRef.current = next;
+    setArSessionId(next);
+    return next;
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -112,7 +141,11 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     if (start == null) return null;
     arFinishedRef.current = true;
     const durationSec = Math.max(0, Math.round((Date.now() - start) / 1000));
-    trackJourneyEvent({ type: 'FINISH_AR', objectId, meta: { durationSec } });
+    trackJourneyEvent({
+      type: 'FINISH_AR',
+      objectId,
+      meta: { durationSec, ...(arSessionIdRef.current ? { arSessionId: arSessionIdRef.current } : {}) },
+    });
     return durationSec;
   }, [objectId]);
 
@@ -135,7 +168,11 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         if (objectId && !arStartLoggedRef.current) {
           arStartLoggedRef.current = true;
           if (arStartMsRef.current == null) arStartMsRef.current = Date.now();
-          trackJourneyEvent({ type: 'START_AR', objectId });
+          trackJourneyEvent({
+            type: 'START_AR',
+            objectId,
+            meta: { ...(arSessionIdRef.current ? { arSessionId: arSessionIdRef.current } : {}) },
+          });
         }
         return;
       }
@@ -205,13 +242,18 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
   const handleActivateAR = () => {
     if (!canStartAr) return;
+    ensureArSession();
     if (objectId && arStartMsRef.current == null) {
       // Fallback for platforms where `ar-status` events are limited (e.g. native viewers).
       arStartMsRef.current = Date.now();
     }
     if (objectId && !arStartLoggedRef.current) {
       arStartLoggedRef.current = true;
-      trackJourneyEvent({ type: 'START_AR', objectId });
+      trackJourneyEvent({
+        type: 'START_AR',
+        objectId,
+        meta: { ...(arSessionIdRef.current ? { arSessionId: arSessionIdRef.current } : {}) },
+      });
     }
     const modelViewer = modelViewerRef.current as any;
     if (!modelViewer) return;
@@ -300,6 +342,52 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     };
   }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
 
+  const captureModelViewerJpeg = useCallback(async (): Promise<{ blob: Blob; width?: number; height?: number }> => {
+    const el = modelViewerRef.current as any;
+    if (!el) throw new Error('model-viewer not ready');
+
+    const canvas = (el.shadowRoot?.querySelector?.('canvas') as HTMLCanvasElement | null) || null;
+    const width = canvas?.width || undefined;
+    const height = canvas?.height || undefined;
+
+    if (canvas && typeof canvas.toBlob === 'function') {
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', 0.9),
+      );
+      if (blob) return { blob, width, height };
+    }
+
+    if (typeof el.toDataURL === 'function') {
+      const maybe = el.toDataURL('image/jpeg', 0.9);
+      const dataUrl = typeof maybe === 'string' ? maybe : await maybe;
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
+        const blob = await fetch(dataUrl).then((r) => r.blob());
+        return { blob, width, height };
+      }
+    }
+
+    throw new Error('snapshot not supported');
+  }, []);
+
+  const handleSnapshot = useCallback(async () => {
+    if (isCapturing) return;
+    const sessionId = ensureArSession();
+    if (!sessionId || !objectId) return;
+    if (!isPresentingAr) return;
+
+    setIsCapturing(true);
+    try {
+      const capture = await captureModelViewerJpeg();
+      await createArSnapshot({ sessionId, objectId, capture });
+      addToast('Снимок сохранён', 'success', 1600);
+    } catch (e) {
+      console.warn('[ARViewer] snapshot failed:', e);
+      addToast('Не удалось сохранить снимок', 'error', 2200);
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [addToast, captureModelViewerJpeg, ensureArSession, isCapturing, isPresentingAr, objectId]);
+
   return (
     <div
       className={[
@@ -322,7 +410,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           interaction-prompt="none"
           scale="1 1 1"
           ar
-          ar-modes="scene-viewer webxr quick-look"
+          ar-modes="webxr scene-viewer quick-look"
           ar-scale="auto"
           style={{ touchAction: 'pan-y' }}
           className="w-full h-full"
@@ -362,6 +450,27 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         <div className="absolute top-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-soft-black/65 text-white text-xs backdrop-blur-md">
           Наведите камеру на пол
         </div>
+      )}
+
+      {/* Snapshot button (only while WebXR AR is presenting in-page) */}
+      {open && isPresentingAr && canPreview3d && (
+        <button
+          type="button"
+          onClick={handleSnapshot}
+          aria-label="Сделать снимок"
+          disabled={isCapturing}
+          className="absolute z-20 right-6 top-[calc(env(safe-area-inset-top)+14px)] bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft hover:bg-white transition-colors disabled:opacity-60"
+        >
+          <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 7h3l2-2h6l2 2h3v12H4V7z"
+            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 17a4 4 0 100-8 4 4 0 000 8z" />
+          </svg>
+        </button>
       )}
       
       {/* Close Button */}

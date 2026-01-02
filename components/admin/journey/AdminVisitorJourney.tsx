@@ -34,6 +34,7 @@ const describeEvent = (event: VisitorJourneyResponse['events'][number]) => {
   if (event.type === 'VIEW_OBJECT') return withName('Посмотрел объект');
   if (event.type === 'OPEN_3D') return withName('Открыл 3D для');
   if (event.type === 'START_AR') return withName('Запустил AR примерку для');
+  if (event.type === 'AR_SNAPSHOT_CREATED') return withName('Сделал AR‑снимок для');
   if (event.type === 'FINISH_AR') {
     const duration = typeof event.meta?.durationSec === 'number' ? event.meta.durationSec : null;
     return duration != null ? `Примерял в комнате (AR, ${duration} сек)` : 'Завершил AR примерку';
@@ -62,6 +63,24 @@ export const AdminVisitorJourney: React.FC<{ visitorId: string; onBack: () => vo
   const [error, setError] = useState<string | null>(null);
 
   const events = useMemo(() => data?.events || [], [data]);
+  const snapshots = useMemo(() => {
+    return events
+      .filter((e) => e.type === 'AR_SNAPSHOT_CREATED')
+      .map((e) => {
+        const snapshot = (e.meta as any)?.snapshot;
+        const url = typeof snapshot?.url === 'string' ? snapshot.url : null;
+        const platform = typeof (e.meta as any)?.platform === 'string' ? (e.meta as any).platform : null;
+        return {
+          id: e.id,
+          url,
+          createdAt: e.createdAt,
+          objectName: e.objectName,
+          objectId: e.objectId,
+          platform,
+        };
+      })
+      .filter((s) => Boolean(s.url));
+  }, [events]);
 
   useEffect(() => {
     let isActive = true;
@@ -133,6 +152,48 @@ export const AdminVisitorJourney: React.FC<{ visitorId: string; onBack: () => vo
             <div>
               <div className="text-xs text-gray-500">Сохранено</div>
               <div className="text-sm text-brand-charcoal mt-1">{data.visitor.savedObjectIds.length}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {snapshots.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="px-6 py-4 border-b flex items-center justify-between">
+            <div className="text-sm font-medium text-brand-charcoal">AR снимки</div>
+            <div className="text-xs text-gray-500">{snapshots.length}</div>
+          </div>
+          <div className="p-6">
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {snapshots
+                .slice()
+                .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''))
+                .map((s) => (
+                  <a
+                    key={s.id}
+                    href={s.url || '#'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 w-40"
+                    title={`${s.objectName || s.objectId || ''} ${formatDateTime(s.createdAt)}`}
+                  >
+                    <div className="relative w-40 aspect-[3/4] rounded-xl overflow-hidden border border-stone-beige/30 bg-stone-beige/10">
+                      {s.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.url} alt="AR snapshot" className="w-full h-full object-cover" loading="lazy" />
+                      ) : null}
+                    </div>
+                    <div className="mt-2">
+                      <div className="text-xs text-brand-charcoal truncate">
+                        {s.objectName || (s.objectId ? s.objectId.slice(0, 8) + '…' : '—')}
+                      </div>
+                      <div className="text-[11px] text-gray-500 flex items-center justify-between gap-2">
+                        <span>{formatTime(s.createdAt)}</span>
+                        <span className="uppercase">{s.platform || ''}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
             </div>
           </div>
         </div>

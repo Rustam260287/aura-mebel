@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAdminDb } from '../../../../../lib/firebaseAdmin';
+import { getAdminDb, getAdminStorage } from '../../../../../lib/firebaseAdmin';
 import { requireOwnerSession } from '../../../../../lib/auth/admin-session';
 import { COLLECTIONS } from '../../../../../lib/db/collections';
 
@@ -27,6 +27,16 @@ type EventRow = {
   objectName: string | null;
   createdAt: string | null;
   meta: Record<string, unknown> | null;
+};
+
+const getSnapshotPath = (meta: Record<string, unknown> | null): string | null => {
+  if (!meta) return null;
+  const snapshot = meta.snapshot;
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  const path = (snapshot as any).storagePath;
+  if (typeof path !== 'string') return null;
+  const trimmed = path.trim();
+  return trimmed ? trimmed : null;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -114,6 +124,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         meta: data.meta && typeof data.meta === 'object' ? (data.meta as Record<string, unknown>) : null,
       };
     });
+
+    const storage = getAdminStorage();
+    if (storage) {
+      const bucket = storage.bucket();
+      const snapshotEvents = events.filter((e) => e.type === 'AR_SNAPSHOT_CREATED' && getSnapshotPath(e.meta));
+      await Promise.all(
+        snapshotEvents.map(async (evt) => {
+          const meta = evt.meta;
+          if (!meta) return;
+          const snapshot = meta.snapshot;
+          if (!snapshot || typeof snapshot !== 'object') return;
+          const storagePath = getSnapshotPath(meta);
+          if (!storagePath) return;
+          try {
+            const [url] = await bucket.file(storagePath).getSignedUrl({
+              version: 'v4',
+              action: 'read',
+              expires: Date.now() + 60 * 60 * 1000,
+            });
+            (snapshot as any).url = url;
+          } catch (e) {
+            console.warn('Failed to sign snapshot URL', storagePath, e);
+          }
+        }),
+      );
+    }
 
     return res.status(200).json({ visitor, events });
   } catch (error) {

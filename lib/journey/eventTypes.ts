@@ -3,6 +3,7 @@ export const JOURNEY_EVENT_TYPES = [
   'OPEN_3D',
   'START_AR',
   'FINISH_AR',
+  'AR_SNAPSHOT_CREATED',
   'SAVE_OBJECT',
   'REMOVE_OBJECT',
   'OPEN_SAVED',
@@ -17,6 +18,16 @@ export type JourneyPlatform = 'ios' | 'android' | 'web';
 export type JourneyMeta = {
   durationSec?: number;
   platform?: JourneyPlatform;
+  arSessionId?: string;
+  snapshot?: {
+    sessionId: string;
+    storagePath: string;
+    width?: number;
+    height?: number;
+    orientation?: 'portrait' | 'landscape';
+    partnerId?: string;
+    url?: string;
+  };
   handoff?: {
     reason: 'pricing' | 'purchase' | 'contact';
     objectId?: string;

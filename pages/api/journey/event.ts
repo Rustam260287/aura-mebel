@@ -14,6 +14,7 @@ const typesRequiringObjectId = new Set([
   'OPEN_3D',
   'START_AR',
   'FINISH_AR',
+  'AR_SNAPSHOT_CREATED',
   'SAVE_OBJECT',
   'REMOVE_OBJECT',
 ]);
@@ -32,6 +33,8 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
   const value = meta as {
     durationSec?: unknown;
     platform?: unknown;
+    arSessionId?: unknown;
+    snapshot?: unknown;
     handoff?: unknown;
   };
   const out: JourneyMeta = {};
@@ -40,6 +43,35 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
   }
   if (value.platform === 'ios' || value.platform === 'android' || value.platform === 'web') {
     out.platform = value.platform;
+  }
+  if (typeof value.arSessionId === 'string') {
+    const id = value.arSessionId.trim();
+    if (id) out.arSessionId = id.slice(0, 120);
+  }
+
+  if (value.snapshot && typeof value.snapshot === 'object') {
+    const s = value.snapshot as Record<string, unknown>;
+    const sessionId = typeof s.sessionId === 'string' ? s.sessionId.trim().slice(0, 120) : '';
+    const storagePath = typeof s.storagePath === 'string' ? s.storagePath.trim().slice(0, 300) : '';
+    const partnerId = typeof s.partnerId === 'string' ? s.partnerId.trim().slice(0, 120) : undefined;
+    const width = typeof s.width === 'number' && Number.isFinite(s.width) ? Math.round(s.width) : undefined;
+    const height = typeof s.height === 'number' && Number.isFinite(s.height) ? Math.round(s.height) : undefined;
+    const orientationRaw = s.orientation;
+    const orientation =
+      orientationRaw === 'portrait' || orientationRaw === 'landscape' ? orientationRaw : undefined;
+    const url = typeof s.url === 'string' ? s.url.trim().slice(0, 500) : undefined;
+
+    if (sessionId && storagePath) {
+      out.snapshot = {
+        sessionId,
+        storagePath,
+        ...(typeof width === 'number' && width > 0 ? { width } : {}),
+        ...(typeof height === 'number' && height > 0 ? { height } : {}),
+        ...(orientation ? { orientation } : {}),
+        ...(partnerId ? { partnerId } : {}),
+        ...(url ? { url } : {}),
+      };
+    }
   }
 
   if (value.handoff && typeof value.handoff === 'object') {

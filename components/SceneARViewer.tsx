@@ -6,6 +6,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { ObjectPublic, ScenePresetPublic } from '../types';
 import { useImmersive } from '../contexts/ImmersiveContext';
 import { trackJourneyEvent } from '../lib/journey/client';
+import { useToast } from '../contexts/ToastContext';
+import { createArSessionId } from '../lib/journey/arSession';
+import { createArSnapshot } from '../lib/journey/snapshotsClient';
 
 type Stage = 'idle' | 'loading' | 'ready-to-start' | 'starting' | 'placing' | 'active' | 'error' | 'unsupported';
 
@@ -52,6 +55,7 @@ const angle2 = (a: Touch, b: Touch) => Math.atan2(b.clientY - a.clientY, b.clien
 
 export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, onClose, onSessionStart }) => {
   const { setImmersive } = useImmersive();
+  const { addToast } = useToast();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -84,6 +88,8 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
 
   const startedAtRef = useRef<number | null>(null);
   const closeOnceRef = useRef(false);
+  const arSessionIdRef = useRef<string>(createArSessionId());
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const [stage, setStage] = useState<Stage>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -143,9 +149,13 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
 
       if (reason !== 'unmount' && startedAtRef.current != null) {
         if (durationSec != null) {
-          trackJourneyEvent({ type: 'FINISH_AR', objectId: scene.id, meta: { durationSec } });
+          trackJourneyEvent({
+            type: 'FINISH_AR',
+            objectId: scene.id,
+            meta: { durationSec, arSessionId: arSessionIdRef.current },
+          });
         } else {
-          trackJourneyEvent({ type: 'FINISH_AR', objectId: scene.id });
+          trackJourneyEvent({ type: 'FINISH_AR', objectId: scene.id, meta: { arSessionId: arSessionIdRef.current } });
         }
       }
 
@@ -482,7 +492,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
 
       xrSessionRef.current = session;
       startedAtRef.current = Date.now();
-      trackJourneyEvent({ type: 'START_AR', objectId: scene.id });
+      trackJourneyEvent({ type: 'START_AR', objectId: scene.id, meta: { arSessionId: arSessionIdRef.current } });
 
       onSessionStart?.();
 
@@ -542,6 +552,33 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
       setError('Не удалось запустить AR. Попробуйте Chrome на Android.');
     }
   }, [endSession, onSessionStart, scene.id, selectItemByKey, spawnScene, stage]);
+
+  const handleSnapshot = useCallback(async () => {
+    if (isCapturing) return;
+    if (stage !== 'active') return;
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    const canvas = renderer.domElement as HTMLCanvasElement | undefined;
+    if (!canvas || typeof canvas.toBlob !== 'function') return;
+
+    setIsCapturing(true);
+    try {
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      if (!blob) throw new Error('failed to capture canvas');
+
+      await createArSnapshot({
+        sessionId: arSessionIdRef.current,
+        objectId: scene.id,
+        capture: { blob, width: canvas.width, height: canvas.height },
+      });
+      addToast('Снимок сохранён', 'success', 1600);
+    } catch (e) {
+      console.warn('[SceneARViewer] snapshot failed:', e);
+      addToast('Не удалось сохранить снимок', 'error', 2200);
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [addToast, isCapturing, scene.id, stage]);
 
   const deleteSelected = useCallback(() => {
     const key = selectedKeyRef.current;
@@ -714,7 +751,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
       <div ref={containerRef} className="absolute inset-0" />
 
       {/* Top bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-3 pointer-events-none">
+      <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-center justify-between gap-3 pointer-events-none">
         <div className="pointer-events-auto">
           <button
             onClick={() => void endSession('user')}
@@ -730,7 +767,31 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
           </div>
         )}
 
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-2">
+          {stage === 'active' && (
+            <button
+              type="button"
+              onClick={handleSnapshot}
+              aria-label="Сделать снимок"
+              disabled={isCapturing}
+              className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft hover:bg-white transition-colors disabled:opacity-60"
+            >
+              <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 7h3l2-2h6l2 2h3v12H4V7z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 17a4 4 0 100-8 4 4 0 000 8z"
+                />
+              </svg>
+            </button>
+          )}
           <button
             onClick={deleteSelected}
             disabled={!selectedKey}
