@@ -109,6 +109,32 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const isObjectDetail = (path: string) => path.startsWith('/objects/');
+
+    const rememberEntry = () => {
+      try {
+        const current = router.asPath || '';
+        if (!current) return;
+        if (isObjectDetail(current)) return;
+        window.sessionStorage.setItem('label_last_entry_path', current);
+      } catch {}
+    };
+
+    // Capture the path we are leaving (entrypoint for object detail).
+    const handleRouteChangeStart = () => rememberEntry();
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+
+    // Also capture on first mount.
+    rememberEntry();
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+    };
+  }, [router]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const isChunkLoadError = (error: unknown) => {

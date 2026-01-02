@@ -49,6 +49,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   const wasPresentingRef = useRef(false);
   const { setImmersive } = useImmersive();
   const pendingActivateRef = useRef(false);
+  const hintArmedRef = useRef(false);
 
   useEffect(() => {
     import('@google/model-viewer').catch(console.error);
@@ -60,6 +61,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   }, [open, setImmersive]);
 
   useEffect(() => {
+    if (!open) return undefined;
+    if (hintArmedRef.current) return undefined;
+    hintArmedRef.current = true;
     if (typeof window === 'undefined') return undefined;
     try {
       if (window.localStorage.getItem('label_ar_floor_hint_shown')) return undefined;
@@ -74,7 +78,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       } catch {}
     }, 2600);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [open]);
   
   const proxiedSrc = src ? `/api/proxy-model?url=${encodeURIComponent(src)}` : undefined;
   const proxiedIosSrc = iosSrc ? `/api/proxy-model?url=${encodeURIComponent(iosSrc)}` : undefined;
@@ -208,30 +212,12 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       arStartLoggedRef.current = true;
       trackJourneyEvent({ type: 'START_AR', objectId });
     }
-    pendingActivateRef.current = true;
+    const modelViewer = modelViewerRef.current as any;
+    if (!modelViewer) return;
 
-    const tryActivate = async () => {
-      const ok = await ensureModelViewerReady();
-      const modelViewer = modelViewerRef.current as any;
-      if (!modelViewer) return false;
-      if (!ok) return false;
-
-      if (isIOS) {
-        // Prefer model-viewer Quick Look integration to avoid navigation to raw storage URLs.
-        if (typeof modelViewer.activateAR === 'function') {
-          try {
-            modelViewer.activateAR();
-            return true;
-          } catch {
-            // fall through
-          }
-        }
-        // Fallback: direct Quick Look link (same-origin proxy) with content scaling.
-        quickLookRef.current?.click();
-        return true;
-      }
-
-      if (proxiedSrc) {
+    const trySync = () => {
+      // Maintain user-gesture context by calling activateAR synchronously whenever possible.
+      if (!isIOS && proxiedSrc) {
         try {
           if (modelViewer.src !== proxiedSrc) modelViewer.src = proxiedSrc;
         } catch {}
@@ -239,16 +225,26 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       if (typeof modelViewer.activateAR === 'function') {
         try {
           modelViewer.activateAR();
+          pendingActivateRef.current = false;
           return true;
         } catch {
-          return false;
+          // fall through
         }
       }
       return false;
     };
 
-    // Start immediately; if model-viewer isn't upgraded yet we'll retry once it is.
-    void tryActivate();
+    if (trySync()) return;
+
+    if (isIOS) {
+      // Fallback for iOS: direct Quick Look link (proxied) with content scaling.
+      quickLookRef.current?.click();
+      pendingActivateRef.current = false;
+      return;
+    }
+
+    // If model-viewer isn't upgraded yet (very slow networks), retry once it is defined.
+    pendingActivateRef.current = true;
   };
 
   useImperativeHandle(
@@ -306,9 +302,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   return (
     <div
       className={[
-        'fixed inset-0 z-[100] bg-warm-white flex items-center justify-center',
-        'transition-opacity duration-200 ease-out',
-        open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        open
+          ? 'fixed inset-0 z-ar bg-warm-white flex items-center justify-center'
+          : 'fixed left-0 top-0 w-[1px] h-[1px] opacity-0 pointer-events-none -z-10 overflow-hidden',
       ].join(' ')}
       aria-hidden={!open}
     >

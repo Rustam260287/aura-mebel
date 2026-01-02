@@ -41,6 +41,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const inlineModelViewerRef = useRef<HTMLElement | null>(null);
   const arViewerRef = useRef<ARViewerHandle | null>(null);
   const open3dLoggedForObjectRef = useRef<string | null>(null);
+  const lastArTouchMsRef = useRef<number>(0);
 
   const hasGlb = Boolean(object.modelGlbUrl);
   const hasUsdz = Boolean(object.modelUsdzUrl);
@@ -396,9 +397,24 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     emitEvent({ type: 'OPEN_ASSISTANT' });
   }, [emitEvent, experienceState]);
 
+  const handleBack = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const entry = window.sessionStorage.getItem('label_last_entry_path');
+        if (entry && entry !== router.asPath) {
+          router.push(entry);
+          return;
+        }
+      } catch {}
+    }
+    router.push('/objects');
+  }, [router]);
+
   const handleOpenAr = useCallback(() => {
     const isIOSDevice =
-      typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      typeof navigator !== 'undefined' &&
+      (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.userAgent.includes('Macintosh') && (navigator as any).maxTouchPoints > 1));
     const canStartArNow = isIOSDevice ? hasUsdz : hasGlb;
 
     if (!canStartArNow) {
@@ -412,6 +428,23 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     setIsAROpen(true);
     arViewerRef.current?.activateAR();
   }, [addToast, emitEvent, hasGlb, hasUsdz]);
+
+  const handleOpenArTap = useCallback(
+    (event?: React.MouseEvent | React.TouchEvent) => {
+      const now = Date.now();
+      const isTouch = Boolean((event as any)?.changedTouches);
+      if (isTouch) {
+        lastArTouchMsRef.current = now;
+        handleOpenAr();
+        return;
+      }
+
+      // Avoid duplicate click after touch (mobile browsers fire both).
+      if (now - lastArTouchMsRef.current < 650) return;
+      handleOpenAr();
+    },
+    [handleOpenAr],
+  );
 
   return (
     <div className="min-h-screen bg-warm-white">
@@ -484,7 +517,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 
           {/* Back */}
           <button
-            onClick={onBack}
+            onClick={handleBack}
             aria-label="Назад"
             className="absolute top-4 left-4 z-10 rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
           >
@@ -513,7 +546,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       {/* Sticky action bar */}
       <div
         className={[
-          'fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]',
+          'fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)] pointer-events-auto',
           'transition-[opacity,transform] duration-300 ease-out will-change-transform',
           uiState === 'IN_AR' || isAROpen ? 'opacity-0 translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0',
         ].join(' ')}
@@ -532,7 +565,8 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           )}
           <div className="rounded-2xl bg-white/80 backdrop-blur-md border border-stone-beige/30 shadow-soft p-2 flex items-center gap-2">
             <Button
-              onClick={handleOpenAr}
+              onClick={handleOpenArTap}
+              onTouchEnd={handleOpenArTap as any}
               size="lg"
               variant="primary"
               className={[
