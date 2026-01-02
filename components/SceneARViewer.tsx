@@ -563,7 +563,17 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
 
     setIsCapturing(true);
     try {
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const blob = await new Promise<Blob | null>((resolve) => {
+        const timeout = window.setTimeout(() => resolve(null), 1800);
+        canvas.toBlob(
+          (b) => {
+            window.clearTimeout(timeout);
+            resolve(b);
+          },
+          'image/jpeg',
+          0.9,
+        );
+      });
       if (!blob) throw new Error('failed to capture canvas');
 
       await createArSnapshot({

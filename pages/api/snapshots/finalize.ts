@@ -188,6 +188,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         {
           lastEventType: 'AR_SNAPSHOT_CREATED',
           lastEventAt: FieldValue.serverTimestamp(),
+          lastIntentAt: FieldValue.serverTimestamp(),
           lastObjectId: objectId,
           lastSnapshotAt: FieldValue.serverTimestamp(),
         },
@@ -202,4 +203,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: message });
   }
 }
-

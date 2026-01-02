@@ -16,7 +16,7 @@ export const ToastContainer: React.FC = memo(() => {
   };
 
   return (
-    <div className="fixed top-24 right-6 z-50 space-y-3 w-full max-w-sm pointer-events-none">
+    <div className="fixed top-24 right-6 z-modal space-y-3 w-full max-w-sm pointer-events-none">
       {toasts.map(toast => (
         <div
           key={toast.id}

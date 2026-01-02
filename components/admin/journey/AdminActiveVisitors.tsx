@@ -41,6 +41,7 @@ const describeLastAction = (row: ActiveVisitorsResponse['visitors'][number]) => 
     return row.lastArDurationSec != null ? `Примерял в AR, ${row.lastArDurationSec} сек` : 'Примерял в AR';
   }
   if (t === 'START_AR') return 'Запустил AR примерку';
+  if (t === 'AR_SNAPSHOT_CREATED') return 'Сделал AR‑снимок';
   if (t === 'OPEN_3D') return 'Открыл 3D';
   if (t === 'VIEW_OBJECT') return 'Смотрел объект';
   if (t === 'SAVE_OBJECT') {
@@ -95,7 +96,7 @@ export const AdminActiveVisitors: React.FC<{ onOpenVisitor: (visitorId: string) 
       <div className="flex items-start justify-between gap-6">
         <div>
           <h1 className="text-2xl font-semibold text-brand-charcoal">Активные посетители</h1>
-          <p className="text-sm text-gray-500 mt-1">Только с намерением: сохранение или контакт</p>
+          <p className="text-sm text-gray-500 mt-1">Только с намерением: сохранение, снимок или контакт</p>
         </div>
         <PeriodSelect days={days} onChange={setDays} />
       </div>

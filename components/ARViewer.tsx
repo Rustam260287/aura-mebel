@@ -356,9 +356,17 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     const height = canvas?.height || undefined;
 
     if (canvas && typeof canvas.toBlob === 'function') {
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, 'image/jpeg', 0.9),
-      );
+      const blob = await new Promise<Blob | null>((resolve) => {
+        const timeout = typeof window !== 'undefined' ? window.setTimeout(() => resolve(null), 1800) : null;
+        canvas.toBlob(
+          (b) => {
+            if (timeout != null && typeof window !== 'undefined') window.clearTimeout(timeout);
+            resolve(b);
+          },
+          'image/jpeg',
+          0.9,
+        );
+      });
       if (blob) return { blob, width, height };
     }
 

@@ -53,12 +53,22 @@ export async function createArSnapshot({ sessionId, objectId, partnerId, capture
     throw new Error(uploadJson?.error || `Upload URL failed: HTTP ${uploadRes.status}`);
   }
 
-  const put = await fetch(uploadJson.uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': uploadJson.contentType },
-    body: capture.blob,
-  });
-  if (!put.ok) throw new Error(`Upload failed: HTTP ${put.status}`);
+  let put: Response;
+  try {
+    put = await fetch(uploadJson.uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': uploadJson.contentType },
+      body: capture.blob,
+    });
+  } catch (error) {
+    throw new Error(error instanceof Error ? `Upload failed: ${error.message}` : 'Upload failed');
+  }
+
+  if (!put.ok) {
+    const details = await put.text().catch(() => '');
+    const suffix = details ? `: ${details.slice(0, 180)}` : '';
+    throw new Error(`Upload failed: HTTP ${put.status}${suffix}`);
+  }
 
   const width = typeof capture.width === 'number' && Number.isFinite(capture.width) ? Math.round(capture.width) : undefined;
   const height = typeof capture.height === 'number' && Number.isFinite(capture.height) ? Math.round(capture.height) : undefined;
@@ -85,7 +95,9 @@ export async function createArSnapshot({ sessionId, objectId, partnerId, capture
     body: JSON.stringify(finalizeBody),
   });
   const finalizeJson = (await finalizeRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-  if (!finalizeRes.ok) throw new Error(finalizeJson?.error || `Finalize failed: HTTP ${finalizeRes.status}`);
+  if (!finalizeRes.ok) {
+    const details = finalizeJson?.error || (await finalizeRes.text().catch(() => ''));
+    throw new Error(details ? String(details) : `Finalize failed: HTTP ${finalizeRes.status}`);
+  }
   return { filePath: uploadJson.filePath };
 }
-
