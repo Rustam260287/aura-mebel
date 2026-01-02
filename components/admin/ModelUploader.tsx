@@ -4,26 +4,24 @@
 import React, { useRef, useState } from 'react';
 import { CubeIcon } from '../icons';
 import { useAuth } from '../../contexts/AuthContext';
+import type { ModelProcessingInfo } from '../../types';
 
 interface ModelUploaderProps {
-  onUploadSuccess: (url: string, ext: 'glb' | 'usdz') => void;
+  objectId: string;
+  onUploadSuccess: (result: { modelGlbUrl?: string; modelUsdzUrl?: string; modelProcessing?: ModelProcessingInfo }) => void;
   onUploadStateChange?: (state: { isLoading: boolean; progress: number | null }) => void;
 }
 
 const MAX_MODEL_SIZE = 100 * 1024 * 1024; // 100MB
 const BIG_FILE_HINT_MB = 30;
 
-const asModelKind = (value: unknown): 'glb' | 'usdz' | undefined => {
-  if (value === 'glb' || value === 'usdz') return value;
-  return undefined;
-};
-
-export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, onUploadStateChange }) => {
+export const ModelUploader: React.FC<ModelUploaderProps> = ({ objectId, onUploadSuccess, onUploadStateChange }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [softHint, setSoftHint] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'idle' | 'uploading' | 'processing'>('idle');
   const xhrRef = useRef<XMLHttpRequest | null>(null);
   const { user } = useAuth();
 
@@ -33,25 +31,14 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
     onUploadStateChange?.(next);
   };
 
-  const parseJsonSafely = (text: string): any | null => {
-    if (!text) return null;
-    try {
-      return JSON.parse(text);
-    } catch {
-      return null;
-    }
-  };
-
   const processFile = async (file: File) => {
     // Валидация расширения
     const ext = file.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'glb' && ext !== 'usdz') {
-        setError('Пожалуйста, загрузите файл .glb или .usdz');
+    if (ext !== 'glb') {
+        setError('Загрузите один файл .glb (master). USDZ будет сгенерирован автоматически.');
         return;
     }
-    const normalizedExt = ext as 'glb' | 'usdz';
-    const normalizedContentType =
-      normalizedExt === 'glb' ? 'model/gltf-binary' : 'model/vnd.usdz+zip';
+    const normalizedContentType = 'model/gltf-binary';
 
     if (!user) {
       setError('Вы не авторизованы');
@@ -66,6 +53,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
     setLoadingState({ isLoading: true, progress: 0 });
     setError(null);
     setSoftHint(null);
+    setPhase('uploading');
     
     try {
         const token = await user.getIdToken();
@@ -75,16 +63,15 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
           setSoftHint('Большие файлы загружаются напрямую в Storage — это может занять немного времени.');
         }
 
-        const urlRes = await fetch('/api/admin/upload-model-url', {
+        const urlRes = await fetch('/api/admin/models/upload-url', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            filename: file.name,
+            objectId,
             size: file.size,
-            extension: normalizedExt,
             contentType: file.type || normalizedContentType,
           }),
         });
@@ -101,11 +88,11 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
         const filePath = typeof urlData?.filePath === 'string' ? urlData.filePath : '';
         const serverContentType =
           typeof urlData?.contentType === 'string' ? urlData.contentType : file.type || normalizedContentType;
-        const serverKind = asModelKind(urlData?.kind) || normalizedExt;
 
         if (!uploadUrl || !filePath) {
           setError('Ошибка загрузки: некорректный ответ сервера');
           setLoadingState({ isLoading: false, progress: null });
+          setPhase('idle');
           return;
         }
 
@@ -134,6 +121,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
           complete();
           setError(message);
           setLoadingState({ isLoading: false, progress: null });
+          setPhase('idle');
         };
 
         xhr.onerror = () => {
@@ -150,15 +138,16 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
             return;
           }
 
-          setLoadingState({ isLoading: true, progress: 99 });
+          setLoadingState({ isLoading: true, progress: null });
+          setPhase('processing');
           try {
-            const finalizeRes = await fetch('/api/admin/upload-model-finalize', {
+            const finalizeRes = await fetch('/api/admin/models/finalize', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({ filePath, contentType: serverContentType }),
+              body: JSON.stringify({ objectId }),
             });
             const finalizeData = await finalizeRes.json().catch(() => null);
             if (!finalizeRes.ok) {
@@ -166,14 +155,15 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
               failWithMessage(typeof serverError === 'string' ? serverError : `Ошибка финализации (${finalizeRes.status})`);
               return;
             }
-            const url = finalizeData?.url;
-            if (!url || typeof url !== 'string') {
-              failWithMessage('Ошибка загрузки: некорректный ответ сервера');
-              return;
-            }
+
             complete();
             setLoadingState({ isLoading: false, progress: null });
-            onUploadSuccess(url, serverKind);
+            setPhase('idle');
+            onUploadSuccess({
+              modelGlbUrl: typeof finalizeData?.modelGlbUrl === 'string' ? finalizeData.modelGlbUrl : undefined,
+              modelUsdzUrl: typeof finalizeData?.modelUsdzUrl === 'string' ? finalizeData.modelUsdzUrl : undefined,
+              modelProcessing: finalizeData?.modelProcessing as ModelProcessingInfo | undefined,
+            });
           } catch (e: any) {
             failWithMessage(e?.message ? String(e.message) : 'Ошибка финализации');
           }
@@ -184,6 +174,7 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
     } catch (e: any) {
         setError(e?.message ? String(e.message) : 'Ошибка загрузки');
         setLoadingState({ isLoading: false, progress: null });
+        setPhase('idle');
     }
   };
 
@@ -224,28 +215,41 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
             type="file" 
             id="model-upload-input" 
             className="hidden" 
-            accept=".glb,.usdz" 
+            accept=".glb" 
             onChange={handleFileChange}
             disabled={isLoading}
         />
         
         {isLoading ? (
             <div className="relative z-10 flex flex-col items-center justify-center py-4">
-                <div className="w-full max-w-[200px] h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
-                    <div 
-                        className="h-full bg-brand-brown transition-all duration-300 ease-out"
-                        style={{ width: `${uploadProgress || 0}%` }}
-                    />
-                </div>
-                <p className="text-sm font-bold text-brand-brown">
-                    Загрузка{typeof uploadProgress === 'number' ? ` ${uploadProgress}%` : '...'}
-                </p>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); cancelUpload(); }}
-                    className="mt-3 text-xs text-red-500 hover:text-red-700 underline"
-                >
-                    Отменить
-                </button>
+                {phase === 'uploading' && (
+                  <>
+                    <div className="w-full max-w-[200px] h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
+                        <div 
+                            className="h-full bg-brand-brown transition-all duration-300 ease-out"
+                            style={{ width: `${uploadProgress || 0}%` }}
+                        />
+                    </div>
+                    <p className="text-sm font-bold text-brand-brown">
+                        Загрузка{typeof uploadProgress === 'number' ? ` ${uploadProgress}%` : '...'}
+                    </p>
+                  </>
+                )}
+                {phase === 'processing' && (
+                  <>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-brown mb-3" />
+                    <p className="text-sm font-bold text-brand-brown">Оптимизация 3D…</p>
+                    <p className="text-xs text-gray-500 mt-1">Сейчас подготовим файлы для Web / Android / iOS.</p>
+                  </>
+                )}
+                {phase === 'uploading' && (
+                  <button 
+                      onClick={(e) => { e.stopPropagation(); cancelUpload(); }}
+                      className="mt-3 text-xs text-red-500 hover:text-red-700 underline"
+                  >
+                      Отменить
+                  </button>
+                )}
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center py-2">
@@ -253,10 +257,10 @@ export const ModelUploader: React.FC<ModelUploaderProps> = ({ onUploadSuccess, o
                     <CubeIcon className="w-8 h-8 text-brand-brown" />
                 </div>
                 <p className="text-sm font-medium text-gray-700 mb-1">
-                    Нажмите или перетащите 3D модель
+                    Нажмите или перетащите GLB
                 </p>
                 <p className="text-xs text-gray-400">
-                    .glb, .usdz (до 100 МБ)
+                    .glb (до 100 МБ)
                 </p>
             </div>
         )}

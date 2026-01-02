@@ -47,7 +47,7 @@ function AdminContainer({ initialObjects, initialScenes, initialJournalEntries }
   const handleUpdateObject = useCallback(async (updatedObject: ObjectAdmin) => {
     try {
       const token = await getAuthToken();
-      const { modelGlbUrl, modelUsdzUrl, ...rest } = updatedObject as any;
+      const { modelGlbUrl, modelUsdzUrl, modelProcessing, ...rest } = updatedObject as any;
       const payload: Partial<ObjectAdmin> = {
         ...rest,
         ...(modelGlbUrl ? { modelGlbUrl } : {}),
@@ -84,7 +84,7 @@ function AdminContainer({ initialObjects, initialScenes, initialJournalEntries }
   const handleAddObject = useCallback(async (objectData: Omit<ObjectAdmin, 'id'>) => {
     try {
       const token = await getAuthToken();
-      const { modelGlbUrl, modelUsdzUrl, ...rest } = objectData as any;
+      const { modelGlbUrl, modelUsdzUrl, modelProcessing, ...rest } = objectData as any;
       const payload: Partial<Omit<ObjectAdmin, 'id'>> = {
         ...rest,
         ...(modelGlbUrl ? { modelGlbUrl } : {}),

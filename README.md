@@ -59,6 +59,38 @@ MANAGER_EMAILS=manager1@example.com,manager2@example.com
 
 ## Optimizing 3D models
 
+### Admin upload pipeline (recommended)
+
+В админке можно загрузить **только один файл `.glb`** — он считается master-форматом. Дальше система автоматически:
+
+1. Сохраняет исходник: `models/{objectId}/original.glb`
+2. Оптимизирует GLB (Draco + перепаковка текстур ≤ 2048)
+3. Валидирует результат (glTF Validator)
+4. Загружает продакшн-артефакт: `models/{objectId}/optimized.glb`
+5. Пытается сгенерировать `models/{objectId}/ios.usdz` (best-effort)
+6. Обновляет в базе `modelGlbUrl`, `modelUsdzUrl` и `modelProcessing` (статусы, размеры, доступные платформы)
+
+Статусы обработки: `UPLOADED → OPTIMIZING → OPTIMIZED → GENERATING_USDZ → READY` (или `READY_WITHOUT_IOS`, если USDZ не удалось создать).
+
+Если на окружении нет конвертера в USDZ, iOS останется недоступным до подключения конвертера. Поддерживаются переменные окружения:
+
+- `USDCONVERT_PATH` (+ `USDCONVERT_ARGS`)
+- `USD_FROM_GLTF_PATH`
+- `XCRUN_USD_CONVERTER`
+- `BLENDER_PATH` (+ `LABELCOM_BLENDER_USDZ_SCRIPT`, по умолчанию `scripts/convert_glb_to_usdz.py`)
+
+Тюнинг лимитов:
+
+- `LABELCOM_TARGET_GLB_MAX_BYTES` (default: 10MB)
+- `LABELCOM_MAX_TEXTURE_SIZE` (default: 2048)
+- `LABELCOM_JPEG_QUALITY` (default: 85)
+
+Если WebGL/`<model-viewer>` не может загрузить `.glb` из Storage (CORS), убедитесь, что на bucket настроен CORS. В проекте есть пример `cors.json` — можно применить его командой:
+
+```bash
+gsutil cors set cors.json gs://<your-bucket>
+```
+
 Для ускорения загрузки и стабильной работы AR на мобильных используем пакетный скрипт:
 
 1.  Подготовьте доступ к Firebase Admin (`serviceAccountKey.json` или переменная `FIREBASE_SERVICE_ACCOUNT`).

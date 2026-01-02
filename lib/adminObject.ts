@@ -67,6 +67,7 @@ export const toAdminObject = (data: unknown, id: string): ObjectAdmin => {
 
   const modelGlbUrl = pickGlbUrl(rawModelGlbUrl, modelsGlbUrl) || undefined;
   const modelUsdzUrl = pickUsdzUrl(rawModelUsdzUrl, modelsUsdzUrl) || undefined;
+  const modelProcessing = (asRecord(record.modelProcessing) as any) || undefined;
 
   return {
     id,
@@ -78,6 +79,7 @@ export const toAdminObject = (data: unknown, id: string): ObjectAdmin => {
     modelGlbUrl,
     modelUsdzUrl,
     has3D: Boolean(modelGlbUrl || modelUsdzUrl),
+    modelProcessing,
     tags: asStringArray(record.tags),
     styleTags: asStringArray(record.styleTags),
     materialTags: asStringArray(record.materialTags),
@@ -94,4 +96,3 @@ export const toAdminObject = (data: unknown, id: string): ObjectAdmin => {
     updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
   };
 };
-

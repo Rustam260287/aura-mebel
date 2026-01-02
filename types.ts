@@ -28,6 +28,40 @@ export type View =
 
 export type ObjectStatus = 'draft' | 'ready' | 'archived';
 
+export type ModelProcessingStatus =
+  | 'UPLOADED'
+  | 'OPTIMIZING'
+  | 'OPTIMIZED'
+  | 'GENERATING_USDZ'
+  | 'READY'
+  | 'READY_WITHOUT_IOS'
+  | 'ERROR';
+
+export type ModelProcessingArtifact = {
+  storagePath?: string;
+  url?: string;
+  sizeBytes?: number;
+};
+
+export type ModelProcessingInfo = {
+  status: ModelProcessingStatus;
+  sizeBeforeBytes?: number;
+  sizeAfterBytes?: number;
+  maxTextureSize?: number;
+  startedAt?: string;
+  updatedAt?: string;
+  finishedAt?: string;
+  error?: string;
+  platforms?: {
+    web: boolean;
+    android: boolean;
+    ios: boolean;
+  };
+  original?: ModelProcessingArtifact;
+  optimized?: ModelProcessingArtifact;
+  usdz?: ModelProcessingArtifact;
+};
+
 export interface ObjectPublic {
   id: string;
   name: string;
@@ -43,6 +77,8 @@ export interface ObjectPublic {
 
 export interface ObjectAdmin extends ObjectPublic {
   status?: ObjectStatus;
+
+  modelProcessing?: ModelProcessingInfo;
 
   tags?: string[];
   styleTags?: string[];

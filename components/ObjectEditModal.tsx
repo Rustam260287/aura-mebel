@@ -2,7 +2,7 @@
 import React, { useState, Fragment, useEffect, useRef } from 'react';
 import { Dialog, Transition, Tab } from '@headlessui/react';
 import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon, PlusIcon } from './icons';
-import type { ObjectAdmin, ObjectStatus } from '../types';
+import type { ModelProcessingStatus, ObjectAdmin, ObjectStatus } from '../types';
 import { ModelUploader } from './admin/ModelUploader';
 import { MediaUploader } from './admin/MediaUploader';
 import { useAuth } from '../contexts/AuthContext';
@@ -128,14 +128,42 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
       // ... existing code
   };
 
-  const handle3DUpload = (url: string, uploadedExt?: 'glb' | 'usdz') => {
-      if (uploadedExt === 'usdz') {
-          oldUsdzModelUrlRef.current = formData.modelUsdzUrl || null;
-          setFormData(prev => ({ ...prev, modelUsdzUrl: url }));
-      } else {
-          oldGlbModelUrlRef.current = formData.modelGlbUrl || null;
-          setFormData(prev => ({ ...prev, modelGlbUrl: url }));
-      }
+  const handle3DUpload = (result: { modelGlbUrl?: string; modelUsdzUrl?: string; modelProcessing?: any }) => {
+      oldGlbModelUrlRef.current = formData.modelGlbUrl || null;
+      oldUsdzModelUrlRef.current = formData.modelUsdzUrl || null;
+      setFormData(prev => ({
+        ...prev,
+        ...(result.modelGlbUrl ? { modelGlbUrl: result.modelGlbUrl } : {}),
+        ...(result.modelUsdzUrl ? { modelUsdzUrl: result.modelUsdzUrl } : {}),
+        ...(result.modelProcessing ? { modelProcessing: result.modelProcessing } : {}),
+      }));
+  };
+
+  const formatBytes = (value?: number) => {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return '—';
+    const mb = value / (1024 * 1024);
+    return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+  };
+
+  const statusLabel = (status?: ModelProcessingStatus) => {
+    switch (status) {
+      case 'UPLOADED':
+        return 'Файл загружен';
+      case 'OPTIMIZING':
+        return 'Оптимизация…';
+      case 'OPTIMIZED':
+        return 'Оптимизировано';
+      case 'GENERATING_USDZ':
+        return 'Генерация USDZ…';
+      case 'READY':
+        return 'Готово';
+      case 'READY_WITHOUT_IOS':
+        return 'Готово (без iOS)';
+      case 'ERROR':
+        return 'Ошибка';
+      default:
+        return '—';
+    }
   };
 
   const handleMediaUpload = (url: string) => {
@@ -217,19 +245,95 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
                                         <h4 className="font-semibold text-gray-800 flex items-center gap-2"><CubeIcon className="w-5 h-5" />Загрузка 3D</h4>
-                                        <ModelUploader
-                                          onUploadSuccess={handle3DUpload}
-                                          onUploadStateChange={(s) => setIs3DUploading(s.isLoading)}
-                                        />
-                                        <div className="mt-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">GLB — Android / Web</label>
-                                            <input type="text" name="modelGlbUrl" value={formData.modelGlbUrl || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
-                                            <p className="text-xs text-gray-500 mt-1">Используется для Android, Web и WebAR.</p>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">USDZ — iPhone (AR)</label>
-                                            <input type="text" name="modelUsdzUrl" value={formData.modelUsdzUrl || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg text-xs" placeholder="https://..." />
-                                            <p className="text-xs text-gray-500 mt-1">Используется для iOS (AR Quick Look).</p>
+                                        {object?.id ? (
+                                          <ModelUploader
+                                            objectId={object.id}
+                                            onUploadSuccess={handle3DUpload}
+                                            onUploadStateChange={(s) => setIs3DUploading(s.isLoading)}
+                                          />
+                                        ) : (
+                                          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
+                                            Сначала сохраните объект, затем загрузите GLB — система автоматически оптимизирует модель и
+                                            создаст USDZ для iOS.
+                                          </div>
+                                        )}
+
+                                        <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4">
+                                          <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                              <div className="text-xs text-gray-500">Статус</div>
+                                              <div className="text-sm font-semibold text-gray-900 mt-1">
+                                                {statusLabel(formData.modelProcessing?.status)}
+                                              </div>
+                                              {formData.modelProcessing?.error && (
+                                                <div className="text-xs text-red-600 mt-2">{formData.modelProcessing.error}</div>
+                                              )}
+                                            </div>
+                                            <div className="text-right">
+                                              <div className="text-xs text-gray-500">Размер</div>
+                                              <div className="text-sm text-gray-900 mt-1">
+                                                {formatBytes(formData.modelProcessing?.sizeBeforeBytes)} →{' '}
+                                                {formatBytes(formData.modelProcessing?.sizeAfterBytes)}
+                                              </div>
+                                              <div className="text-[11px] text-gray-500 mt-1">
+                                                Текстуры ≤ {formData.modelProcessing?.maxTextureSize || 2048}px
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div className="mt-4 flex flex-wrap gap-2">
+                                            <span
+                                              className={[
+                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                                formData.modelProcessing?.platforms?.web
+                                                  ? 'bg-green-50 text-green-700 border-green-200'
+                                                  : 'bg-white text-gray-500 border-gray-200',
+                                              ].join(' ')}
+                                            >
+                                              Web
+                                            </span>
+                                            <span
+                                              className={[
+                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                                formData.modelProcessing?.platforms?.android
+                                                  ? 'bg-green-50 text-green-700 border-green-200'
+                                                  : 'bg-white text-gray-500 border-gray-200',
+                                              ].join(' ')}
+                                            >
+                                              Android
+                                            </span>
+                                            <span
+                                              className={[
+                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                                formData.modelProcessing?.platforms?.ios
+                                                  ? 'bg-green-50 text-green-700 border-green-200'
+                                                  : 'bg-white text-gray-500 border-gray-200',
+                                              ].join(' ')}
+                                            >
+                                              iOS
+                                            </span>
+                                          </div>
+
+                                          {(formData.modelGlbUrl || formData.modelUsdzUrl) && (
+                                            <div className="mt-4 space-y-2">
+                                              <div>
+                                                <div className="text-xs text-gray-500 mb-1">GLB (оптимизированный)</div>
+                                                <input
+                                                  value={formData.modelGlbUrl || ''}
+                                                  readOnly
+                                                  className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                                />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs text-gray-500 mb-1">USDZ (iOS)</div>
+                                                <input
+                                                  value={formData.modelUsdzUrl || ''}
+                                                  readOnly
+                                                  className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                                />
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">

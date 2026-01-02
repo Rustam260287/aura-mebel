@@ -1,0 +1,388 @@
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import gltfPipeline from 'gltf-pipeline';
+import sharp from 'sharp';
+import { validateBytes } from 'gltf-validator';
+import { getAdminDb, getAdminStorage } from '../firebaseAdmin';
+import { COLLECTIONS } from '../db/collections';
+import type { ModelProcessingInfo, ModelProcessingStatus } from '../../types';
+
+const MAX_TEXTURE_SIZE = Number(process.env.LABELCOM_MAX_TEXTURE_SIZE || 2048);
+const TARGET_GLB_MAX_BYTES = Number(process.env.LABELCOM_TARGET_GLB_MAX_BYTES || 10 * 1024 * 1024);
+const JPEG_QUALITY = Number(process.env.LABELCOM_JPEG_QUALITY || 85);
+
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+const padTo4 = (buffer: Buffer, padByte: number) => {
+  const pad = (4 - (buffer.length % 4)) % 4;
+  return pad ? Buffer.concat([buffer, Buffer.alloc(pad, padByte)]) : buffer;
+};
+
+type TextureRewriteStats = {
+  resized: number;
+  convertedToJpeg: number;
+  processed: number;
+};
+
+async function rewriteEmbeddedTextures(glb: Buffer): Promise<{ glb: Buffer; stats: TextureRewriteStats }> {
+  const stats: TextureRewriteStats = { resized: 0, convertedToJpeg: 0, processed: 0 };
+  if (!Number.isFinite(MAX_TEXTURE_SIZE) || MAX_TEXTURE_SIZE <= 0) return { glb, stats };
+
+  if (glb.toString('utf8', 0, 4) !== 'glTF') {
+    throw new Error('Invalid GLB (missing magic header)');
+  }
+
+  const jsonChunkLength = glb.readUInt32LE(12);
+  const jsonChunkType = glb.readUInt32LE(16);
+  if (jsonChunkType !== 0x4e4f534a) {
+    throw new Error('Invalid GLB (missing JSON chunk)');
+  }
+
+  const jsonStart = 20;
+  const jsonEnd = jsonStart + jsonChunkLength;
+  const gltf = JSON.parse(glb.slice(jsonStart, jsonEnd).toString('utf8')) as Record<string, any>;
+
+  const binHeaderOffset = jsonEnd;
+  const binChunkLength = glb.readUInt32LE(binHeaderOffset);
+  const binChunkType = glb.readUInt32LE(binHeaderOffset + 4);
+  if (binChunkType !== 0x004e4942) {
+    // No BIN chunk (rare) — nothing to rewrite.
+    return { glb, stats };
+  }
+
+  const binStart = binHeaderOffset + 8;
+  const bin = glb.slice(binStart, binStart + binChunkLength);
+
+  const images = Array.isArray(gltf.images) ? (gltf.images as any[]) : [];
+  const bufferViews = Array.isArray(gltf.bufferViews) ? (gltf.bufferViews as any[]) : [];
+
+  const replacements = new Map<number, Buffer>();
+
+  for (const image of images) {
+    if (!image || typeof image !== 'object') continue;
+    if (typeof image.bufferView !== 'number') continue;
+    const bufferViewIndex = image.bufferView as number;
+    const view = bufferViews[bufferViewIndex];
+    if (!view || typeof view !== 'object') continue;
+    if (!isFiniteNumber(view.byteLength)) continue;
+    if (view.buffer != null && view.buffer !== 0) continue;
+
+    const start = Number(view.byteOffset || 0);
+    const end = start + Number(view.byteLength);
+    const imageBytes = bin.slice(start, end);
+
+    let meta: sharp.Metadata;
+    try {
+      meta = await sharp(imageBytes).metadata();
+    } catch {
+      continue;
+    }
+
+    const width = Number(meta.width || 0);
+    const height = Number(meta.height || 0);
+    const maxDim = Math.max(width, height);
+    if (!Number.isFinite(maxDim) || maxDim <= 0) continue;
+
+    const hasAlpha = Boolean(meta.hasAlpha);
+    const mimeIn = typeof image.mimeType === 'string' ? image.mimeType.toLowerCase().split(';')[0].trim() : '';
+    const shouldResize = maxDim > MAX_TEXTURE_SIZE;
+    const shouldConvertToJpeg = !hasAlpha && (mimeIn === 'image/png' || mimeIn === 'image/webp' || !mimeIn);
+
+    if (!shouldResize && !shouldConvertToJpeg) continue;
+
+    const pipeline = sharp(imageBytes).resize({
+      width: MAX_TEXTURE_SIZE,
+      height: MAX_TEXTURE_SIZE,
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
+
+    let out: Buffer;
+    if (hasAlpha) {
+      out = await pipeline.png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
+      image.mimeType = 'image/png';
+    } else {
+      out = await pipeline.jpeg({ quality: JPEG_QUALITY, mozjpeg: true }).toBuffer();
+      image.mimeType = 'image/jpeg';
+      if (mimeIn !== 'image/jpeg') stats.convertedToJpeg += 1;
+    }
+
+    stats.processed += 1;
+    if (shouldResize) stats.resized += 1;
+    replacements.set(bufferViewIndex, out);
+  }
+
+  if (replacements.size === 0) return { glb, stats };
+
+  let cursor = 0;
+  const newBinParts: Buffer[] = [];
+
+  for (let i = 0; i < bufferViews.length; i += 1) {
+    const view = bufferViews[i];
+    if (!view || typeof view !== 'object') continue;
+    if (view.buffer != null && view.buffer !== 0) continue;
+
+    const originalStart = Number(view.byteOffset || 0);
+    const originalEnd = originalStart + Number(view.byteLength || 0);
+    const replacement = replacements.get(i);
+    const bytes = replacement ? Buffer.from(replacement) : bin.slice(originalStart, originalEnd);
+
+    view.byteOffset = cursor;
+    view.byteLength = bytes.length;
+    newBinParts.push(bytes);
+    cursor += bytes.length;
+
+    const pad = (4 - (cursor % 4)) % 4;
+    if (pad) {
+      newBinParts.push(Buffer.alloc(pad));
+      cursor += pad;
+    }
+  }
+
+  if (Array.isArray(gltf.buffers) && gltf.buffers[0]) {
+    gltf.buffers[0].byteLength = cursor;
+  }
+
+  const jsonText = JSON.stringify(gltf);
+  const jsonChunk = padTo4(Buffer.from(jsonText, 'utf8'), 0x20);
+  const binChunk = padTo4(Buffer.concat(newBinParts), 0x00);
+
+  const totalLength = 12 + 8 + jsonChunk.length + 8 + binChunk.length;
+  const header = Buffer.alloc(12);
+  header.write('glTF', 0);
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(totalLength, 8);
+
+  const jsonHeader = Buffer.alloc(8);
+  jsonHeader.writeUInt32LE(jsonChunk.length, 0);
+  jsonHeader.writeUInt32LE(0x4e4f534a, 4);
+
+  const binHeader = Buffer.alloc(8);
+  binHeader.writeUInt32LE(binChunk.length, 0);
+  binHeader.writeUInt32LE(0x004e4942, 4);
+
+  return { glb: Buffer.concat([header, jsonHeader, jsonChunk, binHeader, binChunk]), stats };
+}
+
+const trySpawn = (program: string, args: string[]) =>
+  new Promise<{ ok: boolean; code: number | null }>((resolve) => {
+    const child = spawn(program, args, { stdio: 'inherit' });
+    child.on('close', (code) => resolve({ ok: code === 0, code }));
+    child.on('error', () => resolve({ ok: false, code: null }));
+  });
+
+async function generateUsdz(inputGlbPath: string, outputUsdzPath: string): Promise<boolean> {
+  const usdConvert = process.env.USDCONVERT_PATH?.trim() || '';
+  if (usdConvert) {
+    const extra = (process.env.USDCONVERT_ARGS || '').split(' ').map((v) => v.trim()).filter(Boolean);
+    const res = await trySpawn(usdConvert, [...extra, inputGlbPath, outputUsdzPath]);
+    return res.ok;
+  }
+
+  const usdFromGltf = process.env.USD_FROM_GLTF_PATH?.trim() || '';
+  if (usdFromGltf) {
+    const res = await trySpawn(usdFromGltf, [inputGlbPath, outputUsdzPath]);
+    return res.ok;
+  }
+
+  const xcrun = process.env.XCRUN_USD_CONVERTER?.trim() || '';
+  if (xcrun) {
+    const res = await trySpawn('xcrun', [xcrun, inputGlbPath, outputUsdzPath]);
+    return res.ok;
+  }
+
+  const blender = process.env.BLENDER_PATH?.trim() || 'blender';
+  const scriptPath =
+    process.env.LABELCOM_BLENDER_USDZ_SCRIPT?.trim() || path.join(process.cwd(), 'scripts/convert_glb_to_usdz.py');
+  if (blender && scriptPath) {
+    const res = await trySpawn(blender, ['--background', '--python', scriptPath, '--', inputGlbPath, outputUsdzPath]);
+    return res.ok;
+  }
+
+  return false;
+}
+
+const nowIso = () => new Date().toISOString();
+
+async function updateModelProcessing(objectId: string, patch: Partial<ModelProcessingInfo>) {
+  const db = getAdminDb();
+  if (!db) throw new Error('Database not initialized');
+  await db
+    .collection(COLLECTIONS.objects)
+    .doc(objectId)
+    .set(
+      {
+        modelProcessing: {
+          ...(patch as any),
+          updatedAt: nowIso(),
+        },
+        updatedAt: nowIso(),
+      },
+      { merge: true },
+    );
+}
+
+export async function runModelProcessingPipeline(objectId: string): Promise<void> {
+  const db = getAdminDb();
+  const storage = getAdminStorage();
+  if (!db) throw new Error('Database not initialized');
+  if (!storage) throw new Error('Storage not initialized');
+
+  const bucket = storage.bucket();
+  const docRef = db.collection(COLLECTIONS.objects).doc(objectId);
+  const doc = await docRef.get();
+  if (!doc.exists) throw new Error('Object not found');
+
+  const originalPath = `models/${objectId}/original.glb`;
+  const optimizedPath = `models/${objectId}/optimized.glb`;
+  const usdzPath = `models/${objectId}/ios.usdz`;
+
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), `labelcom-3d-${objectId}-`));
+  const tmpOriginal = path.join(tmpDir, 'original.glb');
+  const tmpOptimized = path.join(tmpDir, 'optimized.glb');
+  const tmpUsdz = path.join(tmpDir, 'ios.usdz');
+
+  const cleanup = async () => {
+    try {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    } catch {}
+  };
+
+  try {
+    const originalFile = bucket.file(originalPath);
+    const [origMeta] = await originalFile.getMetadata().catch(() => [{ size: undefined } as any]);
+    const sizeBeforeBytes = origMeta?.size ? Number(origMeta.size) : undefined;
+
+    await updateModelProcessing(objectId, {
+      status: 'OPTIMIZING',
+      startedAt: nowIso(),
+      sizeBeforeBytes: Number.isFinite(sizeBeforeBytes) ? sizeBeforeBytes : undefined,
+      maxTextureSize: MAX_TEXTURE_SIZE,
+      original: {
+        storagePath: originalPath,
+        ...(Number.isFinite(sizeBeforeBytes) ? { sizeBytes: sizeBeforeBytes } : {}),
+      },
+      platforms: { web: false, android: false, ios: false },
+    });
+
+    await originalFile.download({ destination: tmpOriginal });
+    const inputBuffer = await fs.readFile(tmpOriginal);
+
+    const processed = await gltfPipeline.processGlb(inputBuffer, {
+      dracoOptions: {
+        compressionLevel: 7,
+        quantizePositionBits: 11,
+        quantizeNormalBits: 8,
+        quantizeTexcoordBits: 10,
+      },
+    });
+
+    const dracoGlb = Buffer.isBuffer(processed.glb) ? processed.glb : Buffer.from(processed.glb);
+    const rewritten = await rewriteEmbeddedTextures(dracoGlb);
+    await fs.writeFile(tmpOptimized, rewritten.glb);
+
+    const sizeAfterBytes = rewritten.glb.length;
+    if (Number.isFinite(TARGET_GLB_MAX_BYTES) && TARGET_GLB_MAX_BYTES > 0 && sizeAfterBytes > TARGET_GLB_MAX_BYTES) {
+      await updateModelProcessing(objectId, {
+        status: 'ERROR',
+        sizeAfterBytes,
+        error: `GLB слишком большой после оптимизации (${Math.round(sizeAfterBytes / 1024 / 1024)} MB). Цель: ≤ ${Math.round(
+          TARGET_GLB_MAX_BYTES / 1024 / 1024,
+        )} MB.`,
+        finishedAt: nowIso(),
+      });
+      return;
+    }
+
+    const validation = await validateBytes(new Uint8Array(rewritten.glb));
+    const numErrors = validation?.issues?.numErrors || 0;
+    if (numErrors > 0) {
+      await updateModelProcessing(objectId, {
+        status: 'ERROR',
+        sizeAfterBytes,
+        error: `glTF Validator: ${numErrors} ошибок.`,
+        finishedAt: nowIso(),
+      });
+      return;
+    }
+
+    await updateModelProcessing(objectId, {
+      status: 'OPTIMIZED',
+      sizeAfterBytes,
+    });
+
+    const optimizedFile = bucket.file(optimizedPath);
+    await optimizedFile.save(rewritten.glb, {
+      metadata: {
+        contentType: 'model/gltf-binary',
+        contentDisposition: 'inline',
+        cacheControl: 'public, max-age=31536000, immutable',
+      },
+    });
+    await optimizedFile.makePublic();
+    const optimizedUrl = `https://storage.googleapis.com/${bucket.name}/${optimizedPath}`;
+
+    await docRef.set(
+      {
+        modelGlbUrl: optimizedUrl,
+        has3D: true,
+        updatedAt: nowIso(),
+        modelProcessing: {
+          status: 'OPTIMIZED',
+          sizeBeforeBytes: Number.isFinite(sizeBeforeBytes) ? sizeBeforeBytes : undefined,
+          sizeAfterBytes,
+          maxTextureSize: MAX_TEXTURE_SIZE,
+          optimized: { storagePath: optimizedPath, url: optimizedUrl, sizeBytes: sizeAfterBytes },
+          platforms: { web: true, android: true, ios: false },
+          updatedAt: nowIso(),
+        },
+      },
+      { merge: true },
+    );
+
+    await updateModelProcessing(objectId, { status: 'GENERATING_USDZ' });
+
+    const usdzOk = await generateUsdz(tmpOptimized, tmpUsdz).catch(() => false);
+    let usdzUrl: string | undefined;
+    if (usdzOk) {
+      const usdzBuffer = await fs.readFile(tmpUsdz).catch(() => null);
+      if (usdzBuffer && usdzBuffer.length > 0) {
+        const usdzFile = bucket.file(usdzPath);
+        await usdzFile.save(usdzBuffer, {
+          metadata: {
+            contentType: 'model/vnd.usdz+zip',
+            contentDisposition: 'inline',
+            cacheControl: 'public, max-age=31536000, immutable',
+          },
+        });
+        await usdzFile.makePublic();
+        usdzUrl = `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
+      }
+    }
+
+    const finalStatus: ModelProcessingStatus = usdzUrl ? 'READY' : 'READY_WITHOUT_IOS';
+
+    await docRef.set(
+      {
+        ...(usdzUrl ? { modelUsdzUrl: usdzUrl } : {}),
+        has3D: true,
+        updatedAt: nowIso(),
+        modelProcessing: {
+          status: finalStatus,
+          finishedAt: nowIso(),
+          platforms: { web: true, android: true, ios: Boolean(usdzUrl) },
+          ...(usdzUrl ? { usdz: { storagePath: usdzPath, url: usdzUrl } } : {}),
+          updatedAt: nowIso(),
+        },
+      },
+      { merge: true },
+    );
+  } catch (error: any) {
+    const message = error?.message ? String(error.message) : 'Model processing failed';
+    await updateModelProcessing(objectId, { status: 'ERROR', error: message, finishedAt: nowIso() }).catch(() => null);
+  } finally {
+    await cleanup();
+  }
+}
