@@ -81,6 +81,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
     if (uiState !== 'IN_AR') return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -447,9 +456,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-warm-white">
-      <section className="relative">
-        <div className="relative w-full h-[62vh] max-h-[640px] bg-white">
+    <div className="fixed inset-0 bg-soft-black overflow-hidden">
+      {/* Media layer (fullscreen) */}
+      <section className="absolute inset-0 w-screen h-[100dvh] [height:calc(var(--vh,1vh)*100)] bg-soft-black">
+        <div className="absolute inset-0">
           {mediaMode === '3d' && canPreview3d ? (
             <>
               <model-viewer
@@ -469,15 +479,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 exposure="1"
                 shadow-intensity="0.3"
                 scale="1 1 1"
-                style={{ touchAction: 'pan-y' }}
-                className="w-full h-full"
+                style={{ touchAction: 'pan-y', background: 'transparent' }}
+                className="w-full h-full bg-transparent"
               />
 
               {(inline3dState === 'loading' || inline3dState === 'idle') && (
-                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-soft-black/70 backdrop-blur-[1px] flex items-center justify-center">
                   <div className="flex flex-col items-center gap-2 text-center px-6">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-brown" />
-                    <div className="text-sm font-medium text-soft-black/70">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-stone-beige" />
+                    <div className="text-sm font-medium text-white/80">
                       {inline3dProgress != null && inline3dProgress > 0
                         ? `Загружаю 3D… ${Math.round(inline3dProgress * 100)}%`
                         : 'Загружаю 3D…'}
@@ -487,10 +497,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               )}
 
               {inline3dState === 'error' && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-soft-black/75 backdrop-blur-[1px] flex items-center justify-center">
                   <div className="flex flex-col items-center gap-2 text-center px-6">
-                    <div className="text-sm font-medium text-soft-black">3D сейчас недоступно</div>
-                    <div className="text-xs text-muted-gray">{inline3dError || 'Попробуйте обновить страницу.'}</div>
+                    <div className="text-sm font-medium text-white/90">3D сейчас недоступно</div>
+                    <div className="text-xs text-white/60">{inline3dError || 'Попробуйте обновить страницу.'}</div>
                   </div>
                 </div>
               )}
@@ -498,7 +508,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           ) : (
             <div className="absolute inset-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex">
               {images.map((src, index) => (
-                <div key={`${src}:${index}`} className="relative min-w-full h-full snap-center bg-white">
+                <div key={`${src}:${index}`} className="relative min-w-full h-full snap-center bg-transparent">
                   <Image
                     src={src}
                     alt={`${object.name} — view ${index + 1}`}
@@ -512,50 +522,81 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             </div>
           )}
 
-          {/* Soft overlay for controls legibility */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/5" />
+          {/* Quiet legibility gradient */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/25" />
+        </div>
+      </section>
 
-          {/* Back */}
+      {/* Top overlay */}
+      <div
+        className={[
+          'absolute inset-x-0 top-0 z-[60] px-4 pt-[calc(env(safe-area-inset-top)+14px)]',
+          'transition-opacity duration-200 ease-out',
+          uiState === 'IN_AR' || isAROpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto',
+        ].join(' ')}
+      >
+        <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
             aria-label="Назад"
-            className="absolute top-4 left-4 z-10 rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+            className="pointer-events-auto rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
 
-          {/* 3D toggle (icon only) */}
-          {canPreview3d && (
+          <div className="min-w-0 flex-1 px-2 text-center">
+            <div className="text-xs font-medium tracking-tight text-white/80 truncate">
+              {object.name}
+            </div>
+          </div>
+
+          <div className="pointer-events-auto flex items-center gap-2">
+            {canPreview3d && (
+              <button
+                onClick={handleToggle3d}
+                aria-label={mediaMode === 'photo' ? 'Открыть 3D‑просмотр' : 'Показать фото'}
+                className="rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+              >
+                {mediaMode === 'photo' ? <CubeIcon className="w-5 h-5" /> : <PhotoIcon className="w-5 h-5" />}
+              </button>
+            )}
+
+            {uiState === 'POST_AR' && experienceState !== 'THREE_D_ACTIVE' && (
+              <button
+                onClick={handleOpenAssistant}
+                aria-label="Задать вопрос"
+                className="rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+              </button>
+            )}
+
             <button
-              onClick={handleToggle3d}
-              aria-label={mediaMode === 'photo' ? 'Открыть 3D‑просмотр' : 'Показать фото'}
-              className="absolute top-4 right-4 z-10 rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
+              onClick={handleSaveToggle}
+              aria-label={isObjectSaved ? 'Убрать из сохранённых' : 'Сохранить'}
+              className="rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
             >
-              {mediaMode === 'photo' ? <CubeIcon className="w-5 h-5" /> : <PhotoIcon className="w-5 h-5" />}
+              <HeartIcon className={isObjectSaved ? 'w-5 h-5 fill-soft-black/80 text-soft-black/80' : 'w-5 h-5'} />
             </button>
-          )}
+          </div>
         </div>
+      </div>
 
-        <div className="px-5 pt-5 pb-28">
-          <h1 className="text-[15px] font-medium text-soft-black/80 tracking-tight truncate">
-            {object.name}
-          </h1>
-        </div>
-      </section>
-
-      {/* Sticky action bar */}
+      {/* Bottom overlay */}
       <div
         className={[
-          'fixed inset-x-0 bottom-0 z-[60] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)] pointer-events-auto',
+          'absolute inset-x-0 bottom-0 z-[60] px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4',
           'transition-[opacity,transform] duration-300 ease-out will-change-transform',
-          uiState === 'IN_AR' || isAROpen ? 'opacity-0 translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0',
+          uiState === 'IN_AR' || isAROpen
+            ? 'opacity-0 translate-y-1 pointer-events-none'
+            : 'opacity-100 translate-y-0 pointer-events-auto',
         ].join(' ')}
       >
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto w-full max-w-md">
           {uiState === 'POST_AR' && !isObjectSaved && (
             <div
               className={[
-                'pointer-events-none mb-2 px-3 text-center text-xs text-soft-black/50',
+                'pointer-events-none mb-2 px-3 text-center text-xs text-white/55',
                 'transition-opacity duration-300 ease-out',
                 postArHintVisible ? 'opacity-100' : 'opacity-0',
               ].join(' ')}
@@ -563,40 +604,19 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               Можно сохранить, чтобы вернуться позже.
             </div>
           )}
-          <div className="rounded-2xl bg-white/80 backdrop-blur-md border border-stone-beige/30 shadow-soft p-2 flex items-center gap-2">
-            <Button
-              onClick={handleOpenArTap}
-              onTouchEnd={handleOpenArTap as any}
-              size="lg"
-              variant="primary"
-              className={[
-                'flex-1 h-14 rounded-xl shadow-none',
-                uiState === 'POST_AR' ? 'bg-soft-black/85 text-white/90 hover:bg-soft-black/90' : '',
-              ].join(' ')}
-            >
-              Посмотреть в интерьере
-            </Button>
 
-            {uiState === 'POST_AR' && experienceState !== 'THREE_D_ACTIVE' && (
-              <button
-                onClick={handleOpenAssistant}
-                aria-label="Задать вопрос"
-                className="h-14 w-14 rounded-xl bg-white text-soft-black/80 border border-stone-beige/40 hover:border-soft-black/40 transition-colors flex items-center justify-center"
-              >
-                <ChatBubbleLeftRightIcon className="w-6 h-6" />
-              </button>
-            )}
-
-            <button
-              onClick={handleSaveToggle}
-              aria-label={isObjectSaved ? 'Убрать из сохранённых' : 'Сохранить'}
-              className="h-14 w-14 rounded-xl bg-white text-soft-black border border-stone-beige/40 hover:border-soft-black/40 transition-colors flex items-center justify-center"
-            >
-              <HeartIcon
-                className={isObjectSaved ? 'w-6 h-6 fill-brand-brown text-brand-brown' : 'w-6 h-6'}
-              />
-            </button>
-          </div>
+          <Button
+            onClick={handleOpenArTap}
+            onTouchEnd={handleOpenArTap as any}
+            size="lg"
+            variant="primary"
+            className={[
+              'w-full h-14 rounded-2xl shadow-none',
+              uiState === 'POST_AR' ? 'bg-white/85 text-soft-black hover:bg-white/90' : 'bg-white text-soft-black hover:bg-white/95',
+            ].join(' ')}
+          >
+            Посмотреть в интерьере
+          </Button>
         </div>
       </div>
 

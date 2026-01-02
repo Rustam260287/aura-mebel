@@ -5,8 +5,6 @@ import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
 import type { ObjectPublic } from '../../types';
 import { useRouter } from 'next/router';
 import { ObjectDetail } from '../../components/ObjectDetail';
-import { Header } from '../../components/Header';
-import { Footer } from '../../components/Footer';
 import { Meta } from '../../components/Meta';
 import { toPublicObject } from '../../lib/publicObject';
 import { COLLECTIONS } from '../../lib/db/collections';
@@ -29,32 +27,34 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <Header />
-        <div className="text-center py-20 px-4">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки объекта</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <button onClick={() => router.push('/objects')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
-                Вернуться в галерею
-            </button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки объекта</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/objects')}
+            className="px-6 py-3 bg-soft-black text-white rounded-lg hover:bg-black transition-colors"
+          >
+            Вернуться в галерею
+          </button>
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (!object) {
      return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <Header />
-        <div className="text-center py-20 px-4">
-            <h1 className="text-3xl font-serif text-brand-charcoal mb-4">Объект не найден</h1>
-            <p className="text-gray-500 mb-8">К сожалению, запрашиваемый объект не существует или был удален.</p>
-            <button onClick={() => router.push('/objects')} className="px-6 py-3 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors">
-                Перейти в галерею
-            </button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-3xl font-serif text-soft-black mb-4">Объект не найден</h1>
+          <p className="text-gray-500 mb-8">К сожалению, запрашиваемый объект не существует или был удален.</p>
+          <button
+            onClick={() => router.push('/objects')}
+            className="px-6 py-3 bg-soft-black text-white rounded-lg hover:bg-black transition-colors"
+          >
+            Перейти в галерею
+          </button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -76,14 +76,10 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
         image={seoImage}
         url={`/objects/${object.id}`}
       />
-      <Header />
-      <main className="bg-white min-h-screen">
-        <ObjectDetail 
-          object={object} 
-          onBack={() => router.back()}
-        />
-      </main>
-      <Footer />
+      <ObjectDetail 
+        object={object} 
+        onBack={() => router.back()}
+      />
     </>
   );
 }

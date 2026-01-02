@@ -53,7 +53,11 @@ const MobileMenuChrome: React.FC = () => {
     return () => router.events.off('routeChangeStart', handleRouteChangeStart);
   }, [router.events]);
 
-  const isVisible = isMobile && !isImmersive;
+  const isFullscreenRoute =
+    typeof router.asPath === 'string' &&
+    (router.asPath.startsWith('/objects/') || router.asPath.startsWith('/scenes/'));
+
+  const isVisible = isMobile && !isImmersive && !isFullscreenRoute;
 
   if (!isVisible) return null;
 
