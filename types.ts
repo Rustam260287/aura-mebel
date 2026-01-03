@@ -1,4 +1,6 @@
 export type AdminView =
+  | 'crm'
+  | 'crmVisitor'
   | 'journey'
   | 'activeVisitors'
   | 'visitorJourney'
@@ -27,6 +29,19 @@ export type View =
   | { page: 'about' };
 
 export type ObjectStatus = 'draft' | 'ready' | 'archived';
+
+export const VISITOR_STAGES = [
+  'VIEW',
+  'THREE_D_AR',
+  'ACTIVE_TRY',
+  'FIXED',
+  'READY_TO_TALK',
+  'CONTACT_OBTAINED',
+  'DIALOGUE',
+  'DEAL_CLOSED',
+] as const;
+
+export type VisitorStage = (typeof VISITOR_STAGES)[number];
 
 export type ModelProcessingStatus =
   | 'UPLOADED'

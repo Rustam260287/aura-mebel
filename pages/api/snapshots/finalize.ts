@@ -145,6 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await db.runTransaction(async (t) => {
       const visitorSnap = await t.get(visitorRef);
+      const existing = visitorSnap.exists ? visitorSnap.data() || {} : {};
       if (!visitorSnap.exists) {
         t.set(visitorRef, {
           firstSeenAt: FieldValue.serverTimestamp(),
@@ -191,6 +192,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           lastIntentAt: FieldValue.serverTimestamp(),
           lastObjectId: objectId,
           lastSnapshotAt: FieldValue.serverTimestamp(),
+          snapshotCount: FieldValue.increment(1),
+          ...(!('firstSnapshotAt' in existing) ? { firstSnapshotAt: FieldValue.serverTimestamp() } : {}),
+          ...(partnerId && !(typeof (existing as any).partnerId === 'string' && String((existing as any).partnerId).trim())
+            ? { partnerId }
+            : {}),
         },
         { merge: true },
       );

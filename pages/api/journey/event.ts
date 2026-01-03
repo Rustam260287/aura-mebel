@@ -163,6 +163,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await db.runTransaction(async (t) => {
       const visitorSnap = await t.get(visitorRef);
+      const existing = visitorSnap.exists ? visitorSnap.data() || {} : {};
       if (!visitorSnap.exists) {
         t.set(visitorRef, {
           firstSeenAt: FieldValue.serverTimestamp(),
@@ -197,9 +198,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ...(objectId ? { lastObjectId: objectId } : {}),
       };
 
+      if (body.type === 'VIEW_OBJECT') {
+        visitorPatch.lastViewedAt = FieldValue.serverTimestamp();
+        if (!('firstViewedAt' in existing)) visitorPatch.firstViewedAt = FieldValue.serverTimestamp();
+      }
+
+      if (body.type === 'OPEN_3D') {
+        visitorPatch.last3dAt = FieldValue.serverTimestamp();
+        if (!('first3dAt' in existing)) visitorPatch.first3dAt = FieldValue.serverTimestamp();
+      }
+
+      if (body.type === 'START_AR' || body.type === 'FINISH_AR') {
+        visitorPatch.lastArAt = FieldValue.serverTimestamp();
+        if (!('firstArAt' in existing)) visitorPatch.firstArAt = FieldValue.serverTimestamp();
+      }
+
       if (body.type === 'SAVE_OBJECT' && objectId) {
         visitorPatch.savedObjectIds = FieldValue.arrayUnion(objectId);
         visitorPatch.lastSavedAt = FieldValue.serverTimestamp();
+        if (!('firstSavedAt' in existing)) visitorPatch.firstSavedAt = FieldValue.serverTimestamp();
         visitorPatch.lastIntentAt = FieldValue.serverTimestamp();
       }
 
@@ -209,11 +226,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (body.type === 'CONTACT_MANAGER') {
         visitorPatch.lastContactAt = FieldValue.serverTimestamp();
+        if (!('firstContactAt' in existing)) visitorPatch.firstContactAt = FieldValue.serverTimestamp();
         visitorPatch.lastIntentAt = FieldValue.serverTimestamp();
       }
 
       if (body.type === 'HANDOFF_REQUESTED') {
         visitorPatch.lastHandoffAt = FieldValue.serverTimestamp();
+        if (!('firstHandoffAt' in existing)) visitorPatch.firstHandoffAt = FieldValue.serverTimestamp();
         visitorPatch.lastIntentAt = FieldValue.serverTimestamp();
         if (meta?.handoff) {
           visitorPatch.lastHandoffReason = meta.handoff.reason;
@@ -221,6 +240,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           visitorPatch.lastHandoffActions = meta.handoff.actions;
           visitorPatch.lastHandoffQuestions = meta.handoff.lastQuestions;
           visitorPatch.lastHandoffTimestamp = meta.handoff.timestamp;
+        }
+      }
+
+      if (body.type === 'AR_SNAPSHOT_CREATED') {
+        visitorPatch.lastSnapshotAt = FieldValue.serverTimestamp();
+        visitorPatch.lastIntentAt = FieldValue.serverTimestamp();
+        visitorPatch.snapshotCount = FieldValue.increment(1);
+        if (!('firstSnapshotAt' in existing)) visitorPatch.firstSnapshotAt = FieldValue.serverTimestamp();
+        const partnerId = meta?.snapshot?.partnerId;
+        if (partnerId && !(typeof (existing as any).partnerId === 'string' && String((existing as any).partnerId).trim())) {
+          visitorPatch.partnerId = partnerId;
         }
       }
 
