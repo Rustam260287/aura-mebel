@@ -452,10 +452,25 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     router.push('/objects');
   }, [router]);
 
+  const arUnavailableTrackedRef = useRef(false);
+  const supportsWebXRAR = !isIOSDevice && webXrArSupported === true;
   const handleOpenAr = useCallback(() => {
-    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && webXrArSupported === true;
+    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && supportsWebXRAR;
 
     if (!canStartArNow) {
+      if (!isIOSDevice && webXrArSupported === false && !arUnavailableTrackedRef.current) {
+        arUnavailableTrackedRef.current = true;
+        trackJourneyEvent({
+          type: 'AR_UNAVAILABLE_WEBXR',
+          objectId: object.id,
+          meta: {
+            platform: 'android',
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+            modelId: object.id,
+            reason: 'webxr_not_supported',
+          },
+        });
+      }
       addToast('AR недоступен на этом устройстве', 'info');
       return;
     }

@@ -4,6 +4,7 @@ export const JOURNEY_EVENT_TYPES = [
   'START_AR',
   'FINISH_AR',
   'AR_SNAPSHOT_CREATED',
+  'AR_UNAVAILABLE_WEBXR',
   'SAVE_OBJECT',
   'REMOVE_OBJECT',
   'OPEN_SAVED',
@@ -19,6 +20,9 @@ export type JourneyMeta = {
   durationSec?: number;
   platform?: JourneyPlatform;
   arSessionId?: string;
+  userAgent?: string;
+  modelId?: string;
+  reason?: string;
   snapshot?: {
     sessionId: string;
     storagePath: string;

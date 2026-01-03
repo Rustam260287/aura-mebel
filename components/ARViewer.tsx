@@ -431,6 +431,10 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           interaction-prompt="none"
           scale="1 1 1"
           ar
+          // IMPORTANT:
+          // Do NOT add `scene-viewer` to ar-modes.
+          // It causes Android to open Google Play via external intent.
+          // Labelcom uses WebXR-only AR on Android by design.
           ar-modes={arModes}
           ar-scale="auto"
           style={{ touchAction: 'pan-y' }}
