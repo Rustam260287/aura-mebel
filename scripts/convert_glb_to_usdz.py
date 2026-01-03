@@ -18,6 +18,17 @@ def argv_after_double_dash():
     return argv[argv.index("--") + 1 :]
 
 
+def _op_kwargs(op, kwargs: dict):
+    """
+    Return only kwargs supported by the operator (compat across Blender versions).
+    """
+    try:
+        props = {p.identifier for p in op.get_rna_type().properties}
+        return {k: v for k, v in kwargs.items() if k in props}
+    except Exception:
+        return kwargs
+
+
 def reset_scene():
     try:
         bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -26,14 +37,69 @@ def reset_scene():
         bpy.ops.object.select_all(action="SELECT")
         bpy.ops.object.delete(use_global=False)
 
+    try:
+        scene = bpy.context.scene
+        scene.unit_settings.system = "METRIC"
+        scene.unit_settings.scale_length = 1.0
+    except Exception:
+        pass
+
+
+def enable_addons():
+    # Ensure GLTF import and USD export add-ons are enabled in headless runs.
+    for module in ("io_scene_gltf2", "io_scene_usd"):
+        try:
+            bpy.ops.preferences.addon_enable(module=module)
+        except Exception:
+            pass
+
+
+def remove_cameras_and_lights():
+    try:
+        for obj in list(bpy.data.objects):
+            if obj.type in {"CAMERA", "LIGHT"}:
+                bpy.data.objects.remove(obj, do_unlink=True)
+    except Exception:
+        pass
+
+
+def import_glb(glb_path: str):
+    kwargs = _op_kwargs(
+        bpy.ops.import_scene.gltf,
+        {
+            "filepath": glb_path,
+        },
+    )
+    bpy.ops.import_scene.gltf(**kwargs)
+
 
 def export_usd(usdc_path: str):
     """
     Export USD using Blender's USD exporter.
-    The exact kwargs vary by Blender version, so keep it minimal.
+    Keep kwargs dynamic to survive Blender version differences.
     """
-    # Some Blender versions accept additional flags, but passing unknown kwargs breaks execution.
-    bpy.ops.wm.usd_export(filepath=usdc_path)
+    kwargs = _op_kwargs(
+        bpy.ops.wm.usd_export,
+        {
+            "filepath": usdc_path,
+            "export_textures": True,
+            "relative_paths": True,
+            "export_materials": True,
+        },
+    )
+    bpy.ops.wm.usd_export(**kwargs)
+
+
+def try_export_direct_usdz(out_usdz: str) -> bool:
+    """
+    Blender may support writing .usdz directly (depends on version/build).
+    Try it first; fall back to USD + manual packaging.
+    """
+    try:
+        export_usd(out_usdz)
+    except Exception:
+        return False
+    return os.path.exists(out_usdz) and os.path.getsize(out_usdz) > 0
 
 
 def build_usdz(folder: str, out_usdz: str):
@@ -62,15 +128,19 @@ def main():
     tmp_dir = tempfile.mkdtemp(prefix="labelcom_usdz_")
     try:
         reset_scene()
+        enable_addons()
 
         # Import GLB
-        bpy.ops.import_scene.gltf(filepath=input_glb)
+        import_glb(input_glb)
+        remove_cameras_and_lights()
 
-        usdc_path = os.path.join(tmp_dir, "scene.usdc")
-        export_usd(usdc_path)
+        # Prefer native USDZ export when supported.
+        if not try_export_direct_usdz(out_usdz):
+            usdc_path = os.path.join(tmp_dir, "scene.usdc")
+            export_usd(usdc_path)
 
-        # Pack USD + textures (if any) into USDZ.
-        build_usdz(tmp_dir, out_usdz)
+            # Pack USD + textures (if any) into USDZ.
+            build_usdz(tmp_dir, out_usdz)
 
         if not os.path.exists(out_usdz) or os.path.getsize(out_usdz) == 0:
             print("[convert_glb_to_usdz] Output USDZ is empty")
@@ -83,4 +153,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

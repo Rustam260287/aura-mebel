@@ -91,6 +91,36 @@ MANAGER_EMAILS=manager1@example.com,manager2@example.com
 gsutil cors set cors.json gs://<your-bucket>
 ```
 
+### Production USDZ (Cloud Run + Blender)
+
+Чтобы USDZ генерировался автоматически в продакшене (Linux), используйте отдельный Cloud Run сервис с Blender headless:
+
+- Dockerfile: `services/usdz-converter/Dockerfile`
+- HTTP endpoint: `POST /convert` (сервер скачает `optimized.glb`, соберёт `ios.usdz`, загрузит обратно в Storage)
+
+**Deploy (пример):**
+
+```bash
+gcloud builds submit \\
+  --tag europe-west4-docker.pkg.dev/<PROJECT>/labelcom/usdz-converter \\
+  -f services/usdz-converter/Dockerfile .
+
+gcloud run deploy labelcom-usdz-converter \\
+  --image europe-west4-docker.pkg.dev/<PROJECT>/labelcom/usdz-converter \\
+  --region europe-west4 \\
+  --memory 4Gi --cpu 2 --timeout 900 \\
+  --max-instances 1 \\
+  --set-env-vars LABELCOM_STORAGE_BUCKET=<FIREBASE_STORAGE_BUCKET>,USDZ_CONVERTER_TOKEN=<SECRET>
+```
+
+**Main app env vars (server-side):**
+
+- `LABELCOM_USDZ_CONVERTER_URL=https://<cloud-run-service-url>`
+- `LABELCOM_USDZ_CONVERTER_TOKEN=<SECRET>` (должен совпадать с `USDZ_CONVERTER_TOKEN` на конвертере)
+- `LABELCOM_USDZ_CONVERTER_TIMEOUT_MS=240000` (опционально)
+
+Если конвертер недоступен или падает, GLB остаётся готовым, а статус заканчивается как `READY_WITHOUT_IOS`.
+
 Для ускорения загрузки и стабильной работы AR на мобильных используем пакетный скрипт:
 
 1.  Подготовьте доступ к Firebase Admin (`serviceAccountKey.json` или переменная `FIREBASE_SERVICE_ACCOUNT`).

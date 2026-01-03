@@ -12,6 +12,9 @@ import type { ModelProcessingInfo, ModelProcessingStatus } from '../../types';
 const MAX_TEXTURE_SIZE = Number(process.env.LABELCOM_MAX_TEXTURE_SIZE || 2048);
 const TARGET_GLB_MAX_BYTES = Number(process.env.LABELCOM_TARGET_GLB_MAX_BYTES || 10 * 1024 * 1024);
 const JPEG_QUALITY = Number(process.env.LABELCOM_JPEG_QUALITY || 85);
+const USDZ_CONVERTER_URL = process.env.LABELCOM_USDZ_CONVERTER_URL?.trim() || '';
+const USDZ_CONVERTER_TOKEN = process.env.LABELCOM_USDZ_CONVERTER_TOKEN?.trim() || '';
+const USDZ_CONVERTER_TIMEOUT_MS = Number(process.env.LABELCOM_USDZ_CONVERTER_TIMEOUT_MS || 240_000);
 
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
@@ -172,6 +175,66 @@ const trySpawn = (program: string, args: string[]) =>
     child.on('close', (code) => resolve({ ok: code === 0, code }));
     child.on('error', () => resolve({ ok: false, code: null }));
   });
+
+type UsdzConverterResponse = {
+  ok?: boolean;
+  usdzUrl?: string;
+  usdzSizeBytes?: number;
+  error?: string;
+  details?: string;
+};
+
+async function generateUsdzRemotely(params: {
+  bucket: string;
+  objectId: string;
+  optimizedPath: string;
+  usdzPath: string;
+}): Promise<{ ok: boolean; usdzUrl?: string; sizeBytes?: number; error?: string }> {
+  if (!USDZ_CONVERTER_URL) {
+    return { ok: false, error: 'USDZ converter is not configured' };
+  }
+
+  const base = USDZ_CONVERTER_URL.replace(/\/+$/, '');
+  const endpoint = `${base}/convert`;
+  const controller = new AbortController();
+  const timeoutMs = Number.isFinite(USDZ_CONVERTER_TIMEOUT_MS) && USDZ_CONVERTER_TIMEOUT_MS > 0 ? USDZ_CONVERTER_TIMEOUT_MS : 240_000;
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(USDZ_CONVERTER_TOKEN ? { 'x-labelcom-token': USDZ_CONVERTER_TOKEN } : {}),
+      },
+      body: JSON.stringify(params),
+      signal: controller.signal,
+    });
+
+    const data = (await res.json().catch(() => null)) as UsdzConverterResponse | null;
+    if (!res.ok) {
+      const message =
+        (data?.error && String(data.error)) ||
+        (data?.details && String(data.details)) ||
+        `USDZ converter error (${res.status})`;
+      return { ok: false, error: message };
+    }
+
+    if (!data?.ok) {
+      const message = (data?.error && String(data.error)) || (data?.details && String(data.details)) || 'USDZ conversion failed';
+      return { ok: false, error: message };
+    }
+
+    const usdzUrl = typeof data.usdzUrl === 'string' ? data.usdzUrl : undefined;
+    const sizeBytes = typeof data.usdzSizeBytes === 'number' && Number.isFinite(data.usdzSizeBytes) ? data.usdzSizeBytes : undefined;
+    return { ok: true, usdzUrl, sizeBytes };
+  } catch (error: any) {
+    const message = error?.name === 'AbortError' ? 'USDZ conversion timed out' : error?.message ? String(error.message) : 'USDZ conversion failed';
+    return { ok: false, error: message };
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 async function generateUsdz(inputGlbPath: string, outputUsdzPath: string): Promise<boolean> {
   const usdConvert = process.env.USDCONVERT_PATH?.trim() || '';
@@ -344,21 +407,44 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
 
     await updateModelProcessing(objectId, { status: 'GENERATING_USDZ' });
 
-    const usdzOk = await generateUsdz(tmpOptimized, tmpUsdz).catch(() => false);
     let usdzUrl: string | undefined;
-    if (usdzOk) {
-      const usdzBuffer = await fs.readFile(tmpUsdz).catch(() => null);
-      if (usdzBuffer && usdzBuffer.length > 0) {
-        const usdzFile = bucket.file(usdzPath);
-        await usdzFile.save(usdzBuffer, {
-          metadata: {
-            contentType: 'model/vnd.usdz+zip',
-            contentDisposition: 'inline',
-            cacheControl: 'public, max-age=31536000, immutable',
-          },
-        });
-        await usdzFile.makePublic();
-        usdzUrl = `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
+    let usdzSizeBytes: number | undefined;
+    let usdzError: string | undefined;
+
+    if (USDZ_CONVERTER_URL) {
+      const remote = await generateUsdzRemotely({
+        bucket: bucket.name,
+        objectId,
+        optimizedPath,
+        usdzPath,
+      });
+      if (remote.ok) {
+        usdzUrl = remote.usdzUrl || `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
+        usdzSizeBytes = remote.sizeBytes;
+      } else {
+        usdzError = remote.error || 'USDZ generation failed';
+      }
+    } else {
+      const usdzOk = await generateUsdz(tmpOptimized, tmpUsdz).catch(() => false);
+      if (usdzOk) {
+        const usdzBuffer = await fs.readFile(tmpUsdz).catch(() => null);
+        if (usdzBuffer && usdzBuffer.length > 0) {
+          const usdzFile = bucket.file(usdzPath);
+          await usdzFile.save(usdzBuffer, {
+            metadata: {
+              contentType: 'model/vnd.usdz+zip',
+              contentDisposition: 'inline',
+              cacheControl: 'public, max-age=31536000, immutable',
+            },
+          });
+          await usdzFile.makePublic();
+          usdzUrl = `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
+          usdzSizeBytes = usdzBuffer.length;
+        }
+      }
+
+      if (!usdzUrl) {
+        usdzError = 'USDZ converter is not available in this environment';
       }
     }
 
@@ -373,7 +459,8 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
           status: finalStatus,
           finishedAt: nowIso(),
           platforms: { web: true, android: true, ios: Boolean(usdzUrl) },
-          ...(usdzUrl ? { usdz: { storagePath: usdzPath, url: usdzUrl } } : {}),
+          ...(usdzUrl ? { usdz: { storagePath: usdzPath, url: usdzUrl, ...(Number.isFinite(usdzSizeBytes) ? { sizeBytes: usdzSizeBytes } : {}) } } : {}),
+          ...(usdzError ? { error: usdzError } : {}),
           updatedAt: nowIso(),
         },
       },
