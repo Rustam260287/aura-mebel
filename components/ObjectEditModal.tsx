@@ -154,11 +154,11 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
       case 'OPTIMIZED':
         return 'Оптимизировано';
       case 'GENERATING_USDZ':
-        return 'Генерация USDZ…';
+        return 'Генерация iOS-версии…';
       case 'READY':
-        return 'Готово';
+        return 'Готово для iOS';
       case 'READY_WITHOUT_IOS':
-        return 'Готово (без iOS)';
+        return 'iOS недоступно';
       case 'ERROR':
         return 'Ошибка';
       default:
@@ -262,7 +262,10 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                                           <div className="flex items-start justify-between gap-4">
                                             <div>
                                               <div className="text-xs text-gray-500">Статус</div>
-                                              <div className="text-sm font-semibold text-gray-900 mt-1">
+                                              <div
+                                                className="text-sm font-semibold text-gray-900 mt-1"
+                                                title="iOS-версия генерируется автоматически"
+                                              >
                                                 {statusLabel(formData.modelProcessing?.status)}
                                               </div>
                                               {formData.modelProcessing?.error && (
@@ -309,6 +312,7 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                                                   ? 'bg-green-50 text-green-700 border-green-200'
                                                   : 'bg-white text-gray-500 border-gray-200',
                                               ].join(' ')}
+                                              title="iOS-версия генерируется автоматически"
                                             >
                                               iOS
                                             </span>
