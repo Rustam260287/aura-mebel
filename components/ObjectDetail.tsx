@@ -34,6 +34,14 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
   const [postArHintVisible, setPostArHintVisible] = useState(false);
+  const [isIOSDevice] = useState(() => {
+    if (typeof navigator === 'undefined') return false;
+    return (
+      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.userAgent.includes('Macintosh') && (navigator as any).maxTouchPoints > 1)
+    );
+  });
+  const [webXrArSupported, setWebXrArSupported] = useState<boolean | null>(null);
 
   const { isSaved, addToSaved, removeFromSaved } = useSaved();
   const { addToast } = useToast();
@@ -50,6 +58,31 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     ? `/api/proxy-model.glb?url=${encodeURIComponent(object.modelGlbUrl!)}`
     : undefined;
   const canPreview3d = Boolean(threeDSrcUrl);
+
+  useEffect(() => {
+    if (isIOSDevice) {
+      setWebXrArSupported(null);
+      return;
+    }
+    if (typeof navigator === 'undefined') return;
+    const xr = (navigator as any).xr as { isSessionSupported?: (mode: string) => Promise<boolean> } | undefined;
+    if (!xr || typeof xr.isSessionSupported !== 'function') {
+      setWebXrArSupported(false);
+      return;
+    }
+    let cancelled = false;
+    void xr
+      .isSessionSupported('immersive-ar')
+      .then((supported) => {
+        if (!cancelled) setWebXrArSupported(Boolean(supported));
+      })
+      .catch(() => {
+        if (!cancelled) setWebXrArSupported(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isIOSDevice]);
 
   useEffect(() => {
     trackJourneyEvent({ type: 'VIEW_OBJECT', objectId: object.id });
@@ -420,14 +453,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [router]);
 
   const handleOpenAr = useCallback(() => {
-    const isIOSDevice =
-      typeof navigator !== 'undefined' &&
-      (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-        (navigator.userAgent.includes('Macintosh') && (navigator as any).maxTouchPoints > 1));
-    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb;
+    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && webXrArSupported === true;
 
     if (!canStartArNow) {
-      addToast('AR‑примерка сейчас недоступна для этого устройства', 'info');
+      addToast('AR недоступен на этом устройстве', 'info');
       return;
     }
 
@@ -436,7 +465,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     setUiState('IN_AR');
     setIsAROpen(true);
     arViewerRef.current?.activateAR();
-  }, [addToast, emitEvent, hasGlb, hasUsdz]);
+  }, [addToast, emitEvent, hasGlb, hasUsdz, isIOSDevice, webXrArSupported]);
 
   const handleOpenArTap = useCallback(
     (event?: React.MouseEvent | React.TouchEvent) => {
@@ -454,6 +483,21 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     },
     [handleOpenAr],
   );
+
+  const handleOpen3d = useCallback(() => {
+    if (!canPreview3d) return;
+    setMediaMode('3d');
+  }, [canPreview3d]);
+
+  const arAvailability = useMemo(() => {
+    if (isIOSDevice) {
+      return hasUsdz ? { available: true, message: null } : { available: false, message: 'AR недоступен для этой модели' };
+    }
+    if (!hasGlb) return { available: false, message: 'AR недоступен для этой модели' };
+    if (webXrArSupported === true) return { available: true, message: null };
+    if (webXrArSupported === false) return { available: false, message: 'AR недоступен на этом устройстве' };
+    return { available: false, message: null as string | null };
+  }, [hasGlb, hasUsdz, isIOSDevice, webXrArSupported]);
 
   return (
     <div className="fixed inset-0 bg-soft-black overflow-hidden">
@@ -592,7 +636,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             : 'opacity-100 translate-y-0 pointer-events-auto',
         ].join(' ')}
       >
-        <div className="mx-auto w-full max-w-md">
+      <div className="mx-auto w-full max-w-md">
           {uiState === 'POST_AR' && !isObjectSaved && (
             <div
               className={[
@@ -605,18 +649,38 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             </div>
           )}
 
-          <Button
-            onClick={handleOpenArTap}
-            onTouchEnd={handleOpenArTap as any}
-            size="lg"
-            variant="primary"
-            className={[
-              'w-full h-14 rounded-2xl shadow-none',
-              uiState === 'POST_AR' ? 'bg-white/85 text-soft-black hover:bg-white/90' : 'bg-white text-soft-black hover:bg-white/95',
-            ].join(' ')}
-          >
-            Посмотреть в интерьере
-          </Button>
+          {arAvailability.available ? (
+            <Button
+              onClick={handleOpenArTap}
+              onTouchEnd={handleOpenArTap as any}
+              size="lg"
+              variant="primary"
+              className={[
+                'w-full h-14 rounded-2xl shadow-none',
+                uiState === 'POST_AR'
+                  ? 'bg-white/85 text-soft-black hover:bg-white/90'
+                  : 'bg-white text-soft-black hover:bg-white/95',
+              ].join(' ')}
+            >
+              Посмотреть в интерьере
+            </Button>
+          ) : (
+            <div className="rounded-2xl bg-white/85 backdrop-blur-md border border-stone-beige/30 px-4 py-3 text-center">
+              {arAvailability.message && <div className="text-sm font-medium text-soft-black">{arAvailability.message}</div>}
+              {canPreview3d && (
+                <div className={arAvailability.message ? 'mt-2' : ''}>
+                  <Button
+                    onClick={handleOpen3d}
+                    size="lg"
+                    variant="primary"
+                    className="w-full h-14 rounded-2xl shadow-none bg-white text-soft-black hover:bg-white/95"
+                  >
+                    Посмотреть 3D
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

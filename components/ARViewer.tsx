@@ -58,6 +58,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
   const [arSessionId, setArSessionId] = useState<string | null>(null);
   const arSessionIdRef = useRef<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const arModes = isIOS ? 'quick-look' : 'webxr';
 
   useEffect(() => {
     import('@google/model-viewer').catch(console.error);
@@ -109,7 +110,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     return () => window.clearTimeout(timer);
   }, [open]);
   
-  // Scene Viewer / Quick Look are more reliable when the URL ends with the correct extension.
+  // Quick Look is more reliable when the URL ends with the correct extension.
   const proxiedSrc = src ? `/api/proxy-model.glb?url=${encodeURIComponent(src)}` : undefined;
   const proxiedIosSrc = iosSrc ? `/api/proxy-model.usdz?url=${encodeURIComponent(iosSrc)}` : undefined;
   const effectiveIosSrc = proxiedIosSrc || iosSrc;
@@ -247,6 +248,13 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
   const handleActivateAR = () => {
     if (!canStartAr) return;
+    if (!isIOS) {
+      const xr = (navigator as any)?.xr;
+      if (!xr || typeof xr.isSessionSupported !== 'function') {
+        addToast('AR недоступен на этом устройстве', 'info', 2200);
+        return;
+      }
+    }
     ensureArSession();
     if (objectId && arStartMsRef.current == null) {
       // Fallback for platforms where `ar-status` events are limited (e.g. native viewers).
@@ -423,7 +431,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           interaction-prompt="none"
           scale="1 1 1"
           ar
-          ar-modes="webxr scene-viewer quick-look"
+          ar-modes={arModes}
           ar-scale="auto"
           style={{ touchAction: 'pan-y' }}
           className="w-full h-full"
