@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libegl1 \
     libdbus-1-3 \
     libglib2.0-0 \
+    libxkbcommon0 \
     libfreetype6 \
     libfontconfig1 \
   && rm -rf /var/lib/apt/lists/*
@@ -50,4 +51,3 @@ ENV BLENDER_USDZ_SCRIPT=/app/convert_glb_to_usdz.py
 EXPOSE 8080
 
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "900", "app:app"]
-

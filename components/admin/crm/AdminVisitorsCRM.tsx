@@ -35,11 +35,21 @@ type VisitorsResponse = {
 const formatTime = (value: string | null) => {
   if (!value) return '—';
   const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 };
 
 const pickActivityAt = (row: VisitorsResponse['visitors'][number]) => {
   return row.lastIntentAt || row.lastEventAt || row.lastSeenAt;
+};
+
+const compareByActivityDesc = (a: VisitorsResponse['visitors'][number], b: VisitorsResponse['visitors'][number]) => {
+  const aValue = pickActivityAt(a);
+  const bValue = pickActivityAt(b);
+  if (!aValue && !bValue) return 0;
+  if (!aValue) return 1;
+  if (!bValue) return -1;
+  return bValue.localeCompare(aValue);
 };
 
 const shortId = (id: string) => (id.length > 10 ? `${id.slice(0, 10)}…` : id);
@@ -76,7 +86,7 @@ export const AdminVisitorsCRM: React.FC<{ onOpenVisitor: (visitorId: string) => 
     for (const s of VISITOR_STAGE_ORDER) out.set(s, []);
     for (const row of rows) out.get(row.stage)?.push(row);
     for (const [k, list] of out.entries()) {
-      list.sort((a, b) => (pickActivityAt(b) || '').localeCompare(pickActivityAt(a) || ''));
+      list.sort(compareByActivityDesc);
       out.set(k, list);
     }
     return out;
@@ -276,4 +286,3 @@ export const AdminVisitorsCRM: React.FC<{ onOpenVisitor: (visitorId: string) => 
     </div>
   );
 };
-

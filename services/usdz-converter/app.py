@@ -74,6 +74,11 @@ def healthz():
     return jsonify({"ok": True})
 
 
+@app.get("/health")
+def health():
+    return jsonify({"ok": True})
+
+
 @app.post("/convert")
 def convert():
     if not _check_auth():
@@ -184,4 +189,3 @@ def convert():
 if __name__ == "__main__":
     port = _env_int("PORT", 8080)
     app.run(host="0.0.0.0", port=port)
-

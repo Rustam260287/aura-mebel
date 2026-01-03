@@ -1,5 +1,5 @@
 
-import { GetStaticPaths, GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import { getAdminDb } from '../../lib/firebaseAdmin';
 import type { JournalEntry, ObjectPublic, View } from '../../types';
 import { useRouter } from 'next/router';
@@ -18,10 +18,6 @@ interface PostPageProps {
 
 export default function PostPage({ post, relatedObjects, error }: PostPageProps) {
   const router = useRouter();
-
-  if (router.isFallback) {
-    return <div>Загрузка...</div>;
-  }
 
   if (error || !post) {
     return <div className="text-center py-20 text-red-500">Ошибка: {error || 'Пост не найден'}</div>;
@@ -51,23 +47,9 @@ export default function PostPage({ post, relatedObjects, error }: PostPageProps)
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-    const adminDb = getAdminDb();
-    if (!adminDb) {
-        return { paths: [], fallback: 'blocking' };
-    }
-    const snapshot = await adminDb.collection('blog').get();
-    const paths = snapshot.docs.map(doc => ({
-        params: { id: doc.id },
-    }));
-    return { paths, fallback: 'blocking' };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
     const db = getAdminDb();
-    if (!db || !params?.id) {
-        return { notFound: true };
-    }
+    if (!db || !params?.id) return { notFound: true };
 
     try {
         const postId = params.id as string;
@@ -108,12 +90,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
              relatedObjects = allObjects.sort(() => 0.5 - Math.random()).slice(0, 3);
         }
 
+        res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
         return {
             props: {
                 post: JSON.parse(JSON.stringify(post)),
                 relatedObjects: JSON.parse(JSON.stringify(relatedObjects)),
             },
-            revalidate: 60 * 60, // 1 час
         };
     } catch (error) {
         console.error(`Error fetching journal entry ${params.id}:`, error);

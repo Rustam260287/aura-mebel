@@ -23,6 +23,114 @@ const padTo4 = (buffer: Buffer, padByte: number) => {
   return pad ? Buffer.concat([buffer, Buffer.alloc(pad, padByte)]) : buffer;
 };
 
+const clampNumber = (value: unknown, min: number, max: number) => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+};
+
+function fixAccessorMinMaxForValidator(glb: Buffer): Buffer {
+  if (glb.toString('utf8', 0, 4) !== 'glTF') return glb;
+
+  const jsonChunkLength = glb.readUInt32LE(12);
+  const jsonChunkType = glb.readUInt32LE(16);
+  if (jsonChunkType !== 0x4e4f534a) return glb;
+
+  const jsonStart = 20;
+  const jsonEnd = jsonStart + jsonChunkLength;
+  let gltf: any;
+  try {
+    gltf = JSON.parse(glb.slice(jsonStart, jsonEnd).toString('utf8'));
+  } catch {
+    return glb;
+  }
+
+  const accessors = Array.isArray(gltf?.accessors) ? gltf.accessors : [];
+  let changed = false;
+
+  for (const accessor of accessors) {
+    if (!accessor || typeof accessor !== 'object') continue;
+    const componentType = Number(accessor.componentType);
+    let minAllowed: number | null = null;
+    let maxAllowed: number | null = null;
+
+    switch (componentType) {
+      case 5120: // BYTE
+        minAllowed = -128;
+        maxAllowed = 127;
+        break;
+      case 5121: // UNSIGNED_BYTE
+        minAllowed = 0;
+        maxAllowed = 255;
+        break;
+      case 5122: // SHORT
+        minAllowed = -32768;
+        maxAllowed = 32767;
+        break;
+      case 5123: // UNSIGNED_SHORT
+        minAllowed = 0;
+        maxAllowed = 65535;
+        break;
+      case 5125: // UNSIGNED_INT
+        minAllowed = 0;
+        maxAllowed = 4294967295;
+        break;
+      default:
+        break;
+    }
+
+    if (minAllowed == null || maxAllowed == null) continue;
+
+    if (Array.isArray(accessor.max)) {
+      const next = accessor.max.map((v: unknown) => clampNumber(v, minAllowed!, maxAllowed!));
+      if (JSON.stringify(next) !== JSON.stringify(accessor.max)) {
+        accessor.max = next;
+        changed = true;
+      }
+    }
+
+    if (Array.isArray(accessor.min)) {
+      const next = accessor.min.map((v: unknown) => clampNumber(v, minAllowed!, maxAllowed!));
+      if (JSON.stringify(next) !== JSON.stringify(accessor.min)) {
+        accessor.min = next;
+        changed = true;
+      }
+    }
+  }
+
+  if (!changed) return glb;
+
+  const binHeaderOffset = jsonEnd;
+  const binChunkLength = glb.readUInt32LE(binHeaderOffset);
+  const binChunkType = glb.readUInt32LE(binHeaderOffset + 4);
+  if (binChunkType !== 0x004e4942) return glb;
+
+  const binStart = binHeaderOffset + 8;
+  const binEnd = binStart + binChunkLength;
+  const binChunk = glb.slice(binStart, binEnd);
+
+  const jsonText = JSON.stringify(gltf);
+  const jsonChunk = padTo4(Buffer.from(jsonText, 'utf8'), 0x20);
+  const paddedBinChunk = padTo4(Buffer.from(binChunk), 0x00);
+
+  const totalLength = 12 + 8 + jsonChunk.length + 8 + paddedBinChunk.length;
+  const header = Buffer.alloc(12);
+  header.write('glTF', 0);
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(totalLength, 8);
+
+  const jsonHeader = Buffer.alloc(8);
+  jsonHeader.writeUInt32LE(jsonChunk.length, 0);
+  jsonHeader.writeUInt32LE(0x4e4f534a, 4);
+
+  const binHeader = Buffer.alloc(8);
+  binHeader.writeUInt32LE(paddedBinChunk.length, 0);
+  binHeader.writeUInt32LE(0x004e4942, 4);
+
+  return Buffer.concat([header, jsonHeader, jsonChunk, binHeader, paddedBinChunk]);
+}
+
 type TextureRewriteStats = {
   resized: number;
   convertedToJpeg: number;
@@ -184,6 +292,22 @@ type UsdzConverterResponse = {
   details?: string;
 };
 
+async function getCloudRunAuthHeaders(audienceUrl: string): Promise<Record<string, string>> {
+  try {
+    const { GoogleAuth } = await import('google-auth-library');
+    const auth = new GoogleAuth();
+    const client = await auth.getIdTokenClient(audienceUrl);
+    const headers = await client.getRequestHeaders();
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(headers)) {
+      if (typeof v === 'string') out[k] = v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 async function generateUsdzRemotely(params: {
   bucket: string;
   objectId: string;
@@ -201,10 +325,12 @@ async function generateUsdzRemotely(params: {
   const t = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const iamHeaders = await getCloudRunAuthHeaders(base);
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...iamHeaders,
         ...(USDZ_CONVERTER_TOKEN ? { 'x-labelcom-token': USDZ_CONVERTER_TOKEN } : {}),
       },
       body: JSON.stringify(params),
@@ -343,10 +469,12 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     });
 
     const dracoGlb = Buffer.isBuffer(processed.glb) ? processed.glb : Buffer.from(processed.glb);
-    const rewritten = await rewriteEmbeddedTextures(dracoGlb);
-    await fs.writeFile(tmpOptimized, rewritten.glb);
+    const fixedGlb = fixAccessorMinMaxForValidator(dracoGlb);
+    const rewritten = await rewriteEmbeddedTextures(fixedGlb);
+    const finalGlb = fixAccessorMinMaxForValidator(rewritten.glb);
+    await fs.writeFile(tmpOptimized, finalGlb);
 
-    const sizeAfterBytes = rewritten.glb.length;
+    const sizeAfterBytes = finalGlb.length;
     if (Number.isFinite(TARGET_GLB_MAX_BYTES) && TARGET_GLB_MAX_BYTES > 0 && sizeAfterBytes > TARGET_GLB_MAX_BYTES) {
       await updateModelProcessing(objectId, {
         status: 'ERROR',
@@ -359,7 +487,7 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
       return;
     }
 
-    const validation = await validateBytes(new Uint8Array(rewritten.glb));
+    const validation = await validateBytes(new Uint8Array(finalGlb));
     const numErrors = validation?.issues?.numErrors || 0;
     if (numErrors > 0) {
       await updateModelProcessing(objectId, {
@@ -377,7 +505,7 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     });
 
     const optimizedFile = bucket.file(optimizedPath);
-    await optimizedFile.save(rewritten.glb, {
+    await optimizedFile.save(finalGlb, {
       metadata: {
         contentType: 'model/gltf-binary',
         contentDisposition: 'inline',
@@ -460,7 +588,7 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
           finishedAt: nowIso(),
           platforms: { web: true, android: true, ios: Boolean(usdzUrl) },
           ...(usdzUrl ? { usdz: { storagePath: usdzPath, url: usdzUrl, ...(Number.isFinite(usdzSizeBytes) ? { sizeBytes: usdzSizeBytes } : {}) } } : {}),
-          ...(usdzError ? { error: usdzError } : {}),
+          ...(usdzUrl ? { error: null } : usdzError ? { error: usdzError } : {}),
           updatedAt: nowIso(),
         },
       },

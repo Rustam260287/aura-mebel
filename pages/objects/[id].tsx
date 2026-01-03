@@ -1,6 +1,6 @@
 
 // pages/objects/[id].tsx
-import { GetStaticPaths, GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
 import type { ObjectPublic } from '../../types';
 import { useRouter } from 'next/router';
@@ -16,14 +16,6 @@ interface ObjectPageProps {
 
 export default function ObjectPage({ object, error }: ObjectPageProps) {
   const router = useRouter();
-
-  if (router.isFallback) {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown"></div>
-        </div>
-    );
-  }
 
   if (error) {
     return (
@@ -84,30 +76,8 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-    const adminDb = getAdminDb();
-    if (!adminDb) {
-        return { paths: [], fallback: 'blocking' };
-    }
-    
-	    try {
-	        const objectsSnapshot = await adminDb.collection(COLLECTIONS.objects).select().get();
-	        const paths = objectsSnapshot.docs.map(doc => ({
-	            params: { id: doc.id },
-	        }));
-        
-        return { paths, fallback: 'blocking' };
-    } catch (e) {
-        console.error("Error generating paths:", e);
-        return { paths: [], fallback: 'blocking' };
-    }
-};
-
-export const getStaticProps: GetStaticProps = async (context) => {
-  const { params } = context;
-  if (!params?.id) {
-    return { props: { error: "Object ID not found." } };
-  }
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
+  if (!params?.id) return { props: { error: "Object ID not found." } };
   const { id } = params;
   
   // Разрешаем любые ID, так как теперь мы ищем и по slug
@@ -168,12 +138,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
     } else {
         objectData.imageUrls = ['/placeholder.svg'];
     }
-    
+
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
     return {
       props: {
         object: JSON.parse(JSON.stringify(objectData)),
       },
-      revalidate: 60,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

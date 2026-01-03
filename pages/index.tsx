@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
-import { GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { getAdminDb } from '../lib/firebaseAdmin';
 import { COLLECTIONS } from '../lib/db/collections';
@@ -71,7 +71,7 @@ export default function HomePage({ featuredObjects, error }: HomePageProps) {
             <h2 className="text-xl md:text-2xl font-medium text-soft-black mb-6 tracking-tight">Избранные модели</h2>
             <Gallery
                 objects={featuredObjects}
-                isLoading={router.isFallback}
+                isLoading={false}
                 onObjectSelect={(id) => router.push(`/objects/${id}`)}
                 onBrowseGallery={() => router.push('/objects')}
             />
@@ -92,7 +92,7 @@ export default function HomePage({ featuredObjects, error }: HomePageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
     const adminDb = getAdminDb();
     if (!adminDb) return { props: { featuredObjects: [] } };
@@ -115,12 +115,12 @@ export const getStaticProps: GetStaticProps = async () => {
         description: '',
       };
     }) as ObjectPublic[];
-    
+
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     return {
       props: { 
         featuredObjects: JSON.parse(JSON.stringify(featuredObjects)) 
       },
-      revalidate: 3600,
     };
   } catch (error) {
     return { props: { featuredObjects: [] } };

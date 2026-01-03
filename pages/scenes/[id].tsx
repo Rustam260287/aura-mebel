@@ -1,4 +1,4 @@
-import type { GetStaticPaths, GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
 import { COLLECTIONS } from '../../lib/db/collections';
@@ -18,14 +18,6 @@ interface ScenePageProps {
 
 export default function ScenePage({ scene, objects, error }: ScenePageProps) {
   const router = useRouter();
-
-  if (router.isFallback) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -83,21 +75,8 @@ export default function ScenePage({ scene, objects, error }: ScenePageProps) {
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const adminDb = getAdminDb();
-  if (!adminDb) return { paths: [], fallback: 'blocking' };
-  try {
-    const snap = await adminDb.collection(COLLECTIONS.scenePresets).select().get();
-    const paths = snap.docs.map((doc) => ({ params: { id: doc.id } }));
-    return { paths, fallback: 'blocking' };
-  } catch (e) {
-    console.error('Error generating scene paths:', e);
-    return { paths: [], fallback: 'blocking' };
-  }
-};
-
-export const getStaticProps: GetStaticProps = async (context) => {
-  const id = typeof context.params?.id === 'string' ? context.params.id : '';
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
+  const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return { props: { error: 'Scene ID not found.' } };
 
   const adminDb = getAdminDb();
@@ -150,12 +129,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
       if (cover) scene.coverImageUrl = cover;
     }
 
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
     return {
       props: {
         scene: JSON.parse(JSON.stringify(scene)),
         objects: JSON.parse(JSON.stringify(objects)),
       },
-      revalidate: 60,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -165,4 +144,3 @@ export const getStaticProps: GetStaticProps = async (context) => {
     };
   }
 };
-

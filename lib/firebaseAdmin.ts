@@ -28,12 +28,17 @@ export const initializeFirebaseAdmin = () => {
     console.log("Firebase Admin SDK: Инициализация из файла serviceAccountKey.json...");
     try {
       const serviceAccountPath = path.join(process.cwd(), 'serviceAccountKey.json');
-      if (!fs.existsSync(serviceAccountPath)) {
-        console.error(`Файл не найден по пути: ${serviceAccountPath}`);
-        throw new Error("Файл serviceAccountKey.json не найден в корне проекта. Пожалуйста, скачайте его из Firebase Console -> Project Settings -> Service Accounts и положите в корень проекта.");
+      if (fs.existsSync(serviceAccountPath)) {
+        const serviceAccountFile = fs.readFileSync(serviceAccountPath, 'utf8');
+        serviceAccount = JSON.parse(serviceAccountFile);
+      } else {
+        // Cloud Build / Cloud Run / Cloud Functions may rely on ADC.
+        console.warn(`Firebase Admin SDK: serviceAccountKey.json не найден (${serviceAccountPath}), пробуем Application Default Credentials...`);
+        return admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+          storageBucket: BUCKET_NAME,
+        });
       }
-      const serviceAccountFile = fs.readFileSync(serviceAccountPath, 'utf8');
-      serviceAccount = JSON.parse(serviceAccountFile);
     } catch (error: any) {
       console.error('Критическая ошибка при чтении ключа:', error.message);
       // Пробрасываем ошибку дальше, чтобы Next.js показал её
