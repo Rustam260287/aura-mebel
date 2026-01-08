@@ -3,10 +3,7 @@ import { useRouter } from 'next/router';
 import { useRedesign } from '../../contexts/RedesignContext';
 import { Button } from '../Button';
 import type { RedesignVariant } from '../../lib/redesign/types';
-import dynamic from 'next/dynamic';
 
-// Load model-viewer
-dynamic(() => import('@google/model-viewer'), { ssr: false });
 
 const HINT_KEY = 'aura_3d_hint_shown';
 
@@ -31,7 +28,11 @@ export const StepResultRedesign: React.FC = () => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const lastTouchRef = useRef<{ x: number; y: number; dist: number }>({ x: 0, y: 0, dist: 0 });
-    const hideControlsTimer = useRef<NodeJS.Timeout>();
+    const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        import('@google/model-viewer');
+    }, []);
 
     // Show hint on first 3D activation
     useEffect(() => {

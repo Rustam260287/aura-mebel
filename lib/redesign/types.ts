@@ -5,6 +5,7 @@ export interface RedesignInput {
     object_type: 'sofa' | 'armchair' | 'bed' | 'table' | 'chair';
     style: 'minimal' | 'cozy' | 'modern' | 'classic';
     mood: 'calm' | 'warm' | 'fresh' | 'dramatic';
+    room_type?: string;
 }
 
 export interface RedesignVariant {

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import type { RedesignInput, RedesignResult, RedesignProgress } from '../../lib/redesign/types';
-import type { RoomAnalysis } from '../../lib/antigravity/types';
+import type { RedesignInput, RedesignResult, RedesignProgress } from '../lib/redesign/types';
+import type { RoomAnalysis } from '../lib/antigravity/types';
 
 interface RedesignContextValue {
     currentStep: number;

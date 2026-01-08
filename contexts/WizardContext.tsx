@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import type { WizardIntent, FittingResult } from '../../lib/antigravity/types';
+import type { WizardIntent, FittingResult } from '../lib/antigravity/types';
 
 interface WizardContextValue {
     currentStep: number;
