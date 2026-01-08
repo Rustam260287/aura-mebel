@@ -1,7 +1,7 @@
 // pages/_document.tsx
 import { Html, Head, Main, NextScript } from 'next/document';
 
-const SPLASH_STORAGE_KEY = 'labelcom:splash:v1';
+const SPLASH_STORAGE_KEY = 'aura:splash:v1';
 
 const splashHeadScript = `(function(){
   try {
@@ -46,7 +46,7 @@ const splashBodyScript = `(function(){
   }, motionMs);
 })();`;
 
-const DEV_SW_CLEANUP_KEY = 'labelcom:dev:sw-cleanup:v1';
+const DEV_SW_CLEANUP_KEY = 'aura:dev:sw-cleanup:v1';
 const devServiceWorkerCleanupScript = `(function(){
   try {
     var key = '${DEV_SW_CLEANUP_KEY}';
@@ -86,7 +86,7 @@ const splashCss = `
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #FBF9F4;
+  background: #F7F7F5;
   opacity: 1;
   transition: opacity 240ms ease;
   pointer-events: all;
@@ -161,7 +161,7 @@ html.pwa-splash-skip #pwa-splash {
 }
 
 .pwa-splash__letter::after {
-  content: "L";
+  content: "A";
   position: absolute;
   inset: 0;
   transform: translate(0, -1px);
@@ -236,20 +236,20 @@ export default function Document() {
       <Head>
         {/* FIX: Добавлен crossOrigin="use-credentials" для исправления CORS ошибки в Cloud Workstations */}
         <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
-        <meta name="theme-color" content="#5D4037" />
-        <meta name="application-name" content="Labelcom Мебель" />
+        <meta name="theme-color" content="#F7F7F5" />
+        <meta name="application-name" content="AURA" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Labelcom Мебель" />
+        <meta name="apple-mobile-web-app-title" content="AURA" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        
+
         {/* NEW SVG Favicon (Priority) */}
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
 
         {/* PWA & Mobile Icons */}
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-        
+
         {/* Browser Favicons (Legacy) */}
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
@@ -261,7 +261,7 @@ export default function Document() {
           <script dangerouslySetInnerHTML={{ __html: devServiceWorkerCleanupScript }} />
         ) : null}
         <style id="pwa-splash-css" dangerouslySetInnerHTML={{ __html: splashCss }} />
-        <link rel="preload" as="image" href="/splash/labelcom-medallion.svg" type="image/svg+xml" />
+        <link rel="preload" as="image" href="/splash/aura-medallion.svg" type="image/svg+xml" />
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -281,14 +281,14 @@ export default function Document() {
             <div className="pwa-splash__medallion">
               <img
                 className="pwa-splash__img"
-                src="/splash/labelcom-medallion.svg"
+                src="/splash/aura-medallion.svg"
                 alt=""
                 decoding="async"
                 fetchPriority="high"
               />
               <div className="pwa-splash__shade" />
               <div className="pwa-splash__glint" />
-              <div className="pwa-splash__letter">L</div>
+              <div className="pwa-splash__letter">A</div>
             </div>
           </div>
         </div>

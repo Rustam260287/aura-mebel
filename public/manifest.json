@@ -1,13 +1,16 @@
 {
-  "short_name": "Labelcom",
-  "name": "Labelcom — 3D/AR примерка",
+  "short_name": "AURA",
+  "name": "AURA",
   "description": "3D и AR примерка мебели для спокойного визуального принятия решений. ИИ‑помощник помогает собрать подборку и обсудить решение.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#5D4037",
-  "background_color": "#FBF9F4",
-  "categories": ["lifestyle", "productivity"],
+  "theme_color": "#F7F7F5",
+  "background_color": "#F7F7F5",
+  "categories": [
+    "lifestyle",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icons/favicon-16x16.png",
