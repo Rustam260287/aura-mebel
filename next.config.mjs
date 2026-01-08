@@ -28,9 +28,12 @@ const nextConfig = {
       { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'replicate.delivery' },
+      { protocol: 'https', hostname: 'placehold.co' },
       // Домен для изображений (legacy assets)
-      { protocol: 'https', hostname: 'label-com.ru' }, 
+      { protocol: 'https', hostname: 'label-com.ru' },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async redirects() {
     return [

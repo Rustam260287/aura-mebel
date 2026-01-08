@@ -84,7 +84,7 @@ export const AdminScenes: React.FC<AdminScenesProps> = ({
                 <tr key={scene.id} className="bg-white border-b hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
                     <Image
-                      src={scene.coverImageUrl || '/placeholder.svg'}
+                      src={scene.coverImageUrl?.trim() || '/placeholder.svg'}
                       alt={scene.title}
                       width={48}
                       height={48}

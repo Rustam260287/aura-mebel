@@ -17,15 +17,15 @@ export const Logo: React.FC<LogoProps> = ({ className = "", showText = true, var
     <div className={cn("flex items-center gap-3", className)}>
       {/* Icon: Classic 'L' in a rounded square */}
       <div className={cn("flex items-center justify-center w-10 h-10 rounded-lg shadow-sm transition-transform hover:scale-105", iconBg)}>
-        <span className={cn("font-serif text-2xl font-bold translate-y-[1px] translate-x-[1px]", iconText)}>
-          L
+        <span className={cn("font-serif text-2xl font-bold translate-y-[1px] translate-x-[0px]", iconText)}>
+          A
         </span>
       </div>
-      
-      {/* Text: Labelcom */}
+
+      {/* Text: AURA */}
       {showText && (
-        <span className={cn("font-serif text-3xl font-medium tracking-tight", textColor)}>
-          Labelcom
+        <span className={cn("font-serif text-3xl font-medium tracking-wide", textColor)}>
+          AURA
         </span>
       )}
     </div>

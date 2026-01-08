@@ -1,7 +1,0 @@
-__turbopack_load_page_chunks__("/ai-room-makeover", [
-  "static/chunks/04e4e41f62c1b242.js",
-  "static/chunks/cc6d3169d88123db.js",
-  "static/chunks/d0e5f67fbcd40b40.js",
-  "static/chunks/040217faf94abae8.js",
-  "static/chunks/turbopack-ce8c165f9fdb987a.js"
-])

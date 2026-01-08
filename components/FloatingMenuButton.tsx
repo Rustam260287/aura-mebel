@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MenuIcon } from './icons';
+import { MenuIcon } from './icons/index';
 
 export const FloatingMenuButton = ({ onClick }: { onClick: () => void }) => {
   return (

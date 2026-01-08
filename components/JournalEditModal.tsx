@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import type { JournalEntry } from '../types';
 import { Button } from './Button';
-import { XMarkIcon, TrashIcon } from './Icons';
+import { XMarkIcon, TrashIcon } from './icons';
 import Image from 'next/image';
 import { getAuth } from 'firebase/auth';
 

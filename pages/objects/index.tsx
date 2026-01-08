@@ -40,7 +40,7 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
   useEffect(() => {
     emitEvent({ type: 'ENTER_GALLERY' });
   }, [emitEvent]);
-  
+
   const {
     imageModalState,
     handleImageClick,
@@ -49,20 +49,20 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
 
   // Filter State from URL
   const { category } = router.query;
-  
+
   const selectedCategory = Array.isArray(category) ? category[0] : category;
 
   const handleCategoryChange = (newCategory: string) => {
     const query = { ...router.query };
     delete query.q;
     delete query.search;
-    
+
     if (newCategory === selectedCategory) {
-        delete query.category; // Toggle off
+      delete query.category; // Toggle off
     } else {
-        query.category = newCategory;
+      query.category = newCategory;
     }
-    
+
     query.page = '1';
     router.push({ pathname: '/objects', query }, undefined, { scroll: true });
   };
@@ -73,129 +73,129 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
       router.push({ pathname: '/objects', query }, undefined, { scroll: true });
     }
   };
-  
+
   if (error) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white text-muted-gray">
-             <p>Не удалось загрузить коллекцию. Попробуйте позже.</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white text-muted-gray">
+        <p>Не удалось загрузить коллекцию. Попробуйте позже.</p>
+      </div>
     );
   }
 
   return (
     <>
       <Header />
-      <main className="flex-grow bg-warm-white min-h-screen">
+      <main className="flex-grow bg-transparent min-h-screen transition-colors duration-300">
         <div className="container mx-auto px-6 py-12">
-            
-            {/* Заголовок и поиск */}
-            <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-medium text-soft-black mb-4 tracking-tight">
-                    {searchQuery ? `Поиск: "${searchQuery}"` : 'Коллекция для примерки'}
-                </h1>
-                {!searchQuery && (
-                    <p className="text-muted-gray max-w-lg mx-auto leading-relaxed">
-                        Выберите объект, который хотите увидеть у себя дома.
-                    </p>
-                )}
-            </div>
 
-            {/* Категории - как табы, чисто и просто */}
+          {/* Заголовок и поиск */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-medium text-soft-black dark:text-aura-dark-text-main mb-4 tracking-tight">
+              {searchQuery ? `Поиск: "${searchQuery}"` : 'Коллекция для примерки'}
+            </h1>
             {!searchQuery && (
-                <div className="-mx-6 mb-16">
-                    <div className="relative">
-                        <div
-                            className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-                            style={{
-                                WebkitOverflowScrolling: 'touch',
-                                paddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
-                                paddingRight: 'calc(env(safe-area-inset-right) + 24px)',
-                                scrollPaddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
-                                scrollPaddingRight: 'calc(env(safe-area-inset-right) + 24px)',
-                            }}
-                        >
-                            <div className="flex w-max gap-2 pb-4">
-                                {ALL_CATEGORIES.map((cat) => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => handleCategoryChange(cat)}
-                                        className={`
+              <p className="text-muted-gray dark:text-aura-dark-text-sec max-w-lg mx-auto leading-relaxed">
+                Выберите объект, который хотите увидеть у себя дома.
+              </p>
+            )}
+          </div>
+
+          {/* Категории - как табы, чисто и просто */}
+          {!searchQuery && (
+            <div className="-mx-6 mb-16">
+              <div className="relative">
+                <div
+                  className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                  style={{
+                    WebkitOverflowScrolling: 'touch',
+                    paddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
+                    paddingRight: 'calc(env(safe-area-inset-right) + 24px)',
+                    scrollPaddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
+                    scrollPaddingRight: 'calc(env(safe-area-inset-right) + 24px)',
+                  }}
+                >
+                  <div className="flex w-max gap-2 pb-4">
+                    {ALL_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => handleCategoryChange(cat)}
+                        className={`
                                             snap-start shrink-0 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 border
                                             ${selectedCategory === cat
-                                                ? 'bg-soft-black text-white border-soft-black shadow-md'
-                                                : 'bg-white text-muted-gray border-stone-beige/30 hover:border-soft-black hover:text-soft-black'}
+                            ? 'bg-soft-black text-white border-soft-black shadow-md dark:bg-stone-beige dark:text-aura-dark-base dark:border-stone-beige'
+                            : 'bg-white text-muted-gray border-stone-beige/30 hover:border-soft-black hover:text-soft-black dark:bg-aura-dark-surface dark:text-aura-dark-text-sec dark:border-aura-dark-border dark:hover:text-aura-dark-text-main'}
                                         `}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Subtle edge fade to hint scrollability */}
-                        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-warm-white to-transparent" />
-                        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-warm-white to-transparent" />
-                    </div>
-                </div>
-            )}
-            
-	            {/* Сетка объектов — Галерея */}
-              {!searchQuery && scenes.length > 0 && (
-                <section className="mb-20">
-                  <div className="flex items-end justify-between gap-6 mb-8">
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-medium text-soft-black tracking-tight">
-                        Комплекты
-                      </h2>
-                      <p className="text-sm text-muted-gray mt-2">
-                        Набор отдельных предметов. В AR каждый можно двигать и масштабировать отдельно.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-14 md:gap-y-20">
-                    {scenes.map((scene, index) => (
-                      <div
-                        key={scene.id}
-                        className="animate-fade-in"
-                        style={{ animationDelay: `${index * 60}ms` }}
                       >
-                        <SceneCard scene={scene} onSelect={(id) => router.push(`/scenes/${id}`)} />
-                      </div>
+                        {cat}
+                      </button>
                     ))}
                   </div>
-                </section>
-              )}
-
-              <Catalog
-                allObjects={objects}
-                isLoading={false}
-                onObjectSelect={(id) => router.push(`/objects/${id}`)}
-                onImageClick={handleImageClick}
-              />
-
-            {/* Пагинация - минималистичная */}
-            {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-6 mt-20">
-                    <button 
-                        onClick={() => handlePageChange(currentPage - 1)} 
-                        disabled={currentPage <= 1}
-                        className="p-3 rounded-full hover:bg-stone-beige/10 disabled:opacity-30 transition-colors text-soft-black"
-                    >
-                        <ChevronLeftIcon className="w-6 h-6 stroke-1" />
-                    </button>
-                    <span className="text-sm font-medium text-muted-gray tracking-widest">
-                        {currentPage} / {totalPages}
-                    </span>
-                    <button 
-                        onClick={() => handlePageChange(currentPage + 1)} 
-                        disabled={currentPage >= totalPages}
-                        className="p-3 rounded-full hover:bg-stone-beige/10 disabled:opacity-30 transition-colors text-soft-black"
-                    >
-                        <ChevronRightIcon className="w-6 h-6 stroke-1" />
-                    </button>
                 </div>
-            )}
+
+                {/* Subtle edge fade to hint scrollability */}
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-warm-white to-transparent dark:from-aura-dark-base" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-warm-white to-transparent dark:from-aura-dark-base" />
+              </div>
+            </div>
+          )}
+
+          {/* Сетка объектов — Галерея */}
+          {!searchQuery && scenes.length > 0 && (
+            <section className="mb-20">
+              <div className="flex items-end justify-between gap-6 mb-8">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-medium text-soft-black dark:text-aura-dark-text-main tracking-tight">
+                    Комплекты
+                  </h2>
+                  <p className="text-sm text-muted-gray dark:text-aura-dark-text-muted mt-2">
+                    Набор отдельных предметов. В AR каждый можно двигать и масштабировать отдельно.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-14 md:gap-y-20">
+                {scenes.map((scene, index) => (
+                  <div
+                    key={scene.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 60}ms` }}
+                  >
+                    <SceneCard scene={scene} onSelect={(id) => router.push(`/scenes/${id}`)} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <Catalog
+            allObjects={objects}
+            isLoading={false}
+            onObjectSelect={(id) => router.push(`/objects/${id}`)}
+            onImageClick={handleImageClick}
+          />
+
+          {/* Пагинация - минималистичная */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-6 mt-20">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="p-3 rounded-full hover:bg-stone-beige/10 dark:hover:bg-aura-dark-surface disabled:opacity-30 transition-colors text-soft-black dark:text-aura-dark-text-main"
+              >
+                <ChevronLeftIcon className="w-6 h-6 stroke-1" />
+              </button>
+              <span className="text-sm font-medium text-muted-gray dark:text-aura-dark-text-muted tracking-widest">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="p-3 rounded-full hover:bg-stone-beige/10 dark:hover:bg-aura-dark-surface disabled:opacity-30 transition-colors text-soft-black dark:text-aura-dark-text-main"
+              >
+                <ChevronRightIcon className="w-6 h-6 stroke-1" />
+              </button>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
@@ -219,7 +219,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const page = Number(context.query.page) || 1;
     const qParam = context.query.q || context.query.search;
     const queryParam = qParam ? String(qParam).trim() : '';
-    
+
     let objects: ObjectPublic[] = [];
     let scenes: ScenePresetPublic[] = [];
     let totalItems = 0;
@@ -227,24 +227,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     // Поиск
     if (queryParam) {
-        try {
-            const found = await SearchService.search({ query: queryParam, limit: 30 });
-            objects = found.map((p) => toPublicObject(p, p.id));
-            totalItems = objects.length;
-            totalPages = 1; 
-        } catch (e) {
-            console.error("Search failed:", e);
+      try {
+        const found = await SearchService.search({ query: queryParam, limit: 30 });
+        objects = found.map((p) => toPublicObject(p, p.id));
+        totalItems = objects.length;
+        totalPages = 1;
+      } catch (e) {
+        console.error("Search failed:", e);
+      }
+
+      return {
+        props: {
+          objects: JSON.parse(JSON.stringify(objects)),
+          scenes: [],
+          currentPage: 1,
+          totalPages: 1,
+          searchQuery: queryParam
         }
-        
-        return {
-            props: {
-                objects: JSON.parse(JSON.stringify(objects)),
-                scenes: [],
-                currentPage: 1,
-                totalPages: 1,
-                searchQuery: queryParam
-            }
-        };
+      };
     }
 
     const categoryQuery = context.query.category;
@@ -252,7 +252,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const selectedCategories = Array.isArray(categoryQuery) ? (categoryQuery as string[]) : categoryQuery ? [categoryQuery as string] : [];
 
     let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection(COLLECTIONS.objects);
-    
+
     // Фильтрация по категории
     if (selectedCategories.length > 0) {
       if (selectedCategories.length === 1) {
@@ -272,19 +272,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // Запрос с пагинацией
     const sortedQuery = baseQuery.orderBy('name', 'asc');
     const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
-    
+
     objects = pageSnapshot.docs.map(doc => {
       const data = doc.data();
-      const imageUrls = (data.imageUrls || []).map((url: string) => url || '/placeholder.svg');
-      return { 
-          id: doc.id,
-          name: data.name ?? '',
-          imageUrls,
-          objectType: data.objectType ?? data.category ?? '',
-          description: data.description ?? '',
-          modelGlbUrl: data.modelGlbUrl ?? '',
-          modelUsdzUrl: data.modelUsdzUrl ?? '',
-          // Другие поля по необходимости
+      const imageUrls = (data.imageUrls || []).map((url: string) => url || '');
+      return {
+        id: doc.id,
+        name: data.name ?? '',
+        imageUrls,
+        objectType: data.objectType ?? data.category ?? '',
+        description: data.description ?? '',
+        modelGlbUrl: data.modelGlbUrl ?? '',
+        modelUsdzUrl: data.modelUsdzUrl ?? '',
+        // Другие поля по необходимости
       };
     }) as ObjectPublic[];
 

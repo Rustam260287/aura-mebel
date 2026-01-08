@@ -1,35 +1,37 @@
 
-import { 
-  MapPin, 
-  Clock, 
-  Phone, 
-  Mail, 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronDown, 
-  SlidersHorizontal, 
-  ArrowLeft, 
-  ArrowUpDown, 
-  RefreshCcw, 
-  Sparkles, 
-  CheckCircle2, 
-  X, 
-  Heart, 
-  Menu, 
-  Search, 
-  MessageSquare, 
+import {
+  MapPin,
+  Clock,
+  Phone,
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  SlidersHorizontal,
+  ArrowLeft,
+  ArrowUpDown,
+  RefreshCcw,
+  Sparkles,
+  CheckCircle2,
+  X,
+  Heart,
+  Menu,
+  Search,
+  MessageSquare,
   MessageCircle,
-  Share, 
-  Trash2, 
-  Image as ImageIcon, 
-  FilePenLine, 
-  Plus, 
-  Minus, 
-  Send, 
-  Eye, 
-  Expand, 
-  Wrench, 
-  Box 
+  Share,
+  Trash2,
+  Image as ImageIcon,
+  FilePenLine,
+  Plus,
+  Minus,
+  Send,
+  Eye,
+  Expand,
+  Wrench,
+  Box,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 export const MapPinIcon = MapPin;
@@ -65,3 +67,5 @@ export const ArrowsPointingOutIcon = Expand;
 export const WrenchScrewdriverIcon = Wrench;
 export const CubeIcon = Box;
 export const CubeTransparentIcon = Box; // Добавлено для совместимости с ARViewer
+export const MoonIcon = Moon;
+export const SunIcon = Sun;

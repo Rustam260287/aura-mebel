@@ -3,7 +3,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { HeartIcon } from './icons';
+import { HeartIcon } from './icons/index';
 import { Logo } from './Logo';
 import { cn } from '../utils';
 
@@ -22,9 +22,9 @@ const HeaderComponent: React.FC = () => {
 
   return (
     <>
-      <header className={cn("hidden md:block sticky top-0 z-40 bg-warm-white/80 backdrop-blur-md transition-all duration-300 border-b border-stone-beige/20")}>
+      <header className={cn("hidden md:block sticky top-0 z-40 bg-warm-white/80 dark:bg-aura-dark-base/90 backdrop-blur-md transition-all duration-300 border-b border-stone-beige/20 dark:border-aura-dark-border")}>
         <div className="container mx-auto flex items-center justify-between px-6 h-20 relative">
-          
+
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity z-10">
             <Logo variant="dark" />
           </Link>
@@ -32,7 +32,7 @@ const HeaderComponent: React.FC = () => {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {/* Defer rendering of this block until client-side mount to prevent hydration mismatch */}
             {mounted && (
-              <nav className="flex items-center gap-8 text-[15px] font-medium text-soft-black">
+              <nav className="flex items-center gap-8 text-[15px] font-medium text-soft-black dark:text-aura-dark-text-main">
                 {navLinks.map(link => (
                   <Link
                     key={link.href}
@@ -46,14 +46,14 @@ const HeaderComponent: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-5 text-soft-black z-10 ml-auto lg:ml-0">
+          <div className="flex items-center gap-5 text-soft-black dark:text-aura-dark-text-main z-10 ml-auto lg:ml-0">
             <button onClick={() => router.push('/saved')} className="hover:opacity-70 transition-opacity p-1">
-                <HeartIcon className="w-6 h-6 stroke-1" />
+              <HeartIcon className="w-6 h-6 stroke-1" />
             </button>
           </div>
         </div>
       </header>
-      
+
       {/* Mobile Menu is client-side only by nature, so it's safe */}
       {/* ... (Mobile menu code remains unchanged) ... */}
     </>
@@ -61,3 +61,4 @@ const HeaderComponent: React.FC = () => {
 };
 
 export const Header = memo(HeaderComponent);
+

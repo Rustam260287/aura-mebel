@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { useToast } from '../contexts/ToastContext';
-import { CheckCircleIcon, XMarkIcon } from './icons';
+import { CheckCircleIcon, XMarkIcon } from './icons/index';
 
 export const ToastContainer: React.FC = memo(() => {
   const { toasts } = useToast();
@@ -24,7 +24,7 @@ export const ToastContainer: React.FC = memo(() => {
           role="alert"
         >
           <div className="flex-shrink-0 mt-0.5">
-             {iconMap[toast.type]}
+            {iconMap[toast.type]}
           </div>
           <div className="flex-grow text-brand-charcoal font-medium text-sm">
             {toast.message}

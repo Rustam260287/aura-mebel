@@ -88,6 +88,10 @@ export interface ObjectPublic {
   modelUsdzUrl?: string;
 
   has3D?: boolean;
+
+  // Wizard fields for intent-based selection
+  mood?: 'calm' | 'soft' | 'expressive' | 'strict';
+  presence?: 'compact' | 'balanced' | 'dominant';
 }
 
 export interface ObjectAdmin extends ObjectPublic {

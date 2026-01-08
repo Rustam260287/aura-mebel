@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import type { ObjectPublic, ScenePresetPublic } from '../types';
 import { Button } from './Button';
-import { ArrowLeftIcon, CheckCircleIcon } from './icons';
+import { ArrowLeftIcon, CheckCircleIcon } from './icons/index';
 import { ScenePreview3D } from './ScenePreview3D';
 import { useToast } from '../contexts/ToastContext';
 import { useExperience } from '../contexts/ExperienceContext';

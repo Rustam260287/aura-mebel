@@ -1,7 +1,7 @@
 
 import React, { memo } from 'react';
 import { Button } from './Button';
-import { XMarkIcon } from './Icons';
+import { XMarkIcon } from './icons';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface ConfirmationModalProps {

@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { SavedProvider } from '../contexts/SavedContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastContainer } from './ToastContainer';
 import { ChatWidget } from './ChatWidget';
 import { useObjectModals } from '../hooks/useObjectModals';
@@ -85,13 +86,13 @@ const MobileMenuChrome: React.FC = () => {
 };
 
 export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  
+
   const {
     imageModalState,
     closeImageModal,
   } = useObjectModals();
   const router = useRouter();
-  
+
   useEffect(() => {
     // This is a workaround for iOS Safari's viewport height issue.
     const setVh = () => {
@@ -123,7 +124,7 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
         if (!current) return;
         if (isObjectDetail(current)) return;
         window.sessionStorage.setItem('label_last_entry_path', current);
-      } catch {}
+      } catch { }
     };
 
     // Capture the path we are leaving (entrypoint for object detail).
@@ -214,18 +215,20 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
         <ToastProvider>
           <ExperienceProvider>
             <SavedProvider>
-              {children}
-              <ToastContainer />
-              <ExperienceStateOrchestrator />
-              <ChatWidget />
-              <MobileMenuChrome />
-              <ImageZoomModal
-                isOpen={imageModalState.isOpen}
-                images={imageModalState.images}
-                initialIndex={imageModalState.initialIndex}
-                objectTitle={imageModalState.objectName}
-                onClose={closeImageModal}
-              />
+              <ThemeProvider>
+                {children}
+                <ToastContainer />
+                <ExperienceStateOrchestrator />
+                <ChatWidget />
+                <MobileMenuChrome />
+                <ImageZoomModal
+                  isOpen={imageModalState.isOpen}
+                  images={imageModalState.images}
+                  initialIndex={imageModalState.initialIndex}
+                  objectTitle={imageModalState.objectName}
+                  onClose={closeImageModal}
+                />
+              </ThemeProvider>
             </SavedProvider>
           </ExperienceProvider>
         </ToastProvider>

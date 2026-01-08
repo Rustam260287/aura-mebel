@@ -5,17 +5,31 @@ import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  // storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`, // БЫЛО (неправильно)
-  storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`, // СТАЛО (правильно)
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCqTiexOTxz7yp0PdSttvQmTAJzQdZMI-Y",
+  authDomain: "aura-mebel-7ec96.firebaseapp.com",
+  projectId: "aura-mebel-7ec96",
+  storageBucket: "aura-mebel-7ec96.firebasestorage.app",
+  messagingSenderId: "149768023865",
+  appId: "1:149768023865:web:7e9fbd950241375d6a02e8",
+  measurementId: "G-5YG8EC89CY"
 };
 
 // Initialize Firebase with explicit typing to avoid implicit any
-const app: FirebaseApp = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
+// Initialize Firebase
+let app: FirebaseApp;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0]!;
+  // В режиме разработки при смене ключей иногда нужно "протолкнуть" новый конфиг
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      app = initializeApp(firebaseConfig, 'aura-dev-' + Date.now());
+    } catch (e) {
+      app = getApps()[0]!;
+    }
+  }
+}
 
 const db = getFirestore(app);
 const storage = getStorage(app);

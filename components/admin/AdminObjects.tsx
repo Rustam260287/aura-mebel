@@ -76,7 +76,7 @@ export const AdminObjects: React.FC<AdminObjectsProps> = ({
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-serif text-brand-brown">Управление объектами</h1>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-3 text-xs bg-gray-100 px-3 py-2 rounded-full border border-gray-200">
               <span className="text-gray-600">
@@ -129,19 +129,19 @@ export const AdminObjects: React.FC<AdminObjectsProps> = ({
                     />
                   </td>
                   <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                    <Image src={(object.imageUrls && object.imageUrls[0]) || '/placeholder.svg'} alt={object.name} className="w-12 h-12 object-cover rounded-md" width={48} height={48} />
+                    <Image src={(object.imageUrls && object.imageUrls[0]?.trim()) || '/placeholder.svg'} alt={object.name} className="w-12 h-12 object-cover rounded-md" width={48} height={48} />
                     <span className="truncate max-w-xs">{object.name}</span>
                   </td>
                   <td className="px-6 py-4">{object.objectType}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => onEditObject(object)}>
-                            <PencilSquareIcon className="w-5 h-5 sm:mr-2" />
-                            <span className="hidden sm:inline">Редактировать</span>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={() => setObjectToDelete(object)}>
-                            <TrashIcon className="w-5 h-5" />
-                        </Button>
+                      <Button variant="outline" size="sm" onClick={() => onEditObject(object)}>
+                        <PencilSquareIcon className="w-5 h-5 sm:mr-2" />
+                        <span className="hidden sm:inline">Редактировать</span>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={() => setObjectToDelete(object)}>
+                        <TrashIcon className="w-5 h-5" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

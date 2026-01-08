@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
+import { ChevronLeftIcon, ChevronRightIcon } from './icons';
 
 interface PaginationProps {
   currentPage: number;
@@ -10,8 +10,8 @@ interface PaginationProps {
 export const Pagination: React.FC<PaginationProps> = memo(({ currentPage, totalPages, onPageChange }) => {
   const getPageNumbers = () => {
     const pageNumbers: (number | string)[] = [];
-    const pageRange = 2; 
-    
+    const pageRange = 2;
+
     if (totalPages <= 1) return [];
 
     pageNumbers.push(1);
@@ -20,18 +20,18 @@ export const Pagination: React.FC<PaginationProps> = memo(({ currentPage, totalP
       pageNumbers.push('...');
     }
 
-    for (let i = Math.max(2, currentPage - pageRange + 1); i <= Math.min(totalPages - 1, currentPage + pageRange -1); i++) {
-        pageNumbers.push(i);
+    for (let i = Math.max(2, currentPage - pageRange + 1); i <= Math.min(totalPages - 1, currentPage + pageRange - 1); i++) {
+      pageNumbers.push(i);
     }
-    
+
     if (currentPage < totalPages - pageRange) {
-        pageNumbers.push('...');
+      pageNumbers.push('...');
     }
 
     if (totalPages > 1) {
-        pageNumbers.push(totalPages);
+      pageNumbers.push(totalPages);
     }
-    
+
     return [...new Set(pageNumbers)];
   };
 

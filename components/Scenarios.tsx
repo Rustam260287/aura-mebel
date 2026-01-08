@@ -22,7 +22,7 @@ const ScenariosComponent: React.FC<ScenariosProps> = ({ onNavigate }) => {
   const single = visibleCards.length === 1;
 
   return (
-    <div className="bg-warm-white py-10 md:py-16">
+    <div className="bg-transparent py-10 md:py-16">
       <div className="container mx-auto px-6">
         <div
           className={

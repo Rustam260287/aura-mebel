@@ -4,13 +4,14 @@ import { Logo } from './Logo';
 
 const FooterComponent: React.FC = () => {
   return (
-    <footer className="bg-warm-white border-t border-stone-beige/20 pt-12 pb-10 text-soft-black">
+    <footer className="bg-warm-white/50 backdrop-blur-md border-t border-stone-beige/20 pt-12 pb-10 text-soft-black">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-10">
           <div className="space-y-4">
             <Logo variant="dark" />
             <p className="text-sm text-muted-gray leading-relaxed font-light max-w-sm">
-              Сервис 3D/AR‑примерки для спокойного визуального выбора и обсуждения решения.
+              AURA — спокойная примерка мебели в вашем интерьере.<br />
+              Можно смотреть, сохранять и возвращаться без давления.
             </p>
           </div>
 
@@ -28,7 +29,7 @@ const FooterComponent: React.FC = () => {
         </div>
 
         <div className="mt-10 pt-6 border-t border-stone-beige/20 text-xs text-muted-gray">
-          © {new Date().getFullYear()} Labelcom
+          © {new Date().getFullYear()} AURA
         </div>
       </div>
     </footer>

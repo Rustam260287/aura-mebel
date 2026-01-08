@@ -3,11 +3,12 @@ import type { Config } from 'tailwindcss';
 import { Z_INDEX } from './lib/zIndex';
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./contexts/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}", 
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -17,17 +18,26 @@ const config: Config = {
         'soft-black': '#1C1C1C', // Основной текст / Кнопки
         'muted-gray': '#8A8A8A', // Вторичный текст
         'stone-beige': '#C8BEB2', // Акцент (редко)
-        
+
+        // Aura "Evening" Dark Theme Palette
+        'aura-dark-base': '#141311',      // Deep Warm Charcoal
+        'aura-dark-surface': '#1F1D1B',   // Cards, Modals
+        'aura-dark-surface-2': '#2A2826', // Hover, Inputs
+        'aura-dark-text-main': '#EBEBE9', // Soft White (dimmed)
+        'aura-dark-text-sec': '#9E9A95',  // Warm Gray
+        'aura-dark-text-muted': '#6A6763',// Muted (Refined to reduce noise)
+        'aura-dark-border': '#2E2C29',    // Subtle Border
+
         // Legacy support (mapping to new system where possible to prevent crashes)
-        'brand-cream': '#F7F7F5', 
+        'brand-cream': '#F7F7F5',
         'brand-cream-dark': '#EBEBE9',
-        'brand-brown': '#1C1C1C', 
+        'brand-brown': '#1C1C1C',
         'brand-charcoal': '#1C1C1C',
-        'brand-terracotta': '#C8BEB2', 
+        'brand-terracotta': '#C8BEB2',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'], // Основной шрифт для всего
-        serif: ['Inter', 'sans-serif'], // Убираем засечки, используем Inter везде
+        serif: ['Playfair Display', 'serif'], // Акцентный шрифт для заголовков
       },
       borderRadius: {
         'lg': '14px', // Для кнопок (12-16px)
@@ -56,8 +66,8 @@ const config: Config = {
           '100%': { opacity: '1' },
         },
         scaleIn: {
-            '0%': { opacity: '0', transform: 'scale(0.98)' },
-            '100%': { opacity: '1', transform: 'scale(1)' },
+          '0%': { opacity: '0', transform: 'scale(0.98)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
     },

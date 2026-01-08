@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
-import { ArrowLeftIcon, ChatBubbleLeftRightIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons';
+import { ArrowLeftIcon, ChatBubbleLeftRightIcon, CubeIcon, HeartIcon, PhotoIcon } from './icons/index';
 import { useSaved } from '../contexts/SavedContext';
 import { useToast } from '../contexts/ToastContext';
 import { ARViewer, type ARViewerHandle } from './ARViewer';
@@ -160,7 +160,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       setPostArHintVisible(false);
       try {
         window.localStorage.setItem(key, '1');
-      } catch {}
+      } catch { }
     }, 2600);
 
     return () => window.clearTimeout(timer);
@@ -292,15 +292,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       setInline3dError(null);
       try {
         autofitModelViewer(el);
-      } catch {}
+      } catch { }
       if (typeof el.zoomTo === 'function') {
         try {
           el.zoomTo({ duration: 300 });
-        } catch {}
+        } catch { }
       } else if (typeof el.jumpCameraToGoal === 'function') {
         try {
           el.jumpCameraToGoal();
-        } catch {}
+        } catch { }
       }
       // Fallback: some builds/environments do not emit `model-visibility` reliably.
       requestAnimationFrame(() => {
@@ -321,15 +321,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       setInline3dProgress(1);
       try {
         autofitModelViewer(el);
-      } catch {}
+      } catch { }
       if (typeof el.zoomTo === 'function') {
         try {
           el.zoomTo({ duration: 300 });
-        } catch {}
+        } catch { }
       } else if (typeof el.jumpCameraToGoal === 'function') {
         try {
           el.jumpCameraToGoal();
-        } catch {}
+        } catch { }
       }
     };
 
@@ -386,7 +386,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       raf = requestAnimationFrame(() => {
         try {
           autofitModelViewer(el);
-        } catch {}
+        } catch { }
       });
     };
 
@@ -397,7 +397,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       ro = new ResizeObserver(schedule);
       try {
         ro.observe(el);
-      } catch {}
+      } catch { }
     } else if (typeof window !== 'undefined') {
       window.addEventListener('resize', schedule);
       window.addEventListener('orientationchange', schedule);
@@ -413,10 +413,13 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     };
   }, [inline3dState, threeDSrcUrl]);
 
-  const images = useMemo(
-    () => (object.imageUrls?.length ? object.imageUrls : ['/placeholder.svg']),
-    [object.imageUrls],
-  );
+  const validImages = useMemo(() => {
+    const urls = object.imageUrls || [];
+    return urls.filter(url => url && !url.includes('unsplash.com') && !url.includes('placeholder'));
+  }, [object.imageUrls]);
+
+  const images = validImages; // No placeholder fallback interaction
+
 
   const handleToggle3d = useCallback(() => {
     if (!canPreview3d) return;
@@ -447,7 +450,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           router.push(entry);
           return;
         }
-      } catch {}
+      } catch { }
     }
     router.push('/objects');
   }, [router]);
@@ -564,7 +567,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 </div>
               )}
             </>
-          ) : (
+          ) : images.length > 0 ? (
             <div className="absolute inset-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex">
               {images.map((src, index) => (
                 <div key={`${src}:${index}`} className="relative min-w-full h-full snap-center bg-transparent">
@@ -578,6 +581,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                   />
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-1/2 h-1/2 rounded-full bg-stone-beige/10 blur-[80px]" />
             </div>
           )}
 
@@ -620,7 +627,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               </button>
             )}
 
-            {uiState === 'POST_AR' && experienceState !== 'THREE_D_ACTIVE' && (
+            {experienceState !== 'THREE_D_ACTIVE' && (
               <button
                 onClick={handleOpenAssistant}
                 aria-label="Задать вопрос"
@@ -651,7 +658,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             : 'opacity-100 translate-y-0 pointer-events-auto',
         ].join(' ')}
       >
-      <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md">
           {uiState === 'POST_AR' && !isObjectSaved && (
             <div
               className={[
@@ -664,37 +671,20 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             </div>
           )}
 
-          {arAvailability.available ? (
+          {arAvailability.available && (
             <Button
               onClick={handleOpenArTap}
               onTouchEnd={handleOpenArTap as any}
               size="lg"
-              variant="primary"
+              variant="secondary"
               className={[
-                'w-full h-14 rounded-2xl shadow-none',
-                uiState === 'POST_AR'
-                  ? 'bg-white/85 text-soft-black hover:bg-white/90'
-                  : 'bg-white text-soft-black hover:bg-white/95',
+                'w-full h-14 rounded-2xl shadow-sm border-none',
+                'bg-white/90 backdrop-blur-md text-soft-black hover:bg-white',
+                'transition-all duration-300 ease-out active:scale-[0.98]',
               ].join(' ')}
             >
-              Посмотреть в интерьере
+              Поместить в интерьер
             </Button>
-          ) : (
-            <div className="rounded-2xl bg-white/85 backdrop-blur-md border border-stone-beige/30 px-4 py-3 text-center">
-              {arAvailability.message && <div className="text-sm font-medium text-soft-black">{arAvailability.message}</div>}
-              {canPreview3d && (
-                <div className={arAvailability.message ? 'mt-2' : ''}>
-                  <Button
-                    onClick={handleOpen3d}
-                    size="lg"
-                    variant="primary"
-                    className="w-full h-14 rounded-2xl shadow-none bg-white text-soft-black hover:bg-white/95"
-                  >
-                    Посмотреть 3D
-                  </Button>
-                </div>
-              )}
-            </div>
           )}
         </div>
       </div>

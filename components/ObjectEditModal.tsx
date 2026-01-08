@@ -1,7 +1,7 @@
 
 import React, { useState, Fragment, useEffect, useRef } from 'react';
 import { Dialog, Transition, Tab } from '@headlessui/react';
-import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon, PlusIcon } from './icons';
+import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon, PlusIcon } from './icons/index';
 import type { ModelProcessingStatus, ObjectAdmin, ObjectStatus } from '../types';
 import { ModelUploader } from './admin/ModelUploader';
 import { MediaUploader } from './admin/MediaUploader';
@@ -54,18 +54,18 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('specs.')) {
-        const specKey = name.split('.')[1];
-        setFormData(prev => ({
-            ...prev,
-            specs: {
-                ...prev.specs,
-                [specKey]: value
-            }
-        }));
+      const specKey = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        specs: {
+          ...prev.specs,
+          [specKey]: value
+        }
+      }));
     } else {
-        setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -125,18 +125,18 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
   };
 
   const handleAIAnalyze = async () => {
-      // ... existing code
+    // ... existing code
   };
 
   const handle3DUpload = (result: { modelGlbUrl?: string; modelUsdzUrl?: string; modelProcessing?: any }) => {
-      oldGlbModelUrlRef.current = formData.modelGlbUrl || null;
-      oldUsdzModelUrlRef.current = formData.modelUsdzUrl || null;
-      setFormData(prev => ({
-        ...prev,
-        ...(result.modelGlbUrl ? { modelGlbUrl: result.modelGlbUrl } : {}),
-        ...(result.modelUsdzUrl ? { modelUsdzUrl: result.modelUsdzUrl } : {}),
-        ...(result.modelProcessing ? { modelProcessing: result.modelProcessing } : {}),
-      }));
+    oldGlbModelUrlRef.current = formData.modelGlbUrl || null;
+    oldUsdzModelUrlRef.current = formData.modelUsdzUrl || null;
+    setFormData(prev => ({
+      ...prev,
+      ...(result.modelGlbUrl ? { modelGlbUrl: result.modelGlbUrl } : {}),
+      ...(result.modelUsdzUrl ? { modelUsdzUrl: result.modelUsdzUrl } : {}),
+      ...(result.modelProcessing ? { modelProcessing: result.modelProcessing } : {}),
+    }));
   };
 
   const formatBytes = (value?: number) => {
@@ -172,13 +172,13 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
       imageUrls: [...(prev.imageUrls || []), url],
     }));
   };
-  
+
   const handleRemoveImage = (index: number) => {
     // We don't delete from storage here, assuming it's handled on save if needed.
     // This just removes from the list to be saved.
     setFormData(prev => ({
-        ...prev,
-        imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index),
+      ...prev,
+      imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index),
     }));
   };
 
@@ -200,178 +200,209 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                   <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors"><XMarkIcon className="w-6 h-6" /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6">
-                    <Tab.Group>
-                        <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream/30 p-1 mb-6">
-                            {['Основное', 'Характеристики (AI)', '3D и Медиа', 'Изображения'].map((category) => (
-                            <Tab key={category} className={({ selected }) => classNames('w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all outline-none', selected ? 'bg-white shadow text-brand-brown' : 'text-gray-600 hover:bg-white/[0.12] hover:text-brand-brown')}>
-                                {category}
-                            </Tab>
-                            ))}
-                        </Tab.List>
-                        <Tab.Panels>
-                            <Tab.Panel className="space-y-4">
+                  <Tab.Group>
+                    <Tab.List className="flex space-x-1 rounded-xl bg-brand-cream/30 p-1 mb-6">
+                      {['Основное', 'Характеристики (AI)', '3D и Медиа', 'Изображения'].map((category) => (
+                        <Tab key={category} className={({ selected }) => classNames('w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all outline-none', selected ? 'bg-white shadow text-brand-brown' : 'text-gray-600 hover:bg-white/[0.12] hover:text-brand-brown')}>
+                          {category}
+                        </Tab>
+                      ))}
+                    </Tab.List>
+                    <Tab.Panels>
+                      <Tab.Panel className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                          <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Тип объекта</label>
+                            <input type="text" name="objectType" value={formData.objectType || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" placeholder="диван / кресло / стол" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                            <select
+                              name="status"
+                              value={(formData.status || 'draft') as ObjectStatus}
+                              onChange={handleChange}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white"
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="ready">Ready</option>
+                              <option value="archived">Archived</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Настроение (Wizard)</label>
+                            <select
+                              name="mood"
+                              value={formData.mood || ''}
+                              onChange={handleChange}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white"
+                            >
+                              <option value="">Не указано</option>
+                              <option value="calm">Спокойный</option>
+                              <option value="soft">Мягкий</option>
+                              <option value="expressive">Выразительный</option>
+                              <option value="strict">Строгий</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Присутствие (Wizard)</label>
+                            <select
+                              name="presence"
+                              value={formData.presence || ''}
+                              onChange={handleChange}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white"
+                            >
+                              <option value="">Не указано</option>
+                              <option value="compact">Компактное</option>
+                              <option value="balanced">Сбалансированное</option>
+                              <option value="dominant">Доминирующее</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
+                          <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
+                        </div>
+                      </Tab.Panel>
+                      <Tab.Panel className="space-y-6">
+                        {/* ... existing specs panel */}
+                      </Tab.Panel>
+                      <Tab.Panel className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <h4 className="font-semibold text-gray-800 flex items-center gap-2"><CubeIcon className="w-5 h-5" />Загрузка 3D</h4>
+                            {object?.id ? (
+                              <ModelUploader
+                                objectId={object.id}
+                                onUploadSuccess={handle3DUpload}
+                                onUploadStateChange={(s) => setIs3DUploading(s.isLoading)}
+                              />
+                            ) : (
+                              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
+                                Сначала сохраните объект, затем загрузите GLB — система автоматически оптимизирует модель и
+                                создаст USDZ для iOS.
+                              </div>
+                            )}
+
+                            <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4">
+                              <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
-                                    <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" />
+                                  <div className="text-xs text-gray-500">Статус</div>
+                                  <div
+                                    className="text-sm font-semibold text-gray-900 mt-1"
+                                    title="iOS-версия генерируется автоматически"
+                                  >
+                                    {statusLabel(formData.modelProcessing?.status)}
+                                  </div>
+                                  {formData.modelProcessing?.error && (
+                                    <div className="text-xs text-red-600 mt-2">{formData.modelProcessing.error}</div>
+                                  )}
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="text-right">
+                                  <div className="text-xs text-gray-500">Размер</div>
+                                  <div className="text-sm text-gray-900 mt-1">
+                                    {formatBytes(formData.modelProcessing?.sizeBeforeBytes)} →{' '}
+                                    {formatBytes(formData.modelProcessing?.sizeAfterBytes)}
+                                  </div>
+                                  <div className="text-[11px] text-gray-500 mt-1">
+                                    Текстуры ≤ {formData.modelProcessing?.maxTextureSize || 2048}px
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                <span
+                                  className={[
+                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                    formData.modelProcessing?.platforms?.web
+                                      ? 'bg-green-50 text-green-700 border-green-200'
+                                      : 'bg-white text-gray-500 border-gray-200',
+                                  ].join(' ')}
+                                >
+                                  Web
+                                </span>
+                                <span
+                                  className={[
+                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                    formData.modelProcessing?.platforms?.android
+                                      ? 'bg-green-50 text-green-700 border-green-200'
+                                      : 'bg-white text-gray-500 border-gray-200',
+                                  ].join(' ')}
+                                >
+                                  Android
+                                </span>
+                                <span
+                                  className={[
+                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
+                                    formData.modelProcessing?.platforms?.ios
+                                      ? 'bg-green-50 text-green-700 border-green-200'
+                                      : 'bg-white text-gray-500 border-gray-200',
+                                  ].join(' ')}
+                                  title="iOS-версия генерируется автоматически"
+                                >
+                                  iOS
+                                </span>
+                              </div>
+
+                              {(formData.modelGlbUrl || formData.modelUsdzUrl) && (
+                                <div className="mt-4 space-y-2">
                                   <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Тип объекта</label>
-                                    <input type="text" name="objectType" value={formData.objectType || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none" placeholder="диван / кресло / стол" />
+                                    <div className="text-xs text-gray-500 mb-1">GLB (оптимизированный)</div>
+                                    <input
+                                      value={formData.modelGlbUrl || ''}
+                                      readOnly
+                                      className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                    />
                                   </div>
                                   <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-                                    <select
-                                      name="status"
-                                      value={(formData.status || 'draft') as ObjectStatus}
-                                      onChange={handleChange}
-                                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white"
-                                    >
-                                      <option value="draft">Draft</option>
-                                      <option value="ready">Ready</option>
-                                      <option value="archived">Archived</option>
-                                    </select>
+                                    <div className="text-xs text-gray-500 mb-1">USDZ (iOS)</div>
+                                    <input
+                                      value={formData.modelUsdzUrl || ''}
+                                      readOnly
+                                      className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                    />
                                   </div>
                                 </div>
-                                <div>
-                                    <div className="flex justify-between items-center mb-1"><label className="block text-sm font-medium text-gray-700">Описание</label></div>
-                                    <textarea name="description" rows={8} value={formData.description || ''} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none text-sm leading-relaxed" />
-                                </div>
-                            </Tab.Panel>
-                            <Tab.Panel className="space-y-6">
-                                {/* ... existing specs panel */}
-                            </Tab.Panel>
-                            <Tab.Panel className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                        <h4 className="font-semibold text-gray-800 flex items-center gap-2"><CubeIcon className="w-5 h-5" />Загрузка 3D</h4>
-                                        {object?.id ? (
-                                          <ModelUploader
-                                            objectId={object.id}
-                                            onUploadSuccess={handle3DUpload}
-                                            onUploadStateChange={(s) => setIs3DUploading(s.isLoading)}
-                                          />
-                                        ) : (
-                                          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
-                                            Сначала сохраните объект, затем загрузите GLB — система автоматически оптимизирует модель и
-                                            создаст USDZ для iOS.
-                                          </div>
-                                        )}
-
-                                        <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4">
-                                          <div className="flex items-start justify-between gap-4">
-                                            <div>
-                                              <div className="text-xs text-gray-500">Статус</div>
-                                              <div
-                                                className="text-sm font-semibold text-gray-900 mt-1"
-                                                title="iOS-версия генерируется автоматически"
-                                              >
-                                                {statusLabel(formData.modelProcessing?.status)}
-                                              </div>
-                                              {formData.modelProcessing?.error && (
-                                                <div className="text-xs text-red-600 mt-2">{formData.modelProcessing.error}</div>
-                                              )}
-                                            </div>
-                                            <div className="text-right">
-                                              <div className="text-xs text-gray-500">Размер</div>
-                                              <div className="text-sm text-gray-900 mt-1">
-                                                {formatBytes(formData.modelProcessing?.sizeBeforeBytes)} →{' '}
-                                                {formatBytes(formData.modelProcessing?.sizeAfterBytes)}
-                                              </div>
-                                              <div className="text-[11px] text-gray-500 mt-1">
-                                                Текстуры ≤ {formData.modelProcessing?.maxTextureSize || 2048}px
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          <div className="mt-4 flex flex-wrap gap-2">
-                                            <span
-                                              className={[
-                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                                formData.modelProcessing?.platforms?.web
-                                                  ? 'bg-green-50 text-green-700 border-green-200'
-                                                  : 'bg-white text-gray-500 border-gray-200',
-                                              ].join(' ')}
-                                            >
-                                              Web
-                                            </span>
-                                            <span
-                                              className={[
-                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                                formData.modelProcessing?.platforms?.android
-                                                  ? 'bg-green-50 text-green-700 border-green-200'
-                                                  : 'bg-white text-gray-500 border-gray-200',
-                                              ].join(' ')}
-                                            >
-                                              Android
-                                            </span>
-                                            <span
-                                              className={[
-                                                'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                                formData.modelProcessing?.platforms?.ios
-                                                  ? 'bg-green-50 text-green-700 border-green-200'
-                                                  : 'bg-white text-gray-500 border-gray-200',
-                                              ].join(' ')}
-                                              title="iOS-версия генерируется автоматически"
-                                            >
-                                              iOS
-                                            </span>
-                                          </div>
-
-                                          {(formData.modelGlbUrl || formData.modelUsdzUrl) && (
-                                            <div className="mt-4 space-y-2">
-                                              <div>
-                                                <div className="text-xs text-gray-500 mb-1">GLB (оптимизированный)</div>
-                                                <input
-                                                  value={formData.modelGlbUrl || ''}
-                                                  readOnly
-                                                  className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
-                                                />
-                                              </div>
-                                              <div>
-                                                <div className="text-xs text-gray-500 mb-1">USDZ (iOS)</div>
-                                                <input
-                                                  value={formData.modelUsdzUrl || ''}
-                                                  readOnly
-                                                  className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
-                                                />
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">
-                                        <ModelPreview3D
-                                          glbUrl={formData.modelGlbUrl}
-                                          usdzUrl={formData.modelUsdzUrl}
-                                          posterUrl={(formData.imageUrls && formData.imageUrls[0]) || undefined}
-                                          name={formData.name}
-                                        />
-                                    </div>
-                                </div>
-                            </Tab.Panel>
-                            <Tab.Panel>
-                                <h4 className="font-semibold text-gray-800 flex items-center gap-2 mb-4"><PhotoIcon className="w-5 h-5" />Галерея изображений</h4>
-                                <div className="grid grid-cols-4 gap-4">
-                                    {(formData.imageUrls || []).map((url, index) => (
-                                        <div key={index} className="relative group aspect-square">
-                                            <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
-                                            <button onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <XMarkIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <MediaUploader onUploadSuccess={handleMediaUpload}>
-                                        {(open, isLoading) => (
-                                            <button onClick={open} disabled={isLoading} className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 aspect-square">
-                                                {isLoading ? '...' : <PlusIcon className="w-8 h-8 text-gray-400" />}
-                                            </button>
-                                        )}
-                                    </MediaUploader>
-                                </div>
-                            </Tab.Panel>
-                        </Tab.Panels>
-                    </Tab.Group>
+                              )}
+                            </div>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">
+                            <ModelPreview3D
+                              glbUrl={formData.modelGlbUrl}
+                              usdzUrl={formData.modelUsdzUrl}
+                              posterUrl={(formData.imageUrls && formData.imageUrls[0]) || undefined}
+                              name={formData.name}
+                            />
+                          </div>
+                        </div>
+                      </Tab.Panel>
+                      <Tab.Panel>
+                        <h4 className="font-semibold text-gray-800 flex items-center gap-2 mb-4"><PhotoIcon className="w-5 h-5" />Галерея изображений</h4>
+                        <div className="grid grid-cols-4 gap-4">
+                          {(formData.imageUrls || []).map((url, index) => (
+                            <div key={index} className="relative group aspect-square">
+                              <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
+                              <button onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                <XMarkIcon className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          <MediaUploader onUploadSuccess={handleMediaUpload}>
+                            {(open, isLoading) => (
+                              <button onClick={open} disabled={isLoading} className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 aspect-square">
+                                {isLoading ? '...' : <PlusIcon className="w-8 h-8 text-gray-400" />}
+                              </button>
+                            )}
+                          </MediaUploader>
+                        </div>
+                      </Tab.Panel>
+                    </Tab.Panels>
+                  </Tab.Group>
                 </div>
                 <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
                   <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">Отмена</button>

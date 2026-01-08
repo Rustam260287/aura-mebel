@@ -9,10 +9,10 @@ interface MetaProps {
   url?: string;
 }
 
-const SITE_NAME = 'Labelcom';
-const DEFAULT_DESCRIPTION = '3D и AR примерка мебели: спокойное визуальное принятие решений и обсуждение без давления.';
+const SITE_NAME = 'AURA';
+const DEFAULT_DESCRIPTION = 'AURA делает будущий интерьер видимым. Спокойная примерка мебели в вашем пространстве.';
 const DEFAULT_IMAGE = '/og-image.jpg';
-const SITE_URL = 'https://labelcom.store'; // ИСПРАВЛЕНО: Новый домен
+const SITE_URL = 'https://aura.app'; // Бренд AURA
 
 export const Meta: React.FC<MetaProps> = ({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_IMAGE, url }) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
