@@ -78,3 +78,20 @@ export interface FurnitureZone {
     suitableFor: ObjectType[];             // Какая мебель подходит
     priority: number;                       // Приоритет зоны (1-10)
 }
+
+// ============================================
+// BrandIntegrityAgent Types - Охрана бренда
+// ============================================
+
+export interface BrandIntegrityIssue {
+    area: 'pwa' | 'meta' | 'ui' | 'code';
+    severity: 'critical' | 'warning';
+    description: string;
+    file?: string;
+    recommendation: string;
+}
+
+export interface BrandIntegrityReport {
+    isClean: boolean;
+    issues: BrandIntegrityIssue[];
+}

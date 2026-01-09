@@ -4,6 +4,7 @@ import { FurnitureSelector } from './agents/selector';
 import { ScaleAndFitAgent } from './agents/fitter';
 import { VisualJudge } from './agents/judge';
 import { ContextAgent } from './agents/context';
+import { BrandIntegrityAgent } from './agents/brandIntegrity';
 
 /**
  * Antigravity Orchestrator: Coordinates agents to produce furniture fitting result.
@@ -64,6 +65,18 @@ export async function runWizardWithContext(
         console.log('[ContextAgent] Room analysis:', roomAnalysis.room_type,
             '| Confidence:', roomAnalysis.confidence);
     }
+
+    // Agent: Brand Integrity Check (Silent background process)
+    // Runs alongside the wizard to ensure brand consistency
+    BrandIntegrityAgent.analyze().then(report => {
+        if (!report.isClean) {
+            console.warn('[BrandIntegrity] Issues found:', report.issues);
+        } else {
+            console.log('[BrandIntegrity] System is clean.');
+        }
+    }).catch(err => {
+        console.error('[BrandIntegrity] Analysis failed:', err);
+    });
 
     // Simulate "thoughtful" processing delay
     await new Promise(resolve => setTimeout(resolve, 800));

@@ -236,7 +236,11 @@ export default function Document() {
       <Head>
         {/* FIX: Добавлен crossOrigin="use-credentials" для исправления CORS ошибки в Cloud Workstations */}
         <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
-        <meta name="theme-color" content="#F7F7F5" />
+
+        {/* PWA Theme Colors (Fixes "Brown Bar" on Android & Status Bar on iOS) */}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F7F5" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1A1A1A" />
+
         <meta name="application-name" content="AURA" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
