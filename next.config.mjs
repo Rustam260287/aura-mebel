@@ -14,6 +14,7 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     scrollRestoration: true,
+    serverComponentsExternalPackages: ['sharp', 'gltf-pipeline', 'draco3d'],
   },
   typescript: {
     ignoreBuildErrors: false,

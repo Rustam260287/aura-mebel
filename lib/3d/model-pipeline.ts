@@ -12,9 +12,10 @@ import type { ModelProcessingInfo, ModelProcessingStatus } from '../../types';
 const MAX_TEXTURE_SIZE = Number(process.env.LABELCOM_MAX_TEXTURE_SIZE || 2048);
 const TARGET_GLB_MAX_BYTES = Number(process.env.LABELCOM_TARGET_GLB_MAX_BYTES || 10 * 1024 * 1024);
 const JPEG_QUALITY = Number(process.env.LABELCOM_JPEG_QUALITY || 85);
-const USDZ_CONVERTER_URL = process.env.LABELCOM_USDZ_CONVERTER_URL?.trim() || '';
-const USDZ_CONVERTER_TOKEN = process.env.LABELCOM_USDZ_CONVERTER_TOKEN?.trim() || '';
-const USDZ_CONVERTER_TIMEOUT_MS = Number(process.env.LABELCOM_USDZ_CONVERTER_TIMEOUT_MS || 240_000);
+// Support AURA prefixed env vars, fallback to LABELCOM for backward compatibility
+const USDZ_CONVERTER_URL = process.env.AURA_USDZ_CONVERTER_URL?.trim() || process.env.LABELCOM_USDZ_CONVERTER_URL?.trim() || '';
+const USDZ_CONVERTER_TOKEN = process.env.AURA_USDZ_CONVERTER_TOKEN?.trim() || process.env.LABELCOM_USDZ_CONVERTER_TOKEN?.trim() || '';
+const USDZ_CONVERTER_TIMEOUT_MS = Number(process.env.AURA_USDZ_CONVERTER_TIMEOUT_MS || process.env.LABELCOM_USDZ_CONVERTER_TIMEOUT_MS || 240_000);
 
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
@@ -310,8 +311,7 @@ async function getCloudRunAuthHeaders(audienceUrl: string): Promise<Record<strin
 
 async function generateUsdzRemotely(params: {
   bucket: string;
-  objectId: string;
-  optimizedPath: string;
+  glbUrl: string;
   usdzPath: string;
 }): Promise<{ ok: boolean; usdzUrl?: string; sizeBytes?: number; error?: string }> {
   if (!USDZ_CONVERTER_URL) {
@@ -326,6 +326,8 @@ async function generateUsdzRemotely(params: {
 
   try {
     const iamHeaders = await getCloudRunAuthHeaders(base);
+    console.log(`[model-pipeline] Calling USDZ converter: ${endpoint} for ${params.glbUrl}`);
+
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -333,27 +335,60 @@ async function generateUsdzRemotely(params: {
         ...iamHeaders,
         ...(USDZ_CONVERTER_TOKEN ? { 'x-labelcom-token': USDZ_CONVERTER_TOKEN } : {}),
       },
-      body: JSON.stringify(params),
+      body: JSON.stringify({ glbUrl: params.glbUrl }),
       signal: controller.signal,
     });
 
-    const data = (await res.json().catch(() => null)) as UsdzConverterResponse | null;
     if (!res.ok) {
+      // Try to parse error JSON
+      const json = await res.json().catch(() => null);
       const message =
-        (data?.error && String(data.error)) ||
-        (data?.details && String(data.details)) ||
+        (json?.error && String(json.error)) ||
         `USDZ converter error (${res.status})`;
       return { ok: false, error: message };
     }
 
+    const contentType = res.headers.get('content-type') || '';
+
+    // Handle Binary Response (Simple Converter)
+    if (contentType.includes('model/vnd.usdz+zip') || contentType.includes('application/octet-stream')) {
+      const arrayBuffer = await res.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const sizeBytes = buffer.length;
+
+      if (sizeBytes === 0) {
+        return { ok: false, error: 'Converter returned empty USDZ' };
+      }
+
+      const storage = getAdminStorage();
+      if (!storage) throw new Error('Storage not initialized');
+      const bucketObj = storage.bucket(params.bucket);
+      const file = bucketObj.file(params.usdzPath);
+
+      await file.save(buffer, {
+        metadata: {
+          contentType: 'model/vnd.usdz+zip',
+          contentDisposition: 'inline',
+          cacheControl: 'public, max-age=31536000, immutable',
+        },
+      });
+      await file.makePublic();
+      const usdzUrl = `https://storage.googleapis.com/${params.bucket}/${params.usdzPath}`;
+
+      return { ok: true, usdzUrl, sizeBytes };
+    }
+
+    // Handle JSON Response (Legacy / Complex Worker)
+    const data = (await res.json().catch(() => null)) as UsdzConverterResponse | null;
     if (!data?.ok) {
-      const message = (data?.error && String(data.error)) || (data?.details && String(data.details)) || 'USDZ conversion failed';
+      const message = (data?.error && String(data.error)) || (data?.details && String(data.details)) || 'USDZ conversion failed (unknown)';
       return { ok: false, error: message };
     }
 
     const usdzUrl = typeof data.usdzUrl === 'string' ? data.usdzUrl : undefined;
     const sizeBytes = typeof data.usdzSizeBytes === 'number' && Number.isFinite(data.usdzSizeBytes) ? data.usdzSizeBytes : undefined;
     return { ok: true, usdzUrl, sizeBytes };
+
   } catch (error: any) {
     const message = error?.name === 'AbortError' ? 'USDZ conversion timed out' : error?.message ? String(error.message) : 'USDZ conversion failed';
     return { ok: false, error: message };
@@ -436,7 +471,7 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
   const cleanup = async () => {
     try {
       await fs.rm(tmpDir, { recursive: true, force: true });
-    } catch {}
+    } catch { }
   };
 
   try {
@@ -458,6 +493,15 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
 
     await originalFile.download({ destination: tmpOriginal });
     const inputBuffer = await fs.readFile(tmpOriginal);
+
+    // FIX: Manually point to draco encoder if it exists in expected node_modules locations
+    // This helps in Next.js Standalone / Docker environments
+    const dracoPath = path.resolve(process.cwd(), 'node_modules/draco3d');
+    if (process.env.NODE_ENV === 'production' && !process.env.DRACO_ENCODER_PATH) {
+      // Common paths in standalone build
+      const possiblePath = path.resolve(process.cwd(), '.next/standalone/node_modules/draco3d');
+      process.env.DRACO_ENCODER_PATH = possiblePath;
+    }
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
       dracoOptions: {
@@ -542,8 +586,7 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     if (USDZ_CONVERTER_URL) {
       const remote = await generateUsdzRemotely({
         bucket: bucket.name,
-        objectId,
-        optimizedPath,
+        glbUrl: optimizedUrl,
         usdzPath,
       });
       if (remote.ok) {
@@ -551,29 +594,13 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
         usdzSizeBytes = remote.sizeBytes;
       } else {
         usdzError = remote.error || 'USDZ generation failed';
+        console.warn(`[model-pipeline] Remote USDZ conversion failed: ${usdzError}`);
       }
     } else {
-      const usdzOk = await generateUsdz(tmpOptimized, tmpUsdz).catch(() => false);
-      if (usdzOk) {
-        const usdzBuffer = await fs.readFile(tmpUsdz).catch(() => null);
-        if (usdzBuffer && usdzBuffer.length > 0) {
-          const usdzFile = bucket.file(usdzPath);
-          await usdzFile.save(usdzBuffer, {
-            metadata: {
-              contentType: 'model/vnd.usdz+zip',
-              contentDisposition: 'inline',
-              cacheControl: 'public, max-age=31536000, immutable',
-            },
-          });
-          await usdzFile.makePublic();
-          usdzUrl = `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
-          usdzSizeBytes = usdzBuffer.length;
-        }
-      }
-
-      if (!usdzUrl) {
-        usdzError = 'USDZ converter is not available in this environment';
-      }
+      // Gracefully skip USDZ generation if no converter is configured.
+      // Do NOT attempt local fallbacks to avoid ENOENT/subprocess errors in production envs.
+      console.info('[model-pipeline] USDZ converter not configured, skipping iOS generation.');
+      // Keep usdzUrl undefined -> Status becomes READY_WITHOUT_IOS
     }
 
     const finalStatus: ModelProcessingStatus = usdzUrl ? 'READY' : 'READY_WITHOUT_IOS';
