@@ -68,6 +68,13 @@ export type ModelProcessingInfo = {
     ios: boolean;
   };
   updatedAt: string;
+
+  // Legacy fields for backward compatibility during migration
+  status?: string;
+  error?: string;
+  sizeBeforeBytes?: number;
+  sizeAfterBytes?: number;
+  maxTextureSize?: number;
 };
 
 export interface ObjectPublic {
