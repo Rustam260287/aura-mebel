@@ -6,6 +6,7 @@ type UploadUrlRequest = {
   objectId?: string;
   size?: number;
   contentType?: string;
+  filePath?: string;
 };
 
 type UploadUrlResponse = {
