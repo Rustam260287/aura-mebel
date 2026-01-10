@@ -76,7 +76,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Failed to update object' });
   }
 }
-
-// REMOVE the rest of the old catch blocks as we restructured
-const _unused = async () => {
-
