@@ -1,0 +1,156 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.aura.shell"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- AR via WebXR requires Camera permission -->
+12    <uses-permission android:name="android.permission.CAMERA" />
+12-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:5:5-65
+12-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:5:22-62
+13    <uses-permission android:name="android.permission.INTERNET" />
+13-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:6:5-67
+13-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:6:22-64
+14
+15    <!-- Camera is optional (WebXR AR) -->
+16    <uses-feature
+16-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:9:5-11:36
+17        android:name="android.hardware.camera"
+17-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:10:9-47
+18        android:required="false" />
+18-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:11:9-33
+19
+20    <queries>
+20-->[com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:26:5-34:15
+21        <intent>
+21-->[com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:27:9-33:18
+22            <action android:name="android.intent.action.VIEW" />
+22-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:17-69
+22-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:25-66
+23
+24            <category android:name="android.intent.category.BROWSABLE" />
+24-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:17-78
+24-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:27-75
+25
+26            <data android:scheme="https" />
+26-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:17-57:50
+26-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:23-45
+27        </intent>
+28    </queries>
+29
+30    <application
+30-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:14:5-72:19
+31        android:allowBackup="false"
+31-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:15:9-36
+32        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+32-->[androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:24:18-86
+33        android:debuggable="true"
+34        android:extractNativeLibs="false"
+35        android:label="@string/app_name"
+35-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:16:9-41
+36        android:theme="@style/AppTheme" >
+36-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:17:9-40
+37
+38        <!--
+39             Launcher Activity
+40             LaunchMode: singleTask ensures we reuse the existing instance 
+41             when coming from different intents (e.g. browser or icon).
+42        -->
+43        <activity
+43-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:25:9-70:20
+44            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+44-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:26:13-84
+45            android:exported="true"
+45-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:29:13-36
+46            android:launchMode="singleTask"
+46-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:28:13-44
+47            android:theme="@style/Theme.Launcher" >
+47-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:27:13-50
+48            <meta-data
+48-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:31:13-33:59
+49                android:name="android.support.customtabs.trusted.DEFAULT_URL"
+49-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:32:17-78
+50                android:value="https://aura-room.ru/ar" />
+50-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:33:17-56
+51            <meta-data
+51-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:35:13-37:59
+52                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+52-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:36:17-83
+53                android:resource="@android:color/white" />
+53-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:37:17-56
+54            <meta-data
+54-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:39:13-41:59
+55                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR_DARK"
+55-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:40:17-88
+56                android:resource="@android:color/black" />
+56-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:41:17-56
+57
+58            <!-- Handle standard launch from App Grid -->
+59            <intent-filter>
+59-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:44:13-47:29
+60                <action android:name="android.intent.action.MAIN" />
+60-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:45:17-69
+60-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:45:25-66
+61
+62                <category android:name="android.intent.category.LAUNCHER" />
+62-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:46:17-77
+62-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:46:27-74
+63            </intent-filter>
+64
+65            <!-- Handle Deep Links: https://aura-room.ru/ar... -->
+66            <intent-filter android:autoVerify="true" >
+66-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:50:13-58:29
+66-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:50:28-53
+67                <action android:name="android.intent.action.VIEW" />
+67-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:17-69
+67-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:25-66
+68
+69                <category android:name="android.intent.category.DEFAULT" />
+69-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:17-76
+69-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:27-73
+70                <category android:name="android.intent.category.BROWSABLE" />
+70-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:17-78
+70-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:27-75
+71
+72                <data
+72-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:17-57:50
+73                    android:host="@string/host_name"
+73-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:56:23-55
+74                    android:pathPrefix="/ar"
+74-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:57:23-47
+75                    android:scheme="https" />
+75-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:23-45
+76            </intent-filter>
+77
+78            <!--
+79                 Handle Explicit Intents: intent://... 
+80                 This allows Yandex Browser and others to force-open this app.
+81            -->
+82            <intent-filter>
+82-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:64:13-69:29
+83                <action android:name="android.intent.action.VIEW" />
+83-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:17-69
+83-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:25-66
+84
+85                <category android:name="android.intent.category.DEFAULT" />
+85-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:17-76
+85-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:27-73
+86                <category android:name="android.intent.category.BROWSABLE" />
+86-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:17-78
+86-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:27-75
+87
+88                <data
+88-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:17-57:50
+89                    android:host="@string/host_name"
+89-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:56:23-55
+90                    android:scheme="intent" />
+90-->C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:23-45
+91            </intent-filter>
+92        </activity>
+93    </application>
+94
+95</manifest>

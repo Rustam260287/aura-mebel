@@ -34,6 +34,7 @@ const describeEvent = (event: VisitorJourneyResponse['events'][number]) => {
   if (event.type === 'VIEW_OBJECT') return withName('Посмотрел объект');
   if (event.type === 'OPEN_3D') return withName('Открыл 3D для');
   if (event.type === 'START_AR') return withName('Запустил AR примерку для');
+  if (event.type === 'AR_SNAPSHOT_REQUESTED') return withName('Нажал «Сделать снимок» для');
   if (event.type === 'AR_SNAPSHOT_CREATED') return withName('Сделал AR‑снимок для');
   if (event.type === 'FINISH_AR') {
     const duration = typeof event.meta?.durationSec === 'number' ? event.meta.durationSec : null;

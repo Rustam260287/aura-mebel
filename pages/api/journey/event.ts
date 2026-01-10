@@ -61,6 +61,12 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
       orientationRaw === 'portrait' || orientationRaw === 'landscape' ? orientationRaw : undefined;
     const url = typeof s.url === 'string' ? s.url.trim().slice(0, 500) : undefined;
 
+    // New Fields
+    const timestamp = typeof s.timestamp === 'number' ? s.timestamp : typeof s.timestamp === 'string' ? parseInt(s.timestamp, 10) : Date.now();
+    const device = s.device === 'android' || s.device === 'ios' || s.device === 'web' ? s.device : undefined;
+    const arMode = s.arMode === 'webxr' || s.arMode === 'quick-look' || s.arMode === 'scene-viewer' ? s.arMode : undefined;
+    const modelId = typeof s.modelId === 'string' ? s.modelId.trim().slice(0, 120) : undefined;
+
     if (sessionId && storagePath) {
       out.snapshot = {
         sessionId,
@@ -70,9 +76,14 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
         ...(orientation ? { orientation } : {}),
         ...(partnerId ? { partnerId } : {}),
         ...(url ? { url } : {}),
+        timestamp,
+        ...(device ? { device } : {}),
+        ...(arMode ? { arMode } : {}),
+        ...(modelId ? { modelId } : {}),
       };
-    }
+    };
   }
+
 
   if (value.handoff && typeof value.handoff === 'object') {
     const h = value.handoff as Record<string, unknown>;
@@ -83,8 +94,8 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
     const objectName = typeof h.objectName === 'string' ? h.objectName.slice(0, 200) : undefined;
     const actions = Array.isArray(h.actions)
       ? (h.actions as unknown[])
-          .filter((a): a is 'VIEW_3D' | 'AR_TRY' | 'SAVE' => a === 'VIEW_3D' || a === 'AR_TRY' || a === 'SAVE')
-          .slice(0, 5)
+        .filter((a): a is 'VIEW_3D' | 'AR_TRY' | 'SAVE' => a === 'VIEW_3D' || a === 'AR_TRY' || a === 'SAVE')
+        .slice(0, 5)
       : [];
     const arDurationSecRaw = h.arDurationSec;
     const arDurationSec =
@@ -95,9 +106,9 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
           : null;
     const lastQuestions = Array.isArray(h.lastQuestions)
       ? (h.lastQuestions as unknown[])
-          .filter((q): q is string => typeof q === 'string')
-          .map((q) => q.slice(0, 400))
-          .slice(-3)
+        .filter((q): q is string => typeof q === 'string')
+        .map((q) => q.slice(0, 400))
+        .slice(-3)
       : [];
     const timestamp = typeof h.timestamp === 'string' ? h.timestamp.slice(0, 40) : undefined;
 
@@ -113,6 +124,7 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
       };
     }
   }
+
   return Object.keys(out).length > 0 ? out : undefined;
 }
 

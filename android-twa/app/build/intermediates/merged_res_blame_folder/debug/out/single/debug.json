@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.aura.shell.app-merged_res-7:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.aura.shell.app-main-9:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.aura.shell.app-merged_res-7:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.aura.shell.app-main-9:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.aura.shell.app-merged_res-7:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.aura.shell.app-main-9:/mipmap-anydpi-v26/ic_launcher.xml"
+    }
+]

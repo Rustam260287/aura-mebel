@@ -1,0 +1,10 @@
+com.aura.shell.app-jetified-androidbrowserhelper-2.5.0-0 C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\res
+com.aura.shell.app-browser-1.4.0-1 C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\c3aa114258e85e524b7edc95d8dd47ea\transformed\browser-1.4.0\res
+com.aura.shell.app-core-1.1.0-2 C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\res
+com.aura.shell.app-pngs-3 C:\dev\aura-mebel\android-twa\app\build\generated\res\pngs\debug
+com.aura.shell.app-resValues-4 C:\dev\aura-mebel\android-twa\app\build\generated\res\resValues\debug
+com.aura.shell.app-packageDebugResources-5 C:\dev\aura-mebel\android-twa\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.aura.shell.app-packageDebugResources-6 C:\dev\aura-mebel\android-twa\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.aura.shell.app-merged_res-7 C:\dev\aura-mebel\android-twa\app\build\intermediates\merged_res\debug
+com.aura.shell.app-debug-8 C:\dev\aura-mebel\android-twa\app\src\debug\res
+com.aura.shell.app-main-9 C:\dev\aura-mebel\android-twa\app\src\main\res

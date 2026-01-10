@@ -1,0 +1,73 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   >
+
+    <!-- AR via WebXR requires Camera permission -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Camera is optional (WebXR AR) -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+
+
+    <!--
+             Launcher Activity
+             LaunchMode: singleTask ensures we reuse the existing instance 
+             when coming from different intents (e.g. browser or icon).
+        -->
+        <activity
+            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:theme="@style/Theme.Launcher"
+            android:launchMode="singleTask"
+            android:exported="true">
+            
+            <meta-data
+                android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                android:value="https://aura-room.ru/ar" />
+
+            <meta-data
+                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+                android:resource="@android:color/white" />
+
+            <meta-data
+                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR_DARK"
+                android:resource="@android:color/black" />
+
+            <!-- Handle standard launch from App Grid -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Handle Deep Links: https://aura-room.ru/ar... -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <data android:scheme="https" 
+                      android:host="@string/host_name" 
+                      android:pathPrefix="/ar" />
+            </intent-filter>
+
+            <!-- 
+                 Handle Explicit Intents: intent://... 
+                 This allows Yandex Browser and others to force-open this app.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="intent" android:host="@string/host_name" />
+            </intent-filter>
+        </activity>
+        
+    </application>
+</manifest>

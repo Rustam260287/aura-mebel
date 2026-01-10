@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aura.shell.app-mergeDebugResources-5:/values-bs/values-bs.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Рустам\\.gradle\\caches\\9.0-milestone-1\\transforms\\d62d79d5dd2be7f18f4303be5184fd15\\transformed\\core-1.1.0\\res\\values-bs\\values-bs.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "6",
+                        "startColumns": "4",
+                        "startOffsets": "473",
+                        "endColumns": "100",
+                        "endOffsets": "569"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Рустам\\.gradle\\caches\\9.0-milestone-1\\transforms\\c3aa114258e85e524b7edc95d8dd47ea\\transformed\\browser-1.4.0\\res\\values-bs\\values-bs.xml",
+                    "from": {
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,159,259,373",
+                        "endColumns": "103,99,113,99",
+                        "endOffsets": "154,254,368,468"
+                    }
+                }
+            ]
+        }
+    ]
+}

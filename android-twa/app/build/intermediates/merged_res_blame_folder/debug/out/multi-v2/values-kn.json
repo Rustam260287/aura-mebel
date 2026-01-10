@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aura.shell.app-mergeDebugResources-5:/values-kn/values-kn.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Рустам\\.gradle\\caches\\9.0-milestone-1\\transforms\\c3aa114258e85e524b7edc95d8dd47ea\\transformed\\browser-1.4.0\\res\\values-kn\\values-kn.xml",
+                    "from": {
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,169,269,385",
+                        "endColumns": "113,99,115,100",
+                        "endOffsets": "164,264,380,481"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Рустам\\.gradle\\caches\\9.0-milestone-1\\transforms\\d62d79d5dd2be7f18f4303be5184fd15\\transformed\\core-1.1.0\\res\\values-kn\\values-kn.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "6",
+                        "startColumns": "4",
+                        "startOffsets": "486",
+                        "endColumns": "100",
+                        "endOffsets": "582"
+                    }
+                }
+            ]
+        }
+    ]
+}

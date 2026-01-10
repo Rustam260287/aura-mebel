@@ -1,6 +1,7 @@
 
 import Head from 'next/head';
 import React from 'react';
+import { FEATURES } from '../lib/features';
 
 interface MetaProps {
   title?: string;
@@ -37,6 +38,11 @@ export const Meta: React.FC<MetaProps> = ({ title, description = DEFAULT_DESCRIP
       <meta property="twitter:title" content={fullTitle} />
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={image} />
+
+      {/* iOS App Clip Smart App Banner */}
+      {FEATURES.APP_CLIP_ENABLED && (
+        <meta name="apple-itunes-app" content="app-id=YOUR_APP_ID, app-clip-bundle-id=com.aura.clip, app-clip-display=card" />
+      )}
     </Head>
   );
 };

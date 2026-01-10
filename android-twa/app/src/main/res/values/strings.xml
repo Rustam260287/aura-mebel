@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Aura</string>
+    <string name="host_name">aura-room.ru</string>
+    <string name="launch_url">https://aura-room.ru/ar</string>
+</resources>

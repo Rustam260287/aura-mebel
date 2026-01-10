@@ -15,6 +15,11 @@ type FinalizeRequest = {
   width?: number;
   height?: number;
   orientation?: 'portrait' | 'landscape';
+
+  // New Metadata
+  timestamp: number;
+  device?: 'android' | 'ios' | 'web';
+  arMode?: 'webxr' | 'quick-look' | 'scene-viewer';
 };
 
 export type SnapshotCapture = {
@@ -29,6 +34,8 @@ export type CreateSnapshotArgs = {
   partnerId?: string;
   capture: SnapshotCapture;
   platform?: JourneyPlatform;
+  device?: 'android' | 'ios' | 'web';
+  arMode?: 'webxr' | 'quick-look' | 'scene-viewer';
 };
 
 const clampSnapshotBytes = (value: number, max: number) => {
@@ -36,8 +43,10 @@ const clampSnapshotBytes = (value: number, max: number) => {
   return Math.min(max, Math.max(1, Math.round(value)));
 };
 
-export async function createArSnapshot({ sessionId, objectId, partnerId, capture }: CreateSnapshotArgs) {
+export async function createArSnapshot({ sessionId, objectId, partnerId, capture, device, arMode }: CreateSnapshotArgs) {
   const size = clampSnapshotBytes(capture.blob.size, 12 * 1024 * 1024);
+  const timestamp = Date.now();
+
   const uploadRes = await fetch('/api/snapshots/upload-url', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -45,6 +54,7 @@ export async function createArSnapshot({ sessionId, objectId, partnerId, capture
       sessionId,
       size,
       contentType: capture.blob.type || 'image/jpeg',
+      timestamp, // Optional, for path generation consistency if needed
     }),
   });
 
@@ -53,21 +63,28 @@ export async function createArSnapshot({ sessionId, objectId, partnerId, capture
     throw new Error(uploadJson?.error || `Upload URL failed: HTTP ${uploadRes.status}`);
   }
 
-  let put: Response;
-  try {
-    put = await fetch(uploadJson.uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': uploadJson.contentType },
-      body: capture.blob,
-    });
-  } catch (error) {
-    throw new Error(error instanceof Error ? `Upload failed: ${error.message}` : 'Upload failed');
+  // Robust upload with 1 retry
+  let put: Response | null = null;
+  let lastError: unknown;
+
+  for (let i = 0; i < 2; i++) {
+    try {
+      put = await fetch(uploadJson.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': uploadJson.contentType },
+        body: capture.blob,
+      });
+      if (put.ok) break;
+    } catch (e) {
+      lastError = e;
+      // Wait briefly before retry
+      if (i === 0) await new Promise((r) => setTimeout(r, 500));
+    }
   }
 
-  if (!put.ok) {
-    const details = await put.text().catch(() => '');
-    const suffix = details ? `: ${details.slice(0, 180)}` : '';
-    throw new Error(`Upload failed: HTTP ${put.status}${suffix}`);
+  if (!put || !put.ok) {
+    const suffix = lastError instanceof Error ? `: ${lastError.message}` : '';
+    throw new Error(`Snapshot upload failed after retries${suffix}`);
   }
 
   const width = typeof capture.width === 'number' && Number.isFinite(capture.width) ? Math.round(capture.width) : undefined;
@@ -83,21 +100,29 @@ export async function createArSnapshot({ sessionId, objectId, partnerId, capture
     filePath: uploadJson.filePath,
     sessionId,
     objectId,
+    timestamp,
     ...(partnerId ? { partnerId } : {}),
     ...(typeof width === 'number' ? { width } : {}),
     ...(typeof height === 'number' ? { height } : {}),
     ...(orientation ? { orientation } : {}),
+    ...(device ? { device } : {}),
+    ...(arMode ? { arMode } : {}),
   };
 
+  // Finalize is critical but if it fails we just log it, 
+  // the file is already uploaded. 
+  // Ideally we want to link it in DB.
   const finalizeRes = await fetch('/api/snapshots/finalize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(finalizeBody),
   });
-  const finalizeJson = (await finalizeRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+
   if (!finalizeRes.ok) {
-    const details = finalizeJson?.error || (await finalizeRes.text().catch(() => ''));
-    throw new Error(details ? String(details) : `Finalize failed: HTTP ${finalizeRes.status}`);
+    // We don't throw here for Quiet UX if the upload succeeded. 
+    // Just log a warning that metadata wasn't saved.
+    console.warn('[Snapshot] Finalize failed, but upload succeeded.');
   }
+
   return { filePath: uploadJson.filePath };
 }

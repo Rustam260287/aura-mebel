@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme (NO AppCompat) -->
+    <style name="AppTheme" parent="@android:style/Theme.NoDisplay">
+        <!-- Nothing here -->
+    </style>
+
+    <!-- Launcher theme for TWA (fully transparent) -->
+    <style name="Theme.Launcher" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+</resources>

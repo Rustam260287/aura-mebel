@@ -1,0 +1,139 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:1:1-73:12
+MERGED from [com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:17:1-36:12
+MERGED from [androidx.browser:browser:1.4.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\c3aa114258e85e524b7edc95d8dd47ea\transformed\browser-1.4.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:17:1-26:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\a4c81997a515930506218f89149e0de3\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\b8917ad0fec5d139db4a5978cd3b1e43\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\10c3fb290432fb502071e01d9b3a7232\transformed\lifecycle-runtime-2.0.0\AndroidManifest.xml:17:1-22:12
+	package
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:1:11-69
+uses-permission#android.permission.CAMERA
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:5:5-65
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:5:22-62
+uses-permission#android.permission.INTERNET
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:6:5-67
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:6:22-64
+uses-feature#android.hardware.camera
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:9:5-11:36
+	android:required
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:11:9-33
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:10:9-47
+application
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:14:5-72:19
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:14:5-72:19
+MERGED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:24:5-89
+MERGED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:24:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\a4c81997a515930506218f89149e0de3\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\a4c81997a515930506218f89149e0de3\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:24:5-25:19
+	android:extractNativeLibs
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:24:18-86
+	android:label
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:16:9-41
+	android:allowBackup
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:15:9-36
+	android:theme
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:17:9-40
+activity#com.google.androidbrowserhelper.trusted.LauncherActivity
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:25:9-70:20
+	android:launchMode
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:28:13-44
+	android:exported
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:29:13-36
+	android:theme
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:27:13-50
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:26:13-84
+meta-data#android.support.customtabs.trusted.DEFAULT_URL
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:31:13-33:59
+	android:value
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:33:17-56
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:32:17-78
+meta-data#android.support.customtabs.trusted.STATUS_BAR_COLOR
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:35:13-37:59
+	android:resource
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:37:17-56
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:36:17-83
+meta-data#android.support.customtabs.trusted.STATUS_BAR_COLOR_DARK
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:39:13-41:59
+	android:resource
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:41:17-56
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:40:17-88
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:44:13-47:29
+action#android.intent.action.MAIN
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:45:17-69
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:45:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:46:17-77
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:46:27-74
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:@string/host_name+data:pathPrefix:/ar+data:scheme:https
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:50:13-58:29
+	android:autoVerify
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:50:28-53
+action#android.intent.action.VIEW
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:17-69
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:51:25-66
+category#android.intent.category.DEFAULT
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:17-76
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:52:27-73
+category#android.intent.category.BROWSABLE
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:17-78
+	android:name
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:53:27-75
+data
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:17-57:50
+	android:host
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:56:23-55
+	android:scheme
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:55:23-45
+	android:pathPrefix
+		ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:57:23-47
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:@string/host_name+data:scheme:intent
+ADDED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml:64:13-69:29
+uses-sdk
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+MERGED from [com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:22:5-24:41
+MERGED from [com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:22:5-24:41
+MERGED from [androidx.browser:browser:1.4.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\c3aa114258e85e524b7edc95d8dd47ea\transformed\browser-1.4.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.browser:browser:1.4.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\c3aa114258e85e524b7edc95d8dd47ea\transformed\browser-1.4.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\d62d79d5dd2be7f18f4303be5184fd15\transformed\core-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\a4c81997a515930506218f89149e0de3\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\a4c81997a515930506218f89149e0de3\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\b8917ad0fec5d139db4a5978cd3b1e43\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\b8917ad0fec5d139db4a5978cd3b1e43\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\10c3fb290432fb502071e01d9b3a7232\transformed\lifecycle-runtime-2.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\10c3fb290432fb502071e01d9b3a7232\transformed\lifecycle-runtime-2.0.0\AndroidManifest.xml:20:5-44
+	android:targetSdkVersion
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\dev\aura-mebel\android-twa\app\src\main\AndroidManifest.xml
+queries
+ADDED from [com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:26:5-34:15
+intent#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+data:scheme:https
+ADDED from [com.google.androidbrowserhelper:androidbrowserhelper:2.5.0] C:\Users\Рустам\.gradle\caches\9.0-milestone-1\transforms\708cdb92fbd4a545eaac9658ea1be348\transformed\jetified-androidbrowserhelper-2.5.0\AndroidManifest.xml:27:9-33:18

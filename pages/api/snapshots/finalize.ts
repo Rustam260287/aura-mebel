@@ -13,6 +13,9 @@ type FinalizeSnapshotRequest = {
   width?: number;
   height?: number;
   orientation?: 'portrait' | 'landscape';
+  timestamp?: number;
+  device?: 'android' | 'ios' | 'web';
+  arMode?: 'webxr' | 'quick-look' | 'scene-viewer';
 };
 
 const VISITOR_COOKIE = 'lc_vid';
@@ -65,7 +68,7 @@ const inferPlatform = (userAgent: string | undefined): 'ios' | 'android' | 'web'
 
 const isAllowedPath = (filePath: string, sessionId: string): boolean => {
   if (!filePath.startsWith(`snapshots/session_${sessionId}/snapshot_`)) return false;
-  if (!filePath.endsWith('.jpg')) return false;
+  if (!filePath.endsWith('.jpg') && !filePath.endsWith('.png')) return false;
   if (filePath.includes('..')) return false;
   if (filePath.includes('\\')) return false;
   return true;
@@ -102,6 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const height = clampInt(body.height);
   const orientation =
     body.orientation === 'portrait' || body.orientation === 'landscape' ? body.orientation : undefined;
+  const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Date.now();
 
   const { visitorId, isNew } = getOrCreateVisitorId(req);
   if (isNew) {
@@ -125,15 +129,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const file = bucket.file(filePathRaw);
 
   try {
+    const contentType = filePathRaw.endsWith('.png') ? 'image/png' : 'image/jpeg';
     await file.setMetadata({
-      contentType: 'image/jpeg',
+      contentType,
       contentDisposition: 'inline',
       cacheControl: 'private, max-age=31536000',
       metadata: {
         session_id: sessionId,
         object_id: objectId,
         ...(partnerId ? { partner_id: partnerId } : {}),
-        device: platform,
+        device: body.device || platform,
         ...(orientation ? { orientation } : {}),
         ...(width ? { width: String(width) } : {}),
         ...(height ? { height: String(height) } : {}),
@@ -176,6 +181,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           snapshot: {
             sessionId,
             storagePath: filePathRaw,
+            timestamp,
+            modelId: objectId,
+            device: body.device || 'web',
+            arMode: body.arMode || 'webxr',
             ...(typeof width === 'number' ? { width } : {}),
             ...(typeof height === 'number' ? { height } : {}),
             ...(orientation ? { orientation } : {}),

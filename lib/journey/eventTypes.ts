@@ -4,7 +4,9 @@ export const JOURNEY_EVENT_TYPES = [
   'START_AR',
   'FINISH_AR',
   'AR_SNAPSHOT_CREATED',
+  'AR_SNAPSHOT_REQUESTED',
   'AR_UNAVAILABLE_WEBXR',
+  'AR_UNAVAILABLE_BROWSER',
   'SAVE_OBJECT',
   'REMOVE_OBJECT',
   'OPEN_SAVED',
@@ -26,6 +28,10 @@ export type JourneyMeta = {
   snapshot?: {
     sessionId: string;
     storagePath: string;
+    timestamp: number;
+    modelId?: string;
+    device?: 'android' | 'ios' | 'web';
+    arMode?: 'webxr' | 'quick-look' | 'scene-viewer';
     width?: number;
     height?: number;
     orientation?: 'portrait' | 'landscape';

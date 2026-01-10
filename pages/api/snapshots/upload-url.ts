@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const contentTypeRaw = typeof body.contentType === 'string' ? body.contentType.toLowerCase().split(';')[0].trim() : '';
-  if (contentTypeRaw && contentTypeRaw !== 'image/jpeg' && contentTypeRaw !== 'image/jpg') {
+  if (contentTypeRaw && contentTypeRaw !== 'image/jpeg' && contentTypeRaw !== 'image/jpg' && contentTypeRaw !== 'image/png') {
     return res.status(415).json({ error: 'Unsupported content type' });
   }
 
@@ -71,9 +71,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await ensureBucketCors(bucket);
 
-  const contentType = 'image/jpeg';
+  const contentType = contentTypeRaw === 'image/png' ? 'image/png' : 'image/jpeg';
+  const ext = contentType === 'image/png' ? 'png' : 'jpg';
   const timestamp = Date.now();
-  const filePath = `snapshots/session_${sessionId}/snapshot_${timestamp}.jpg`;
+  const filePath = `snapshots/session_${sessionId}/snapshot_${timestamp}.${ext}`;
   const file = bucket.file(filePath);
 
   try {
