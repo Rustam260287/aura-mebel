@@ -511,6 +511,9 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
         quantizePositionBits: 11,
         quantizeNormalBits: 8,
         quantizeTexcoordBits: 10,
+        // Explicitly set paths for WASM files to work in both dev and production (standalone)
+        encoderPath: path.join(dracoBase, 'draco_encoder.wasm'),
+        decoderPath: path.join(dracoBase, 'draco_decoder.wasm'),
       },
     });
 

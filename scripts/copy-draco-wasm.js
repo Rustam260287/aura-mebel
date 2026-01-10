@@ -2,20 +2,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const isProduction = process.env.NODE_ENV === 'production' || process.env.FIREBASE_CONFIG;
-
 async function copyDracoWasm() {
     const root = process.cwd();
-    const sourcePath = path.join(root, 'node_modules', 'draco3d', 'draco_encoder.wasm');
+    const sourceDir = path.join(root, 'node_modules', 'draco3d');
     const destDir = path.join(root, '.next', 'standalone', 'node_modules', 'draco3d');
-    const destPath = path.join(destDir, 'draco_encoder.wasm');
 
-    console.log(`[copy-draco-wasm] Source: ${sourcePath}`);
+    const filesToCopy = ['draco_encoder.wasm', 'draco_decoder.wasm'];
 
-    if (!fs.existsSync(sourcePath)) {
-        console.error(`[copy-draco-wasm] ERROR: Source file not found at ${sourcePath}`);
-        process.exit(1);
-    }
+    console.log(`[copy-draco-wasm] Starting copy...`);
 
     // Ensure destination exists
     if (!fs.existsSync(destDir)) {
@@ -23,12 +17,21 @@ async function copyDracoWasm() {
         fs.mkdirSync(destDir, { recursive: true });
     }
 
-    try {
-        fs.copyFileSync(sourcePath, destPath);
-        console.log(`[copy-draco-wasm] SUCCESS: Copied to ${destPath}`);
-    } catch (err) {
-        console.error(`[copy-draco-wasm] FAILED: ${err.message}`);
-        process.exit(1);
+    for (const file of filesToCopy) {
+        const sourcePath = path.join(sourceDir, file);
+        const destPath = path.join(destDir, file);
+
+        if (fs.existsSync(sourcePath)) {
+            try {
+                fs.copyFileSync(sourcePath, destPath);
+                console.log(`[copy-draco-wasm] SUCCESS: Copied ${file} to standalone`);
+            } catch (err) {
+                console.error(`[copy-draco-wasm] FAILED: Could not copy ${file}: ${err.message}`);
+                process.exit(1);
+            }
+        } else {
+            console.warn(`[copy-draco-wasm] WARNING: Source file not found: ${sourcePath}`);
+        }
     }
 }
 
