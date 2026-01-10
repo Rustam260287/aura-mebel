@@ -387,6 +387,37 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       throw new Error('snapshot not supported');
     }, []);
 
+    const saveToDevice = (blob: Blob, filename: string) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const shareSnapshot = async (file: File) => {
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            text: 'Я примерил(а) этот предмет в своём интерьере ✨',
+            url: `https://aura-room.ru/object/${objectId}?from=share`
+          });
+          trackJourneyEvent({ type: 'AR_SNAPSHOT_SHARED', objectId });
+        } catch (error) {
+          if ((error as Error).name !== 'AbortError') {
+            console.error('Share failed:', error);
+          }
+        }
+      } else {
+        // Fallback: copy link to clipboard? Or just do nothing (Quiet UX).
+        // Given "Quiet UX", doing nothing is safer than a potentially confusing fallback.
+      }
+    };
+
     const handleSnapshot = useCallback(async () => {
       if (isCapturing) return;
       const sessionId = ensureArSession();
@@ -403,22 +434,47 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       try {
         const capture = await captureModelViewerJpeg();
 
-        await createArSnapshot({
+        // 1. Immediate Save (Parallel)
+        const filename = `aura-${new Date().toISOString().slice(0, 10)}.png`;
+        saveToDevice(capture.blob, filename);
+
+        // 2. Upload (Parallel)
+        // We don't await this blocking the UI feedback.
+        createArSnapshot({
           sessionId,
           objectId,
           capture,
-          device: 'android',   // Since we are here (WebXR), it's likely Android 
+          device: 'android',
           arMode: 'webxr'
-        });
+        }).then(() => {
+          trackJourneyEvent({ type: 'AR_SNAPSHOT_CREATED', objectId });
+        }).catch(e => console.warn('Snapshot upload bg failed', e));
 
-        trackJourneyEvent({ type: 'AR_SNAPSHOT_CREATED', objectId });
-        // Quiet UX: No toast or very subtle one? User requested "Icon only... silent".
-        // Maybe just the flash is enough? 
-        // Keeping a very subtle success toast as feedback is good UX for "Save".
-        addToast('Снимок сохранён в историю', 'success', 2000);
+        // 3. Feedback (Toast with Share Action)
+        const file = new File([capture.blob], filename, { type: 'image/png' });
+
+        // Custom Toast Content
+        addToast(
+          <div className="flex items-center gap-3">
+            <span>✅ Снимок сохранён</span>
+            {typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] }) && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  shareSnapshot(file);
+                }}
+                className="ml-2 bg-white/20 hover:bg-white/30 active:bg-white/40 px-3 py-1 rounded-full text-xs font-medium transition-colors backdrop-blur-sm"
+              >
+                🔗 Поделиться
+              </button>
+            )}
+          </div>,
+          'success',
+          4500
+        );
+
       } catch (e) {
         console.warn('[ARViewer] snapshot failed:', e);
-        // Error toast is helpful
         addToast('Не удалось сохранить снимок', 'error', 2200);
       } finally {
         setIsCapturing(false);
