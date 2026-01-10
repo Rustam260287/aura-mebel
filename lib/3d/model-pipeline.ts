@@ -494,14 +494,16 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     await originalFile.download({ destination: tmpOriginal });
     const inputBuffer = await fs.readFile(tmpOriginal);
 
-    // FIX: Manually point to draco encoder if it exists in expected node_modules locations
-    // This helps in Next.js Standalone / Docker environments
-    const dracoPath = path.resolve(process.cwd(), 'node_modules/draco3d');
-    if (process.env.NODE_ENV === 'production' && !process.env.DRACO_ENCODER_PATH) {
-      // Common paths in standalone build
-      const possiblePath = path.resolve(process.cwd(), '.next/standalone/node_modules/draco3d');
-      process.env.DRACO_ENCODER_PATH = possiblePath;
-    }
+    // FIX: Set explicit path for Draco encoder WASM
+    // In standalone production, it points to the copied file in .next/standalone
+    // In development, it points to the local node_modules
+    const isProd = process.env.NODE_ENV === 'production';
+    const dracoBase = isProd
+      ? path.join(process.cwd(), '.next/standalone/node_modules/draco3d')
+      : path.join(process.cwd(), 'node_modules/draco3d');
+
+    // gltf-pipeline checks this env var for the encoder binaries
+    process.env.DRACO_ENCODER_PATH = dracoBase;
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
       dracoOptions: {

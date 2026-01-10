@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0 --webpack",
     "build": "next build --webpack",
+    "postbuild": "node scripts/copy-draco-wasm.js",
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",
