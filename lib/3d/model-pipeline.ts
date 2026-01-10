@@ -1,6 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import { spawn } from 'node:child_process';
 import gltfPipeline from 'gltf-pipeline';
 import sharp from 'sharp';
@@ -495,13 +496,32 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     const inputBuffer = await fs.readFile(tmpOriginal);
 
     // FIX: Set explicit path for Draco binaries
-    // gltf-pipeline uses DRACO3D_PATH to find WASM files for both encoding and decoding
     const isProd = process.env.NODE_ENV === 'production';
-    const dracoBase = isProd
-      ? path.join(process.cwd(), '.next/standalone/node_modules/draco3d')
-      : path.join(process.cwd(), 'node_modules/draco3d');
+    const prodDracoDir = path.join(process.cwd(), '.next/standalone/node_modules/draco3d');
+    const srcDracoDir = path.join(process.cwd(), 'node_modules/draco3d');
 
-    process.env.DRACO3D_PATH = dracoBase;
+    if (isProd) {
+      // Runtime safeguard: Ensure WASM files are present in the standalone folder
+      // This is necessary because some build environments (like App Hosting) might skip postbuild copies
+      const decoderWasm = path.join(prodDracoDir, 'draco_decoder.wasm');
+      if (!fsSync.existsSync(decoderWasm)) {
+        console.log(`[model-pipeline] Draco binaries missing in standalone. Attempting runtime copy...`);
+        try {
+          if (!fsSync.existsSync(prodDracoDir)) {
+            fsSync.mkdirSync(prodDracoDir, { recursive: true });
+          }
+          fsSync.copyFileSync(path.join(srcDracoDir, 'draco_encoder.wasm'), path.join(prodDracoDir, 'draco_encoder.wasm'));
+          fsSync.copyFileSync(path.join(srcDracoDir, 'draco_decoder.wasm'), path.join(prodDracoDir, 'draco_decoder.wasm'));
+          console.log(`[model-pipeline] Draco binaries successfully copied to standalone.`);
+        } catch (copyErr: any) {
+          console.error(`[model-pipeline] Failed to copy Draco binaries at runtime: ${copyErr.message}`);
+          // We don't throw yet, as gltf-pipeline might still try to use its own fallback if possible
+        }
+      }
+      process.env.DRACO3D_PATH = prodDracoDir;
+    } else {
+      process.env.DRACO3D_PATH = srcDracoDir;
+    }
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
       dracoOptions: {
