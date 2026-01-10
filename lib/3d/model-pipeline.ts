@@ -495,47 +495,41 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     await originalFile.download({ destination: tmpOriginal });
     const inputBuffer = await fs.readFile(tmpOriginal);
 
-    // FIX: Robust Draco WASM handling for Cloud Environments
+    // FIX: Ultra-robust Draco WASM discovery
     const isProd = process.env.NODE_ENV === 'production';
 
-    // 1. Determine where we will look for/store Draco binaries
-    // In cloud (read-only), we use /tmp. In dev, we use node_modules.
-    const dracoRunDir = isProd ? path.join(os.tmpdir(), 'draco3d') : path.join(process.cwd(), 'node_modules', 'draco3d');
+    // Check possible locations in order of priority
+    const possibleDirs = [
+      path.join(process.cwd(), '.next/standalone/node_modules/draco3d'),
+      path.join(os.tmpdir(), 'draco3d'),
+      path.join(process.cwd(), 'node_modules/draco3d'),
+    ];
 
-    if (isProd) {
-      if (!fsSync.existsSync(path.join(dracoRunDir, 'draco_decoder.wasm'))) {
-        console.log(`[model-pipeline] Initializing Draco binaries in ${dracoRunDir}...`);
-        try {
-          if (!fsSync.existsSync(dracoRunDir)) fsSync.mkdirSync(dracoRunDir, { recursive: true });
+    let dracoRunDir = possibleDirs[2]; // Default to dev node_modules
+    for (const dir of possibleDirs) {
+      if (fsSync.existsSync(path.join(dir, 'draco_decoder.wasm'))) {
+        dracoRunDir = dir;
+        break;
+      }
+    }
 
-          // Try to find source binaries dynamically
-          let dracoSrc: string;
-          try {
-            // This finds the path to the installed package
-            dracoSrc = path.dirname(require.resolve('draco3d/package.json'));
-          } catch {
-            // Fallback to various common paths if resolve fails
-            dracoSrc = fsSync.existsSync(path.join(process.cwd(), 'node_modules/draco3d'))
-              ? path.join(process.cwd(), 'node_modules/draco3d')
-              : path.join(process.cwd(), '.next/standalone/node_modules/draco3d');
-          }
+    if (isProd && dracoRunDir !== possibleDirs[0] && dracoRunDir !== possibleDirs[1]) {
+      console.log(`[model-pipeline] Draco binaries missing in expected locations. Using /tmp fallback.`);
+      dracoRunDir = possibleDirs[1];
+      if (!fsSync.existsSync(dracoRunDir)) fsSync.mkdirSync(dracoRunDir, { recursive: true });
 
-          ['draco_encoder.wasm', 'draco_decoder.wasm'].forEach(file => {
-            const src = path.join(dracoSrc, file);
-            const dst = path.join(dracoRunDir, file);
-            if (fsSync.existsSync(src)) {
-              fsSync.copyFileSync(src, dst);
-            }
-          });
-          console.log(`[model-pipeline] Draco binaries ready.`);
-        } catch (e: any) {
-          console.error(`[model-pipeline] Draco setup failed: ${e.message}`);
+      // Last ditch attempt to find source
+      const srcDirs = [path.join(process.cwd(), 'node_modules/draco3d'), '/workspace/node_modules/draco3d'];
+      for (const src of srcDirs) {
+        if (fsSync.existsSync(path.join(src, 'draco_encoder.wasm'))) {
+          fsSync.copyFileSync(path.join(src, 'draco_encoder.wasm'), path.join(dracoRunDir, 'draco_encoder.wasm'));
+          fsSync.copyFileSync(path.join(src, 'draco_decoder.wasm'), path.join(dracoRunDir, 'draco_decoder.wasm'));
+          break;
         }
       }
-      process.env.DRACO3D_PATH = dracoRunDir;
-    } else {
-      process.env.DRACO3D_PATH = dracoRunDir;
     }
+
+    process.env.DRACO3D_PATH = dracoRunDir;
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
       dracoOptions: {
@@ -543,6 +537,11 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
         quantizePositionBits: 11,
         quantizeNormalBits: 8,
         quantizeTexcoordBits: 10,
+        // FORCE paths via any casting to bypass TS issues and enforce the path
+        ...({
+          encoderPath: path.join(dracoRunDir, 'draco_encoder.wasm'),
+          decoderPath: path.join(dracoRunDir, 'draco_decoder.wasm'),
+        } as any)
       },
     });
 
