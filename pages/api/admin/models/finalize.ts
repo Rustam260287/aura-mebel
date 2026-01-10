@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { checkIsAdmin } from '../../../../lib/auth/admin-check';
 import { getAdminDb, getAdminStorage } from '../../../../lib/firebaseAdmin';
 import { COLLECTIONS } from '../../../../lib/db/collections';
-import { runModelProcessingPipeline } from '../../../../lib/3d/model-pipeline';
+import { runGlbPipeline, runUsdzPipeline } from '../../../../lib/3d/model-pipeline';
 import { toAdminObject } from '../../../../lib/adminObject';
 
 type FinalizeRequest = {
@@ -40,44 +40,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!doc.exists) return res.status(404).json({ error: 'Object not found' });
 
   const bucket = storage.bucket();
-  const originalPath = `models/${objectId}/original.glb`;
-  const file = bucket.file(originalPath);
+  const originalGlb = bucket.file(`models/${objectId}/original.glb`);
+  const originalUsdz = bucket.file(`models/${objectId}/ios.usdz`);
 
   try {
-    await file.setMetadata({
-      contentType: 'model/gltf-binary',
-      contentDisposition: 'inline',
-      cacheControl: 'private, max-age=31536000',
-    });
+    const [glbExists] = await originalGlb.exists();
+    const [usdzExists] = await originalUsdz.exists();
+
+    if (glbExists) {
+      await originalGlb.setMetadata({
+        contentType: 'model/gltf-binary',
+        cacheControl: 'private, max-age=31536000',
+      });
+      await runGlbPipeline(objectId);
+    }
+
+    if (usdzExists) {
+      await originalUsdz.setMetadata({
+        contentType: 'model/vnd.usdz+zip',
+        cacheControl: 'private, max-age=31536000',
+      });
+      await runUsdzPipeline(objectId);
+    }
+
   } catch (error: any) {
-    console.warn('[models/finalize] metadata set failed:', error);
+    console.warn('[models/finalize] metadata/pipeline failed:', error);
   }
 
   try {
-    await docRef.set(
-      {
-        modelProcessing: {
-          status: 'UPLOADED',
-          original: { storagePath: originalPath },
-          updatedAt: new Date().toISOString(),
-        },
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true },
-    );
-  } catch (error: any) {
-    console.error('[models/finalize] failed to update object:', error);
-    return res.status(500).json({ error: 'Failed to update object' });
-  }
-
-  try {
-    await runModelProcessingPipeline(objectId);
     const updated = await docRef.get();
     const normalized = toAdminObject(updated.data(), updated.id);
     return res.status(200).json(normalized);
   } catch (error: any) {
-    console.error('[models/finalize] pipeline failed:', error);
-    return res.status(500).json({ error: error?.message ? String(error.message) : 'Pipeline failed' });
+    console.error('[models/finalize] failed to fetch updated object:', error);
+    return res.status(500).json({ error: 'Failed to update object' });
   }
 }
+
+// REMOVE the rest of the old catch blocks as we restructured
+const _unused = async () => {
 

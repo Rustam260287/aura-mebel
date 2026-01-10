@@ -63,8 +63,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const ct = typeof body.contentType === 'string' ? body.contentType.toLowerCase().split(';')[0].trim() : '';
-  if (ct && ct !== 'model/gltf-binary') {
-    return res.status(415).json({ error: 'Only .glb is accepted as master format' });
+  const isUsdz = ct === 'model/vnd.usdz+zip' || ct === 'model/vnd.usdz';
+  const isGlb = ct === 'model/gltf-binary' || (!ct && body.filePath?.endsWith('.glb'));
+
+  if (!isGlb && !isUsdz) {
+    return res.status(415).json({ error: 'Accepted formats: .glb (master) or .usdz (iOS)' });
   }
 
   const storage = getAdminStorage();
@@ -73,8 +76,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await ensureBucketCors(bucket);
 
-  const contentType = 'model/gltf-binary';
-  const filePath = `models/${objectId}/original.glb`;
+  const contentType = isUsdz ? 'model/vnd.usdz+zip' : 'model/gltf-binary';
+  const filePath = isUsdz ? `models/${objectId}/ios.usdz` : `models/${objectId}/original.glb`;
   const file = bucket.file(filePath);
 
   try {

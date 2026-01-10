@@ -44,37 +44,33 @@ export const VISITOR_STAGES = [
 export type VisitorStage = (typeof VISITOR_STAGES)[number];
 
 export type ModelProcessingStatus =
-  | 'UPLOADED'
-  | 'OPTIMIZING'
-  | 'OPTIMIZED'
-  | 'GENERATING_USDZ'
+  | 'UPLOADING_GLB'
+  | 'OPTIMIZING_GLB'
   | 'READY'
-  | 'READY_WITHOUT_IOS'
+  | 'UPLOADING_USDZ'
+  | 'OPTIMIZING_USDZ'
+  | 'READY_WITH_IOS'
   | 'ERROR';
 
-export type ModelProcessingArtifact = {
-  storagePath?: string;
+export type ModelArtifactInfo = {
+  status: 'PENDING' | 'OPTIMIZING' | 'READY' | 'ERROR';
   url?: string;
+  originalUrl?: string; // For GLB: the raw upload
   sizeBytes?: number;
+  originalSizeBytes?: number;
+  error?: string;
+  updatedAt?: string;
 };
 
 export type ModelProcessingInfo = {
-  status: ModelProcessingStatus;
-  sizeBeforeBytes?: number;
-  sizeAfterBytes?: number;
-  maxTextureSize?: number;
-  startedAt?: string;
-  updatedAt?: string;
-  finishedAt?: string;
-  error?: string;
-  platforms?: {
+  glb: ModelArtifactInfo;
+  usdz?: ModelArtifactInfo;
+  platforms: {
     web: boolean;
     android: boolean;
     ios: boolean;
   };
-  original?: ModelProcessingArtifact;
-  optimized?: ModelProcessingArtifact;
-  usdz?: ModelProcessingArtifact;
+  updatedAt: string;
 };
 
 export interface ObjectPublic {

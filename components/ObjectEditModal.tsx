@@ -289,87 +289,84 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                               </div>
                             )}
 
-                            <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div>
-                                  <div className="text-xs text-gray-500">Статус</div>
-                                  <div
-                                    className="text-sm font-semibold text-gray-900 mt-1"
-                                    title="iOS-версия генерируется автоматически"
-                                  >
-                                    {statusLabel(formData.modelProcessing?.status)}
+                            <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+                              {/* GLB Artifact Details */}
+                              <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100">
+                                <div className="flex-1">
+                                  <div className="text-[10px] uppercase font-bold text-gray-400">GLB (Web / Android)</div>
+                                  <div className="text-sm font-semibold text-gray-900 mt-1 flex items-center gap-2">
+                                    {statusLabel(formData.modelProcessing?.glb?.status || formData.modelProcessing?.status)}
+                                    {(formData.modelProcessing?.glb?.status === 'READY' || formData.modelProcessing?.status === 'READY') && <span className="w-2 h-2 rounded-full bg-green-500" />}
                                   </div>
-                                  {formData.modelProcessing?.error && (
-                                    <div className="text-xs text-red-600 mt-2">{formData.modelProcessing.error}</div>
+                                  {(formData.modelProcessing?.glb?.error || formData.modelProcessing?.error) && (
+                                    <div className="text-[10px] text-red-600 mt-1 italic">{formData.modelProcessing?.glb?.error || formData.modelProcessing?.error}</div>
                                   )}
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-xs text-gray-500">Размер</div>
-                                  <div className="text-sm text-gray-900 mt-1">
-                                    {formatBytes(formData.modelProcessing?.sizeBeforeBytes)} →{' '}
-                                    {formatBytes(formData.modelProcessing?.sizeAfterBytes)}
-                                  </div>
-                                  <div className="text-[11px] text-gray-500 mt-1">
-                                    Текстуры ≤ {formData.modelProcessing?.maxTextureSize || 2048}px
+                                  <div className="text-[10px] uppercase font-bold text-gray-400">Размер</div>
+                                  <div className="text-sm text-gray-900 mt-1 font-medium">
+                                    {formatBytes(formData.modelProcessing?.glb?.originalSizeBytes || formData.modelProcessing?.sizeBeforeBytes)}
+                                    <span className="text-gray-400 mx-1">→</span>
+                                    {formatBytes(formData.modelProcessing?.glb?.sizeBytes || formData.modelProcessing?.sizeAfterBytes)}
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="mt-4 flex flex-wrap gap-2">
-                                <span
-                                  className={[
-                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                    formData.modelProcessing?.platforms?.web
-                                      ? 'bg-green-50 text-green-700 border-green-200'
-                                      : 'bg-white text-gray-500 border-gray-200',
-                                  ].join(' ')}
-                                >
-                                  Web
-                                </span>
-                                <span
-                                  className={[
-                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                    formData.modelProcessing?.platforms?.android
-                                      ? 'bg-green-50 text-green-700 border-green-200'
-                                      : 'bg-white text-gray-500 border-gray-200',
-                                  ].join(' ')}
-                                >
-                                  Android
-                                </span>
-                                <span
-                                  className={[
-                                    'px-2.5 py-1 rounded-full text-xs font-semibold border',
-                                    formData.modelProcessing?.platforms?.ios
-                                      ? 'bg-green-50 text-green-700 border-green-200'
-                                      : 'bg-white text-gray-500 border-gray-200',
-                                  ].join(' ')}
-                                  title="iOS-версия генерируется автоматически"
-                                >
-                                  iOS
-                                </span>
+                              {/* USDZ Artifact Details */}
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="text-[10px] uppercase font-bold text-gray-400">USDZ (iOS AR)</div>
+                                  <div className="text-sm font-semibold text-gray-900 mt-1 flex items-center gap-2">
+                                    {formData.modelProcessing?.usdz ? (
+                                      <>
+                                        {statusLabel(formData.modelProcessing.usdz.status)}
+                                        {formData.modelProcessing.usdz.status === 'READY' && <span className="w-2 h-2 rounded-full bg-green-500" />}
+                                      </>
+                                    ) : (
+                                      <span className="text-gray-400 font-normal">Не загружен</span>
+                                    )}
+                                  </div>
+                                  {formData.modelProcessing?.usdz?.error && (
+                                    <div className="text-[10px] text-red-600 mt-1">{formData.modelProcessing.usdz.error}</div>
+                                  )}
+                                </div>
+                                {formData.modelProcessing?.usdz?.sizeBytes && (
+                                  <div className="text-right">
+                                    <div className="text-[10px] uppercase font-bold text-gray-400">Размер</div>
+                                    <div className="text-sm text-gray-900 mt-1 font-medium">
+                                      {formatBytes(formData.modelProcessing.usdz.sizeBytes)}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
-                              {(formData.modelGlbUrl || formData.modelUsdzUrl) && (
-                                <div className="mt-4 space-y-2">
-                                  <div>
-                                    <div className="text-xs text-gray-500 mb-1">GLB (оптимизированный)</div>
-                                    <input
-                                      value={formData.modelGlbUrl || ''}
-                                      readOnly
-                                      className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
-                                    />
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-500 mb-1">USDZ (iOS)</div>
-                                    <input
-                                      value={formData.modelUsdzUrl || ''}
-                                      readOnly
-                                      className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
-                                    />
-                                  </div>
-                                </div>
-                              )}
+                              {/* Platform Badges */}
+                              <div className="pt-2 flex flex-wrap gap-2">
+                                <span className={['px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider', formData.modelProcessing?.platforms?.web ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-100'].join(' ')}>Web</span>
+                                <span className={['px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider', formData.modelProcessing?.platforms?.android ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-100'].join(' ')}>Android</span>
+                                <span className={['px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider', formData.modelProcessing?.platforms?.ios ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-100'].join(' ')}>iOS AR</span>
+                              </div>
                             </div>
+                            {(formData.modelGlbUrl || formData.modelUsdzUrl) && (
+                              <div className="mt-4 space-y-2">
+                                <div>
+                                  <div className="text-[10px] text-gray-500 mb-1">GLB (оптимизированный)</div>
+                                  <input
+                                    value={formData.modelGlbUrl || ''}
+                                    readOnly
+                                    className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                  />
+                                </div>
+                                <div>
+                                  <div className="text-[10px] text-gray-500 mb-1">USDZ (iOS)</div>
+                                  <input
+                                    value={formData.modelUsdzUrl || ''}
+                                    readOnly
+                                    className="w-full p-2 border border-gray-200 rounded-lg text-[11px] font-mono bg-gray-50"
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col items-center justify-center min-h-[300px]">
                             <ModelPreview3D

@@ -468,29 +468,32 @@ async function generateUsdz(inputGlbPath: string, outputUsdzPath: string): Promi
 
 const nowIso = () => new Date().toISOString();
 
-async function updateModelProcessing(objectId: string, patch: Partial<ModelProcessingInfo>) {
+async function updateModelProcessing(objectId: string, patch: any) {
   const db = getAdminDb();
   if (!db) throw new Error('Database not initialized');
-  await db
-    .collection(COLLECTIONS.objects)
-    .doc(objectId)
-    .set(
-      {
-        modelProcessing: {
-          ...(patch as any),
-          updatedAt: nowIso(),
-        },
+
+  // We use dot notation for merging to preserve other fields if needed, 
+  // but since we are restructuring, we might just set the whole object
+  await db.collection(COLLECTIONS.objects).doc(objectId).set(
+    {
+      modelProcessing: {
+        ...patch,
         updatedAt: nowIso(),
       },
-      { merge: true },
-    );
+      updatedAt: nowIso(),
+    },
+    { merge: true }
+  );
 }
 
-export async function runModelProcessingPipeline(objectId: string): Promise<void> {
+/**
+ * GLB Pipeline:
+ * Upload -> Remote Optimize -> READY
+ */
+export async function runGlbPipeline(objectId: string): Promise<void> {
   const db = getAdminDb();
   const storage = getAdminStorage();
-  if (!db) throw new Error('Database not initialized');
-  if (!storage) throw new Error('Storage not initialized');
+  if (!db || !storage) throw new Error('Firebase not initialized');
 
   const bucket = storage.bucket();
   const docRef = db.collection(COLLECTIONS.objects).doc(objectId);
@@ -499,155 +502,134 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
 
   const originalPath = `models/${objectId}/original.glb`;
   const optimizedPath = `models/${objectId}/optimized.glb`;
-  const usdzPath = `models/${objectId}/ios.usdz`;
-
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), `labelcom-3d-${objectId}-`));
-  const tmpOriginal = path.join(tmpDir, 'original.glb');
-  const tmpOptimized = path.join(tmpDir, 'optimized.glb');
-  const tmpUsdz = path.join(tmpDir, 'ios.usdz');
-
-  const cleanup = async () => {
-    try {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    } catch { }
-  };
 
   try {
-    const originalFile = bucket.file(originalPath);
-    const [origMeta] = await originalFile.getMetadata().catch(() => [{ size: undefined } as any]);
-    const sizeBeforeBytes = origMeta?.size ? Number(origMeta.size) : undefined;
-
+    // 1. Initial State
     await updateModelProcessing(objectId, {
-      status: 'OPTIMIZING',
-      startedAt: nowIso(),
-      sizeBeforeBytes: Number.isFinite(sizeBeforeBytes) ? sizeBeforeBytes : undefined,
-      maxTextureSize: MAX_TEXTURE_SIZE,
-      original: {
-        storagePath: originalPath,
-        ...(Number.isFinite(sizeBeforeBytes) ? { sizeBytes: sizeBeforeBytes } : {}),
-      },
-      platforms: { web: false, android: false, ios: false },
+      glb: {
+        status: 'OPTIMIZING',
+        originalUrl: `https://storage.googleapis.com/${bucket.name}/${originalPath}`,
+        updatedAt: nowIso(),
+      }
     });
 
+    const originalFile = bucket.file(originalPath);
     await originalFile.makePublic();
     const originalUrl = `https://storage.googleapis.com/${bucket.name}/${originalPath}`;
 
-    // --- STEP 1: OPTIMIZE GLB REMOTELY ---
+    // Get original size
+    const [meta] = await originalFile.getMetadata();
+    const originalSize = Number(meta.size);
+
+    // 2. Call Remote Processor
+    console.log(`[glb-pipeline] Optimizing ${objectId} via ${PROCESSOR_URL}`);
     const optResult = await optimizeGlbRemotely({ glbUrl: originalUrl });
+
     if (!optResult.ok || !optResult.buffer) {
-      throw new Error(`Remote optimization failed: ${optResult.error}`);
+      throw new Error(optResult.error || 'Remote optimization failed');
     }
 
-    const finalGlb = optResult.buffer;
-    await fs.writeFile(tmpOptimized, finalGlb);
-
-    const sizeAfterBytes = finalGlb.length;
-    if (Number.isFinite(TARGET_GLB_MAX_BYTES) && TARGET_GLB_MAX_BYTES > 0 && sizeAfterBytes > TARGET_GLB_MAX_BYTES) {
-      await updateModelProcessing(objectId, {
-        status: 'ERROR',
-        sizeAfterBytes,
-        error: `GLB слишком большой после оптимизации (${Math.round(sizeAfterBytes / 1024 / 1024)} MB). Цель: ≤ ${Math.round(
-          TARGET_GLB_MAX_BYTES / 1024 / 1024,
-        )} MB.`,
-        finishedAt: nowIso(),
-      });
-      return;
-    }
-
-    const validation = await validateBytes(new Uint8Array(finalGlb));
-    const numErrors = validation?.issues?.numErrors || 0;
-    if (numErrors > 0) {
-      await updateModelProcessing(objectId, {
-        status: 'ERROR',
-        sizeAfterBytes,
-        error: `glTF Validator: ${numErrors} ошибок.`,
-        finishedAt: nowIso(),
-      });
-      return;
-    }
-
-    await updateModelProcessing(objectId, {
-      status: 'OPTIMIZED',
-      sizeAfterBytes,
-    });
-
+    // 3. Save Optimized GLB
     const optimizedFile = bucket.file(optimizedPath);
-    await optimizedFile.save(finalGlb, {
+    await optimizedFile.save(optResult.buffer, {
       metadata: {
         contentType: 'model/gltf-binary',
-        contentDisposition: 'inline',
         cacheControl: 'public, max-age=31536000, immutable',
-      },
+      }
     });
     await optimizedFile.makePublic();
     const optimizedUrl = `https://storage.googleapis.com/${bucket.name}/${optimizedPath}`;
 
-    await docRef.set(
-      {
-        modelGlbUrl: optimizedUrl,
-        has3D: true,
+    // 4. Final Update
+    await updateModelProcessing(objectId, {
+      glb: {
+        status: 'READY',
+        url: optimizedUrl,
+        originalUrl: originalUrl,
+        sizeBytes: optResult.buffer.length,
+        originalSizeBytes: originalSize,
         updatedAt: nowIso(),
-        modelProcessing: {
-          status: 'OPTIMIZED',
-          sizeBeforeBytes: Number.isFinite(sizeBeforeBytes) ? sizeBeforeBytes : undefined,
-          sizeAfterBytes,
-          maxTextureSize: MAX_TEXTURE_SIZE,
-          optimized: { storagePath: optimizedPath, url: optimizedUrl, sizeBytes: sizeAfterBytes },
-          platforms: { web: true, android: true, ios: false },
-          updatedAt: nowIso(),
-        },
       },
-      { merge: true },
-    );
-
-    await updateModelProcessing(objectId, { status: 'GENERATING_USDZ' });
-
-    let usdzUrl: string | undefined;
-    let usdzSizeBytes: number | undefined;
-    let usdzError: string | undefined;
-
-    if (USDZ_CONVERTER_URL) {
-      const remote = await generateUsdzRemotely({
-        bucket: bucket.name,
-        glbUrl: optimizedUrl,
-        usdzPath,
-      });
-      if (remote.ok) {
-        usdzUrl = remote.usdzUrl || `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
-        usdzSizeBytes = remote.sizeBytes;
-      } else {
-        usdzError = remote.error || 'USDZ generation failed';
-        console.warn(`[model-pipeline] Remote USDZ conversion failed: ${usdzError}`);
+      platforms: {
+        web: true,
+        android: true,
+        ios: Boolean(doc.data()?.modelProcessing?.usdz?.status === 'READY')
       }
-    } else {
-      // Gracefully skip USDZ generation if no converter is configured.
-      // Do NOT attempt local fallbacks to avoid ENOENT/subprocess errors in production envs.
-      console.info('[model-pipeline] USDZ converter not configured, skipping iOS generation.');
-      // Keep usdzUrl undefined -> Status becomes READY_WITHOUT_IOS
-    }
+    });
 
-    const finalStatus: ModelProcessingStatus = usdzUrl ? 'READY' : 'READY_WITHOUT_IOS';
+    // Also update top-level field for convenience
+    await docRef.update({
+      modelGlbUrl: optimizedUrl,
+      has3D: true,
+      updatedAt: nowIso()
+    });
 
-    await docRef.set(
-      {
-        ...(usdzUrl ? { modelUsdzUrl: usdzUrl } : {}),
-        has3D: true,
-        updatedAt: nowIso(),
-        modelProcessing: {
-          status: finalStatus,
-          finishedAt: nowIso(),
-          platforms: { web: true, android: true, ios: Boolean(usdzUrl) },
-          ...(usdzUrl ? { usdz: { storagePath: usdzPath, url: usdzUrl, ...(Number.isFinite(usdzSizeBytes) ? { sizeBytes: usdzSizeBytes } : {}) } } : {}),
-          ...(usdzUrl ? { error: null } : usdzError ? { error: usdzError } : {}),
-          updatedAt: nowIso(),
-        },
-      },
-      { merge: true },
-    );
   } catch (error: any) {
-    const message = error?.message ? String(error.message) : 'Model processing failed';
-    await updateModelProcessing(objectId, { status: 'ERROR', error: message, finishedAt: nowIso() }).catch(() => null);
-  } finally {
-    await cleanup();
+    console.error(`[glb-pipeline] Error for ${objectId}:`, error);
+    await updateModelProcessing(objectId, {
+      glb: {
+        status: 'ERROR',
+        error: error.message,
+        updatedAt: nowIso(),
+      }
+    });
   }
 }
+
+/**
+ * USDZ Pipeline:
+ * Manual Upload -> Optional Optimization -> READY_WITH_IOS
+ * (Implementation for manual upload UI will be separate)
+ */
+export async function runUsdzPipeline(objectId: string): Promise<void> {
+  const db = getAdminDb();
+  const storage = getAdminStorage();
+  if (!db || !storage) throw new Error('Firebase not initialized');
+
+  const bucket = storage.bucket();
+  const usdzPath = `models/${objectId}/ios.usdz`;
+  const usdzFile = bucket.file(usdzPath);
+
+  try {
+    const [exists] = await usdzFile.exists();
+    if (!exists) throw new Error('USDZ file not found in storage');
+
+    await usdzFile.makePublic();
+    const url = `https://storage.googleapis.com/${bucket.name}/${usdzPath}`;
+    const [meta] = await usdzFile.getMetadata();
+
+    await updateModelProcessing(objectId, {
+      usdz: {
+        status: 'READY',
+        url: url,
+        sizeBytes: Number(meta.size),
+        updatedAt: nowIso(),
+      },
+      platforms: {
+        web: true,
+        android: true,
+        ios: true
+      }
+    });
+
+    // Update top-level field
+    await db.collection(COLLECTIONS.objects).doc(objectId).update({
+      modelUsdzUrl: url,
+      updatedAt: nowIso()
+    });
+
+  } catch (error: any) {
+    console.error(`[usdz-pipeline] Error for ${objectId}:`, error);
+    await updateModelProcessing(objectId, {
+      usdz: {
+        status: 'ERROR',
+        error: error.message,
+        updatedAt: nowIso(),
+      }
+    });
+  }
+}
+
+// Alias for legacy calls if needed, pointing to the primary GLB pipeline
+export const runModelProcessingPipeline = runGlbPipeline;
+
