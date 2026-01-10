@@ -495,32 +495,46 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     await originalFile.download({ destination: tmpOriginal });
     const inputBuffer = await fs.readFile(tmpOriginal);
 
-    // FIX: Set explicit path for Draco binaries
+    // FIX: Robust Draco WASM handling for Cloud Environments
     const isProd = process.env.NODE_ENV === 'production';
-    const prodDracoDir = path.join(process.cwd(), '.next/standalone/node_modules/draco3d');
-    const srcDracoDir = path.join(process.cwd(), 'node_modules/draco3d');
+
+    // 1. Determine where we will look for/store Draco binaries
+    // In cloud (read-only), we use /tmp. In dev, we use node_modules.
+    const dracoRunDir = isProd ? path.join(os.tmpdir(), 'draco3d') : path.join(process.cwd(), 'node_modules', 'draco3d');
 
     if (isProd) {
-      // Runtime safeguard: Ensure WASM files are present in the standalone folder
-      // This is necessary because some build environments (like App Hosting) might skip postbuild copies
-      const decoderWasm = path.join(prodDracoDir, 'draco_decoder.wasm');
-      if (!fsSync.existsSync(decoderWasm)) {
-        console.log(`[model-pipeline] Draco binaries missing in standalone. Attempting runtime copy...`);
+      if (!fsSync.existsSync(path.join(dracoRunDir, 'draco_decoder.wasm'))) {
+        console.log(`[model-pipeline] Initializing Draco binaries in ${dracoRunDir}...`);
         try {
-          if (!fsSync.existsSync(prodDracoDir)) {
-            fsSync.mkdirSync(prodDracoDir, { recursive: true });
+          if (!fsSync.existsSync(dracoRunDir)) fsSync.mkdirSync(dracoRunDir, { recursive: true });
+
+          // Try to find source binaries dynamically
+          let dracoSrc: string;
+          try {
+            // This finds the path to the installed package
+            dracoSrc = path.dirname(require.resolve('draco3d/package.json'));
+          } catch {
+            // Fallback to various common paths if resolve fails
+            dracoSrc = fsSync.existsSync(path.join(process.cwd(), 'node_modules/draco3d'))
+              ? path.join(process.cwd(), 'node_modules/draco3d')
+              : path.join(process.cwd(), '.next/standalone/node_modules/draco3d');
           }
-          fsSync.copyFileSync(path.join(srcDracoDir, 'draco_encoder.wasm'), path.join(prodDracoDir, 'draco_encoder.wasm'));
-          fsSync.copyFileSync(path.join(srcDracoDir, 'draco_decoder.wasm'), path.join(prodDracoDir, 'draco_decoder.wasm'));
-          console.log(`[model-pipeline] Draco binaries successfully copied to standalone.`);
-        } catch (copyErr: any) {
-          console.error(`[model-pipeline] Failed to copy Draco binaries at runtime: ${copyErr.message}`);
-          // We don't throw yet, as gltf-pipeline might still try to use its own fallback if possible
+
+          ['draco_encoder.wasm', 'draco_decoder.wasm'].forEach(file => {
+            const src = path.join(dracoSrc, file);
+            const dst = path.join(dracoRunDir, file);
+            if (fsSync.existsSync(src)) {
+              fsSync.copyFileSync(src, dst);
+            }
+          });
+          console.log(`[model-pipeline] Draco binaries ready.`);
+        } catch (e: any) {
+          console.error(`[model-pipeline] Draco setup failed: ${e.message}`);
         }
       }
-      process.env.DRACO3D_PATH = prodDracoDir;
+      process.env.DRACO3D_PATH = dracoRunDir;
     } else {
-      process.env.DRACO3D_PATH = srcDracoDir;
+      process.env.DRACO3D_PATH = dracoRunDir;
     }
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
