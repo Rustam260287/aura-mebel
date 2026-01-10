@@ -12,9 +12,9 @@ const withPWA = withPWAInit({
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  serverExternalPackages: ['sharp', 'gltf-pipeline', 'draco3d'],
   experimental: {
     scrollRestoration: true,
-    serverComponentsExternalPackages: ['sharp', 'gltf-pipeline', 'draco3d'],
   },
   typescript: {
     ignoreBuildErrors: false,

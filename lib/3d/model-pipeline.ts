@@ -494,16 +494,14 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
     await originalFile.download({ destination: tmpOriginal });
     const inputBuffer = await fs.readFile(tmpOriginal);
 
-    // FIX: Set explicit path for Draco encoder WASM
-    // In standalone production, it points to the copied file in .next/standalone
-    // In development, it points to the local node_modules
+    // FIX: Set explicit path for Draco binaries
+    // gltf-pipeline uses DRACO3D_PATH to find WASM files for both encoding and decoding
     const isProd = process.env.NODE_ENV === 'production';
     const dracoBase = isProd
       ? path.join(process.cwd(), '.next/standalone/node_modules/draco3d')
       : path.join(process.cwd(), 'node_modules/draco3d');
 
-    // gltf-pipeline checks this env var for the encoder binaries
-    process.env.DRACO_ENCODER_PATH = dracoBase;
+    process.env.DRACO3D_PATH = dracoBase;
 
     const processed = await gltfPipeline.processGlb(inputBuffer, {
       dracoOptions: {
@@ -511,9 +509,6 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
         quantizePositionBits: 11,
         quantizeNormalBits: 8,
         quantizeTexcoordBits: 10,
-        // Explicitly set paths for WASM files to work in both dev and production (standalone)
-        encoderPath: path.join(dracoBase, 'draco_encoder.wasm'),
-        decoderPath: path.join(dracoBase, 'draco_decoder.wasm'),
       },
     });
 
