@@ -7,33 +7,25 @@ const os = require('os');
 const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const https = require('https');
+const gltfPipeline = require('gltf-pipeline');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 
 const PORT = process.env.PORT || 8080;
 const BLENDER_PATH = process.env.BLENDER_PATH || 'blender';
 
 // --- UTILS ---
-
 const downloadFile = (url, destPath) => {
     return new Promise((resolve, reject) => {
         const file = createWriteStream(destPath);
         const protocol = url.startsWith('https') ? https : http;
-
         const request = protocol.get(url, (response) => {
-            if (response.statusCode !== 200) {
-                file.close();
-                return reject(new Error(`HTTP ${response.statusCode}`));
-            }
+            if (response.statusCode !== 200) return reject(new Error(`HTTP ${response.statusCode}`));
             response.pipe(file);
             file.on('finish', () => file.close(() => resolve()));
         });
-
-        request.on('error', (err) => {
-            file.close();
-            reject(err);
-        });
+        request.on('error', (err) => { file.close(); reject(err); });
     });
 };
 
@@ -52,74 +44,60 @@ const runCommand = (cmd, args, cwd) => {
 
 app.get('/health', (req, res) => res.send('OK'));
 
+// ENDPOINT 1: Optimize GLB (Draco + Textures)
+app.post('/optimize', async (req, res) => {
+    const requestId = uuidv4();
+    const workDir = path.join(os.tmpdir(), requestId);
+    try {
+        const { glbUrl, maxTextureSize = 1024 } = req.body;
+        if (!glbUrl) throw new Error('Missing glbUrl');
+
+        await fs.mkdir(workDir);
+        const inputGlb = path.join(workDir, 'input.glb');
+        const outputGlb = path.join(workDir, 'optimized.glb');
+
+        await downloadFile(glbUrl, inputGlb);
+        const buffer = await fs.readFile(inputGlb);
+
+        console.log(`[${requestId}] Optimizing GLB...`);
+        const options = {
+            dracoOptions: { compressionLevel: 7 },
+            resourceDirectory: workDir
+        };
+
+        const result = await gltfPipeline.processGlb(buffer, options);
+        await fs.writeFile(outputGlb, result.glb);
+
+        res.setHeader('Content-Type', 'model/gltf-binary');
+        createReadStream(outputGlb).pipe(res);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ENDPOINT 2: Convert to USDZ
 app.post('/convert', async (req, res) => {
     const requestId = uuidv4();
     const workDir = path.join(os.tmpdir(), requestId);
-
-    // Cleanup helper
-    const cleanup = async () => {
-        try { await fs.rm(workDir, { recursive: true, force: true }); } catch { }
-    };
-
     try {
         const { glbUrl } = req.body;
-        if (!glbUrl) throw new Error('Missing glbUrl');
-
-        console.log(`[${requestId}] Processing: ${glbUrl}`);
         await fs.mkdir(workDir);
-
         const inputGlb = path.join(workDir, 'input.glb');
         const outputUsdc = path.join(workDir, 'output.usdc');
         const finalUsdz = path.join(workDir, 'model.usdz');
 
-        // 1. Download
         await downloadFile(glbUrl, inputGlb);
+        await runCommand(BLENDER_PATH, ['-b', '-P', '/app/convert.py', '--', inputGlb, outputUsdc], workDir);
 
-        // 2. Convert (Blender -> USDC)
-        // Note: We use -b (background) -P (python script)
-        await runCommand(BLENDER_PATH, [
-            '-b',
-            '-P', '/app/convert.py',
-            '--',
-            inputGlb,
-            outputUsdc
-        ], workDir);
-
-        // 3. Verify Output
-        try {
-            await fs.access(outputUsdc);
-        } catch {
-            throw new Error('Blender did not produce output.usdc');
-        }
-
-        // 4. Pack USDZ (zip -0 store)
-        // We include output.usdc and the 'textures' folder if it was created
         const zipArgs = ['-0', '-q', '-r', 'model.usdz', 'output.usdc'];
-        if (existsSync(path.join(workDir, 'textures'))) {
-            zipArgs.push('textures');
-        }
-
+        if (existsSync(path.join(workDir, 'textures'))) zipArgs.push('textures');
         await runCommand('zip', zipArgs, workDir);
 
-        // 5. Stream Response
-        const stats = await fs.stat(finalUsdz);
-        if (stats.size === 0) throw new Error('Zero byte USDZ');
-
-        console.log(`[${requestId}] Success: ${stats.size} bytes`);
         res.setHeader('Content-Type', 'model/vnd.usdz+zip');
-        res.setHeader('Content-Length', stats.size);
-
-        const stream = createReadStream(finalUsdz);
-        stream.pipe(res);
-        stream.on('close', cleanup);
-
+        createReadStream(finalUsdz).pipe(res);
     } catch (err) {
-        console.error(`[${requestId}] Error: ${err.message}`);
-        await cleanup();
-        if (!res.headersSent) {
-            res.status(500).json({ ok: false, error: err.message });
-        }
+        res.status(500).json({ error: err.message });
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 USDZ Converter ready on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 3D Processor ready on port ${PORT}`));

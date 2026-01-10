@@ -15,6 +15,7 @@ const TARGET_GLB_MAX_BYTES = Number(process.env.LABELCOM_TARGET_GLB_MAX_BYTES ||
 const JPEG_QUALITY = Number(process.env.LABELCOM_JPEG_QUALITY || 85);
 // Support AURA prefixed env vars, fallback to LABELCOM for backward compatibility
 const USDZ_CONVERTER_URL = process.env.AURA_USDZ_CONVERTER_URL?.trim() || process.env.LABELCOM_USDZ_CONVERTER_URL?.trim() || '';
+const PROCESSOR_URL = process.env.AURA_3D_PROCESSOR_URL?.trim() || USDZ_CONVERTER_URL;
 const USDZ_CONVERTER_TOKEN = process.env.AURA_USDZ_CONVERTER_TOKEN?.trim() || process.env.LABELCOM_USDZ_CONVERTER_TOKEN?.trim() || '';
 const USDZ_CONVERTER_TIMEOUT_MS = Number(process.env.AURA_USDZ_CONVERTER_TIMEOUT_MS || process.env.LABELCOM_USDZ_CONVERTER_TIMEOUT_MS || 240_000);
 
@@ -294,6 +295,42 @@ type UsdzConverterResponse = {
   details?: string;
 };
 
+async function optimizeGlbRemotely(params: {
+  glbUrl: string;
+}): Promise<{ ok: boolean; buffer?: Buffer; error?: string }> {
+  if (!PROCESSOR_URL) return { ok: false, error: '3D Processor is not configured' };
+
+  const base = PROCESSOR_URL.replace(/\/+$/, '');
+  const endpoint = `${base}/optimize`;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const iamHeaders = await getCloudRunAuthHeaders(base);
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...iamHeaders,
+      },
+      body: JSON.stringify({ glbUrl: params.glbUrl }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      return { ok: false, error: json?.error || `Processor error (${res.status})` };
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    return { ok: true, buffer: Buffer.from(arrayBuffer) };
+  } catch (error: any) {
+    return { ok: false, error: error?.message || 'Optimization failed' };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function getCloudRunAuthHeaders(audienceUrl: string): Promise<Record<string, string>> {
   try {
     const { GoogleAuth } = await import('google-auth-library');
@@ -492,63 +529,16 @@ export async function runModelProcessingPipeline(objectId: string): Promise<void
       platforms: { web: false, android: false, ios: false },
     });
 
-    await originalFile.download({ destination: tmpOriginal });
-    const inputBuffer = await fs.readFile(tmpOriginal);
+    await originalFile.makePublic();
+    const originalUrl = `https://storage.googleapis.com/${bucket.name}/${originalPath}`;
 
-    // FIX: Ultra-robust Draco WASM discovery
-    const isProd = process.env.NODE_ENV === 'production';
-
-    // Check possible locations in order of priority
-    const possibleDirs = [
-      path.join(process.cwd(), '.next/standalone/node_modules/draco3d'),
-      path.join(os.tmpdir(), 'draco3d'),
-      path.join(process.cwd(), 'node_modules/draco3d'),
-    ];
-
-    let dracoRunDir = possibleDirs[2]; // Default to dev node_modules
-    for (const dir of possibleDirs) {
-      if (fsSync.existsSync(path.join(dir, 'draco_decoder.wasm'))) {
-        dracoRunDir = dir;
-        break;
-      }
+    // --- STEP 1: OPTIMIZE GLB REMOTELY ---
+    const optResult = await optimizeGlbRemotely({ glbUrl: originalUrl });
+    if (!optResult.ok || !optResult.buffer) {
+      throw new Error(`Remote optimization failed: ${optResult.error}`);
     }
 
-    if (isProd && dracoRunDir !== possibleDirs[0] && dracoRunDir !== possibleDirs[1]) {
-      console.log(`[model-pipeline] Draco binaries missing in expected locations. Using /tmp fallback.`);
-      dracoRunDir = possibleDirs[1];
-      if (!fsSync.existsSync(dracoRunDir)) fsSync.mkdirSync(dracoRunDir, { recursive: true });
-
-      // Last ditch attempt to find source
-      const srcDirs = [path.join(process.cwd(), 'node_modules/draco3d'), '/workspace/node_modules/draco3d'];
-      for (const src of srcDirs) {
-        if (fsSync.existsSync(path.join(src, 'draco_encoder.wasm'))) {
-          fsSync.copyFileSync(path.join(src, 'draco_encoder.wasm'), path.join(dracoRunDir, 'draco_encoder.wasm'));
-          fsSync.copyFileSync(path.join(src, 'draco_decoder.wasm'), path.join(dracoRunDir, 'draco_decoder.wasm'));
-          break;
-        }
-      }
-    }
-
-    process.env.DRACO3D_PATH = dracoRunDir;
-
-    const processed = await gltfPipeline.processGlb(inputBuffer, {
-      dracoOptions: {
-        compressionLevel: 7,
-        quantizePositionBits: 11,
-        quantizeNormalBits: 8,
-        quantizeTexcoordBits: 10,
-        // FORCE paths via any casting to bypass TS issues and enforce the path
-        ...({
-          encoderPath: path.join(dracoRunDir, 'draco_encoder.wasm'),
-          decoderPath: path.join(dracoRunDir, 'draco_decoder.wasm'),
-        } as any)
-      },
-    });
-
-    const dracoGlb = Buffer.isBuffer(processed.glb) ? processed.glb : Buffer.from(processed.glb);
-    const fixedGlb = fixAccessorMinMaxForValidator(dracoGlb);
-    const rewritten = await rewriteEmbeddedTextures(fixedGlb);
-    const finalGlb = fixAccessorMinMaxForValidator(rewritten.glb);
+    const finalGlb = optResult.buffer;
     await fs.writeFile(tmpOptimized, finalGlb);
 
     const sizeAfterBytes = finalGlb.length;
