@@ -145,24 +145,18 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
     return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
   };
 
-  const statusLabel = (status?: ModelProcessingStatus) => {
+  const statusLabel = (status?: ModelProcessingStatus | string) => {
     switch (status) {
-      case 'UPLOADED':
-        return 'Файл загружен';
+      case 'PENDING':
+        return 'Ожидание…';
       case 'OPTIMIZING':
-        return 'Оптимизация…';
-      case 'OPTIMIZED':
-        return 'Оптимизировано';
-      case 'GENERATING_USDZ':
-        return 'Генерация iOS-версии…';
+        return 'Обработка…';
       case 'READY':
-        return 'Готово для iOS';
-      case 'READY_WITHOUT_IOS':
-        return 'iOS недоступно';
+        return 'Готово';
       case 'ERROR':
         return 'Ошибка';
       default:
-        return '—';
+        return status || '—';
     }
   };
 

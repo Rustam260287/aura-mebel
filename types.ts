@@ -44,16 +44,13 @@ export const VISITOR_STAGES = [
 export type VisitorStage = (typeof VISITOR_STAGES)[number];
 
 export type ModelProcessingStatus =
-  | 'UPLOADING_GLB'
-  | 'OPTIMIZING_GLB'
+  | 'PENDING'
+  | 'OPTIMIZING'
   | 'READY'
-  | 'UPLOADING_USDZ'
-  | 'OPTIMIZING_USDZ'
-  | 'READY_WITH_IOS'
   | 'ERROR';
 
 export type ModelArtifactInfo = {
-  status: 'PENDING' | 'OPTIMIZING' | 'READY' | 'ERROR';
+  status: ModelProcessingStatus;
   url?: string;
   originalUrl?: string; // For GLB: the raw upload
   sizeBytes?: number;
