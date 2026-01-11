@@ -1,4 +1,4 @@
-import { ActionPlan, AssistantState, MetaEvent } from './types';
+import { ActionPlan, AssistantState, MetaEvent, SessionHistory, NotificationType } from './types';
 
 export class MetaAgent {
     private currentState: AssistantState = AssistantState.IDLE;

@@ -14,6 +14,7 @@ export type MetaEvent =
     | { type: 'VIEW_IN_AR' }
     | { type: 'AR_STARTED' }
     | { type: 'AR_ENDED' }
+    | { type: 'SNAPSHOT_TAKEN' }
     | { type: 'OPEN_OBJECT_FROM_DEEPLINK'; payload: { objectId: string } }
     | { type: 'REQUEST_SHARE_OBJECT'; payload: any }
     | { type: 'REQUEST_MANAGER_CONTACT'; payload?: any }
