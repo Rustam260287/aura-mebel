@@ -24,17 +24,17 @@ type PlacedItem = {
 type GestureState =
   | { mode: 'none' }
   | {
-      mode: 'drag';
-      pointerId: number;
-      offsetLocal: THREE.Vector3;
-    }
+    mode: 'drag';
+    pointerId: number;
+    offsetLocal: THREE.Vector3;
+  }
   | {
-      mode: 'pinch';
-      startDistance: number;
-      startAngle: number;
-      startUserScale: number;
-      startRotationY: number;
-    };
+    mode: 'pinch';
+    startDistance: number;
+    startAngle: number;
+    startUserScale: number;
+    startRotationY: number;
+  };
 
 interface SceneARViewerProps {
   scene: ScenePresetPublic;
@@ -140,12 +140,12 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
         if (session && session.readyState === 'active') {
           await session.end().catch(() => null);
         }
-      } catch {}
+      } catch { }
 
       try {
         const renderer = rendererRef.current;
         if (renderer) renderer.setAnimationLoop(null);
-      } catch {}
+      } catch { }
 
       if (reason !== 'unmount' && startedAtRef.current != null) {
         if (durationSec != null) {
@@ -318,13 +318,13 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
       window.removeEventListener('orientationchange', handleResize);
       try {
         renderer.setAnimationLoop(null);
-      } catch {}
+      } catch { }
       try {
         renderer.dispose();
-      } catch {}
+      } catch { }
       try {
         container.removeChild(renderer.domElement);
-      } catch {}
+      } catch { }
       rendererRef.current = null;
       sceneRef.current = null;
       cameraRef.current = null;
@@ -417,7 +417,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
     for (const item of itemsRef.current) {
       try {
         anchor.remove(item.group);
-      } catch {}
+      } catch { }
     }
     itemsRef.current = [];
     placedRef.current = true;
@@ -600,7 +600,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
     const [removed] = items.splice(idx, 1);
     try {
       anchor.remove(removed.group);
-    } catch {}
+    } catch { }
     selectItemByKey(null);
   }, [selectItemByKey]);
 
