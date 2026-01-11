@@ -11,6 +11,7 @@ import { ARViewer, type ARViewerHandle } from './ARViewer';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
+import { useAssistant } from '../contexts/AssistantContext';
 
 interface ObjectDetailProps {
   object: ObjectPublic;
@@ -27,6 +28,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 }) => {
   const router = useRouter();
   const { state: experienceState, emitEvent } = useExperience();
+  const { emitMetaEvent } = useAssistant();
   const [isAROpen, setIsAROpen] = useState(false);
   const [uiState, setUiState] = useState<ObjectPageUiState>('DEFAULT');
   const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
@@ -131,40 +133,30 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     };
   }, [uiState]);
 
+  // --- Meta-Agent Integration: Tracking & Notifications ---
+  // Replaces local hint logic with centralized Agent logic.
+
+  // 1. Session Start (User Entered Object) & Time Tick
+  useEffect(() => {
+    const startTime = Date.now();
+    emitMetaEvent({ type: 'USER_ENTERED_OBJECT', payload: { objectId: object.id } });
+
+    const interval = setInterval(() => {
+      const timeOnPage = Date.now() - startTime;
+      emitMetaEvent({ type: 'TIME_TICK', payload: { timeOnPage } });
+    }, 1000); // 1s tick for precision in Agent
+
+    return () => clearInterval(interval);
+  }, [emitMetaEvent, object.id]);
+
+  // 2. Clear Hints on Exit
   useEffect(() => {
     if (uiState !== 'POST_AR') {
-      setPostArHintVisible(false);
-      return undefined;
+      // Agent handles state, UI just renders what Agent says in ChatBubble.
+      // We don't need local state for hints anymore unless for animation.
+      setPostArHintVisible(false); // Keep for legacy or transitions if needed, but logic is moved.
     }
-
-    if (isObjectSaved) {
-      setPostArHintVisible(false);
-      return undefined;
-    }
-
-    if (typeof window === 'undefined') return undefined;
-    const key = `label_post_ar_hint:${object.id}`;
-
-    try {
-      if (window.localStorage.getItem(key)) {
-        setPostArHintVisible(false);
-        return undefined;
-      }
-    } catch {
-      setPostArHintVisible(false);
-      return undefined;
-    }
-
-    setPostArHintVisible(true);
-    const timer = window.setTimeout(() => {
-      setPostArHintVisible(false);
-      try {
-        window.localStorage.setItem(key, '1');
-      } catch { }
-    }, 2600);
-
-    return () => window.clearTimeout(timer);
-  }, [isObjectSaved, object.id, uiState]);
+  }, [uiState]);
 
 
   useEffect(() => {
@@ -307,6 +299,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         setInline3dState('loaded');
       });
       emitEvent({ type: 'VIEW_3D' });
+      emitMetaEvent({ type: 'OPENED_3D' });
       if (open3dLoggedForObjectRef.current === object.id) return;
       open3dLoggedForObjectRef.current = object.id;
       trackJourneyEvent({ type: 'OPEN_3D', objectId: object.id });
@@ -479,6 +472,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     }
 
     emitEvent({ type: 'ENTER_AR' });
+    emitMetaEvent({ type: 'OPENED_AR' });
     setPostArHintVisible(false);
     setUiState('IN_AR');
     setIsAROpen(true);
@@ -568,7 +562,17 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               )}
             </>
           ) : images.length > 0 ? (
-            <div className="absolute inset-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex">
+            <div
+              className="absolute inset-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex"
+              onScroll={() => {
+                // Debounce this if possible, or let Agent handle spam (SessionHistory.galleryScrolled is boolean, so 1 event is enough).
+                // But to avoid flooding, maybe just check if not emitted?
+                // Agent status is cheap to check locally or just emit.
+                // emitting once per scroll session is hard without state.
+                // I'll emit it, Agent handles dedup.
+                emitMetaEvent({ type: 'SCROLLED_GALLERY' });
+              }}
+            >
               {images.map((src, index) => (
                 <div key={`${src}:${index}`} className="relative min-w-full h-full snap-center bg-transparent">
                   <Image

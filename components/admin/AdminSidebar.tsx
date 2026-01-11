@@ -30,11 +30,10 @@ const NavLink: React.FC<{
 }> = ({ label, isActive, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center px-4 py-3 text-left transition-colors duration-200 ${
-      isActive
-        ? 'bg-brand-brown text-white'
-        : 'text-brand-charcoal hover:bg-brand-cream-dark'
-    }`}
+    className={`w-full flex items-center px-4 py-3 text-left transition-colors duration-200 ${isActive
+      ? 'bg-brand-brown text-white'
+      : 'text-brand-charcoal hover:bg-brand-cream-dark'
+      }`}
   >
     {children}
     <span className="ml-3">{label}</span>
@@ -58,7 +57,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       />
       <aside className={`fixed inset-y-0 left-0 w-64 bg-white z-50 shadow-lg flex flex-col transition-transform transform md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="px-6 py-4 border-b flex items-center justify-between">
-          <h2 className="text-2xl font-serif text-brand-brown">Labelcom / Studio</h2>
+          <h2 className="text-2xl font-serif text-brand-brown">Aura Control</h2>
         </div>
         <nav className="flex-grow mt-6">
           <div className="px-4 pb-2 text-xs uppercase tracking-wider text-muted-gray">
@@ -103,13 +102,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <CubeIcon className="h-6 w-6" />
               </NavLink>
               <NavLink
-                label="Сцены / комплекты"
+                label="Конфигурации"
                 isActive={activeView === 'scenes'}
                 onClick={() => setView('scenes')}
               >
                 <CubeIcon className="h-6 w-6" />
               </NavLink>
-              <NavLink label="3D и AR" isActive={activeView === 'assets'} onClick={() => setView('assets')}>
+              <NavLink label="Визуальная примерка" isActive={activeView === 'assets'} onClick={() => setView('assets')}>
                 <CubeTransparentIcon className="h-6 w-6" />
               </NavLink>
               <NavLink label="Медиа" isActive={activeView === 'media'} onClick={() => setView('media')}>
