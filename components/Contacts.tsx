@@ -12,13 +12,6 @@ const addresses = [
     phone: '+7 (987) 216-70-75',
     hours: 'Пн–Сб 10:00–20:00, Вс 11:00–19:00',
     coordinates: 'https://yandex.ru/map-widget/v1/?ll=52.298522%2C54.901576&mode=search&ol=geo&ouri=ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgg1NzQ1MzAzORJG0KDQvtGB0YHQuNGPLCDQoNC10YHQv9GD0LHQu9C40LrQsCDQotCw0YLQsNGA0YHRgtCw0L0sINCQ0LvRjNC80LXRgtGM0LXQstGB0LosINGD0LvQuNGG0LAg0JvQtdC90LjQvdCwLCA4NUEiCg2hQlFCFcRyUUI%2C&z=17.09'
-  },
-  {
-    city: 'Москва',
-    line: 'Башня Федерация, 45 этаж',
-    phone: '+7 (987) 216-70-75',
-    hours: 'Пн–Вс 10:00–22:00',
-    coordinates: 'https://yandex.ru/map-widget/v1/?ll=37.537576%2C55.749511&mode=search&ol=geo&ouri=ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgg1NjcxMDU4ORJN0KDQvtGB0YHQuNGPLCDQnNC-0YHQutCy0LAsINCf0YDQtdGB0L3QtdC90YHQutCw0Y8g0L3QsNCx0LXRgNC10LbQvdCw0Y8sIDEyIgoNa_ZMQhVSa1xC&z=16.63'
   }
 ];
 

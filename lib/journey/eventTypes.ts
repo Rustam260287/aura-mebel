@@ -43,10 +43,11 @@ export type JourneyMeta = {
     reason: 'pricing' | 'purchase' | 'contact';
     objectId?: string;
     objectName?: string;
-    actions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
-    arDurationSec: number | null;
-    lastQuestions: string[];
-    timestamp: string;
+    actions?: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
+    arDurationSec?: number | null;
+    lastQuestions?: string[];
+    timestamp?: string;
+    channel?: string;
   };
 };
 

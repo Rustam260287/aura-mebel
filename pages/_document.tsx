@@ -248,8 +248,7 @@ export default function Document() {
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* NEW SVG Favicon (Priority) */}
-        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
 
         {/* PWA & Mobile Icons */}
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />

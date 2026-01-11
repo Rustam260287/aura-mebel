@@ -59,11 +59,22 @@ const config: Config = {
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out forwards',
         'scale-in': 'scaleIn 0.4s ease-out forwards',
+        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+        'bounce-slow': 'bounce 3s infinite',
+        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
       },
       keyframes: {
+        bounce: {
+          '0%, 100%': { transform: 'translateY(-5%)', animationTimingFunction: 'cubic-bezier(0.8,0,1,1)' },
+          '50%': { transform: 'none', animationTimingFunction: 'cubic-bezier(0,0,0.2,1)' },
+        },
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         scaleIn: {
           '0%': { opacity: '0', transform: 'scale(0.98)' },

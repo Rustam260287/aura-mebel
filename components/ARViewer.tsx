@@ -357,34 +357,64 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       };
     }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
 
-    const captureModelViewerJpeg = useCallback(async (): Promise<{ blob: Blob; width?: number; height?: number }> => {
-      const el = modelViewerRef.current as any;
-      if (!el) throw new Error('model-viewer not ready');
-
-      // Method 1: Canvas from Shadow Root (Most reliable for WebXR with preserve-drawing-buffer)
-      const canvas = (el.shadowRoot?.querySelector?.('canvas') as HTMLCanvasElement | null) || null;
-      if (canvas) {
-        try {
-          const dataUrl = canvas.toDataURL('image/png');
-          const blob = await fetch(dataUrl).then((r) => r.blob());
-          return { blob, width: canvas.width, height: canvas.height };
-        } catch (e) {
-          console.warn('Canvas capture failed, falling back to toDataURL API', e);
-        }
+    const captureScreenSnapshot = useCallback(async (): Promise<{ blob: Blob; width: number; height: number }> => {
+      // Requirements: WebXR capture via Screen Capture API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        throw new Error('Screen capture not supported');
       }
 
-      // Method 2: model-viewer API (Fallback)
-      if (typeof el.toDataURL === 'function') {
-        const maybe = el.toDataURL('image/png');
-        const dataUrl = typeof maybe === 'string' ? maybe : await maybe;
-        if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
-          const blob = await fetch(dataUrl).then((r) => r.blob());
-          // Can't easily get dimensions here without loading image, assuming screen size approximately
-          return { blob };
-        }
+      // 1. Request stream (System prompt appears here)
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          width: { ideal: window.screen.width * window.devicePixelRatio },
+          height: { ideal: window.screen.height * window.devicePixelRatio },
+          frameRate: { ideal: 10 } // We only need 1 frame
+        },
+        audio: false
+      });
+
+      // 2. Setup hidden video to render stream
+      const video = document.createElement('video');
+      video.playsInline = true;
+      video.muted = true;
+      video.srcObject = stream;
+
+      await new Promise<void>((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().then(() => resolve());
+        };
+      });
+
+      // Wait a tiny bit for the frame to settle (avoid black frame)
+      await new Promise(r => setTimeout(r, 200));
+
+      // 3. Draw to canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        stream.getTracks().forEach(t => t.stop());
+        throw new Error('Canvas context failed');
       }
 
-      throw new Error('snapshot not supported');
+      ctx.drawImage(video, 0, 0);
+
+      // 4. STOP TRACKS IMMEDIATELY (Quiet UX)
+      stream.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+      video.remove();
+
+      // 5. Convert to Blob
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve({ blob, width: canvas.width, height: canvas.height });
+          } else {
+            reject(new Error('Blob creation failed'));
+          }
+        }, 'image/png');
+      });
     }, []);
 
     const saveToDevice = (blob: Blob, filename: string) => {
@@ -427,19 +457,19 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       trackJourneyEvent({ type: 'AR_SNAPSHOT_REQUESTED', objectId });
       setIsCapturing(true);
 
-      // Flash effect immediately
+      // Flash effect immediately (Feedback "I heard you")
       setShowFlash(true);
       setTimeout(() => setShowFlash(false), 150);
 
       try {
-        const capture = await captureModelViewerJpeg();
+        // Use Screen Capture API for WebXR
+        const capture = await captureScreenSnapshot();
 
         // 1. Immediate Save (Parallel)
         const filename = `aura-${new Date().toISOString().slice(0, 10)}.png`;
         saveToDevice(capture.blob, filename);
 
         // 2. Upload (Parallel)
-        // We don't await this blocking the UI feedback.
         createArSnapshot({
           sessionId,
           objectId,
@@ -453,7 +483,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         // 3. Feedback (Toast with Share Action)
         const file = new File([capture.blob], filename, { type: 'image/png' });
 
-        // Custom Toast Content
         addToast(
           <div className="flex items-center gap-3">
             <span>✅ Снимок сохранён</span>
@@ -473,13 +502,21 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           4500
         );
 
-      } catch (e) {
+      } catch (e: any) {
         console.warn('[ARViewer] snapshot failed:', e);
-        addToast('Не удалось сохранить снимок', 'error', 2200);
+
+        if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+          // User cancelled the screen share prompt
+          addToast('Снимок отменён', 'info', 2000);
+        } else if (e.message === 'Screen capture not supported') {
+          addToast('Снимок недоступен на этом устройстве', 'error', 2500);
+        } else {
+          addToast('Не удалось сохранить снимок', 'error', 2200);
+        }
       } finally {
         setIsCapturing(false);
       }
-    }, [addToast, captureModelViewerJpeg, ensureArSession, isCapturing, isPresentingAr, objectId]);
+    }, [addToast, captureScreenSnapshot, ensureArSession, isCapturing, isPresentingAr, objectId]);
 
     return (
       <div

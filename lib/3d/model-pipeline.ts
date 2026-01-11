@@ -507,7 +507,7 @@ export async function runGlbPipeline(objectId: string): Promise<void> {
     // 1. Initial State
     await updateModelProcessing(objectId, {
       glb: {
-        status: 'OPTIMIZING',
+        status: PROCESSOR_URL ? 'OPTIMIZING' : 'VALIDATING',
         originalUrl: `https://storage.googleapis.com/${bucket.name}/${originalPath}`,
         updatedAt: nowIso(),
       }
@@ -521,22 +521,50 @@ export async function runGlbPipeline(objectId: string): Promise<void> {
     const [meta] = await originalFile.getMetadata();
     const originalSize = Number(meta.size);
 
-    // 2. Call Remote Processor
-    console.log(`[glb-pipeline] Optimizing ${objectId} via ${PROCESSOR_URL}`);
-    const optResult = await optimizeGlbRemotely({ glbUrl: originalUrl });
+    // 2. Try Remote Processor, Fallback to Pass-through
+    const optimizedFile = bucket.file(optimizedPath);
+    let finalSizeBytes = 0;
+    let optimizationSuccess = false;
 
-    if (!optResult.ok || !optResult.buffer) {
-      throw new Error(optResult.error || 'Remote optimization failed');
+    if (PROCESSOR_URL) {
+      try {
+        console.log(`[glb-pipeline] Optimizing ${objectId} via ${PROCESSOR_URL}`);
+        const optResult = await optimizeGlbRemotely({ glbUrl: originalUrl });
+
+        if (optResult.ok && optResult.buffer) {
+          await optimizedFile.save(optResult.buffer, {
+            metadata: {
+              contentType: 'model/gltf-binary',
+              cacheControl: 'public, max-age=31536000, immutable',
+            }
+          });
+          finalSizeBytes = optResult.buffer.length;
+          optimizationSuccess = true;
+        } else {
+          console.warn(`[glb-pipeline] Optimization failed: ${optResult.error}. Falling back to copy.`);
+        }
+      } catch (err: any) {
+        console.warn(`[glb-pipeline] Optimization exception: ${err.message}. Falling back to copy.`);
+      }
+    } else {
+      console.log(`[glb-pipeline] No 3D Processor configured. Using pass-through for ${objectId}`);
     }
 
-    // 3. Save Optimized GLB
-    const optimizedFile = bucket.file(optimizedPath);
-    await optimizedFile.save(optResult.buffer, {
-      metadata: {
+    if (!optimizationSuccess) {
+      // Pass-through: Header Check + Server-side Copy
+      const [header] = await originalFile.download({ start: 0, end: 3 });
+      if (header.toString('utf8', 0, 4) !== 'glTF') {
+        throw new Error('Invalid GLB file: Missing glTF magic header');
+      }
+
+      await originalFile.copy(optimizedFile);
+      await optimizedFile.setMetadata({
         contentType: 'model/gltf-binary',
         cacheControl: 'public, max-age=31536000, immutable',
-      }
-    });
+      });
+      finalSizeBytes = originalSize;
+    }
+
     await optimizedFile.makePublic();
     const optimizedUrl = `https://storage.googleapis.com/${bucket.name}/${optimizedPath}`;
 
@@ -546,9 +574,11 @@ export async function runGlbPipeline(objectId: string): Promise<void> {
         status: 'READY',
         url: optimizedUrl,
         originalUrl: originalUrl,
-        sizeBytes: optResult.buffer.length,
+        sizeBytes: finalSizeBytes,
         originalSizeBytes: originalSize,
         updatedAt: nowIso(),
+        // Add a flag to indicate if it was optimized or just passed through
+        method: optimizationSuccess ? 'optimized' : 'passthrough',
       },
       platforms: {
         web: true,

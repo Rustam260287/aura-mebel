@@ -9,7 +9,8 @@ import { ToastProvider } from '../contexts/ToastContext';
 import { SavedProvider } from '../contexts/SavedContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastContainer } from './ToastContainer';
-import { ChatWidget } from './ChatWidget';
+import { AssistantProvider } from '../contexts/AssistantContext';
+import { AssistantRenderer } from './Assistant/AssistantRenderer';
 import { useObjectModals } from '../hooks/useObjectModals';
 import { FloatingMenuButton } from './FloatingMenuButton';
 import { MobileMenuOverlay } from './MobileMenuOverlay';
@@ -216,18 +217,20 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
           <ExperienceProvider>
             <SavedProvider>
               <ThemeProvider>
-                {children}
-                <ToastContainer />
-                <ExperienceStateOrchestrator />
-                <ChatWidget />
-                <MobileMenuChrome />
-                <ImageZoomModal
-                  isOpen={imageModalState.isOpen}
-                  images={imageModalState.images}
-                  initialIndex={imageModalState.initialIndex}
-                  objectTitle={imageModalState.objectName}
-                  onClose={closeImageModal}
-                />
+                <AssistantProvider>
+                  {children}
+                  <ToastContainer />
+                  <ExperienceStateOrchestrator />
+                  <AssistantRenderer />
+                  <MobileMenuChrome />
+                  <ImageZoomModal
+                    isOpen={imageModalState.isOpen}
+                    images={imageModalState.images}
+                    initialIndex={imageModalState.initialIndex}
+                    objectTitle={imageModalState.objectName}
+                    onClose={closeImageModal}
+                  />
+                </AssistantProvider>
               </ThemeProvider>
             </SavedProvider>
           </ExperienceProvider>
