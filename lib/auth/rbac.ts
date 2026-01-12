@@ -22,8 +22,11 @@ export async function getUserRole(req: NextApiRequest): Promise<TeamRole | null>
         const decodedToken = await auth.verifyIdToken(token);
 
         // 1. Legacy Admin Check (Env Vars)
+        const isLegacy = isAdminToken(decodedToken);
+        console.log(`[RBAC] User: ${decodedToken.email} (${decodedToken.uid}) | LegacyAdmin: ${isLegacy}`);
+
         // Если это "старый" админ из .env, считаем его Владельцем
-        if (isAdminToken(decodedToken)) {
+        if (isLegacy) {
             return 'owner';
         }
 
@@ -35,15 +38,23 @@ export async function getUserRole(req: NextApiRequest): Promise<TeamRole | null>
 
         if (userDoc.exists) {
             const data = userDoc.data();
-            return (data?.role as TeamRole) || null;
+            const role = (data?.role as TeamRole) || null;
+            console.log(`[RBAC] Firestore Role for ${uid}: ${role}`);
+            return role;
         }
 
+        console.log(`[RBAC] No role found for ${uid}`);
         return null;
 
     } catch (error) {
         console.error('RBAC getUserRole error:', error);
         return null;
     }
+}
+
+// Helper to log why access failed
+function logAccessRefusal(details: string, debugData?: any) {
+    console.warn(`[RBAC] Access Refused: ${details}`, debugData ? JSON.stringify(debugData, null, 2) : '');
 }
 
 /**
@@ -54,7 +65,11 @@ export async function verifyRole(req: NextApiRequest, res: NextApiResponse, allo
     const role = await getUserRole(req);
 
     if (!role || !allowedRoles.includes(role)) {
-        res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+        res.status(403).json({
+            error: 'Доступ запрещен: Недостаточно прав',
+            foundRole: role || 'guest',
+            required: allowedRoles
+        });
         return false;
     }
 

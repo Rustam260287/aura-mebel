@@ -77,7 +77,15 @@ export const AdminHandoff: React.FC = () => {
       });
 
       if (!res.ok) {
-        throw new Error(`Error ${res.status}`);
+        let errorMsg = `Ошибка ${res.status}`;
+        try {
+          const errorData = await res.json();
+          if (errorData.error) errorMsg = errorData.error;
+          if (errorData.foundRole) errorMsg += ` (Ваша роль: ${errorData.foundRole})`;
+        } catch (e) {
+          // ignore json parse error
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await res.json();
