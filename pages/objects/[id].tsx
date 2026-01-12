@@ -118,7 +118,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
 
     // Draft protection: Hide non-active objects in production
     const isDev = process.env.NODE_ENV === 'development';
-    if (!isDev && objectData.status !== 'ready') {
+    // Allow undefined status (legacy) but block explicit draft/archived
+    if (!isDev && (objectData.status === 'draft' || objectData.status === 'archived')) {
       return { notFound: true };
     }
 

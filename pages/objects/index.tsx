@@ -235,7 +235,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         const found = await SearchService.search({ query: queryParam, limit: 30 });
         objects = found.map((p) => toPublicObject(p, p.id));
         if (!isDev) {
-          objects = objects.filter(o => o.status === 'ready');
+          objects = objects.filter(o => o.status !== 'draft' && o.status !== 'archived');
         }
         totalItems = objects.length;
         totalPages = 1;
