@@ -176,6 +176,7 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
                     </div>
                     <Link
                       href={`/objects/${obj.id}`}
+                      prefetch={false}
                       className="text-sm font-semibold text-brand-brown hover:text-brand-charcoal transition-colors"
                     >
                       Открыть
