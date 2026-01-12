@@ -12,6 +12,7 @@ import { trackJourneyEvent } from '../lib/journey/client';
 import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
 import { useAssistant } from '../contexts/AssistantContext';
+import { optimizeScene } from '../lib/3d/optimizer';
 
 interface ObjectDetailProps {
   object: ObjectPublic;
@@ -282,6 +283,21 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     const handleLoad = () => {
       clearTimers();
       setInline3dError(null);
+
+      // Aura 3D Optimization
+      try {
+        const symbol = Object.getOwnPropertySymbols(el).find(s => s.description === 'model-viewer');
+        if (symbol) {
+          const internal = (el as any)[symbol];
+          const scene = internal?.model?.scene || internal?.scene;
+          if (scene) {
+            optimizeScene(scene);
+          }
+        }
+      } catch (err) {
+        console.warn('[Aura] Optimizer warning:', err);
+      }
+
       try {
         autofitModelViewer(el);
       } catch { }

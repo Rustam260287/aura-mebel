@@ -58,8 +58,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl rounded-tr-sm shadow-2xl border border-white/20 p-4 max-w-[320px] animate-fade-in-up transition-all duration-300">
+        <div className="fixed bottom-6 right-6 z-[9991] flex flex-col items-end pointer-events-none">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl rounded-tr-sm shadow-2xl border border-white/20 p-4 max-w-[320px] animate-fade-in-up transition-all duration-300 pointer-events-auto">
                 <div className="flex justify-between items-start gap-4 mb-2">
                     <h4 className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Aura Assistant</h4>
                     <div className="flex gap-2">
