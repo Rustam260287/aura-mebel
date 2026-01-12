@@ -81,6 +81,7 @@ export interface ObjectPublic {
   id: string;
   name: string;
   objectType?: string;
+  category?: string;
   description?: string;
   imageUrls: string[];
 

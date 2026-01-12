@@ -63,12 +63,17 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
   const modelGlbUrl = pickGlbUrl(rawModelGlbUrl, modelsGlbUrl);
   const modelUsdzUrl = pickUsdzUrl(rawModelUsdzUrl, modelsUsdzUrl);
 
-  const category = asString(record.objectType) || asString(record.category) || '';
-  const isSoft = category === 'Мягкая мебель';
+  const categoryVal = asString(record.category);
+  const typeVal = asString(record.objectType);
+  const categoryCheck = (categoryVal || typeVal || '').toLowerCase();
+
+  const SOFT_CATEGORIES = ['мягкая мебель', 'sofa', 'диваны', 'кресла', 'пуфы'];
+  const isSoft = SOFT_CATEGORIES.some(c => categoryCheck.includes(c));
+
   const rawStatus = asString(record.status) as ObjectStatus | '';
 
-  // Soft furniture: respect existing status (default active/ready)
-  // Others: force draft
+  // Soft furniture: respect existing status. Others: force draft.
+  // Exception: if rawStatus is explicitly 'draft'/'archived', keep it.
   const status: ObjectStatus = isSoft
     ? (rawStatus === 'draft' || rawStatus === 'archived' ? rawStatus : 'ready')
     : 'draft';
@@ -76,7 +81,8 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
   return {
     id,
     name: asString(record.name),
-    objectType: asString(record.objectType) || asString(record.category) || undefined,
+    category: categoryVal,
+    objectType: typeVal || categoryVal || undefined,
     imageUrls: asStringArray(record.imageUrls),
     description: asString(record.description) || undefined,
     modelGlbUrl: modelGlbUrl || undefined,
