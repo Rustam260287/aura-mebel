@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CuratorService } from '../../../lib/services/curatorService';
+import { CuratorService } from '../../../../lib/services/curatorService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {

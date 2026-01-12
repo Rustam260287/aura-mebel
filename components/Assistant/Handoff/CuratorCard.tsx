@@ -4,16 +4,17 @@ import { getWhatsAppLink, getTelegramLink } from '../../../lib/config/contacts';
 
 export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { curatorProfile } = useAssistant();
-    const profile = curatorProfile || {};
+    // Cast to any or Partial to avoid "Property does not exist on type {}"
+    const profile = curatorProfile || ({} as any);
 
     const handleContact = (type: 'whatsapp' | 'telegram' | 'phone') => {
         let url = '';
-        if (type === 'whatsapp' && profile.whatsappNumber) {
-            url = getWhatsAppLink(profile.whatsappNumber);
-        } else if (type === 'telegram' && profile.telegramUsername) {
-            url = getTelegramLink(profile.telegramUsername);
-        } else if (type === 'phone' && profile.phone) {
-            url = `tel:${profile.phone.replace(/[^\d+]/g, '')}`;
+        if (type === 'whatsapp' && profile.contacts?.whatsapp) {
+            url = getWhatsAppLink(profile.contacts.whatsapp!);
+        } else if (type === 'telegram' && profile.contacts?.telegram) {
+            url = getTelegramLink(profile.contacts.telegram!);
+        } else if (type === 'phone' && profile.contacts?.phone) {
+            url = `tel:${profile.contacts.phone.replace(/[^\d+]/g, '')}`;
         }
 
         if (url) {
@@ -31,10 +32,10 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div className="relative">
                         <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
                             {profile.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt={profile.managerName} className="w-full h-full object-cover" />
+                                <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-brand-warmbeige text-brand-charcoal font-bold text-xl">
-                                    {(profile.managerName || 'A')[0]}
+                                    {(profile.displayName || 'A')[0]}
                                 </div>
                             )}
                         </div>
@@ -44,10 +45,10 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                     <div>
                         <h3 className="font-serif text-lg text-brand-charcoal leading-tight">
-                            {profile.managerName || 'Куратор Aura'}
+                            {profile.displayName || 'Куратор Aura'}
                         </h3>
                         <p className="text-xs text-gray-500 uppercase tracking-wide mt-0.5">
-                            {profile.managerRole || 'Персональный менеджер'}
+                            {profile.roleLabel || 'Персональный менеджер'}
                         </p>
                         {profile.workingHours && (
                             <p className="text-[10px] text-gray-400 mt-1">
@@ -59,12 +60,17 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
                 {/* Body Message */}
                 <div className="text-sm text-gray-600 mb-5 leading-relaxed bg-brand-lightbeige/30 p-3 rounded-lg border border-brand-warmbeige/20">
-                    {profile.messageAfterAr || 'Если у вас возникли вопросы по размерам, материалам или доставке — напишите мне, я помогу.'}
+                    {/* Message field is not on CuratorProfile yet, extending or using simple default for now, or maybe check types/curator.ts if I missed it? 
+                       Actually types/curator.ts does NOT have messageAfterAr. 
+                       I will use a static fallback or we need to add it to CuratorProfile if strictly needed.
+                       For now, let's assume it might not be there and just use the fallback text.
+                    */ }
+                    {'Если у вас возникли вопросы по размерам, материалам или доставке — напишите мне, я помогу.'}
                 </div>
 
                 {/* Actions */}
                 <div className="space-y-2">
-                    {profile.whatsappNumber && (
+                    {profile.contacts?.whatsapp && (
                         <button
                             onClick={() => handleContact('whatsapp')}
                             className="w-full py-3 px-4 bg-green-50 hover:bg-green-100 text-green-800 rounded-xl flex items-center justify-between transition-colors border border-green-100"
@@ -73,7 +79,7 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <span>→</span>
                         </button>
                     )}
-                    {profile.telegramUsername && (
+                    {profile.contacts?.telegram && (
                         <button
                             onClick={() => handleContact('telegram')}
                             className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl flex items-center justify-between transition-colors border border-blue-100"
@@ -82,13 +88,13 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <span>→</span>
                         </button>
                     )}
-                    {profile.phone && (
+                    {profile.contacts?.phone && (
                         <button
                             onClick={() => handleContact('phone')}
                             className="w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-xl flex items-center justify-between transition-colors border border-gray-100"
                         >
                             <span className="font-medium">Позвонить</span>
-                            <span>{profile.phone}</span>
+                            <span>{profile.contacts.phone}</span>
                         </button>
                     )}
                 </div>
