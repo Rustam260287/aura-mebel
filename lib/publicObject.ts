@@ -72,15 +72,31 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
 
   const rawStatus = asString(record.status) as ObjectStatus | '';
 
-  // Soft furniture: respect existing status. Others: force draft.
-  // Exception: if rawStatus is explicitly 'draft'/'archived', keep it.
-  const status: ObjectStatus = isSoft
-    ? (rawStatus === 'draft' || rawStatus === 'archived' ? rawStatus : 'ready')
-    : 'draft';
+  // Visibility Logic:
+  // 1. If explicit status is set (ready/draft/archived), respect it.
+  // 2. If no status (undefined/empty):
+  //    - Soft furniture -> default to 'ready' (legacy support)
+  //    - Others -> default to 'draft' (safety)
+
+  let status: ObjectStatus = 'draft';
+
+  if (rawStatus === 'ready' || rawStatus === 'active' || rawStatus === 'published') {
+    status = 'ready';
+  } else if (rawStatus === 'draft') {
+    status = 'draft';
+  } else if (rawStatus === 'archived') {
+    status = 'archived';
+  } else {
+    // No explicit status found. Fallback based on category.
+    status = isSoft ? 'ready' : 'draft';
+  }
+
+  // Name fallback: Try 'name' -> 'title' -> 'name_en'
+  const nameVal = asString(record.name) || asString(record.title) || asString(record.name_en) || 'Без названия';
 
   return {
     id,
-    name: asString(record.name),
+    name: nameVal,
     category: categoryVal,
     objectType: typeVal || categoryVal || undefined,
     imageUrls: asStringArray(record.imageUrls),

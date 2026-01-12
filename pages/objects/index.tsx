@@ -258,77 +258,68 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const selectedCategories = Array.isArray(categoryQuery) ? (categoryQuery as string[]) : categoryQuery ? [categoryQuery as string] : [];
 
-    let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection(COLLECTIONS.objects);
+    // Optimized "Fetch All & Filter In Memory" Strategy
+    // Justification:
+    // 1. Solving the "Eclipse not visible" bug requires checking both 'status' (new items) and 'category' (legacy items).
+    // 2. Composite indexes for OR queries + Sorting are brittle or missing in production.
+    // 3. Dataset is expected to be reasonable (< 2000 items). Fetching all metadata is safer and ensures consistent filtering.
 
-    // Strict status filtering for production
-    if (!isDev) {
-      // Enforce Soft Furniture only, as that matches "Status: ready" logic in publicObject
-      if (selectedCategories.length === 0) {
-        baseQuery = baseQuery.where('category', '==', 'Мягкая мебель');
-      } else {
-        // If user requested a category, we must check if it's allowed
-        // Since currently only Soft Furniture is allowed/ready, we just filter
-        const allowed = 'Мягкая мебель';
-        if (!selectedCategories.includes(allowed)) {
-          // User asked for restricted category -> return empty
-          return {
-            props: {
-              objects: [],
-              scenes: [],
-              currentPage: 1,
-              totalPages: 1,
-            }
-          };
+    // 1. Fetch ALL objects (raw)
+    const objectsCollection = adminDb.collection(COLLECTIONS.objects);
+    const snapshot = await objectsCollection.get();
+
+    // 2. Map and Filter in Memory
+    let allPublicObjects = snapshot.docs
+      .map(doc => toPublicObject(doc.data(), doc.id))
+      .filter(o => {
+        // Dev: Show everything
+        if (isDev) return true;
+
+        // Prod: Show only READY objects.
+        const isVisible = o.status === 'ready';
+
+        if (!isVisible) {
+          // Log strictly hidden objects to help admin debug "Why is X missing?"
+          // Use a safe check to avoid spamming logs for obvious drafts?
+          // The user requested this specifically.
+          console.warn(`[Catalog Filter] Hiding object: ${o.id} (${o.name}) | Status: ${o.status || 'undefined'} | Cat: ${o.category}`);
         }
-        // User asked for allowed category
-        baseQuery = baseQuery.where('category', '==', allowed);
-      }
-    } else {
-      // Development: usual logic
-      if (selectedCategories.length > 0) {
-        if (selectedCategories.length === 1) {
-          baseQuery = baseQuery.where('category', '==', selectedCategories[0]);
-        } else {
-          baseQuery = baseQuery.where('category', 'in', selectedCategories.slice(0, CATEGORY_IN_LIMIT));
-        }
-      }
+
+        return isVisible;
+      });
+
+    // 3. Apply Category Filter (if selected)
+    if (!isDev && selectedCategories.length > 0) {
+      allPublicObjects = allPublicObjects.filter(o => {
+        const cat = (o.category || '').toLowerCase();
+        const type = (o.objectType || '').toLowerCase();
+        return selectedCategories.some(sc => {
+          const scLower = sc.toLowerCase();
+          return cat === scLower || type === scLower; // Exact match or strict enough?
+          // Use includes if we want loose matching like earlier logic:
+          // return cat.includes(scLower) || type.includes(scLower);
+          // Let's stick to the previous strict-ish logic but on the mapped object.
+          // Previous DB logic was EXACT match on 'category'.
+          // But we want to allow "Sofa" to match "Мягкая мебель"? No, sidebar has specific buttons.
+          return cat === scLower;
+        });
+      });
     }
 
-    // Получаем общее количество для пагинации
-    const totalItemsSnapshot = await baseQuery.count().get();
-    totalItems = totalItemsSnapshot.data().count ?? 0;
+    // 4. Search (if local search needed, but we handled search above via SearchService?)
+    // The code above handles ?q separately. 
+
+    // 5. Calculate Pagination Stats
+    totalItems = allPublicObjects.length;
     totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
     const safePage = Math.max(1, Math.min(page, totalPages));
     const offset = (safePage - 1) * ITEMS_PER_PAGE;
 
-    // Запрос с пагинацией
-    const sortedQuery = baseQuery.orderBy('name', 'asc');
-    const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
+    // 6. Sort (Alphabetical)
+    allPublicObjects.sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }));
 
-    const SOFT_CATEGORIES = ['Мягкая мебель', 'sofa', 'Диваны', 'Кресла', 'Пуфы'];
-
-    objects = pageSnapshot.docs.map(doc => {
-      return toPublicObject(doc.data(), doc.id);
-    }).filter(o => {
-      if (isDev) return true;
-
-      // Smart Filter:
-      // 1. Soft furniture -> Show Active & Draft (temporarily), Hide Archived
-      // 2. Others -> Show Active/Ready Only (Hide Draft & Archived)
-
-      const category = o.category || '';
-      const type = o.objectType || '';
-      const isSoft = SOFT_CATEGORIES.some(c =>
-        category.toLowerCase() === c.toLowerCase() ||
-        type.toLowerCase() === c.toLowerCase()
-      );
-
-      if (isSoft) {
-        return o.status !== 'archived';
-      }
-
-      return o.status !== 'draft' && o.status !== 'archived';
-    });
+    // 7. Slice Page
+    objects = allPublicObjects.slice(offset, offset + ITEMS_PER_PAGE);
 
     // Scenes / presets (not paginated)
     try {
@@ -345,16 +336,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         if (first) neededCoverObjectIds.add(first);
       }
 
-      const refs = Array.from(neededCoverObjectIds).map((id) => adminDb.collection(COLLECTIONS.objects).doc(id));
-      const docs = refs.length > 0 ? await adminDb.getAll(...refs) : [];
+      // Optimization: We already have all objects in 'snapshot'!
+      // No need to fetch again.
       const coverByObjectId = new Map<string, string>();
-      for (const doc of docs) {
-        if (!doc.exists) continue;
-        const d = doc.data() as { imageUrls?: unknown } | undefined;
-        const imageUrls = Array.isArray(d?.imageUrls) ? d?.imageUrls : [];
-        const firstUrl = typeof imageUrls?.[0] === 'string' ? (imageUrls[0] as string) : '';
-        if (firstUrl) coverByObjectId.set(doc.id, firstUrl);
-      }
+      // Create a map from the FULL snapshot (including drafts/archived, as they might be covers?)
+      // Actually, snapshot has everything.
+      snapshot.docs.forEach(doc => {
+        if (neededCoverObjectIds.has(doc.id)) {
+          const d = doc.data();
+          const imageUrls = Array.isArray(d?.imageUrls) ? d?.imageUrls : [];
+          const firstUrl = typeof imageUrls?.[0] === 'string' ? (imageUrls[0] as string) : '';
+          if (firstUrl) coverByObjectId.set(doc.id, firstUrl);
+        }
+      });
 
       scenes = rawScenes.map((s) => {
         if (s.coverImageUrl) return s;
@@ -362,6 +356,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         const derived = first ? coverByObjectId.get(first) : undefined;
         return { ...s, ...(derived ? { coverImageUrl: derived } : {}) };
       });
+
     } catch (e) {
       console.error('Scenes fetch failed:', e);
       scenes = [];
