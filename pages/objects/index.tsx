@@ -307,6 +307,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     objects = pageSnapshot.docs.map(doc => {
       return toPublicObject(doc.data(), doc.id);
+    }).filter(o => {
+      if (isDev) return true;
+      return o.status !== 'draft' && o.status !== 'archived';
     });
 
     // Scenes / presets (not paginated)

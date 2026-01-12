@@ -12,22 +12,10 @@ import { COLLECTIONS } from '../../lib/db/collections';
 interface ObjectPageProps {
   object?: ObjectPublic;
   error?: string;
-  debugData?: any; // Temporary debug field
 }
 
-export default function ObjectPage({ object, error, debugData }: ObjectPageProps) {
+export default function ObjectPage({ object, error }: ObjectPageProps) {
   const router = useRouter();
-
-  if (debugData) {
-    return (
-      <div className="p-8 bg-white min-h-screen font-mono text-sm overflow-auto">
-        <h1 className="text-xl font-bold mb-4 text-red-600">PRODUCTION DEBUG MODE</h1>
-        <p className="mb-2"><strong>Error:</strong> {error}</p>
-        <pre className="bg-gray-100 p-4 border rounded">{JSON.stringify(debugData, null, 2)}</pre>
-        <button onClick={() => router.push('/objects')} className="mt-8 px-4 py-2 bg-black text-white rounded">Back</button>
-      </div>
-    )
-  }
 
   if (error) {
     // ... existing error UI ...
@@ -76,83 +64,48 @@ export default function ObjectPage({ object, error, debugData }: ObjectPageProps
 export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
   if (!params?.id) return { props: { error: "Object ID not found." } };
   const { id } = params;
-  const objectId = id as string;
 
-  console.log(`[SSR] Fetching object: ${objectId}`);
-
+  // Разрешаем любые ID, так как теперь мы ищем и по slug
   const adminDb = getAdminDb();
   const adminStorage = getAdminStorage();
 
   if (!adminDb || !adminStorage) {
-    console.error('[SSR] Firebase Admin Init Failed');
-    return {
-      props: {
-        error: "Firebase Admin SDK initialization failed.",
-        debugData: { stage: 'init', adminDb: !!adminDb, adminStorage: !!adminStorage }
-      }
-    };
+    return { props: { error: "Firebase Admin SDK initialization failed." } };
   }
 
   try {
     let objectDocSnapshot;
+    const objectId = id as string;
 
-    // 1. Попытка найти по ID документа
+    // 1. Попытка найти по ID документа (стандартный Firestore ID)
     const docRef = adminDb.collection(COLLECTIONS.objects).doc(objectId);
     objectDocSnapshot = await docRef.get();
-    let foundMethod = 'docId';
 
-    // 2. Если не найдено, пробуем найти по полю 'id'
+    // 2. Если не найдено, пробуем найти по полю 'id' (slug из старого импорта)
     if (!objectDocSnapshot.exists) {
-      console.log(`[SSR] Object ${objectId} not found by ID. Searching by slug...`);
+      console.log(`Object with doc ID ${objectId} not found. Searching by 'id' field...`);
       const querySnapshot = await adminDb.collection(COLLECTIONS.objects).where('id', '==', objectId).limit(1).get();
 
       if (!querySnapshot.empty) {
         objectDocSnapshot = querySnapshot.docs[0];
-        foundMethod = 'slug';
+        // Важно: используем реальный ID документа для дальнейшей работы, 
+        // но в объект запишем тот ID, который ожидает клиент (или реальный)
+        // Лучше использовать реальный ID документа как основной.
       }
     }
 
     if (!objectDocSnapshot || !objectDocSnapshot.exists) {
-      console.warn(`[SSR] Object ${objectId} NOT FOUND in Firestore.`);
-      // DEBUG MODE: Return debug info logic instead of 404
-      return {
-        props: {
-          error: "Object Not Found in DB",
-          debugData: {
-            id: objectId,
-            stage: 'lookup',
-            foundMethod: null,
-            collection: COLLECTIONS.objects,
-            projectId: process.env.FIREBASE_PROJECT_ID || 'undefined'
-          }
-        }
-      };
-      // return { notFound: true };
+      return { notFound: true };
     }
 
     const raw = objectDocSnapshot.data();
     const objectData = toPublicObject(raw, objectDocSnapshot.id);
 
-    console.log(`[SSR] Object found: ${objectData.id}, status: ${objectData.status}`);
-
+    // Draft protection: Hide non-active objects in production
     const isDev = process.env.NODE_ENV === 'development';
-
-    // Strict Status Check - Debugging
-    // Previously: if (!isDev && objectData.status !== 'ready')
-    // Now blocked only explicit draft/archived
+    // Allow undefined status (legacy) but block explicit draft/archived
     if (!isDev && (objectData.status === 'draft' || objectData.status === 'archived')) {
-      console.warn(`[SSR] Object ${objectId} blocked by status: ${objectData.status}`);
-      return {
-        props: {
-          error: "Object Blocked by Status",
-          debugData: {
-            id: objectId,
-            status: objectData.status,
-            isDev,
-            stage: 'status_check'
-          }
-        }
-      };
+      return { notFound: true };
     }
 
     // Обработка картинок
@@ -185,17 +138,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
       },
     };
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error(`[SSR] Error: ${msg}`);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    console.error(`Error fetching object ${id}:`, errorMessage);
     return {
-      props: {
-        error: `Internal Error: ${msg}`,
-        debugData: {
-          id: objectId,
-          stage: 'catch',
-          error: msg
-        }
-      }
-    }
+      props: { error: `Не удалось загрузить объект. Возможно, он был удален.` },
+    };
   }
 };

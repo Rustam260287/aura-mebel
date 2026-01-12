@@ -60,9 +60,14 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
   }, [objects]);
 
   const composedObjects = useMemo(() => {
+    const isDev = process.env.NODE_ENV === 'development';
     return sceneObjects
       .map((entry) => objectsById.get(entry.objectId))
-      .filter((v): v is ObjectPublic => Boolean(v));
+      .filter((v): v is ObjectPublic => {
+        if (!v) return false;
+        if (!isDev && (v.status === 'draft' || v.status === 'archived')) return false;
+        return true;
+      });
   }, [objectsById, sceneObjects]);
 
   if (isArOpen) {

@@ -113,6 +113,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       console.log(`[Home] Found ${objectsSnapshot.size} objects.`);
     }
 
+    const isDev = process.env.NODE_ENV === 'development';
+
     const featuredObjects = objectsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -123,8 +125,14 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
         modelGlbUrl: data.modelGlbUrl ?? '',
         modelUsdzUrl: data.modelUsdzUrl ?? '',
         description: data.description ?? '',
+        status: data.status, // Pass status for filtering if done later, but better here
       };
-    }) as ObjectPublic[];
+    })
+      .filter((obj: any) => {
+        if (isDev) return true;
+        // Production: Hide explicit draft/archived
+        return obj.status !== 'draft' && obj.status !== 'archived';
+      }) as ObjectPublic[];
 
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
     return {
