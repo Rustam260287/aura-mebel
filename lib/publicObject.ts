@@ -70,7 +70,7 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
   const SOFT_CATEGORIES = ['мягкая мебель', 'sofa', 'диваны', 'кресла', 'пуфы'];
   const isSoft = SOFT_CATEGORIES.some(c => categoryCheck.includes(c));
 
-  const rawStatus = asString(record.status) as ObjectStatus | '';
+  const rawStatus = asString(record.status).trim().toLowerCase() as ObjectStatus | '';
 
   // Visibility Logic:
   // 1. If explicit status is set (ready/draft/archived), respect it.
