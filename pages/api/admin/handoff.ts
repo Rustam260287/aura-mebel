@@ -1,19 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
-import { verifyAdmin } from '../../../lib/auth/admin-check';
+// import { verifyAdmin } from '../../../lib/auth/admin-check'; // Deprecated for this endpoint
+import { verifyRole } from '../../../lib/auth/rbac';
 
 interface HandoffSettings {
   managerName?: string;
   managerRole?: string;
-  avatarUrl?: string; // New
-  workingHours?: string; // New
-  availabilityStatus?: 'online' | 'offline' | 'schedule'; // New
+  avatarUrl?: string;
+  workingHours?: string;
+  availabilityStatus?: 'online' | 'offline' | 'schedule';
   email?: string;
   phone?: string;
-  whatsapp?: string; // Legacy DB key, we will map whatsappNumber to this or use new key
-  whatsappNumber?: string; // New preferred
+  whatsapp?: string;
+  whatsappNumber?: string;
   telegram?: string;
-  telegramUsername?: string; // New preferred
+  telegramUsername?: string;
   messageAfterAr?: string;
   updatedAt?: string;
 }
@@ -43,14 +44,14 @@ const normalizePhone = (val: unknown): string | undefined => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const isAdmin = await verifyAdmin(req, res);
-  if (!isAdmin) return;
-
   const db = getAdminDb();
-  // Fixed ID for the global handoff settings
   const docRef = db.collection('config').doc('handoff');
 
   if (req.method === 'GET') {
+    // READ: Allow Owner, Admin, Editor
+    const hasAccess = await verifyRole(req, res, ['owner', 'admin', 'editor']);
+    if (!hasAccess) return;
+
     try {
       const snap = await docRef.get();
       if (!snap.exists) {
@@ -62,7 +63,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
+
   if (req.method === 'PUT') {
+    // WRITE: Allow only Owner, Admin (Global Config protect)
+    const hasAccess = await verifyRole(req, res, ['owner', 'admin']);
+    if (!hasAccess) return;
+
     try {
       const body = (req.body || {}) as Record<string, unknown>;
       const patch: HandoffSettings = {

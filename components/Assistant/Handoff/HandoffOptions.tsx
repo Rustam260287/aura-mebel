@@ -1,46 +1,31 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { ContactConfig, DEFAULT_CONTACTS, getTelegramLink, getWhatsAppLink } from '../../../lib/config/contacts';
+import React from 'react';
+import { getTelegramLink, getWhatsAppLink } from '../../../lib/config/contacts';
+
+export interface CuratorContacts {
+    whatsapp?: string;
+    telegram?: string;
+    phone?: string;
+}
 
 interface HandoffOptionsProps {
+    contacts?: CuratorContacts;
     onSelect: (channel: 'whatsapp' | 'telegram' | 'phone') => void;
     onCancel: () => void;
 }
 
-export const HandoffOptions: React.FC<HandoffOptionsProps> = ({ onSelect, onCancel }) => {
-    const [config, setConfig] = useState<ContactConfig | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchConfig = async () => {
-            try {
-                const res = await fetch('/api/contacts');
-                if (res.ok) {
-                    const data = await res.json();
-                    setConfig(data);
-                } else {
-                    setConfig(DEFAULT_CONTACTS);
-                }
-            } catch (e) {
-                console.error(e);
-                setConfig(DEFAULT_CONTACTS);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchConfig();
-    }, []);
+export const HandoffOptions: React.FC<HandoffOptionsProps> = ({ contacts, onSelect, onCancel }) => {
 
     const handleChannelClick = (channel: 'whatsapp' | 'telegram') => {
         onSelect(channel);
-        if (!config) return;
+        if (!contacts) return;
 
         let url = '';
-        if (channel === 'whatsapp' && config.whatsappNumber) {
-            url = getWhatsAppLink(config.whatsappNumber);
-        } else if (channel === 'telegram' && config.telegramUsername) {
-            url = getTelegramLink(config.telegramUsername);
+        if (channel === 'whatsapp' && contacts.whatsapp) {
+            url = getWhatsAppLink(contacts.whatsapp);
+        } else if (channel === 'telegram' && contacts.telegram) {
+            url = getTelegramLink(contacts.telegram);
         }
 
         if (url) {
@@ -48,19 +33,15 @@ export const HandoffOptions: React.FC<HandoffOptionsProps> = ({ onSelect, onCanc
         }
     };
 
-    if (loading) {
-        return <div className="p-4 text-center text-xs text-gray-400">Loading contacts...</div>;
-    }
+    const hasWhatsApp = !!contacts?.whatsapp;
+    const hasTelegram = !!contacts?.telegram;
 
-    const hasWhatsApp = !!config?.whatsappNumber;
-    const hasTelegram = !!config?.telegramUsername;
-
-    // If no channels configured, show fallback or nothing
+    // If no channels configured, show disabled state
     if (!hasWhatsApp && !hasTelegram) {
         return (
             <div className="flex flex-col gap-2 mt-4 w-full animate-fade-in-up">
                 <div className="text-center text-xs text-gray-500 mb-2">
-                    Контакты временно недоступны.
+                    Контакты этого куратора скрыты.
                 </div>
                 <button
                     onClick={onCancel}
@@ -103,3 +84,4 @@ export const HandoffOptions: React.FC<HandoffOptionsProps> = ({ onSelect, onCanc
         </div>
     );
 };
+
