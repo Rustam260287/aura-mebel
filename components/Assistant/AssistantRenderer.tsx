@@ -1,13 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAssistant } from '../../contexts/AssistantContext';
 import { AssistantState } from '../../lib/agents/meta/types';
 import { ChatBubble } from './ChatBubble';
+import { CuratorCard } from './Handoff/CuratorCard';
 
 export const AssistantRenderer: React.FC = () => {
-    const { actionPlan } = useAssistant();
+    const { actionPlan, emitMetaEvent } = useAssistant();
     const { session, assistant } = actionPlan;
+
+    // Handle Share Request
+    useEffect(() => {
+        if (assistant?.content?.type === 'share_object') {
+            const shareData = {
+                title: 'Aura Home Design',
+                text: 'Посмотри, как эта мебель смотрится в моем интерьере!',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => emitMetaEvent({ type: 'RESET' }))
+                    .catch((err) => console.log('Share canceled', err));
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                // Ideally show a toast here, but for now rely on browser UI or rapid follow-up
+                alert('Ссылка скопирована!'); // Simple "Swiss Watch" feedback
+                emitMetaEvent({ type: 'RESET' });
+            }
+        }
+    }, [assistant?.content]);
 
     // Strict AR Silence
     if (session.state === AssistantState.AR_ACTIVE) {
@@ -26,8 +49,14 @@ export const AssistantRenderer: React.FC = () => {
         );
     }
 
-    // Chat Bubble Rendering
+    // Chat Bubble or Curator Card Rendering
     if (assistant?.mode === 'chat' && assistant.content) {
+        if (assistant.content.type === 'handoff' || assistant.content.type === 'handoff_card') {
+            return (
+                <CuratorCard onClose={() => emitMetaEvent({ type: 'DISMISSED_NOTIFICATION', payload: { type: 'handoff' } })} />
+            );
+        }
+
         return (
             <ChatBubble
                 text={assistant.content.text}

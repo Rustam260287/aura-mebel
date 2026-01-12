@@ -1,12 +1,16 @@
 export enum AssistantState {
     IDLE = 'IDLE',
+    FIRST_VISIT = 'FIRST_VISIT',
     BROWSING = 'BROWSING',
     SELECTING = 'SELECTING',
+    HESITATING = 'HESITATING',
     AR_PREPARING = 'AR_PREPARING',
-    AR_ACTIVE = 'AR_ACTIVE',
+    AR_ACTIVE = 'AR_ACTIVE', // equivalent to AR_SESSION
     SNAPSHOT_TAKEN = 'SNAPSHOT_TAKEN',
     SHARING = 'SHARING',
     POST_AR_REFLECTION = 'POST_AR_REFLECTION',
+    READY_TO_CONTACT = 'READY_TO_CONTACT',
+    CONTACT_HANDOFF = 'CONTACT_HANDOFF',
 }
 
 export type MetaEvent =
@@ -27,13 +31,24 @@ export type MetaEvent =
     | { type: 'PHOTO_UPLOADED'; payload: { file: File } }
     | { type: 'RESET' };
 
-export type NotificationType = 'AR_HINT' | '3D_HINT' | 'SAVE_HINT';
+export type NotificationType =
+    | 'ONBOARDING_HINT'
+    | 'AR_GUIDANCE'
+    | 'CONFIDENCE_REINFORCEMENT'
+    | 'SOFT_CTA'
+    | 'CONTACT_SUGGESTION'
+    | 'SHARE_SUGGESTION' // New
+    | 'AR_HINT'
+    | '3D_HINT'
+    | 'SAVE_HINT'
+    | 'POST_SHARE_REFLECTION';
 
 export interface SessionHistory {
     pageEnterTimestamp: number;
     hasOpened3D: boolean;
     hasOpenedAR: boolean;
-    arRefusals: number; // Count of times user dismissed AR hint or failed to enter?
+    hasShared: boolean; // New
+    arRefusals: number;
     galleryScrolled: boolean;
     notificationsShown: Record<string, { shownAt: number; reason: string }>;
 }

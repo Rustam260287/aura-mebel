@@ -135,6 +135,29 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
                         </button>
                     )}
 
+                    {content?.action === 'contact' && (
+                        <button
+                            className="bg-brand-charcoal text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-black transition-colors"
+                            onClick={() => emitMetaEvent({ type: 'REQUEST_MANAGER_CONTACT', payload: { source: 'suggestion_click' } })}
+                        >
+                            Написать
+                        </button>
+                    )}
+
+                    {content?.action === 'share' && (
+                        <button
+                            className="bg-brand-charcoal text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-black transition-colors"
+                            onClick={() => {
+                                // We can emit event and let parent handle, or handle here.
+                                // Let's emit event to keep logic in one place or use MetaAgent?
+                                // MetaAgent expects REQUEST_SHARE_OBJECT.
+                                emitMetaEvent({ type: 'REQUEST_SHARE_OBJECT', payload: { source: 'suggestion_click' } });
+                            }}
+                        >
+                            Поделиться
+                        </button>
+                    )}
+
                     {isHandoff && !showContactOptions && (
                         <>
                             <button

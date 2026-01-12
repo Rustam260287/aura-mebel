@@ -4,10 +4,15 @@ import { getAdminDb } from '../../lib/firebaseAdmin';
 interface HandoffSettingsPublic {
   managerName?: string;
   managerRole?: string;
+  avatarUrl?: string; // New
+  workingHours?: string; // New
+  availabilityStatus?: 'online' | 'offline' | 'schedule'; // New
   email?: string;
   phone?: string;
-  whatsapp?: string;
-  telegram?: string;
+  whatsapp?: string; // Legacy or mapped
+  whatsappNumber?: string; // Raw number
+  telegram?: string; // Legacy or mapped
+  telegramUsername?: string; // Raw username
   messageAfterAr?: string;
   updatedAt?: string;
 }
@@ -33,10 +38,15 @@ const pickFirstEmail = (...lists: Array<string[] | undefined>): string => {
 const DEFAULT_PUBLIC: HandoffSettingsPublic = {
   managerName: '',
   managerRole: 'куратор',
+  avatarUrl: '',
+  workingHours: '',
+  availabilityStatus: 'online',
   email: '',
   phone: '',
   whatsapp: '',
+  whatsappNumber: '',
   telegram: '',
+  telegramUsername: '',
   messageAfterAr: 'Если хотите — обсудим решение. Напишите, когда будет удобно.',
 };
 
