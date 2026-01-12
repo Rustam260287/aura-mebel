@@ -305,10 +305,28 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const sortedQuery = baseQuery.orderBy('name', 'asc');
     const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
 
+    const SOFT_CATEGORIES = ['Мягкая мебель', 'sofa', 'Диваны', 'Кресла', 'Пуфы'];
+
     objects = pageSnapshot.docs.map(doc => {
       return toPublicObject(doc.data(), doc.id);
     }).filter(o => {
       if (isDev) return true;
+
+      // Smart Filter:
+      // 1. Soft furniture -> Show Active & Draft (temporarily), Hide Archived
+      // 2. Others -> Show Active/Ready Only (Hide Draft & Archived)
+
+      const category = o.category || '';
+      const type = o.objectType || '';
+      const isSoft = SOFT_CATEGORIES.some(c =>
+        category.toLowerCase() === c.toLowerCase() ||
+        type.toLowerCase() === c.toLowerCase()
+      );
+
+      if (isSoft) {
+        return o.status !== 'archived';
+      }
+
       return o.status !== 'draft' && o.status !== 'archived';
     });
 

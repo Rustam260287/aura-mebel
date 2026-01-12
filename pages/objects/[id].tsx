@@ -103,9 +103,24 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
 
     // Draft protection: Hide non-active objects in production
     const isDev = process.env.NODE_ENV === 'development';
-    // Allow undefined status (legacy) but block explicit draft/archived
-    if (!isDev && (objectData.status === 'draft' || objectData.status === 'archived')) {
-      return { notFound: true };
+
+    const SOFT_CATEGORIES = ['Мягкая мебель', 'sofa', 'Диваны', 'Кресла', 'Пуфы'];
+    const category = objectData.category || '';
+    const type = objectData.objectType || '';
+    const isSoft = SOFT_CATEGORIES.some(c =>
+      category.toLowerCase() === c.toLowerCase() ||
+      type.toLowerCase() === c.toLowerCase()
+    );
+
+    if (!isDev) {
+      if (objectData.status === 'archived') {
+        return { notFound: true };
+      }
+      // Block drafts ONLY if they are NOT soft furniture
+      // (We allow soft furniture drafts because they are effectively the "active" catalog now)
+      if (!isSoft && objectData.status === 'draft') {
+        return { notFound: true };
+      }
     }
 
     // Обработка картинок

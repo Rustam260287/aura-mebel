@@ -65,7 +65,21 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
       .map((entry) => objectsById.get(entry.objectId))
       .filter((v): v is ObjectPublic => {
         if (!v) return false;
-        if (!isDev && (v.status === 'draft' || v.status === 'archived')) return false;
+
+        if (!isDev) {
+          if (v.status === 'archived') return false;
+
+          // Allow soft furniture drafts
+          const SOFT_CATEGORIES = ['Мягкая мебель', 'sofa', 'Диваны', 'Кресла', 'Пуфы'];
+          const category = v.category || '';
+          const type = v.objectType || '';
+          const isSoft = SOFT_CATEGORIES.some(c =>
+            category.toLowerCase() === c.toLowerCase() ||
+            type.toLowerCase() === c.toLowerCase()
+          );
+
+          if (!isSoft && v.status === 'draft') return false;
+        }
         return true;
       });
   }, [objectsById, sceneObjects]);
