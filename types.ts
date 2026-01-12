@@ -92,11 +92,12 @@ export interface ObjectPublic {
   // Wizard fields for intent-based selection
   mood?: 'calm' | 'soft' | 'expressive' | 'strict';
   presence?: 'compact' | 'balanced' | 'dominant';
+
+  status?: ObjectStatus;
 }
 
 export interface ObjectAdmin extends ObjectPublic {
-  status?: ObjectStatus;
-
+  // status is now inherited from ObjectPublic
   modelProcessing?: ModelProcessingInfo;
 
   tags?: string[];

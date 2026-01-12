@@ -281,33 +281,50 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     };
 
     const handleLoad = () => {
+      console.log('[ObjectDetail] handleLoad triggered for element:', el);
       clearTimers();
       setInline3dError(null);
 
       // Aura 3D Optimization
       try {
-        const symbol = Object.getOwnPropertySymbols(el).find(s => s.description === 'model-viewer');
+        console.log('[ObjectDetail] Checking properties of model-viewer element...');
+        // Try known symbol descriptions for model-viewer v1/v2/v3
+        const symbols = Object.getOwnPropertySymbols(el);
+        const symbol = symbols.find(s => s.description === 'model-viewer' || s.description === 'model-viewer-internal-symbol');
+
         if (symbol) {
           const internal = (el as any)[symbol];
           const scene = internal?.model?.scene || internal?.scene;
+
           if (scene) {
+            console.log('[ObjectDetail] Three.js scene found via symbol, running optimizer...');
             optimizeScene(scene);
+          } else {
+            console.warn('[ObjectDetail] Symbol found but scene property missing on internal object:', internal);
           }
+        } else {
+          // Fallback: Check if there is a direct 'model' property (sometimes exposed in dev builds or newer versions)
+          // or try to find any property that looks like a scene
+          console.warn('[ObjectDetail] No model-viewer symbol found. Available symbols:', symbols.map(s => s.description));
         }
+
+        // DOUBLE CHECK: Call optimizeScene blindly with el if smart check fails, 
+        // because optimizeScene now has safety checks inside? No, it expects a scene.
+        // But let's log what we have.
       } catch (err) {
-        console.warn('[Aura] Optimizer warning:', err);
+        console.error('[ObjectDetail] Error in handleLoad optimizer:', err);
       }
 
       try {
         autofitModelViewer(el);
       } catch { }
-      if (typeof el.zoomTo === 'function') {
+      if (typeof (el as any).zoomTo === 'function') {
         try {
-          el.zoomTo({ duration: 300 });
+          (el as any).zoomTo({ duration: 300 });
         } catch { }
-      } else if (typeof el.jumpCameraToGoal === 'function') {
+      } else if (typeof (el as any).jumpCameraToGoal === 'function') {
         try {
-          el.jumpCameraToGoal();
+          (el as any).jumpCameraToGoal();
         } catch { }
       }
       // Fallback: some builds/environments do not emit `model-visibility` reliably.
@@ -448,8 +465,8 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     if (experienceState === 'THREE_D_ACTIVE') {
       emitEvent({ type: 'EXIT_3D' });
     }
-    emitEvent({ type: 'OPEN_ASSISTANT' });
-  }, [emitEvent, experienceState]);
+    emitMetaEvent({ type: 'REQUEST_MANAGER_CONTACT', payload: { source: 'object_detail_button' } });
+  }, [emitEvent, emitMetaEvent, experienceState]);
 
   const handleBack = useCallback(() => {
     if (typeof window !== 'undefined') {

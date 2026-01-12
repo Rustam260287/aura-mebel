@@ -2,7 +2,9 @@ import { ActionPlan, AssistantState, MetaEvent, SessionHistory, NotificationType
 
 export class MetaAgent {
     private currentState: AssistantState = AssistantState.IDLE;
+    private currentMode: 'chat' | 'toast' | 'hidden' = 'hidden'; // State needed to persist visibility
     private sessionHistory: SessionHistory = {
+        // ... (rest initialized in constructor or declaration)
         pageEnterTimestamp: Date.now(),
         hasOpened3D: false,
         hasOpenedAR: false,
@@ -11,15 +13,38 @@ export class MetaAgent {
         notificationsShown: {}
     };
 
+    // Cache last content to persist it across time ticks if chat is open
+    private lastContent: any = undefined;
+
     public processEvent(event: MetaEvent): ActionPlan {
+        console.log('[MetaAgent] Processing event:', event.type, (event as any).payload);
+
         let nextState = this.currentState;
-        let assistantMode: 'chat' | 'toast' | 'hidden' = 'hidden';
-        let content: any = undefined;
+        // Start with current mode/content to persist them by default
+        let assistantMode = this.currentMode;
+        let content = this.lastContent;
+
+        // Reset content/mode on specific events or state changes if needed?
+        // Actually, if we are 'hidden', content doesn't matter.
+        // If we are 'chat', we want to keep showing 'content'.
 
         // --- 1. Event Tracking & Session History Updates ---
         this.updateSessionHistory(event);
 
-        // --- 2. Core State Machine Transitions ---
+        // --- 2. Handle Explicit UI Actions (Open/Close) ---
+        if (event.type === 'REQUEST_MANAGER_CONTACT') {
+            assistantMode = 'chat';
+            content = { type: 'handoff', payload: event.payload };
+        } else if (event.type === 'DISMISSED_NOTIFICATION' || event.type === 'RESET') {
+            assistantMode = 'hidden';
+            content = undefined;
+        } else if (event.type === 'REQUEST_SHARE_OBJECT') {
+            // Share logic might imply hidden or specific modal, keeping hidden for now as per original code
+            assistantMode = 'hidden';
+            content = { type: 'share_object', payload: event.payload };
+        }
+
+        // --- 3. Core State Machine Transitions ---
         switch (this.currentState) {
             case AssistantState.IDLE:
             case AssistantState.BROWSING:
@@ -38,8 +63,6 @@ export class MetaAgent {
             case AssistantState.SELECTING:
                 if (event.type === 'VIEW_IN_AR') {
                     nextState = AssistantState.AR_PREPARING;
-                } else if (event.type === 'OPENED_3D') {
-                    // Stay in SELECTING but track history
                 } else if (event.type === 'RESET') {
                     nextState = AssistantState.IDLE;
                 }
@@ -49,6 +72,11 @@ export class MetaAgent {
                 if (event.type === 'AR_STARTED') {
                     nextState = AssistantState.AR_ACTIVE;
                 }
+                // While preparing, enforce toast
+                if (nextState === AssistantState.AR_PREPARING) {
+                    assistantMode = 'toast';
+                    content = { message: "Запускаю камеру..." };
+                }
                 break;
 
             case AssistantState.AR_ACTIVE:
@@ -56,6 +84,10 @@ export class MetaAgent {
                     nextState = AssistantState.SNAPSHOT_TAKEN;
                 } else if (event.type === 'AR_ENDED') {
                     nextState = AssistantState.POST_AR_REFLECTION;
+                }
+                // Enforce silence in AR
+                if (nextState === AssistantState.AR_ACTIVE) {
+                    assistantMode = 'hidden';
                 }
                 break;
 
@@ -65,49 +97,55 @@ export class MetaAgent {
                 } else if (event.type === 'AR_STARTED') {
                     nextState = AssistantState.AR_ACTIVE;
                 }
+
+                if (nextState === AssistantState.SNAPSHOT_TAKEN) {
+                    assistantMode = 'toast';
+                    content = { message: "✅ Снимок сохранён", action: "share" };
+                }
                 break;
 
             case AssistantState.POST_AR_REFLECTION:
                 if (event.type === 'USER_SELECT_OBJECT') {
                     nextState = AssistantState.SELECTING;
+                    // Reset mode when moving to new object?
+                    assistantMode = 'hidden';
+                    content = undefined;
                 } else if (event.type === 'RESET') {
                     nextState = AssistantState.IDLE;
-                } else if (event.type === 'REQUEST_MANAGER_CONTACT') {
-                    assistantMode = 'chat';
-                    content = { type: 'handoff', payload: event.payload };
-                } else if (event.type === 'REQUEST_SHARE_OBJECT') {
                     assistantMode = 'hidden';
-                    content = { type: 'share_object', payload: event.payload };
                 }
-                break;
 
-            default:
+                // If we just entered POST_AR_REFLECTION (transition), show prompt
+                if (this.currentState !== AssistantState.POST_AR_REFLECTION && nextState === AssistantState.POST_AR_REFLECTION) {
+                    assistantMode = 'chat';
+                    content = { text: "Если захотите обсудить детали — мы на связи." };
+                }
                 break;
         }
 
-        // --- 3. Notification Logic (TIME_TICK, etc.) ---
-        // Only override if no explicit active action is taking place
+        // --- 4. Notification Logic (TIME_TICK) ---
         if (event.type === 'TIME_TICK') {
-            const timeOnPage = event.payload.timeOnPage; // Passed from UI or calculated? 
-            // Better to use internal calculation if possible, but event payload is safer sync.
-            const internalTime = Date.now() - this.sessionHistory.pageEnterTimestamp;
-            // Use the max of both to be safe
-            const actualTime = Math.max(timeOnPage || 0, internalTime);
+            // Do not interrupt if user is already chatting or in special mode
+            // Unless it's a critical notification?
+            // For now, only show hints if hidden
+            if (assistantMode === 'hidden') {
+                const internalTime = Date.now() - this.sessionHistory.pageEnterTimestamp;
+                const actualTime = Math.max(event.payload?.timeOnPage || 0, internalTime);
 
-            if (this.shouldShowNotification('AR_HINT', actualTime)) {
-                assistantMode = 'chat';
-                content = {
-                    text: "Хочешь посмотреть, как она будет в твоей комнате?",
-                    type: 'hint',
-                    notificationType: 'AR_HINT'
-                };
-                this.markNotificationShown('AR_HINT');
+                if (this.shouldShowNotification('AR_HINT', actualTime)) {
+                    assistantMode = 'chat';
+                    content = {
+                        text: "Хочешь посмотреть, как она будет в твоей комнате?",
+                        type: 'hint',
+                        notificationType: 'AR_HINT'
+                    };
+                    this.markNotificationShown('AR_HINT');
+                }
             }
         }
 
-        // --- 4. Special Event Responses (Photo, Gallery) ---
+        // --- 5. Special Event Responses ---
         if (event.type === 'PHOTO_UPLOADED') {
-            // Photo context response overrides state default
             assistantMode = 'chat';
             content = {
                 type: 'photo_analysis',
@@ -116,48 +154,12 @@ export class MetaAgent {
             };
         }
 
-        // --- 5. Default Content for States (Fallback) ---
-        // If content is still undefined, set default based on state
-        if (!content) {
-            switch (nextState) {
-                case AssistantState.SELECTING:
-                    // Silence by default unless interaction happens
-                    // assistantMode = 'chat'; 
-                    // content = { text: "..." }; 
-                    // BUT requirement says "Silence".
-                    // Only show introduction if just entered? 
-                    // For now, keep it hidden/passive unless DEEPLINK or other trigger initiated it.
-                    // If we moved from IDLE -> SELECTING via USER_SELECT_OBJECT, we might stay silent.
-                    break;
-                case AssistantState.AR_PREPARING:
-                    assistantMode = 'toast';
-                    content = { message: "Запускаю камеру..." };
-                    break;
-                case AssistantState.SNAPSHOT_TAKEN:
-                    assistantMode = 'toast';
-                    content = { message: "✅ Снимок сохранён", action: "share" };
-                    break;
-                case AssistantState.POST_AR_REFLECTION:
-                    // Only set if we just arrived here? 
-                    // We need to persist the bubble if user hasn't dismissed it.
-                    // However, processEvent is stateless in return, UI holds state? 
-                    // No, "MetaAgent returns decisions".
-                    // If we are in POST_AR_REFLECTION, we should offer help.
-                    assistantMode = 'chat';
-                    content = { text: "Если захотите обсудить детали — мы на связи." };
-                    break;
-            }
-        }
-
-        // Handle MANAGER_CONTACT at global level if needed (e.g. from any state)
-        if (event.type === 'REQUEST_MANAGER_CONTACT' && !content) {
-            assistantMode = 'chat';
-            content = { type: 'handoff', payload: event.payload };
-        }
-
+        // Update internal state
         this.currentState = nextState;
+        this.currentMode = assistantMode;
+        this.lastContent = content;
 
-        return {
+        const plan: ActionPlan = {
             session: {
                 state: nextState,
             },
@@ -166,6 +168,8 @@ export class MetaAgent {
                 content: content,
             },
         };
+        // console.log('[MetaAgent] Returning Plan:', assistantMode); // Reduce spam
+        return plan;
     }
 
     private updateSessionHistory(event: MetaEvent) {

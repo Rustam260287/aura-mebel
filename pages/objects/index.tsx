@@ -19,8 +19,11 @@ import { toScenePresetPublic } from '../../lib/scenePreset';
 
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
+const ALL_CATEGORIES_FULL = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
+const ALL_CATEGORIES = process.env.NODE_ENV === 'development'
+  ? ALL_CATEGORIES_FULL
+  : ['Мягкая мебель'];
 const ITEMS_PER_PAGE = 12;
-const ALL_CATEGORIES = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
 const CATEGORY_IN_LIMIT = 10;
 
 interface CatalogPageProps {
@@ -219,6 +222,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const page = Number(context.query.page) || 1;
     const qParam = context.query.q || context.query.search;
     const queryParam = qParam ? String(qParam).trim() : '';
+    const isDev = process.env.NODE_ENV === 'development';
 
     let objects: ObjectPublic[] = [];
     let scenes: ScenePresetPublic[] = [];
@@ -230,6 +234,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       try {
         const found = await SearchService.search({ query: queryParam, limit: 30 });
         objects = found.map((p) => toPublicObject(p, p.id));
+        if (!isDev) {
+          objects = objects.filter(o => o.status === 'ready');
+        }
         totalItems = objects.length;
         totalPages = 1;
       } catch (e) {
@@ -253,12 +260,37 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     let baseQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = adminDb.collection(COLLECTIONS.objects);
 
-    // Фильтрация по категории
-    if (selectedCategories.length > 0) {
-      if (selectedCategories.length === 1) {
-        baseQuery = baseQuery.where('category', '==', selectedCategories[0]);
+    // Strict status filtering for production
+    if (!isDev) {
+      // Enforce Soft Furniture only, as that matches "Status: ready" logic in publicObject
+      if (selectedCategories.length === 0) {
+        baseQuery = baseQuery.where('category', '==', 'Мягкая мебель');
       } else {
-        baseQuery = baseQuery.where('category', 'in', selectedCategories.slice(0, CATEGORY_IN_LIMIT));
+        // If user requested a category, we must check if it's allowed
+        // Since currently only Soft Furniture is allowed/ready, we just filter
+        const allowed = 'Мягкая мебель';
+        if (!selectedCategories.includes(allowed)) {
+          // User asked for restricted category -> return empty
+          return {
+            props: {
+              objects: [],
+              scenes: [],
+              currentPage: 1,
+              totalPages: 1,
+            }
+          };
+        }
+        // User asked for allowed category
+        baseQuery = baseQuery.where('category', '==', allowed);
+      }
+    } else {
+      // Development: usual logic
+      if (selectedCategories.length > 0) {
+        if (selectedCategories.length === 1) {
+          baseQuery = baseQuery.where('category', '==', selectedCategories[0]);
+        } else {
+          baseQuery = baseQuery.where('category', 'in', selectedCategories.slice(0, CATEGORY_IN_LIMIT));
+        }
       }
     }
 
@@ -274,19 +306,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const pageSnapshot = await sortedQuery.offset(offset).limit(ITEMS_PER_PAGE).get();
 
     objects = pageSnapshot.docs.map(doc => {
-      const data = doc.data();
-      const imageUrls = (data.imageUrls || []).map((url: string) => url || '');
-      return {
-        id: doc.id,
-        name: data.name ?? '',
-        imageUrls,
-        objectType: data.objectType ?? data.category ?? '',
-        description: data.description ?? '',
-        modelGlbUrl: data.modelGlbUrl ?? '',
-        modelUsdzUrl: data.modelUsdzUrl ?? '',
-        // Другие поля по необходимости
-      };
-    }) as ObjectPublic[];
+      return toPublicObject(doc.data(), doc.id);
+    });
 
     // Scenes / presets (not paginated)
     try {

@@ -1,4 +1,4 @@
-import type { ObjectPublic } from '../types';
+import type { ObjectPublic, ObjectStatus } from '../types';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -63,6 +63,16 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
   const modelGlbUrl = pickGlbUrl(rawModelGlbUrl, modelsGlbUrl);
   const modelUsdzUrl = pickUsdzUrl(rawModelUsdzUrl, modelsUsdzUrl);
 
+  const category = asString(record.objectType) || asString(record.category) || '';
+  const isSoft = category === 'Мягкая мебель';
+  const rawStatus = asString(record.status) as ObjectStatus | '';
+
+  // Soft furniture: respect existing status (default active/ready)
+  // Others: force draft
+  const status: ObjectStatus = isSoft
+    ? (rawStatus === 'draft' || rawStatus === 'archived' ? rawStatus : 'ready')
+    : 'draft';
+
   return {
     id,
     name: asString(record.name),
@@ -72,5 +82,6 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
     modelGlbUrl: modelGlbUrl || undefined,
     modelUsdzUrl: modelUsdzUrl || undefined,
     has3D: Boolean(modelGlbUrl || modelUsdzUrl),
+    status,
   };
 };

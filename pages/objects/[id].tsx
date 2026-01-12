@@ -35,7 +35,7 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
   }
 
   if (!object) {
-     return (
+    return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-warm-white px-6">
         <div className="text-center max-w-md">
           <h1 className="text-3xl font-serif text-soft-black mb-4">Объект не найден</h1>
@@ -52,24 +52,24 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
   }
 
   const descriptionText = object.description || '';
-  const seoDescription = descriptionText.length > 160 
-    ? descriptionText.substring(0, 157) + '...' 
+  const seoDescription = descriptionText.length > 160
+    ? descriptionText.substring(0, 157) + '...'
     : descriptionText;
-    
-  const seoImage = (object.imageUrls && object.imageUrls.length > 0) 
-    ? object.imageUrls[0] 
+
+  const seoImage = (object.imageUrls && object.imageUrls.length > 0)
+    ? object.imageUrls[0]
     : undefined;
 
   return (
     <>
-      <Meta 
-        title={object.name} 
+      <Meta
+        title={object.name}
         description={seoDescription || `Примерьте ${object.name} в вашем интерьере.`}
         image={seoImage}
         url={`/objects/${object.id}`}
       />
-      <ObjectDetail 
-        object={object} 
+      <ObjectDetail
+        object={object}
         onBack={() => router.back()}
       />
     </>
@@ -79,7 +79,7 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
 export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
   if (!params?.id) return { props: { error: "Object ID not found." } };
   const { id } = params;
-  
+
   // Разрешаем любые ID, так как теперь мы ищем и по slug
   const adminDb = getAdminDb();
   const adminStorage = getAdminStorage();
@@ -92,22 +92,22 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     let objectDocSnapshot;
     const objectId = id as string;
 
-	    // 1. Попытка найти по ID документа (стандартный Firestore ID)
-	    const docRef = adminDb.collection(COLLECTIONS.objects).doc(objectId);
-	    objectDocSnapshot = await docRef.get();
+    // 1. Попытка найти по ID документа (стандартный Firestore ID)
+    const docRef = adminDb.collection(COLLECTIONS.objects).doc(objectId);
+    objectDocSnapshot = await docRef.get();
 
-	    // 2. Если не найдено, пробуем найти по полю 'id' (slug из старого импорта)
-	    if (!objectDocSnapshot.exists) {
-	        console.log(`Object with doc ID ${objectId} not found. Searching by 'id' field...`);
-	        const querySnapshot = await adminDb.collection(COLLECTIONS.objects).where('id', '==', objectId).limit(1).get();
-	        
-	        if (!querySnapshot.empty) {
-	            objectDocSnapshot = querySnapshot.docs[0];
-	            // Важно: используем реальный ID документа для дальнейшей работы, 
-	            // но в объект запишем тот ID, который ожидает клиент (или реальный)
-	            // Лучше использовать реальный ID документа как основной.
-	        }
-	    }
+    // 2. Если не найдено, пробуем найти по полю 'id' (slug из старого импорта)
+    if (!objectDocSnapshot.exists) {
+      console.log(`Object with doc ID ${objectId} not found. Searching by 'id' field...`);
+      const querySnapshot = await adminDb.collection(COLLECTIONS.objects).where('id', '==', objectId).limit(1).get();
+
+      if (!querySnapshot.empty) {
+        objectDocSnapshot = querySnapshot.docs[0];
+        // Важно: используем реальный ID документа для дальнейшей работы, 
+        // но в объект запишем тот ID, который ожидает клиент (или реальный)
+        // Лучше использовать реальный ID документа как основной.
+      }
+    }
 
     if (!objectDocSnapshot || !objectDocSnapshot.exists) {
       return { notFound: true };
@@ -116,27 +116,33 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     const raw = objectDocSnapshot.data();
     const objectData = toPublicObject(raw, objectDocSnapshot.id);
 
+    // Draft protection: Hide non-active objects in production
+    const isDev = process.env.NODE_ENV === 'development';
+    if (!isDev && objectData.status !== 'ready') {
+      return { notFound: true };
+    }
+
     // Обработка картинок
     if (Array.isArray(objectData.imageUrls)) {
-        const bucket = adminStorage.bucket();
-        objectData.imageUrls = await Promise.all(objectData.imageUrls.map(async (url) => {
-            if (url && url.startsWith('gs://')) {
-                const path = url.substring(url.indexOf('/', 5) + 1);
-                try {
-                    const [signedUrl] = await bucket.file(path).getSignedUrl({
-                        action: 'read',
-                        expires: '03-09-2491'
-                    });
-                    return signedUrl;
-                } catch (e) {
-                    console.error(`Error getting signed URL for ${path}:`, e instanceof Error ? e.message : e);
-                    return '/placeholder.svg';
-                }
-            }
-            return url || '/placeholder.svg';
-        }));
+      const bucket = adminStorage.bucket();
+      objectData.imageUrls = await Promise.all(objectData.imageUrls.map(async (url) => {
+        if (url && url.startsWith('gs://')) {
+          const path = url.substring(url.indexOf('/', 5) + 1);
+          try {
+            const [signedUrl] = await bucket.file(path).getSignedUrl({
+              action: 'read',
+              expires: '03-09-2491'
+            });
+            return signedUrl;
+          } catch (e) {
+            console.error(`Error getting signed URL for ${path}:`, e instanceof Error ? e.message : e);
+            return '/placeholder.svg';
+          }
+        }
+        return url || '/placeholder.svg';
+      }));
     } else {
-        objectData.imageUrls = ['/placeholder.svg'];
+      objectData.imageUrls = ['/placeholder.svg'];
     }
 
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
