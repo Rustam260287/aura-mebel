@@ -4,18 +4,18 @@ import { getAdminDb } from '../../../lib/firebaseAdmin';
 import { verifyRole } from '../../../lib/auth/rbac';
 
 interface HandoffSettings {
-  managerName?: string;
-  managerRole?: string;
-  avatarUrl?: string;
-  workingHours?: string;
+  managerName?: string | null;
+  managerRole?: string | null;
+  avatarUrl?: string | null;
+  workingHours?: string | null;
   availabilityStatus?: 'online' | 'offline' | 'schedule';
-  email?: string;
-  phone?: string;
-  whatsapp?: string;
-  whatsappNumber?: string;
-  telegram?: string;
-  telegramUsername?: string;
-  messageAfterAr?: string;
+  email?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  whatsappNumber?: string | null;
+  telegram?: string | null;
+  telegramUsername?: string | null;
+  messageAfterAr?: string | null;
   updatedAt?: string;
 }
 
@@ -32,15 +32,15 @@ const DEFAULT_SETTINGS: HandoffSettings = {
   updatedAt: new Date().toISOString(),
 };
 
-const normalizeString = (val: unknown): string | undefined => {
-  if (typeof val !== 'string') return undefined;
-  return val.trim() || undefined;
+const normalizeString = (val: unknown): string | null => {
+  if (typeof val !== 'string') return null;
+  return val.trim() || null;
 };
 
-const normalizePhone = (val: unknown): string | undefined => {
-  if (typeof val !== 'string') return undefined;
+const normalizePhone = (val: unknown): string | null => {
+  if (typeof val !== 'string') return null;
   const num = val.replace(/[^0-9+]/g, '');
-  return num || undefined;
+  return num || null;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

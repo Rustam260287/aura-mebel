@@ -4,14 +4,14 @@ import { Button } from '../Button';
 import { CuratorList } from './CuratorList';
 
 interface HandoffSettings {
-  managerName?: string;
-  managerRole?: string;
-  avatarUrl?: string;
-  workingHours?: string;
+  managerName?: string | null;
+  managerRole?: string | null;
+  avatarUrl?: string | null;
+  workingHours?: string | null;
   availabilityStatus?: 'online' | 'offline' | 'schedule';
-  whatsappNumber?: string;
-  telegramUsername?: string;
-  messageAfterAr?: string;
+  whatsappNumber?: string | null;
+  telegramUsername?: string | null;
+  messageAfterAr?: string | null;
   updatedAt?: string;
 }
 
