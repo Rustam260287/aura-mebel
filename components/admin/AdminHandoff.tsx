@@ -19,7 +19,10 @@ const normalizePhone = (phone: string) => {
   return phone.replace(/[^0-9]/g, '');
 };
 
+import { useAuth } from '../../contexts/AuthContext';
+
 export const AdminHandoff: React.FC = () => {
+  const { user } = useAuth();
   const [settings, setSettings] = useState<HandoffSettings | null>(null);
   const [form, setForm] = useState<HandoffSettings>({ availabilityStatus: 'online' });
   const [isLoading, setIsLoading] = useState(true);
@@ -28,8 +31,12 @@ export const AdminHandoff: React.FC = () => {
 
   useEffect(() => {
     const loadSettings = async () => {
+      if (!user) return;
       try {
-        const res = await fetch('/api/admin/handoff');
+        const token = await user.getIdToken();
+        const res = await fetch('/api/admin/handoff', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (res.ok) {
           const data = await res.json();
           setSettings(data);
@@ -43,7 +50,7 @@ export const AdminHandoff: React.FC = () => {
       }
     };
     loadSettings();
-  }, []);
+  }, [user]);
 
   const isDirty = useMemo(() => JSON.stringify(settings || {}) !== JSON.stringify(form || {}), [settings, form]);
 
@@ -56,6 +63,7 @@ export const AdminHandoff: React.FC = () => {
   };
 
   const save = async () => {
+    if (!user) return;
     setIsSaving(true);
     setError(null);
     try {
@@ -70,9 +78,13 @@ export const AdminHandoff: React.FC = () => {
         messageAfterAr: (form.messageAfterAr || '').trim(),
       };
 
+      const token = await user.getIdToken();
       const res = await fetch('/api/admin/handoff', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(payload),
       });
 
@@ -93,7 +105,7 @@ export const AdminHandoff: React.FC = () => {
       setForm(data); // Sync form with saved data
     } catch (err) {
       console.error(err);
-      setError('Не удалось сохранить изменения');
+      setError(err instanceof Error ? err.message : 'Не удалось сохранить изменения');
     } finally {
       setIsSaving(false);
     }

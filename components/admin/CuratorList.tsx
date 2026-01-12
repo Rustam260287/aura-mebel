@@ -4,15 +4,22 @@ import { Button } from '../Button';
 import { UserPlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { CuratorEditor } from './CuratorEditor';
 
+import { useAuth } from '../../contexts/AuthContext';
+
 export const CuratorList: React.FC = () => {
+    const { user } = useAuth();
     const [curators, setCurators] = useState<CuratorProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingCurator, setEditingCurator] = useState<CuratorProfile | null>(null);
 
     const fetchCurators = async () => {
+        if (!user) return;
         try {
-            const res = await fetch('/api/admin/curators');
+            const token = await user.getIdToken();
+            const res = await fetch('/api/admin/curators', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setCurators(data);
@@ -26,12 +33,17 @@ export const CuratorList: React.FC = () => {
 
     useEffect(() => {
         fetchCurators();
-    }, []);
+    }, [user]);
 
     const handleSave = async (profileData: Partial<CuratorProfile>) => {
+        if (!user) return;
+        const token = await user.getIdToken();
         const res = await fetch('/api/admin/curators', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
             body: JSON.stringify(profileData)
         });
         if (res.ok) {
@@ -42,10 +54,13 @@ export const CuratorList: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
+        if (!user) return;
         if (!confirm('Вы уверены? Удаление необратимо.')) return;
 
+        const token = await user.getIdToken();
         const res = await fetch(`/api/admin/curators?id=${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             setCurators(prev => prev.filter(c => c.id !== id));
