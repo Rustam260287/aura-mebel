@@ -13,10 +13,15 @@ export const isAndroid = (): boolean => {
 
 export const openInChromeAndroid = () => {
     if (typeof window === 'undefined') return;
-    // Android Intent to explicitly open Chrome
-    const url = window.location.href.replace(/^https?:\/\//, '');
-    const intent = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end`;
-    console.log('[Browser] Redirecting Yandex → Chrome:', intent);
+
+    // Construct Intent URL
+    const scheme = window.location.protocol.replace(':', '');
+    const hostPath = window.location.href.replace(/^https?:\/\//, '');
+
+    // Explicitly target Chrome on Android
+    const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;end`;
+
+    console.log('[Browser] Redirecting Yandex -> Chrome:', intent);
     window.location.href = intent;
 };
 
