@@ -19,10 +19,11 @@ import { toScenePresetPublic } from '../../lib/scenePreset';
 
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
-const ALL_CATEGORIES_FULL = ['Спальни', 'Кухни', 'Мягкая мебель', 'Гостиная'];
+import { getAllCategories, getPublicCategories } from '../../config/domain';
+
 const ALL_CATEGORIES = process.env.NODE_ENV === 'development'
-  ? ALL_CATEGORIES_FULL
-  : ['Мягкая мебель'];
+  ? getAllCategories().map(c => c.label)
+  : getPublicCategories().map(c => c.label);
 const ITEMS_PER_PAGE = 12;
 const CATEGORY_IN_LIMIT = 10;
 

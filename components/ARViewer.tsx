@@ -4,7 +4,6 @@ import { trackJourneyEvent } from '../lib/journey/client';
 import { useImmersive } from '../contexts/ImmersiveContext';
 import { useToast } from '../contexts/ToastContext';
 import { createArSessionId } from '../lib/journey/arSession';
-import { createArSnapshot } from '../lib/journey/snapshotsClient';
 import { ArBrowserGuard } from './ArBrowserGuard';
 
 interface ModelViewerElement extends HTMLElement {
@@ -59,7 +58,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     const [arSessionId, setArSessionId] = useState<string | null>(null);
     const arSessionIdRef = useRef<string | null>(null);
     const [isCapturing, setIsCapturing] = useState(false);
-    const [showFlash, setShowFlash] = useState(false);
     const arModes = isIOS ? 'quick-look' : 'webxr';
 
     useEffect(() => {
@@ -119,11 +117,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
     const canPreview3d = Boolean(proxiedSrc);
     const canStartAr = isIOS ? Boolean(effectiveIosSrc) : Boolean(proxiedSrc);
-    const canSnapshot =
-      open &&
-      isPresentingAr &&
-      canPreview3d &&
-      (typeof document === 'undefined' ? true : document.visibilityState === 'visible');
 
     const handleModelLoad = () => setIsLoaded(true);
 
@@ -357,166 +350,57 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       };
     }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
 
-    const captureScreenSnapshot = useCallback(async (): Promise<{ blob: Blob; width: number; height: number }> => {
-      // Requirements: WebXR capture via Screen Capture API
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        throw new Error('Screen capture not supported');
-      }
-
-      // 1. Request stream (System prompt appears here)
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          width: { ideal: window.screen.width * window.devicePixelRatio },
-          height: { ideal: window.screen.height * window.devicePixelRatio },
-          frameRate: { ideal: 10 } // We only need 1 frame
-        },
-        audio: false
-      });
-
-      // 2. Setup hidden video to render stream
-      const video = document.createElement('video');
-      video.playsInline = true;
-      video.muted = true;
-      video.srcObject = stream;
-
-      await new Promise<void>((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play().then(() => resolve());
-        };
-      });
-
-      // Wait a tiny bit for the frame to settle (avoid black frame)
-      await new Promise(r => setTimeout(r, 200));
-
-      // 3. Draw to canvas
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        stream.getTracks().forEach(t => t.stop());
-        throw new Error('Canvas context failed');
-      }
-
-      ctx.drawImage(video, 0, 0);
-
-      // 4. STOP TRACKS IMMEDIATELY (Quiet UX)
-      stream.getTracks().forEach(t => t.stop());
-      video.srcObject = null;
-      video.remove();
-
-      // 5. Convert to Blob
-      return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve({ blob, width: canvas.width, height: canvas.height });
-          } else {
-            reject(new Error('Blob creation failed'));
-          }
-        }, 'image/png');
-      });
-    }, []);
-
-    const saveToDevice = (blob: Blob, filename: string) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    };
-
-    const shareSnapshot = async (file: File) => {
-      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            text: 'Я примерил(а) этот предмет в своём интерьере ✨',
-            url: `https://aura-room.ru/object/${objectId}?from=share`
-          });
-          trackJourneyEvent({ type: 'AR_SNAPSHOT_SHARED', objectId });
-        } catch (error) {
-          if ((error as Error).name !== 'AbortError') {
-            console.error('Share failed:', error);
-          }
-        }
-      } else {
-        // Fallback: copy link to clipboard? Or just do nothing (Quiet UX).
-        // Given "Quiet UX", doing nothing is safer than a potentially confusing fallback.
-      }
-    };
-
-    const handleSnapshot = useCallback(async () => {
+    // Simple link-only share (no screenshots)
+    const handleShare = useCallback(async () => {
       if (isCapturing) return;
-      const sessionId = ensureArSession();
-      if (!sessionId || !objectId) return;
-      if (!isPresentingAr) return;
+      if (!objectId) return;
 
-      trackJourneyEvent({ type: 'AR_SNAPSHOT_REQUESTED', objectId });
       setIsCapturing(true);
 
-      // Flash effect immediately (Feedback "I heard you")
-      setShowFlash(true);
-      setTimeout(() => setShowFlash(false), 150);
-
       try {
-        // Use Screen Capture API for WebXR
-        const capture = await captureScreenSnapshot();
+        // Create share link via API
+        const response = await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ objectId }),
+        });
 
-        // 1. Immediate Save (Parallel)
-        const filename = `aura-${new Date().toISOString().slice(0, 10)}.png`;
-        saveToDevice(capture.blob, filename);
-
-        // 2. Upload (Parallel)
-        createArSnapshot({
-          sessionId,
-          objectId,
-          capture,
-          device: 'android',
-          arMode: 'webxr'
-        }).then(() => {
-          trackJourneyEvent({ type: 'AR_SNAPSHOT_CREATED', objectId });
-        }).catch(e => console.warn('Snapshot upload bg failed', e));
-
-        // 3. Feedback (Toast with Share Action)
-        const file = new File([capture.blob], filename, { type: 'image/png' });
-
-        addToast(
-          <div className="flex items-center gap-3">
-            <span>✅ Снимок сохранён</span>
-            {typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] }) && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  shareSnapshot(file);
-                }}
-                className="ml-2 bg-white/20 hover:bg-white/30 active:bg-white/40 px-3 py-1 rounded-full text-xs font-medium transition-colors backdrop-blur-sm"
-              >
-                🔗 Поделиться
-              </button>
-            )}
-          </div>,
-          'success',
-          4500
-        );
-
-      } catch (e: any) {
-        console.warn('[ARViewer] snapshot failed:', e);
-
-        if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
-          // User cancelled the screen share prompt
-          addToast('Снимок отменён', 'info', 2000);
-        } else if (e.message === 'Screen capture not supported') {
-          addToast('Снимок недоступен на этом устройстве', 'error', 2500);
-        } else {
-          addToast('Не удалось сохранить снимок', 'error', 2200);
+        if (!response.ok) {
+          throw new Error('Failed to create share link');
         }
+
+        const { shareUrl } = await response.json();
+
+        // Share via Web Share API or clipboard
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          try {
+            await navigator.share({
+              text: 'Посмотри, как этот предмет смотрится в интерьере ✨',
+              url: shareUrl,
+            });
+            addToast('Отправлено!', 'success', 2000);
+            trackJourneyEvent({ type: 'AR_SNAPSHOT_SHARED', objectId }); // Reusing for share link
+          } catch (e) {
+            if ((e as Error).name === 'AbortError') {
+              // User cancelled - silent (Quiet UX)
+            } else {
+              // Fallback to clipboard
+              await navigator.clipboard.writeText(shareUrl);
+              addToast('Ссылка скопирована', 'success', 2000);
+            }
+          }
+        } else {
+          // Fallback: copy to clipboard
+          await navigator.clipboard.writeText(shareUrl);
+          addToast('Ссылка скопирована', 'success', 2000);
+        }
+      } catch (e) {
+        console.warn('[ARViewer] share failed:', e);
+        addToast('Не удалось создать ссылку', 'error', 2000);
       } finally {
         setIsCapturing(false);
       }
-    }, [addToast, captureScreenSnapshot, ensureArSession, isCapturing, isPresentingAr, objectId]);
+    }, [addToast, isCapturing, objectId]);
 
     return (
       <div
@@ -527,10 +411,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         ].join(' ')}
         aria-hidden={!open}
       >
-        {/* Flash Effect */}
-        {showFlash && (
-          <div className="absolute inset-0 z-[200] bg-white animate-fade-out pointer-events-none" />
-        )}
 
         {/* Model Viewer (single entrypoint for Web/Android + iOS Quick Look via ios-src) */}
         <ArBrowserGuard>
@@ -556,25 +436,24 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
               className="w-full h-full"
               preserve-drawing-buffer
             >
-              {/* Snapshot button (WebXR in-page only). Must be inside model-viewer DOM overlay on Android. */}
-              {canSnapshot && (
+              {/* Share button - visible when viewer is open */}
+              {open && objectId && (
                 <button
                   type="button"
-                  onClick={handleSnapshot}
-                  aria-label="Сделать снимок"
+                  onClick={handleShare}
+                  aria-label="Показать близким"
                   disabled={isCapturing}
-                  className="pointer-events-auto absolute z-20 left-1/2 -translate-x-1/2 bottom-[32px] w-14 h-14 bg-white/60 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center hover:bg-white/80 transition-all active:scale-95 disabled:opacity-50"
-                  style={{ opacity: 0.7 }}
+                  className="pointer-events-auto absolute z-20 right-6 bottom-[32px] px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95 disabled:opacity-50"
                 >
-                  <svg className="w-6 h-6 text-black opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                     />
-                    <circle cx="12" cy="13" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
+                  <span className="text-sm font-medium text-soft-black">Показать близким</span>
                 </button>
               )}
             </model-viewer>

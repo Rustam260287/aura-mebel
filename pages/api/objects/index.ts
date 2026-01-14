@@ -1,10 +1,10 @@
-
 // pages/api/objects/index.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import type { ObjectAdmin } from '../../../types';
 import { verifyIdToken, isAdmin } from '../../../lib/authMiddleware';
 import { COLLECTIONS } from '../../../lib/db/collections';
+import { normalizeStatus, OBJECT_STATUSES } from '../../../config/domain';
 
 const getUrlExtension = (url: unknown) => {
   if (typeof url !== 'string') return undefined;
@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const decodedToken = await verifyIdToken(token);
       if (!isAdmin(decodedToken)) {
-          return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+        return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
       }
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -75,17 +75,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!newObjectData.name) {
         return res.status(400).json({ error: 'Missing required object fields' });
       }
+
+      // Normalize status (default to draft for new objects)
+      const status = normalizeStatus(newObjectData.status || OBJECT_STATUSES.DRAFT);
+
       const has3D = Boolean(newObjectData.modelGlbUrl || newObjectData.modelUsdzUrl);
-      
+
       const docRef = await db.collection(COLLECTIONS.objects).add({
         ...newObjectData,
+        status,
         has3D,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
       const newObject = { ...newObjectData, id: docRef.id };
-      
+
       res.status(201).json(newObject);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

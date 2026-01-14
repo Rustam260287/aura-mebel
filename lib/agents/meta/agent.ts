@@ -1,4 +1,5 @@
 import { ActionPlan, AssistantState, MetaEvent, SessionHistory, NotificationType } from './types';
+import { AGENT_TIMINGS } from '../../../config/domain';
 
 export class MetaAgent {
     private currentState: AssistantState = AssistantState.IDLE;
@@ -103,7 +104,7 @@ export class MetaAgent {
             const actualTime = Math.max(event.payload?.timeOnPage || 0, internalTime);
 
             // Onboarding Hint (First Visit only, e.g. < 5s on page)
-            if (actualTime > 2000 && actualTime < 10000 && this.currentState === AssistantState.IDLE) {
+            if (actualTime > AGENT_TIMINGS.ONBOARDING_HINT_MIN_MS && actualTime < AGENT_TIMINGS.ONBOARDING_HINT_MAX_MS && this.currentState === AssistantState.IDLE) {
                 if (this.shouldShowNotification('ONBOARDING_HINT', actualTime)) {
                     assistantMode = 'toast';
                     content = { message: "👆 Проведите пальцем, чтобы вращать", notificationType: 'ONBOARDING_HINT' };
@@ -112,7 +113,7 @@ export class MetaAgent {
             }
 
             // AR Guidance (Stuck in Preparing > 8s)
-            if (this.currentState === AssistantState.AR_PREPARING && actualTime > 8000) {
+            if (this.currentState === AssistantState.AR_PREPARING && actualTime > AGENT_TIMINGS.AR_GUIDANCE_DELAY_MS) {
                 if (this.shouldShowNotification('AR_GUIDANCE', actualTime)) {
                     assistantMode = 'toast';
                     content = { message: "💡 Наведите камеру на пол и плавно подвигайте", notificationType: 'AR_GUIDANCE' };
@@ -122,7 +123,7 @@ export class MetaAgent {
 
             // Transition to HESITATING if idle too long
             if ((this.currentState === AssistantState.SELECTING || this.currentState === AssistantState.BROWSING)
-                && actualTime > 15000) { // 15s threshold
+                && actualTime > AGENT_TIMINGS.HESITATING_THRESHOLD_MS) {
                 // Determine if we should really switch state or just keep internal track
             }
 
@@ -256,7 +257,7 @@ export class MetaAgent {
         }
         if (type === 'AR_HINT') {
             // IF timeOnPage > 12s AND 3D opened AND AR NOT opened AND refusals = 0
-            if (timeOnPageMs > 12000
+            if (timeOnPageMs > AGENT_TIMINGS.AR_HINT_DELAY_MS
                 && this.sessionHistory.hasOpened3D
                 && !this.sessionHistory.hasOpenedAR
                 && this.sessionHistory.arRefusals === 0) {
@@ -269,7 +270,7 @@ export class MetaAgent {
             // Encouragement to engage
             if (this.sessionHistory.galleryScrolled
                 && !this.sessionHistory.hasOpened3D
-                && timeOnPageMs > 20000) {
+                && timeOnPageMs > AGENT_TIMINGS.SOFT_CTA_DELAY_MS) {
                 return true;
             }
         }
@@ -285,11 +286,11 @@ export class MetaAgent {
 
             // If user is clearly hesitating (long time, no AR convert)
             // time > 45s
-            if (timeOnPageMs > 45000 && !this.sessionHistory.hasOpenedAR) {
+            if (timeOnPageMs > AGENT_TIMINGS.CONTACT_SUGGESTION_DELAY_MS && !this.sessionHistory.hasOpenedAR) {
                 return true;
             }
             // Also show contact if AR was used but user is lingering after share/dismiss share?
-            if (this.sessionHistory.hasOpenedAR && timeOnPageMs > 60000) {
+            if (this.sessionHistory.hasOpenedAR && timeOnPageMs > AGENT_TIMINGS.CONTACT_SUGGESTION_AFTER_AR_MS) {
                 return true;
             }
         }

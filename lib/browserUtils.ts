@@ -16,28 +16,7 @@ export const openInChromeAndroid = () => {
     // Android Intent to explicitly open Chrome
     const url = window.location.href.replace(/^https?:\/\//, '');
     const intent = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end`;
+    console.log('[Browser] Redirecting Yandex → Chrome:', intent);
     window.location.href = intent;
 };
 
-export const openAndroidTwa = (modelId?: string) => {
-    if (typeof window === 'undefined') return;
-
-    // Construct the fallback URL (e.g. Play Store or just stay on web)
-    const currentUrl = window.location.href;
-    const fallbackUrl = encodeURIComponent(currentUrl);
-
-    // If modelId is provided, ensure we target the specific path
-    const path = modelId ? `ar?model=${modelId}` : 'ar';
-    const host = 'aura-room.ru';
-
-    // Scheme: intent://aura-room.ru/ar?model=...#Intent;scheme=https;package=com.aura.shell;...end
-    const intent =
-        `intent://${host}/${path}#Intent;` +
-        `scheme=https;` +
-        `package=com.aura.shell;` +
-        `S.browser_fallback_url=${fallbackUrl};` +
-        `end`;
-
-    console.log('[Android] Attempting to launch TWA:', intent);
-    window.location.href = intent;
-};

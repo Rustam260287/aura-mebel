@@ -215,16 +215,34 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-                            <select
-                              name="status"
-                              value={(formData.status || 'draft') as ObjectStatus}
-                              onChange={handleChange}
-                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white"
-                            >
-                              <option value="draft">Draft</option>
-                              <option value="ready">Ready</option>
-                              <option value="archived">Archived</option>
-                            </select>
+                            <div className="relative">
+                              <select
+                                name="status"
+                                value={(formData.status || 'draft') as ObjectStatus}
+                                onChange={handleChange}
+                                className={[
+                                  "w-full p-2 pr-8 border rounded-lg focus:ring-2 focus:ring-brand-brown/20 outline-none bg-white appearance-none",
+                                  formData.status === 'ready' ? 'border-green-300 bg-green-50' :
+                                    formData.status === 'archived' ? 'border-gray-300 bg-gray-100' :
+                                      'border-amber-300 bg-amber-50'
+                                ].join(' ')}
+                              >
+                                <option value="draft">🔒 Draft — скрыт</option>
+                                <option value="ready">✅ Ready — виден в каталоге</option>
+                                <option value="archived">📦 Archived — в архиве</option>
+                              </select>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                {formData.status === 'ready' && <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />}
+                                {formData.status === 'draft' && <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />}
+                                {formData.status === 'archived' && <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />}
+                              </div>
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-1">
+                              {formData.status === 'ready' && 'Объект виден пользователям в каталоге и доступен для AR.'}
+                              {formData.status === 'draft' && 'Объект скрыт. Виден только в dev-режиме и админке.'}
+                              {formData.status === 'archived' && 'Объект в архиве. Не виден нигде, кроме админки.'}
+                              {!formData.status && 'Выберите статус объекта.'}
+                            </p>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

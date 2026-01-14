@@ -65,30 +65,23 @@ export const toPublicObject = (data: unknown, id: string): ObjectPublic => {
 
   const categoryVal = asString(record.category);
   const typeVal = asString(record.objectType);
-  const categoryCheck = (categoryVal || typeVal || '').toLowerCase();
-
-  const SOFT_CATEGORIES = ['мягкая мебель', 'sofa', 'диваны', 'кресла', 'пуфы'];
-  const isSoft = SOFT_CATEGORIES.some(c => categoryCheck.includes(c));
 
   const rawStatus = asString(record.status).trim().toLowerCase();
 
-  // Visibility Logic:
-  // 1. If explicit status is set (ready/draft/archived), respect it.
-  // 2. If no status (undefined/empty):
-  //    - Soft furniture -> default to 'ready' (legacy support)
-  //    - Others -> default to 'draft' (safety)
+  // Status Logic (SIMPLIFIED after migration 2026-01-14):
+  // All objects now have explicit status in DB.
+  // We only normalize synonyms (active/published → ready).
+  // Unknown/missing → draft (safe default).
 
   let status: ObjectStatus = 'draft';
 
   if (rawStatus === 'ready' || rawStatus === 'active' || rawStatus === 'published') {
     status = 'ready';
-  } else if (rawStatus === 'draft') {
-    status = 'draft';
   } else if (rawStatus === 'archived') {
     status = 'archived';
   } else {
-    // No explicit status found. Fallback based on category.
-    status = isSoft ? 'ready' : 'draft';
+    // draft or unknown → draft (safe default)
+    status = 'draft';
   }
 
   // Name fallback: Try 'name' -> 'title' -> 'name_en'

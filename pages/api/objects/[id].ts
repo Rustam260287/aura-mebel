@@ -6,6 +6,9 @@ import { getAdminDb } from '../../../lib/firebaseAdmin';
 import type { ObjectAdmin } from '../../../types';
 import { verifyIdToken, isAdmin } from '../../../lib/authMiddleware';
 import { COLLECTIONS } from '../../../lib/db/collections';
+import { OBJECT_STATUSES, normalizeStatus } from '../../../config/domain';
+
+const VALID_STATUSES = Object.values(OBJECT_STATUSES);
 
 const getUrlExtension = (url: unknown) => {
   if (typeof url !== 'string') return undefined;
@@ -80,10 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     const token = authHeader.split(' ')[1];
     try {
-        const decodedToken = await verifyIdToken(token);
-        if (!isAdmin(decodedToken)) {
-            return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
-        }
+      const decodedToken = await verifyIdToken(token);
+      if (!isAdmin(decodedToken)) {
+        return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+      }
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -94,11 +97,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const updatedObject: ObjectAdmin = req.body;
       // Ensure ID consistency
       if (updatedObject.id && updatedObject.id !== id) {
-          return res.status(400).json({ error: 'ID mismatch' });
+        return res.status(400).json({ error: 'ID mismatch' });
       }
-      
+
       const { id: _, ...dataToUpdate } = updatedObject; // Exclude ID from data being written
       validateModelUrls(dataToUpdate);
+
+      // Validate and normalize status
+      if (dataToUpdate.status !== undefined) {
+        const normalizedStatus = normalizeStatus(dataToUpdate.status);
+        if (dataToUpdate.status !== normalizedStatus) {
+          console.warn(`[API] Status normalized: "${dataToUpdate.status}" → "${normalizedStatus}"`);
+        }
+        dataToUpdate.status = normalizedStatus as any;
+      }
 
       const docRef = db.collection(COLLECTIONS.objects).doc(id as string);
 
@@ -140,7 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (modelUsdzUrlPatch !== undefined) patch.modelUsdzUrl = modelUsdzUrlPatch;
 
       await docRef.set({
-          ...patch,
+        ...patch,
       }, { merge: true });
 
       const savedDoc = await docRef.get();

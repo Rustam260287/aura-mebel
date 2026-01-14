@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { isYandexBrowser, isAndroid, openAndroidTwa } from '../lib/browserUtils';
+import { isYandexBrowser, isAndroid, openInChromeAndroid } from '../lib/browserUtils';
 import { trackJourneyEvent } from '../lib/journey/client';
 
 interface Props {
@@ -8,31 +8,27 @@ interface Props {
 
 export const ArBrowserGuard: React.FC<Props> = ({ children }) => {
     useEffect(() => {
-        // Quiet TWA Handoff for Android + Yandex Browser
+        // Seamless Chrome Handoff for Android + Yandex Browser
+        // Yandex doesn't support WebXR properly, so we redirect to Chrome
         if (isAndroid() && isYandexBrowser()) {
-            // Attempt to switch to AuraShell TWA
-            openAndroidTwa();
-
-            // We just let the children render while the intent fires.
-            // The browser will handle the switch or stay here if failed/ignored.
-
-            // Optional: Analytics tracking for TWA attempt can be added here if needed
             trackJourneyEvent({
                 type: 'HANDOFF_REQUESTED',
                 meta: {
                     handoff: {
-                        reason: 'contact', // Retaining 'contact' as a placeholder or defining a new technical reason if schema allows, but 'contact' is safe
+                        reason: 'contact', // browser_switch tracked via lastQuestions
                         actions: ['AR_TRY'],
-                        lastQuestions: ['TWA Auto-Launch'],
+                        lastQuestions: ['Yandex → Chrome'],
                         timestamp: new Date().toISOString(),
                         arDurationSec: null
                     }
                 }
             });
+
+            // Redirect to Chrome immediately
+            openInChromeAndroid();
         }
     }, []);
 
-    // Always render children immediately (WebXR / Fallback logic)
-    // No blocking UI, no "AR Unavailable" screens.
+    // Always render children immediately
     return <>{children}</>;
 };
