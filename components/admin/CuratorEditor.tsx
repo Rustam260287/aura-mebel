@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { nanoid } from 'nanoid';
 import { CuratorProfile, DEFAULT_CURATOR_PROFILE } from '../../types/curator';
 import { Button } from '../Button';
 import { XMarkIcon } from '../icons';
@@ -18,10 +19,17 @@ export const CuratorEditor: React.FC<CuratorEditorProps> = ({
 }) => {
     const [formData, setFormData] = useState<Partial<CuratorProfile>>(DEFAULT_CURATOR_PROFILE);
     const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialData ? { ...initialData } : { ...DEFAULT_CURATOR_PROFILE });
+            if (initialData) {
+                setFormData({ ...initialData });
+            } else {
+                // Generate new ID for new curator
+                setFormData({ ...DEFAULT_CURATOR_PROFILE, id: nanoid(12) });
+            }
+            setError(null);
         }
     }, [isOpen, initialData]);
 
@@ -29,13 +37,27 @@ export const CuratorEditor: React.FC<CuratorEditorProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         setIsSaving(true);
+
+        // Client-side validation
+        if (!formData.displayName?.trim()) {
+            setError('Имя обязательно');
+            setIsSaving(false);
+            return;
+        }
+        if (!formData.roleLabel?.trim()) {
+            setError('Роль обязательна');
+            setIsSaving(false);
+            return;
+        }
+
         try {
             await onSave(formData);
             onClose();
-        } catch (error) {
-            console.error(error);
-            alert('Ошибка при сохранении');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || 'Не удалось сохранить куратора');
         } finally {
             setIsSaving(false);
         }
@@ -64,6 +86,13 @@ export const CuratorEditor: React.FC<CuratorEditorProps> = ({
                 </header>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Error Banner */}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                            ⚠️ {error}
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Main Info */}
                         <div className="md:col-span-2">

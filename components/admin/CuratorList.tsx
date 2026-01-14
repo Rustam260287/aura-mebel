@@ -36,7 +36,8 @@ export const CuratorList: React.FC = () => {
     }, [user]);
 
     const handleSave = async (profileData: Partial<CuratorProfile>) => {
-        if (!user) return;
+        if (!user) throw new Error('Не авторизован');
+
         const token = await user.getIdToken();
         const res = await fetch('/api/admin/curators', {
             method: 'POST',
@@ -46,11 +47,13 @@ export const CuratorList: React.FC = () => {
             },
             body: JSON.stringify(profileData)
         });
-        if (res.ok) {
-            fetchCurators();
-        } else {
-            throw new Error('Failed to save');
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || data.message || `Ошибка сервера: ${res.status}`);
         }
+
+        fetchCurators();
     };
 
     const handleDelete = async (id: string) => {

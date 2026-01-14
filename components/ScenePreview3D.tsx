@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Environment, OrbitControls, useGLTF } from '@react-three/drei';
 import type { SceneObjectTransform } from '../types';
+import { use3DConfig } from '../lib/hooks/use3DConfig';
 
 type ModelRef = {
   id: string;
@@ -56,6 +57,8 @@ interface ScenePreview3DProps {
 }
 
 export const ScenePreview3D: React.FC<ScenePreview3DProps> = ({ sceneObjects, allObjects, className }) => {
+  const config = use3DConfig();
+
   const items = useMemo(() => {
     const map = new Map<string, ModelRef>();
     for (const o of allObjects) map.set(o.id, o);
@@ -72,7 +75,9 @@ export const ScenePreview3D: React.FC<ScenePreview3DProps> = ({ sceneObjects, al
   return (
     <div className={className}>
       <Canvas
-        dpr={[1, 2]}
+        dpr={config.dpr}
+        frameloop={config.frameloop}
+        gl={{ powerPreference: config.powerPreference }}
         camera={{ fov: 40, near: 0.01, far: 200, position: [0, 1.4, 2.6] }}
         style={{ touchAction: 'pan-y', borderRadius: 16 }}
       >
@@ -88,7 +93,7 @@ export const ScenePreview3D: React.FC<ScenePreview3DProps> = ({ sceneObjects, al
               ))}
             </group>
           </Bounds>
-          <Environment preset="apartment" />
+          {config.useEnvironment && <Environment preset="apartment" />}
         </Suspense>
 
         <OrbitControls enablePan enableZoom enableRotate makeDefault />

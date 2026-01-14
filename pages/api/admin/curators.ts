@@ -24,13 +24,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!hasAccess) return;
 
             const body = req.body as Partial<CuratorProfile>;
-            if (!body.id) {
-                return res.status(400).json({ error: 'Missing ID' });
+
+            // Validation
+            if (!body.id || typeof body.id !== 'string') {
+                return res.status(400).json({
+                    error: 'ID куратора обязателен',
+                    code: 'MISSING_ID'
+                });
             }
 
+            if (!body.displayName?.trim()) {
+                return res.status(400).json({
+                    error: 'Имя куратора обязательно',
+                    code: 'MISSING_NAME'
+                });
+            }
+
+            if (!body.roleLabel?.trim()) {
+                return res.status(400).json({
+                    error: 'Роль куратора обязательна',
+                    code: 'MISSING_ROLE'
+                });
+            }
+
+            // Normalize contacts
+            const normalizedBody = {
+                ...body,
+                contacts: {
+                    whatsapp: body.contacts?.whatsapp?.replace(/\D/g, '') || '',
+                    telegram: body.contacts?.telegram?.replace(/^@/, '') || '',
+                    phone: body.contacts?.phone || '',
+                },
+                updatedAt: new Date().toISOString(),
+            };
+
             const docRef = collection.doc(body.id);
-            await docRef.set(body, { merge: true });
-            return res.status(200).json({ success: true });
+            await docRef.set(normalizedBody, { merge: true });
+            return res.status(200).json({ success: true, id: body.id });
         }
 
         if (req.method === 'DELETE') {
