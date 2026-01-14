@@ -12,7 +12,8 @@ export type AdminView =
   | 'scenes'
   | 'assets'
   | 'media'
-  | 'handoff';
+  | 'handoff'
+  | 'analytics';
 
 export type View =
   | { page: 'home' }

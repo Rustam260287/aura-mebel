@@ -31,7 +31,8 @@ import {
   Wrench,
   Box,
   Moon,
-  Sun
+  Sun,
+  BarChart3
 } from 'lucide-react';
 
 export const MapPinIcon = MapPin;
@@ -69,3 +70,4 @@ export const CubeIcon = Box;
 export const CubeTransparentIcon = Box; // Добавлено для совместимости с ARViewer
 export const MoonIcon = Moon;
 export const SunIcon = Sun;
+export const ChartBarIcon = BarChart3;

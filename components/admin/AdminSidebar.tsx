@@ -10,6 +10,7 @@ import {
   PhoneIcon,
   PhotoIcon,
   SlidersHorizontalIcon,
+  ChartBarIcon,
 } from '../icons';
 import type { View, AdminView } from '../../types';
 
@@ -65,6 +66,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </div>
           {role !== 'manager' ? (
             <>
+              <NavLink label="Аналитика (beta)" isActive={activeView === 'analytics'} onClick={() => setView('analytics')}>
+                <ChartBarIcon className="h-6 w-6" />
+              </NavLink>
               <NavLink label="Путь посетителей" isActive={activeView === 'journey'} onClick={() => setView('journey')}>
                 <ArrowsUpDownIcon className="h-6 w-6" />
               </NavLink>

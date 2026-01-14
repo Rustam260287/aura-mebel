@@ -19,6 +19,7 @@ import { AdminHandoffDetail } from './admin/journey/AdminHandoffDetail';
 import { getAuth } from 'firebase/auth';
 import { AdminScenes } from './admin/AdminScenes';
 import { SceneEditModal } from './admin/SceneEditModal';
+import { AdminAnalytics } from './admin/AdminAnalytics';
 
 interface AdminPageProps {
   allObjects: ObjectAdmin[];
@@ -36,7 +37,7 @@ interface AdminPageProps {
   onDeleteJournalEntry: (entryId: string) => Promise<void>;
 }
 
-const AdminPageComponent: React.FC<AdminPageProps> = ({ 
+const AdminPageComponent: React.FC<AdminPageProps> = ({
   allObjects,
   allScenes,
   journalEntries,
@@ -133,6 +134,8 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
 
   const renderContent = () => {
     switch (adminView) {
+      case 'analytics':
+        return <AdminAnalytics />;
       case 'journey':
         return <AdminJourneyFunnel />;
       case 'activeVisitors':
@@ -213,7 +216,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
         return null;
     }
   };
-  
+
   const handleSetView = (view: AdminView) => {
     setAdminView(view);
     setIsSidebarOpen(false); // Close sidebar on navigation
@@ -221,9 +224,9 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <AdminSidebar 
-        activeView={adminView} 
-        setView={handleSetView} 
+      <AdminSidebar
+        activeView={adminView}
+        setView={handleSetView}
         onNavigate={onNavigate}
         role={adminRole}
         isOpen={isSidebarOpen}
@@ -235,7 +238,7 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
           {renderContent()}
         </main>
       </div>
-      
+
       {isAddModalOpen && (
         <ObjectEditModal
           isOpen={isAddModalOpen}
