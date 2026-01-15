@@ -518,7 +518,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       }
     }
 
-    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && supportsWebXRAR;
+    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && supportsWebXrAr;
 
     if (!canStartArNow) {
       if (!isIOSDevice && webXrArSupported === false && !arUnavailableTrackedRef.current) {
