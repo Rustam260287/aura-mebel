@@ -22,14 +22,18 @@ export const getBrowserEnvironment = (): BrowserEnv => {
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
     const platform = isAndroid ? 'android' : isIOS ? 'ios' : 'desktop';
 
-    // In-App detection
-    const isTelegram = /Telegram/i.test(ua);
+    // In-App detection (expanded patterns)
+    // Telegram: sometimes appears as TelegramBot or uses Android WebView without clear indicator
+    const isTelegram = /Telegram|TelegramBot/i.test(ua);
     const isInstagram = /Instagram/i.test(ua);
-    const isVK = /VK/i.test(ua);
-    const isFacebook = /FBAN|FBAV/i.test(ua);
-    const isTikTok = /TikTok/i.test(ua);
+    const isVK = /VK|vkontakte/i.test(ua);
+    const isFacebook = /FBAN|FBAV|FB_IAB/i.test(ua);
+    const isTikTok = /TikTok|musical_ly/i.test(ua);
 
-    const isInApp = isTelegram || isInstagram || isVK || isFacebook || isTikTok;
+    // Generic WebView detection (Android uses "wv" flag in Chrome WebView)
+    const isGenericWebView = /wv\)|WebView/i.test(ua) && !/Chrome\/\d+/.test(ua);
+
+    const isInApp = isTelegram || isInstagram || isVK || isFacebook || isTikTok || isGenericWebView;
 
     // Browser detection
     const isYandex = /YaBrowser|Yowser/i.test(ua);
@@ -67,18 +71,31 @@ export const openInChromeAndroid = () => {
     const url = window.location.href;
     const ua = window.navigator.userAgent;
     const isYandex = /YaBrowser|Yowser/i.test(ua);
+    const isTelegram = /Telegram|TelegramBot/i.test(ua);
 
-    // Yandex Browser blocks intent:// - use window.open directly (synchronous for gesture context)
-    if (isYandex) {
-        console.log('[Browser] Yandex detected, using window.open directly');
-        window.open(url, '_blank');
+    console.log('[Browser] openInChromeAndroid called, UA:', ua.substring(0, 100));
+
+    // For Yandex and Telegram - use location.replace (not blocked as popup)
+    if (isYandex || isTelegram) {
+        console.log('[Browser] Yandex/Telegram detected, using location.replace');
+        // Try to open in Chrome via intent first
+        const hostPath = url.replace(/^https?:\/\//, '');
+        const scheme = window.location.protocol.replace(':', '');
+        const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+
+        try {
+            window.location.replace(intent);
+        } catch {
+            // Fallback: just try opening the URL
+            window.location.href = url;
+        }
         return;
     }
 
-    // For other In-App browsers, try intent:// first
+    // For other In-App browsers, try intent with fallback URL
     const hostPath = url.replace(/^https?:\/\//, '');
     const scheme = window.location.protocol.replace(':', '');
-    const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;end`;
+    const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
 
     console.log('[Browser] Redirecting Android -> Chrome via intent:', intent);
 
@@ -86,10 +103,14 @@ export const openInChromeAndroid = () => {
         window.location.href = intent;
     } catch { }
 
-    // Fallback if intent fails (runs async, may be blocked as popup)
+    // Fallback if intent fails
     setTimeout(() => {
-        window.open(url, '_blank');
-    }, 400);
+        try {
+            window.location.replace(url);
+        } catch {
+            window.open(url, '_blank');
+        }
+    }, 500);
 };
 
 export const openInSafari = () => {
