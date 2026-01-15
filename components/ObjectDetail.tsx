@@ -488,6 +488,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     // 1. Detection on Click (New Architecture)
     if (typeof window !== 'undefined') {
       const env = getBrowserEnvironment();
+
+      // DEBUG: Remove after testing
+      console.log('[handleOpenAr] env:', env);
+      // alert(`DEBUG: platform=${env.platform}, browser=${env.browser}, requiresExternalBrowser=${env.requiresExternalBrowser}`);
+
       if (env.requiresExternalBrowser) {
         let hasRedirected = false;
         try {
@@ -509,7 +514,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           });
 
           if (env.platform === 'android') {
-            openInChromeAndroid();
+            const result = openInChromeAndroid();
+            if (result === 'manual_needed') {
+              // Yandex blocks intents - show manual instructions
+              addToast('Ссылка скопирована. Откройте Chrome и вставьте её там для AR-примерки.', 'info', 5000);
+            }
           } else {
             openInSafari();
           }

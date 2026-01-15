@@ -124,7 +124,10 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
           });
 
           if (env.platform === 'android') {
-            openInChromeAndroid();
+            const result = openInChromeAndroid();
+            if (result === 'manual_needed') {
+              addToast('Ссылка скопирована. Откройте Chrome и вставьте её там для AR-примерки.', 'info', 5000);
+            }
           } else {
             openInSafari();
           }
