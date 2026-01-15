@@ -13,6 +13,8 @@ export const JOURNEY_EVENT_TYPES = [
   'OPEN_SAVED',
   'CONTACT_MANAGER',
   'HANDOFF_REQUESTED',
+  'BROWSER_LIMITATION_DETECTED',
+  'EXTERNAL_BROWSER_ACTION_CLICKED',
 ] as const;
 
 export type JourneyEventType = (typeof JOURNEY_EVENT_TYPES)[number];
@@ -48,6 +50,17 @@ export type JourneyMeta = {
     lastQuestions?: string[];
     timestamp?: string;
     channel?: string;
+  };
+  limitations?: {
+    reason: string;
+    browser: string;
+    platform: string;
+    timestamp: string;
+  };
+  action?: {
+    type: string;
+    browser: string;
+    timestamp: string;
   };
 };
 
