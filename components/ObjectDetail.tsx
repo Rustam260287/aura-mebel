@@ -516,8 +516,8 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           if (env.platform === 'android') {
             const result = openInChromeAndroid();
             if (result === 'manual_needed') {
-              // Yandex blocks intents - show manual instructions
-              addToast('Ссылка скопирована. Откройте Chrome и вставьте её там для AR-примерки.', 'info', 5000);
+              // Show friendly instructions - URL is already copied
+              addToast('✨ Ссылка скопирована! Откройте Chrome и вставьте — AR заработает там.', 'info', 6000);
             }
           } else {
             openInSafari();

@@ -74,38 +74,55 @@ export const openInChromeAndroid = (): 'redirected' | 'manual_needed' => {
     const ua = window.navigator.userAgent;
     const isYandex = /YaBrowser|Yowser/i.test(ua);
 
-    console.log('[Browser] openInChromeAndroid called, UA:', ua.substring(0, 100));
+    // Check if this looks like an in-app browser (WebView)
+    const isAndroidWebView = /; wv\)/i.test(ua);
+    const isKnownInApp = /Telegram|Instagram|VK|FBAN|FBAV|TikTok/i.test(ua);
+    const isInApp = isYandex || isAndroidWebView || isKnownInApp;
 
-    // Yandex Browser blocks intent:// completely - need manual action
-    if (isYandex) {
-        console.log('[Browser] Yandex detected - intent blocked, copying URL to clipboard');
+    console.log('[Browser] openInChromeAndroid called, isInApp:', isInApp, 'UA:', ua.substring(0, 120));
+
+    // For ALL in-app browsers: copy URL first (as backup), then try intent
+    if (isInApp) {
+        // Always copy URL to clipboard as backup
         try {
             navigator.clipboard.writeText(url);
+            console.log('[Browser] URL copied to clipboard');
         } catch {
-            // Clipboard might fail silently
+            console.log('[Browser] Clipboard copy failed');
         }
+
+        // Yandex blocks intent:// completely - don't even try
+        if (isYandex) {
+            console.log('[Browser] Yandex detected - skipping intent');
+            return 'manual_needed';
+        }
+
+        // For Telegram/VK/Instagram: try intent but still return manual_needed
+        // because we don't know if it will work
+        const hostPath = url.replace(/^https?:\/\//, '');
+        const scheme = window.location.protocol.replace(':', '');
+        const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+
+        console.log('[Browser] Trying intent redirect...');
+        try {
+            window.location.href = intent;
+        } catch {
+            console.log('[Browser] Intent failed');
+        }
+
+        // Return manual_needed so we show instructions (in case intent fails)
         return 'manual_needed';
     }
 
-    // For other In-App browsers (Telegram, VK, etc), try intent
+    // For regular Chrome (not in WebView) - shouldn't reach here normally
+    // but just in case, try intent
     const hostPath = url.replace(/^https?:\/\//, '');
     const scheme = window.location.protocol.replace(':', '');
-    const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
-
-    console.log('[Browser] Redirecting Android -> Chrome via intent:', intent);
+    const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;end`;
 
     try {
         window.location.href = intent;
     } catch { }
-
-    // Fallback if intent fails
-    setTimeout(() => {
-        try {
-            window.location.replace(url);
-        } catch {
-            window.open(url, '_blank');
-        }
-    }, 500);
 
     return 'redirected';
 };
