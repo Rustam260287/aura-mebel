@@ -513,8 +513,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           } else {
             openInSafari();
           }
-          return;
         }
+        // ALWAYS exit here - never proceed to AR init in unsupported browsers
+        return;
       }
     }
 
