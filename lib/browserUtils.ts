@@ -65,22 +65,31 @@ export const openInChromeAndroid = () => {
     if (typeof window === 'undefined') return;
 
     const url = window.location.href;
+    const ua = window.navigator.userAgent;
+    const isYandex = /YaBrowser|Yowser/i.test(ua);
+
+    // Yandex Browser blocks intent:// - use window.open directly (synchronous for gesture context)
+    if (isYandex) {
+        console.log('[Browser] Yandex detected, using window.open directly');
+        window.open(url, '_blank');
+        return;
+    }
+
+    // For other In-App browsers, try intent:// first
     const hostPath = url.replace(/^https?:\/\//, '');
     const scheme = window.location.protocol.replace(':', '');
-
-    // Intent URL targeting Chrome
     const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;end`;
 
-    console.log('[Browser] Redirecting Android -> Chrome:', intent);
+    console.log('[Browser] Redirecting Android -> Chrome via intent:', intent);
 
     try {
         window.location.href = intent;
     } catch { }
 
-    // Fallback for Yandex and browsers that block intent://
+    // Fallback if intent fails (runs async, may be blocked as popup)
     setTimeout(() => {
         window.open(url, '_blank');
-    }, 300);
+    }, 400);
 };
 
 export const openInSafari = () => {
