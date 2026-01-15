@@ -8,6 +8,7 @@ import { ScenePreview3D } from './ScenePreview3D';
 import { useToast } from '../contexts/ToastContext';
 import { useExperience } from '../contexts/ExperienceContext';
 import { trackJourneyEvent } from '../lib/journey/client';
+import { getBrowserEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
 
 const SceneARViewer = dynamic(() => import('./SceneARViewer').then((m) => m.SceneARViewer), { ssr: false });
 
@@ -99,6 +100,39 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
   }
 
   const handleTrySceneAr = () => {
+    // 1. Detection on Click (New Architecture)
+    if (typeof window !== 'undefined') {
+      const env = getBrowserEnvironment();
+      if (env.requiresExternalBrowser) {
+        let hasRedirected = false;
+        try {
+          hasRedirected = Boolean(window.sessionStorage.getItem('ar_redirected'));
+        } catch { }
+
+        if (!hasRedirected) {
+          try {
+            window.sessionStorage.setItem('ar_redirected', '1');
+          } catch { }
+
+          trackJourneyEvent({
+            type: 'BROWSER_LIMITATION_DETECTED',
+            meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
+          });
+          trackJourneyEvent({
+            type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
+            meta: { action: { type: 'redirect', browser: env.browser, timestamp: new Date().toISOString() } }
+          });
+
+          if (env.platform === 'android') {
+            openInChromeAndroid();
+          } else {
+            openInSafari();
+          }
+          return;
+        }
+      }
+    }
+
     if (supportsWebXrAr === false) {
       addToast('AR-комплекты доступны в Chrome на Android. На iPhone можно примерять предметы по отдельности.', 'info');
       listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

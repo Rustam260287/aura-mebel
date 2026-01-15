@@ -4,7 +4,7 @@ import { trackJourneyEvent } from '../lib/journey/client';
 import { useImmersive } from '../contexts/ImmersiveContext';
 import { useToast } from '../contexts/ToastContext';
 import { createArSessionId } from '../lib/journey/arSession';
-import { ArBrowserGuard } from './ArBrowserGuard';
+
 
 interface ModelViewerElement extends HTMLElement {
   src?: string;
@@ -416,61 +416,59 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         {/* Model Viewer (single entrypoint for Web/Android + iOS Quick Look via ios-src) */}
         {/* Model Viewer (single entrypoint for Web/Android + iOS Quick Look via ios-src) */}
         {/* Strict Guard: ArBrowserGuard will return null if checking, or Guard UI if unsupported. */}
-        <ArBrowserGuard onClose={() => onClose?.()}>
-          {canPreview3d || isIOS ? (
-            <model-viewer
-              ref={modelViewerRef}
-              src={open && !isIOS ? proxiedSrc : undefined}
-              ios-src={effectiveIosSrc}
-              alt={alt}
-              poster={poster}
-              camera-controls
-              auto-rotate
-              interaction-prompt="none"
-              scale="1 1 1"
-              ar
-              // IMPORTANT:
-              // Do NOT add `scene-viewer` to ar-modes.
-              // It causes Android to open Google Play via external intent.
-              // Labelcom uses WebXR-only AR on Android by design.
-              ar-modes={arModes}
-              ar-scale="auto"
-              style={{ touchAction: 'pan-y' }}
-              className="w-full h-full"
-              preserve-drawing-buffer
-            >
-              {/* Share button - visible when viewer is open */}
-              {open && objectId && (
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  aria-label="Показать близким"
-                  disabled={isCapturing}
-                  className="pointer-events-auto absolute z-20 right-6 bottom-[32px] px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium text-soft-black">Показать близким</span>
-                </button>
-              )}
-            </model-viewer>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center px-6 text-center">
-              <div className="max-w-sm">
-                <div className="text-lg font-medium text-soft-black">AR примерка</div>
-                <p className="mt-2 text-sm text-muted-gray">
-                  На iPhone AR откроется в системном просмотре. Мы вернёмся сюда после примерки.
-                </p>
-              </div>
+        {canPreview3d || isIOS ? (
+          <model-viewer
+            ref={modelViewerRef}
+            src={open && !isIOS ? proxiedSrc : undefined}
+            ios-src={effectiveIosSrc}
+            alt={alt}
+            poster={poster}
+            camera-controls
+            auto-rotate
+            interaction-prompt="none"
+            scale="1 1 1"
+            ar
+            // IMPORTANT:
+            // Do NOT add `scene-viewer` to ar-modes.
+            // It causes Android to open Google Play via external intent.
+            // Labelcom uses WebXR-only AR on Android by design.
+            ar-modes={arModes}
+            ar-scale="auto"
+            style={{ touchAction: 'pan-y' }}
+            className="w-full h-full"
+            preserve-drawing-buffer
+          >
+            {/* Share button - visible when viewer is open */}
+            {open && objectId && (
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Показать близким"
+                disabled={isCapturing}
+                className="pointer-events-auto absolute z-20 right-6 bottom-[32px] px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95 disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-soft-black">Показать близким</span>
+              </button>
+            )}
+          </model-viewer>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center px-6 text-center">
+            <div className="max-w-sm">
+              <div className="text-lg font-medium text-soft-black">AR примерка</div>
+              <p className="mt-2 text-sm text-muted-gray">
+                На iPhone AR откроется в системном просмотре. Мы вернёмся сюда после примерки.
+              </p>
             </div>
-          )}
-        </ArBrowserGuard>
+          </div>
+        )}
 
         {/* Hidden Quick Look anchor for iOS-only (USDZ) models */}
         {iosSrc && (

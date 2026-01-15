@@ -13,6 +13,7 @@ import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
 import { useAssistant } from '../contexts/AssistantContext';
 import { optimizeScene } from '../lib/3d/optimizer';
+import { getBrowserEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
 
 interface ObjectDetailProps {
   object: ObjectPublic;
@@ -482,8 +483,41 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [router]);
 
   const arUnavailableTrackedRef = useRef(false);
-  const supportsWebXRAR = !isIOSDevice && webXrArSupported === true;
+  const supportsWebXrAr = !isIOSDevice && webXrArSupported === true;
   const handleOpenAr = useCallback(() => {
+    // 1. Detection on Click (New Architecture)
+    if (typeof window !== 'undefined') {
+      const env = getBrowserEnvironment();
+      if (env.requiresExternalBrowser) {
+        let hasRedirected = false;
+        try {
+          hasRedirected = Boolean(window.sessionStorage.getItem('ar_redirected'));
+        } catch { }
+
+        if (!hasRedirected) {
+          try {
+            window.sessionStorage.setItem('ar_redirected', '1');
+          } catch { }
+
+          trackJourneyEvent({
+            type: 'BROWSER_LIMITATION_DETECTED',
+            meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
+          });
+          trackJourneyEvent({
+            type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
+            meta: { action: { type: 'redirect', browser: env.browser, timestamp: new Date().toISOString() } }
+          });
+
+          if (env.platform === 'android') {
+            openInChromeAndroid();
+          } else {
+            openInSafari();
+          }
+          return;
+        }
+      }
+    }
+
     const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && supportsWebXRAR;
 
     if (!canStartArNow) {
