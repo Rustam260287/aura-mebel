@@ -54,18 +54,26 @@ export const ArBrowserGuard: React.FC<Props> = ({ children, onClose }) => {
     // While env is determining (ssr/first render), render children or null? 
     // Ideally duplicate children logic or null. 
     // To strictly support "not mounting WebXR", we wait for env.
+    // Debug logging
+    useEffect(() => {
+        if (env) {
+            console.log('[ArBrowserGuard] Env:', env);
+        }
+    }, [env]);
+
     if (!env) {
-        // Initial render: assume supported to avoid layout shift OR render nothing?
-        // Better to render children as default (SSR) and then hide if Guard triggers.
-        // But for ArBrowserGuard which wraps AR scene, rendering nothing is safer to avoid flashing 3D.
-        // Let's render children to support SEO/SSR if this guard wraps non-3D content? 
-        // No, this wraps model-viewer.
-        return <>{children}</>;
+        // Strict Guard: Do not render children until we know the environment.
+        // This prevents model-viewer from mounting in unsupported browsers.
+        return null;
     }
 
     if (env.requiresExternalBrowser) {
+        console.log('[ArBrowserGuard] Rendering Guard UI');
         return (
-            <div className="absolute inset-0 z-50 bg-warm-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+            <div
+                className="absolute inset-0 z-[9999] bg-warm-white flex flex-col items-center justify-center p-8 text-center"
+                style={{ backgroundColor: '#F7F7F5' }} // Force background color
+            >
                 <div className="w-16 h-16 mb-6 rounded-full bg-brand-cream/50 flex items-center justify-center">
                     <svg className="w-8 h-8 text-brand-brown" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
