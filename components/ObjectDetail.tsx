@@ -573,10 +573,59 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     [handleOpenAr],
   );
 
-  const handleOpen3d = useCallback(() => {
-    if (!canPreview3d) return;
-    setMediaMode('3d');
-  }, [canPreview3d]);
+  const [isShareCapturing, setIsShareCapturing] = useState(false);
+
+  // Simple link-only share (no screenshots)
+  const handleShare = useCallback(async () => {
+    if (isShareCapturing) return;
+    if (!object.id) return;
+
+    setIsShareCapturing(true);
+
+    try {
+      // Create share link via API
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId: object.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create share link');
+      }
+
+      const { shareUrl } = await response.json();
+
+      // Share via Web Share API or clipboard
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          await navigator.share({
+            text: 'Посмотри, как этот предмет смотрится в интерьере ✨',
+            url: shareUrl,
+          });
+          addToast('Отправлено!', 'success', 2000);
+          trackJourneyEvent({ type: 'AR_SNAPSHOT_SHARED', objectId: object.id }); // Reusing for share link
+        } catch (e) {
+          if ((e as Error).name === 'AbortError') {
+            // User cancelled - silent (Quiet UX)
+          } else {
+            // Fallback to clipboard
+            await navigator.clipboard.writeText(shareUrl);
+            addToast('Ссылка скопирована', 'success', 2000);
+          }
+        }
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        addToast('Ссылка скопирована', 'success', 2000);
+      }
+    } catch (e) {
+      console.warn('[ARViewer] share failed:', e);
+      addToast('Не удалось создать ссылку', 'error', 2000);
+    } finally {
+      setIsShareCapturing(false);
+    }
+  }, [addToast, isShareCapturing, object.id]);
 
   const arAvailability = useMemo(() => {
     if (isIOSDevice) {
@@ -752,7 +801,31 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             </div>
           )}
 
-          {(hasGlb || hasUsdz) && (
+          {uiState === 'POST_AR' ? (
+            <Button
+              onClick={handleShare}
+              size="lg"
+              variant="secondary"
+              disabled={isShareCapturing}
+              className={[
+                'w-full h-14 rounded-2xl shadow-sm border-none',
+                'bg-white/90 backdrop-blur-md text-soft-black hover:bg-white',
+                'transition-all duration-300 ease-out active:scale-[0.98]',
+              ].join(' ')}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
+                </svg>
+                Показать близким
+              </span>
+            </Button>
+          ) : (hasGlb || hasUsdz) && (
             <Button
               onClick={handleOpenArTap}
               onTouchEnd={handleOpenArTap as any}

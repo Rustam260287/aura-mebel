@@ -351,57 +351,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       };
     }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
 
-    // Simple link-only share (no screenshots)
-    const handleShare = useCallback(async () => {
-      if (isCapturing) return;
-      if (!objectId) return;
 
-      setIsCapturing(true);
-
-      try {
-        // Create share link via API
-        const response = await fetch('/api/share', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ objectId }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to create share link');
-        }
-
-        const { shareUrl } = await response.json();
-
-        // Share via Web Share API or clipboard
-        if (typeof navigator !== 'undefined' && navigator.share) {
-          try {
-            await navigator.share({
-              text: 'Посмотри, как этот предмет смотрится в интерьере ✨',
-              url: shareUrl,
-            });
-            addToast('Отправлено!', 'success', 2000);
-            trackJourneyEvent({ type: 'AR_SNAPSHOT_SHARED', objectId }); // Reusing for share link
-          } catch (e) {
-            if ((e as Error).name === 'AbortError') {
-              // User cancelled - silent (Quiet UX)
-            } else {
-              // Fallback to clipboard
-              await navigator.clipboard.writeText(shareUrl);
-              addToast('Ссылка скопирована', 'success', 2000);
-            }
-          }
-        } else {
-          // Fallback: copy to clipboard
-          await navigator.clipboard.writeText(shareUrl);
-          addToast('Ссылка скопирована', 'success', 2000);
-        }
-      } catch (e) {
-        console.warn('[ARViewer] share failed:', e);
-        addToast('Не удалось создать ссылку', 'error', 2000);
-      } finally {
-        setIsCapturing(false);
-      }
-    }, [addToast, isCapturing, objectId]);
 
     return (
       <div
@@ -439,25 +389,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
             preserve-drawing-buffer
           >
             {/* Share button - visible when viewer is open */}
-            {open && objectId && (
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label="Показать близким"
-                disabled={isCapturing}
-                className="pointer-events-auto absolute z-20 right-6 bottom-[32px] px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95 disabled:opacity-50"
-              >
-                <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-soft-black">Показать близким</span>
-              </button>
-            )}
+
           </model-viewer>
         ) : (
           <div className="w-full h-full flex items-center justify-center px-6 text-center">
