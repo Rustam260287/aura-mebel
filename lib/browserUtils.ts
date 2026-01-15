@@ -64,15 +64,23 @@ export const getBrowserEnvironment = (): BrowserEnv => {
 export const openInChromeAndroid = () => {
     if (typeof window === 'undefined') return;
 
-    // Construct Intent URL
+    const url = window.location.href;
+    const hostPath = url.replace(/^https?:\/\//, '');
     const scheme = window.location.protocol.replace(':', '');
-    const hostPath = window.location.href.replace(/^https?:\/\//, '');
 
-    // Explicitly target Chrome on Android
+    // Intent URL targeting Chrome
     const intent = `intent://${hostPath}#Intent;scheme=${scheme};package=com.android.chrome;end`;
 
     console.log('[Browser] Redirecting Android -> Chrome:', intent);
-    window.location.href = intent;
+
+    try {
+        window.location.href = intent;
+    } catch { }
+
+    // Fallback for Yandex and browsers that block intent://
+    setTimeout(() => {
+        window.open(url, '_blank');
+    }, 300);
 };
 
 export const openInSafari = () => {
