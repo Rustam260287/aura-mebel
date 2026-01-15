@@ -742,7 +742,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             </div>
           )}
 
-          {arAvailability.available && (
+          {(hasGlb || hasUsdz) && (
             <Button
               onClick={handleOpenArTap}
               onTouchEnd={handleOpenArTap as any}
