@@ -7,12 +7,14 @@ interface ShareStats {
     totalViews: number;
     topObjects: Array<{
         objectId: string;
+        objectName?: string;
         shareCount: number;
         viewCount: number;
     }>;
     recentShares: Array<{
         id: string;
         objectId: string;
+        objectName?: string;
         createdAt: string;
         viewCount: number;
     }>;
@@ -108,7 +110,7 @@ export const AdminAnalytics: React.FC = () => {
                                 <div className="flex items-center gap-3">
                                     <span className="text-sm font-medium text-gray-400 w-5">{i + 1}</span>
                                     <span className="text-sm font-medium text-gray-700 truncate max-w-[200px]">
-                                        {obj.objectId}
+                                        {obj.objectName || obj.objectId}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
@@ -133,7 +135,7 @@ export const AdminAnalytics: React.FC = () => {
                                     <span className="text-sm text-gray-600">{formatDate(share.createdAt)}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
-                                    <span className="text-gray-500 truncate max-w-[150px]">{share.objectId}</span>
+                                    <span className="text-gray-500 truncate max-w-[150px]">{share.objectName || share.objectId}</span>
                                     <span className="text-gray-400">{share.viewCount} views</span>
                                 </div>
                             </div>
