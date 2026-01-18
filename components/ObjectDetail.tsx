@@ -8,6 +8,7 @@ import { ArrowLeftIcon, ChatBubbleLeftRightIcon, CubeIcon, HeartIcon, PhotoIcon 
 import { useSaved } from '../contexts/SavedContext';
 import { useToast } from '../contexts/ToastContext';
 import { ARViewer, type ARViewerHandle } from './ARViewer';
+import { SceneARViewerV2, shouldUseSceneARV2 } from '../lib/ar/v2';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
@@ -34,6 +35,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [isAROpen, setIsAROpen] = useState(false);
   const [uiState, setUiState] = useState<ObjectPageUiState>('DEFAULT');
   const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
+  const [showSceneARV2, setShowSceneARV2] = useState(false);
   const [inline3dState, setInline3dState] = useState<Inline3DState>('idle');
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
@@ -46,6 +48,12 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     );
   });
   const [webXrArSupported, setWebXrArSupported] = useState<boolean | null>(null);
+
+  // Architecture Switch: Strict V1/V2 separation
+  const shouldUseV2 = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return !isIOSDevice && shouldUseSceneARV2();
+  }, [isIOSDevice]);
 
   const { isSaved, addToSaved, removeFromSaved } = useSaved();
   const { addToast } = useToast();
@@ -486,12 +494,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const supportsWebXrAr = !isIOSDevice && webXrArSupported === true;
   const handleOpenAr = useCallback(() => {
     // 1. Detection on Click (New Architecture)
+    // 1. Detection on Click (New Architecture)
     if (typeof window !== 'undefined') {
       const env = getBrowserEnvironment();
-
-      // DEBUG: Remove after testing
-      console.log('[handleOpenAr] env:', env);
-      // alert(`DEBUG: platform=${env.platform}, browser=${env.browser}, requiresExternalBrowser=${env.requiresExternalBrowser}`);
 
       if (env.requiresExternalBrowser) {
         let hasRedirected = false;
@@ -516,45 +521,70 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           if (env.platform === 'android') {
             const result = openInChromeAndroid();
             if (result === 'manual_needed') {
-              // Show friendly instructions - URL is already copied
               addToast('✨ Ссылка скопирована! Откройте Chrome и вставьте — AR заработает там.', 'info', 6000);
             }
           } else {
             openInSafari();
           }
         }
-        // ALWAYS exit here - never proceed to AR init in unsupported browsers
         return;
       }
     }
 
-    const canStartArNow = isIOSDevice ? hasUsdz : hasGlb && supportsWebXrAr;
+    // 2. Logic Selection
+    if (isIOSDevice) {
+      if (!hasUsdz) {
+        addToast('AR недоступен для этого объекта', 'info');
+        return;
+      }
 
-    if (!canStartArNow) {
-      if (!isIOSDevice && webXrArSupported === false && !arUnavailableTrackedRef.current) {
+      emitEvent({ type: 'ENTER_AR' });
+      emitMetaEvent({ type: 'OPENED_AR' });
+      setPostArHintVisible(false);
+      setUiState('IN_AR');
+      setIsAROpen(true);
+      setTimeout(() => arViewerRef.current?.activateAR(), 100);
+      return;
+    }
+
+    // Android: SceneARViewer v2
+    if (shouldUseV2) {
+      if (!hasGlb) {
+        addToast('AR недоступен для этого объекта', 'info');
+        return;
+      }
+      // V2 is autonomous. No activateAR call, no isAROpen state.
+      emitEvent({ type: 'ENTER_AR' });
+      emitMetaEvent({ type: 'OPENED_AR' });
+      setPostArHintVisible(false);
+      setUiState('IN_AR');
+      setShowSceneARV2(true);
+      return;
+    }
+
+    // Android: Fallback (v1 model-viewer)
+    if (!supportsWebXrAr) {
+      // Log unavailability
+      if (!arUnavailableTrackedRef.current) {
         arUnavailableTrackedRef.current = true;
         trackJourneyEvent({
           type: 'AR_UNAVAILABLE_WEBXR',
           objectId: object.id,
-          meta: {
-            platform: 'android',
-            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-            modelId: object.id,
-            reason: 'webxr_not_supported',
-          },
+          meta: { platform: 'android', reason: 'webxr_not_supported' },
         });
       }
       addToast('AR недоступен на этом устройстве', 'info');
       return;
     }
 
+    // V1 Activation
     emitEvent({ type: 'ENTER_AR' });
     emitMetaEvent({ type: 'OPENED_AR' });
     setPostArHintVisible(false);
     setUiState('IN_AR');
     setIsAROpen(true);
     arViewerRef.current?.activateAR();
-  }, [addToast, emitEvent, hasGlb, hasUsdz, isIOSDevice, webXrArSupported]);
+  }, [addToast, emitEvent, hasGlb, hasUsdz, isIOSDevice, supportsWebXrAr, object.id, emitMetaEvent, shouldUseV2]);
 
   const handleOpenArTap = useCallback(
     (event?: React.MouseEvent | React.TouchEvent) => {
@@ -843,18 +873,36 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         </div>
       </div>
 
-      {/* AR overlay (keep viewer mounted so iOS/Android can start AR without flushSync) */}
+      {/* AR overlay: Strict Separation V1 / V2 */}
       {(object.modelGlbUrl || object.modelUsdzUrl) && (
-        <ARViewer
-          ref={arViewerRef}
-          open={isAROpen}
-          src={object.modelGlbUrl}
-          iosSrc={object.modelUsdzUrl}
-          alt={object.name}
-          poster={object.imageUrls?.[0]}
-          objectId={object.id}
-          onClose={closeAR}
-        />
+        <>
+          {shouldUseV2 ? (
+            /* V2: Three.js + WebXR (Android) */
+            showSceneARV2 && object.modelGlbUrl && (
+              <SceneARViewerV2
+                sceneId={object.id}
+                sceneTitle={object.name}
+                objects={[{ objectId: object.id, name: object.name, modelGlbUrl: object.modelGlbUrl }]}
+                onClose={(duration) => {
+                  setShowSceneARV2(false);
+                  closeAR(duration);
+                }}
+              />
+            )
+          ) : (
+            /* V1 + iOS: model-viewer / Quick Look */
+            <ARViewer
+              ref={arViewerRef}
+              open={isAROpen}
+              src={object.modelGlbUrl}
+              iosSrc={object.modelUsdzUrl}
+              alt={object.name}
+              poster={object.imageUrls?.[0]}
+              objectId={object.id}
+              onClose={closeAR}
+            />
+          )}
+        </>
       )}
     </div>
   );
