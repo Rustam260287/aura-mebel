@@ -147,26 +147,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         };
     }, []);
 
-    // Lifecycle safety (Force exit on navigation/background)
-    useEffect(() => {
-        const handleExit = () => {
-            if (stage === 'active' || stage === 'placing' || stage === 'starting') {
-                endSession();
-            }
-        };
 
-        window.addEventListener('popstate', handleExit);
-        window.addEventListener('visibilitychange', handleExit);
-        window.addEventListener('pagehide', handleExit);
-
-        return () => {
-            window.removeEventListener('popstate', handleExit);
-            window.removeEventListener('visibilitychange', handleExit);
-            window.removeEventListener('pagehide', handleExit);
-            // Also ensure cleanup on unmount
-            handleExit();
-        };
-    }, [stage, endSession]);
 
     // Load models on mount
     useEffect(() => {
@@ -222,6 +203,27 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
         onClose(duration);
     }, [hitTest, xrSession, sceneId, onClose]);
+
+    // Lifecycle safety (Force exit on navigation/background)
+    useEffect(() => {
+        const handleExit = () => {
+            if (stage === 'active' || stage === 'placing' || stage === 'starting') {
+                endSession();
+            }
+        };
+
+        window.addEventListener('popstate', handleExit);
+        window.addEventListener('visibilitychange', handleExit);
+        window.addEventListener('pagehide', handleExit);
+
+        return () => {
+            window.removeEventListener('popstate', handleExit);
+            window.removeEventListener('visibilitychange', handleExit);
+            window.removeEventListener('pagehide', handleExit);
+            // Also ensure cleanup on unmount
+            handleExit();
+        };
+    }, [stage, endSession]);
 
     // Start AR session
     const startAR = useCallback(async () => {
