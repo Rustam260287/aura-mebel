@@ -43,6 +43,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const anchorRef = useRef<THREE.Group | null>(null);
     const placedRef = useRef(false);
     const startedAtRef = useRef<number | null>(null);
+    const hasArStartedRef = useRef(false);
     const arSessionIdRef = useRef(createArSessionId());
 
     // State
@@ -201,13 +202,15 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             });
         }
 
-        onClose(duration);
+        onClose(duration, hasArStartedRef.current);
     }, [hitTest, xrSession, sceneId, onClose]);
 
     // Lifecycle safety (Force exit on navigation/background)
     useEffect(() => {
         const handleExit = () => {
+            // Only force exit if we are in a state that implies AR is active or about to be
             if (stage === 'active' || stage === 'placing' || stage === 'starting') {
+                // Check if session is actually active before killing it to avoid loops
                 endSession();
             }
         };
@@ -244,6 +247,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         try {
             const session = await xrSession.startSession(renderer, overlay);
             startedAtRef.current = Date.now();
+            hasArStartedRef.current = true;
 
             trackJourneyEvent({
                 type: 'START_AR',

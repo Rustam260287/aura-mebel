@@ -70,7 +70,7 @@ export interface SceneARViewerV2Props {
     }>;
 
     /** Callback when AR session closes */
-    onClose: (durationSec?: number) => void;
+    onClose: (durationSec?: number, hasStarted?: boolean) => void;
 
     /** Optional: called when XR session starts */
     onSessionStart?: () => void;

@@ -105,9 +105,21 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [emitEvent, object.id, object.name, object.objectType]);
 
   const closeAR = useCallback(
-    (durationSec?: number) => {
-      setUiState('POST_AR');
+    (durationSec?: number, hasStarted?: boolean) => {
+      // Logic fix: Only go to POST_AR if AR actually started (WebXR session ran)
+      // Otherwise (user cancelled before start, or error), just close AR overlay.
+
+      const actuallyStarted = hasStarted || (durationSec && durationSec > 1);
+
+      if (actuallyStarted) {
+        setUiState('POST_AR');
+      } else {
+        setUiState('DEFAULT');
+      }
+
+      setShowSceneARV2(false);
       setIsAROpen(false);
+
       emitEvent({ type: 'EXIT_AR', durationSec });
     },
     [emitEvent],
