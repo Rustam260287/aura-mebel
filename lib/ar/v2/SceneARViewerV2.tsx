@@ -50,6 +50,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const [stage, setStage] = useState<ARStage>('idle');
     const [error, setError] = useState<string | null>(null);
     const [showHint, setShowHint] = useState(false);
+    const [showPostSessionUI, setShowPostSessionUI] = useState(false);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -137,6 +138,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
         // Cleanup
         return () => {
+            console.log('[SceneARViewerV2] Unmounting and cleaning up Three.js');
             renderer.setAnimationLoop(null);
             renderer.dispose();
             container.removeChild(renderer.domElement);
@@ -187,30 +189,69 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // End session handler
     const endSession = useCallback(() => {
+        // 1. Guard: If XR never really started, don't try to end it or trigger post-flow
+        if (!hasArStartedRef.current) {
+            console.warn('[SceneARViewerV2] endSession called before XR start');
+            // Check if we were just trying to start, if so, reset to ready or error
+            if (stage === 'starting') {
+                setStage('ready');
+            }
+            // If completely failed/unsupported, onClose might rely on caller to unmount,
+            // but we should just reset internal state if possible.
+            // If we are error state, we might want to close.
+            if (stage === 'error' || stage === 'unsupported') {
+                onClose(0, false);
+            }
+            return;
+        }
+
         const duration = startedAtRef.current
             ? (Date.now() - startedAtRef.current) / 1000
-            : undefined;
+            : 0;
 
         hitTest.cleanup();
         xrSession.endSession();
+        hasArStartedRef.current = false; // Reset flag so subsequent calls don't double-trigger
 
-        if (startedAtRef.current) {
+        // 2. Logic: If object was placed, show "Soft Finale" (internal Post-AR)
+        // If nothing placed (user cancelled in 'placing'), exit immediately.
+        if (placedRef.current) {
             trackJourneyEvent({
                 type: 'FINISH_AR',
                 objectId: sceneId,
                 meta: { arSessionId: arSessionIdRef.current, durationSec: duration },
             });
+            setShowPostSessionUI(true);
+            setStage('idle'); // Stop rendering AR loop, show overlay
+        } else {
+            // Cancelled before placement
+            onClose(duration, true); // true because it DID start, just didn't result in value
         }
+    }, [hitTest, xrSession, sceneId, onClose, stage]);
 
-        onClose(duration, hasArStartedRef.current);
-    }, [hitTest, xrSession, sceneId, onClose]);
+    const handlePostArClose = () => {
+        const duration = startedAtRef.current
+            ? (Date.now() - startedAtRef.current) / 1000
+            : 0;
+        onClose(duration, true);
+    };
+
+    const handleRestart = () => {
+        setShowPostSessionUI(false);
+        setStage('ready');
+        startedAtRef.current = null;
+        placedRef.current = false;
+        hasArStartedRef.current = false;
+        // Optionally auto-start? No, let user click "Start AR" again for safety/intent.
+    };
 
     // Lifecycle safety (Force exit on navigation/background)
     useEffect(() => {
         const handleExit = () => {
-            // Only force exit if we are in a state that implies AR is active or about to be
-            if (stage === 'active' || stage === 'placing' || stage === 'starting') {
-                // Check if session is actually active before killing it to avoid loops
+            // Only force exit if we are in a state that implies AR is active
+            // CRITICAL: Do NOT exit if stage is 'starting' because requestSession triggers visibility updates
+            if (stage === 'active' || stage === 'placing') {
+                console.log('[SceneARViewerV2] Lifecycle exit triggered. Stage:', stage);
                 endSession();
             }
         };
@@ -230,6 +271,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Start AR session
     const startAR = useCallback(async () => {
+        console.log('[SceneARViewerV2] startAR called. Stage:', stage);
         if (stage !== 'ready') return;
 
         const overlay = overlayRef.current;
@@ -245,7 +287,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         setError(null);
 
         try {
+            console.log('[SceneARViewerV2] Requesting XR Session...');
             const session = await xrSession.startSession(renderer, overlay);
+            console.log('[SceneARViewerV2] Session started successfully');
             startedAtRef.current = Date.now();
             hasArStartedRef.current = true;
 
@@ -356,12 +400,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     {/* Top bar */}
                     <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-center justify-between gap-3">
                         <div className="pointer-events-auto">
-                            <button
-                                onClick={() => endSession()}
-                                className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
-                            >
-                                Закрыть
-                            </button>
+                            {(stage === 'active' || stage === 'ready' || stage === 'error') && (
+                                <button
+                                    onClick={() => endSession()}
+                                    className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
+                                >
+                                    {stage === 'active' ? 'Завершить' : 'Закрыть'}
+                                </button>
+                            )}
                         </div>
 
                         {selectedLabel && (
@@ -451,10 +497,35 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     )}
 
                     {/* Gesture hint */}
-                    {stage === 'active' && showHint && (
+                    {stage === 'active' && showHint && !showPostSessionUI && (
                         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
                             <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft">
                                 1 палец — двигать • 2 пальца — масштаб/поворот
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Internal Post-AR Overlay (Soft Finale) */}
+                    {showPostSessionUI && (
+                        <div className="absolute inset-0 z-[200] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm pointer-events-auto">
+                            <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center animate-in fade-in zoom-in duration-300">
+                                <div className="text-xl font-bold text-soft-black mb-2">Готово!</div>
+                                <div className="text-sm text-muted-gray mb-6">Фотографии можно сделать или поделиться ссылкой через кнопку ниже.</div>
+
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={handlePostArClose}
+                                        className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors"
+                                    >
+                                        Показать близким
+                                    </button>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="w-full bg-stone-beige/20 text-soft-black py-3 rounded-xl font-medium hover:bg-stone-beige/30 transition-colors"
+                                    >
+                                        Примерить ещё раз
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
