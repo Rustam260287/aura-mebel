@@ -306,7 +306,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             <div
                 ref={overlayRef}
                 className="fixed inset-0 z-[100] bg-transparent"
-                style={{ touchAction: 'none', pointerEvents: 'auto' }}
+                style={{
+                    touchAction: stage === 'active' ? 'none' : 'auto',
+                    pointerEvents: stage === 'active' ? 'auto' : 'none',
+                }}
             >
                 <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ pointerEvents: 'none' }} />
             </div>
