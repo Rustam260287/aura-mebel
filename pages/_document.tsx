@@ -248,6 +248,9 @@ export default function Document() {
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
+        {/* Yandex Webmaster verification */}
+        <meta name="yandex-verification" content="fdfabe2d1d826cce" />
+
 
 
         {/* PWA & Mobile Icons */}
@@ -272,11 +275,39 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap"
           rel="stylesheet"
         />
+
+        {/* Yandex.Metrika counter */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(m,e,t,r,i,k,a){
+                m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();
+                for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+              })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=106314786', 'ym');
+              ym(106314786, 'init', {
+                ssr: true,
+                webvisor: true,
+                clickmap: true,
+                ecommerce: 'dataLayer',
+                accurateTrackBounce: true,
+                trackLinks: true
+              });
+            `,
+          }}
+        />
+
+
       </Head>
       <body>
         {/* no-js: do not block the app shell */}
         <noscript>
           <style>{`#pwa-splash{display:none !important;}`}</style>
+          {/* Yandex.Metrika noscript pixel */}
+          <div>
+            <img src="https://mc.yandex.ru/watch/106314786" style={{ position: 'absolute', left: '-9999px' }} alt="" />
+          </div>
         </noscript>
 
         <div id="pwa-splash" className="pwa-splash" aria-hidden="true">
