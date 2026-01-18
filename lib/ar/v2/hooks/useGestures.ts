@@ -217,7 +217,9 @@ export function useGestures({
                 // Rotation
                 const ang = angle2(a, b);
                 const delta = ang - g.startAngle;
-                item.group.rotation.y = g.startRotationY + delta;
+                // Invert delta because screen coordinates (Y-down) cause angle to increase CW,
+                // while 3D rotation (Y-up) increases CCW. We want CW -> CW.
+                item.group.rotation.y = g.startRotationY - delta;
             }
         };
 

@@ -35,6 +35,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const gestureRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -62,7 +63,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Gestures
     useGestures({
-        overlayRef,
+        overlayRef: gestureRef,
         anchorRef,
         itemsRef: sceneGraph.itemsRef,
         selectedKeyRef,
@@ -145,6 +146,27 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             anchorRef.current = null;
         };
     }, []);
+
+    // Lifecycle safety (Force exit on navigation/background)
+    useEffect(() => {
+        const handleExit = () => {
+            if (stage === 'active' || stage === 'placing' || stage === 'starting') {
+                endSession();
+            }
+        };
+
+        window.addEventListener('popstate', handleExit);
+        window.addEventListener('visibilitychange', handleExit);
+        window.addEventListener('pagehide', handleExit);
+
+        return () => {
+            window.removeEventListener('popstate', handleExit);
+            window.removeEventListener('visibilitychange', handleExit);
+            window.removeEventListener('pagehide', handleExit);
+            // Also ensure cleanup on unmount
+            handleExit();
+        };
+    }, [stage, endSession]);
 
     // Load models on mount
     useEffect(() => {
@@ -303,125 +325,134 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     return (
         <>
             {/* 1. Gesture Layer (Pure touch handling) */}
+            {/* 1. DOM Overlay Root (Wrapper for everything) */}
             <div
                 ref={overlayRef}
                 className="fixed inset-0 z-[100] bg-transparent"
-                style={{
-                    touchAction: stage === 'active' ? 'none' : 'auto',
-                    pointerEvents: stage === 'active' ? 'auto' : 'none',
-                }}
+                style={{ pointerEvents: 'none' }} // Root doesn't capture, children do
             >
+                {/* Canvas Container */}
                 <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ pointerEvents: 'none' }} />
-            </div>
 
-            {/* 2. UI Layer (Sibling, higher z-index) */}
-            <div className="fixed inset-0 z-[101] pointer-events-none">
+                {/* Gesture Surface (Active only when AR is active) */}
+                <div
+                    ref={gestureRef}
+                    className="absolute inset-0 z-0 bg-transparent"
+                    style={{
+                        touchAction: stage === 'active' ? 'none' : 'auto',
+                        pointerEvents: stage === 'active' ? 'auto' : 'none',
+                    }}
+                />
 
-                {/* Top bar */}
-                <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-center justify-between gap-3">
-                    <div className="pointer-events-auto">
-                        <button
-                            onClick={() => endSession()}
-                            className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
-                        >
-                            Закрыть
-                        </button>
+                {/* UI Layer (Buttons always on top of gestures) */}
+                <div className="absolute inset-0 z-10 pointer-events-none">
+
+                    {/* Top bar */}
+                    <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-center justify-between gap-3">
+                        <div className="pointer-events-auto">
+                            <button
+                                onClick={() => endSession()}
+                                className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
+                            >
+                                Закрыть
+                            </button>
+                        </div>
+
+                        {selectedLabel && (
+                            <div className="bg-white/70 backdrop-blur-md px-3 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate">
+                                {selectedLabel}
+                            </div>
+                        )}
+
+                        <div className="pointer-events-auto flex items-center gap-2">
+                            <button
+                                onClick={sceneGraph.deleteSelected}
+                                disabled={!sceneGraph.selectedKey}
+                                className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors disabled:opacity-40"
+                            >
+                                Удалить
+                            </button>
+                        </div>
                     </div>
 
-                    {selectedLabel && (
-                        <div className="bg-white/70 backdrop-blur-md px-3 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate">
-                            {selectedLabel}
+                    {/* Center state */}
+                    {(stage === 'loading' || stage === 'ready' || stage === 'starting' || stage === 'placing' || stage === 'error' || stage === 'unsupported') && (
+                        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                            <div className="max-w-sm w-full bg-white/85 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-stone-beige/30 pointer-events-auto">
+
+                                {stage === 'loading' && (
+                                    <>
+                                        <div className="text-sm font-semibold text-soft-black">Загружаю модель…</div>
+                                        <div className="text-xs text-muted-gray mt-2">
+                                            {sceneGraph.loadingProgress.total > 0
+                                                ? `${sceneGraph.loadingProgress.loaded}/${sceneGraph.loadingProgress.total}`
+                                                : 'Секунду...'}
+                                        </div>
+                                    </>
+                                )}
+
+                                {stage === 'ready' && (
+                                    <>
+                                        <div className="text-sm font-semibold text-soft-black">{sceneTitle}</div>
+                                        <div className="text-xs text-muted-gray mt-2 leading-relaxed">
+                                            Наведите телефон на пол и коснитесь экрана, чтобы поставить.
+                                        </div>
+                                        <div className="mt-4">
+                                            <button
+                                                onClick={startAR}
+                                                className="w-full bg-brand-brown text-white px-6 py-4 rounded-xl shadow-lg font-medium hover:bg-brand-charcoal transition-colors"
+                                            >
+                                                Начать AR
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {stage === 'starting' && (
+                                    <>
+                                        <div className="text-sm font-semibold text-soft-black">Запускаю AR…</div>
+                                        <div className="text-xs text-muted-gray mt-2">Секунду.</div>
+                                    </>
+                                )}
+
+                                {stage === 'placing' && (
+                                    <>
+                                        <div className="text-sm font-semibold text-soft-black">Выберите место</div>
+                                        <div className="text-xs text-muted-gray mt-2 leading-relaxed">
+                                            Наведите телефон на пол — появится метка. Коснитесь экрана.
+                                        </div>
+                                    </>
+                                )}
+
+                                {(stage === 'error' || stage === 'unsupported') && (
+                                    <>
+                                        <div className="text-sm font-semibold text-soft-black">Не получилось</div>
+                                        <div className="text-xs text-muted-gray mt-2 leading-relaxed">
+                                            {error || 'Попробуйте позже.'}
+                                        </div>
+                                        <div className="mt-4">
+                                            <button
+                                                onClick={() => endSession()}
+                                                className="w-full bg-white text-soft-black px-6 py-3 rounded-xl shadow-sm font-medium hover:bg-stone-beige/30 transition-colors border border-stone-beige/50"
+                                            >
+                                                Закрыть
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     )}
 
-                    <div className="pointer-events-auto flex items-center gap-2">
-                        <button
-                            onClick={sceneGraph.deleteSelected}
-                            disabled={!sceneGraph.selectedKey}
-                            className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors disabled:opacity-40"
-                        >
-                            Удалить
-                        </button>
-                    </div>
+                    {/* Gesture hint */}
+                    {stage === 'active' && showHint && (
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
+                            <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft">
+                                1 палец — двигать • 2 пальца — масштаб/поворот
+                            </div>
+                        </div>
+                    )}
                 </div>
-
-                {/* Center state */}
-                {(stage === 'loading' || stage === 'ready' || stage === 'starting' || stage === 'placing' || stage === 'error' || stage === 'unsupported') && (
-                    <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-                        <div className="max-w-sm w-full bg-white/85 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-stone-beige/30 pointer-events-auto">
-
-                            {stage === 'loading' && (
-                                <>
-                                    <div className="text-sm font-semibold text-soft-black">Загружаю модель…</div>
-                                    <div className="text-xs text-muted-gray mt-2">
-                                        {sceneGraph.loadingProgress.total > 0
-                                            ? `${sceneGraph.loadingProgress.loaded}/${sceneGraph.loadingProgress.total}`
-                                            : 'Секунду...'}
-                                    </div>
-                                </>
-                            )}
-
-                            {stage === 'ready' && (
-                                <>
-                                    <div className="text-sm font-semibold text-soft-black">{sceneTitle}</div>
-                                    <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                                        Наведите телефон на пол и коснитесь экрана, чтобы поставить.
-                                    </div>
-                                    <div className="mt-4">
-                                        <button
-                                            onClick={startAR}
-                                            className="w-full bg-brand-brown text-white px-6 py-4 rounded-xl shadow-lg font-medium hover:bg-brand-charcoal transition-colors"
-                                        >
-                                            Начать AR
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-
-                            {stage === 'starting' && (
-                                <>
-                                    <div className="text-sm font-semibold text-soft-black">Запускаю AR…</div>
-                                    <div className="text-xs text-muted-gray mt-2">Секунду.</div>
-                                </>
-                            )}
-
-                            {stage === 'placing' && (
-                                <>
-                                    <div className="text-sm font-semibold text-soft-black">Выберите место</div>
-                                    <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                                        Наведите телефон на пол — появится метка. Коснитесь экрана.
-                                    </div>
-                                </>
-                            )}
-
-                            {(stage === 'error' || stage === 'unsupported') && (
-                                <>
-                                    <div className="text-sm font-semibold text-soft-black">Не получилось</div>
-                                    <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                                        {error || 'Попробуйте позже.'}
-                                    </div>
-                                    <div className="mt-4">
-                                        <button
-                                            onClick={() => endSession()}
-                                            className="w-full bg-white text-soft-black px-6 py-3 rounded-xl shadow-sm font-medium hover:bg-stone-beige/30 transition-colors border border-stone-beige/50"
-                                        >
-                                            Закрыть
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Gesture hint */}
-                {stage === 'active' && showHint && (
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
-                        <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft">
-                            1 палец — двигать • 2 пальца — масштаб/поворот
-                        </div>
-                    </div>
-                )}
             </div>
         </>
     );
