@@ -69,6 +69,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <NavLink label="Аналитика (beta)" isActive={activeView === 'analytics'} onClick={() => setView('analytics')}>
                 <ChartBarIcon className="h-6 w-6" />
               </NavLink>
+              <NavLink label="Аналитика объектов" isActive={activeView === 'objectAnalytics'} onClick={() => setView('objectAnalytics')}>
+                <EyeIcon className="h-6 w-6" />
+              </NavLink>
               <NavLink label="Путь посетителей" isActive={activeView === 'journey'} onClick={() => setView('journey')}>
                 <ArrowsUpDownIcon className="h-6 w-6" />
               </NavLink>

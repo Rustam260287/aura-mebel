@@ -13,7 +13,8 @@ export type AdminView =
   | 'assets'
   | 'media'
   | 'handoff'
-  | 'analytics';
+  | 'analytics'
+  | 'objectAnalytics';
 
 export type View =
   | { page: 'home' }

@@ -20,6 +20,7 @@ import { getAuth } from 'firebase/auth';
 import { AdminScenes } from './admin/AdminScenes';
 import { SceneEditModal } from './admin/SceneEditModal';
 import { AdminAnalytics } from './admin/AdminAnalytics';
+import { ObjectAnalytics } from './admin/ObjectAnalytics';
 
 interface AdminPageProps {
   allObjects: ObjectAdmin[];
@@ -136,6 +137,8 @@ const AdminPageComponent: React.FC<AdminPageProps> = ({
     switch (adminView) {
       case 'analytics':
         return <AdminAnalytics />;
+      case 'objectAnalytics':
+        return <ObjectAnalytics />;
       case 'journey':
         return <AdminJourneyFunnel />;
       case 'activeVisitors':
