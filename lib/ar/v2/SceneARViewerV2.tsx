@@ -72,10 +72,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Handler for gesture manipulation state
     const onManipulationChange = useCallback((isManipulating: boolean) => {
-        if (stage === 'active' || stage === 'manipulating') {
-            setStage(isManipulating ? 'manipulating' : 'active');
-        }
-    }, [stage]);
+        setStage(prev => {
+            // Only transition if we are in a valid interactive state to prevent erratic jumps
+            if (prev === 'active' || prev === 'manipulating') {
+                return isManipulating ? 'manipulating' : 'active';
+            }
+            return prev;
+        });
+    }, []);
 
     // Gestures
     // Gestures
@@ -570,8 +574,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     ref={gestureRef}
                     className="absolute inset-0 z-0 bg-transparent"
                     style={{
-                        touchAction: stage === 'active' ? 'none' : 'auto',
-                        pointerEvents: stage === 'active' ? 'auto' : 'none',
+                        touchAction: 'none', // Always prevent browser scrolling/zooming in AR
+                        pointerEvents: (stage === 'active' || stage === 'manipulating') ? 'auto' : 'none',
                     }}
                 />
 
