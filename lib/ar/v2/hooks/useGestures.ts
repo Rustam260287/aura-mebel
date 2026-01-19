@@ -208,18 +208,53 @@ export function useGestures({
                 const dist = distance2(a, b);
                 if (dist < MIN_PINCH_DISTANCE_PX) return;
 
-                // Scale
+                // Scale Lock with Elastic Feedback
+                // We allow a tiny bit of scaling (+/- 10%) to show the user "it works but is locked"
+                // This corresponds to the "Ghost Hint" requirement
                 const scaleFactor = g.startDistance > 0 ? dist / g.startDistance : 1;
-                const nextUserScale = clamp(g.startUserScale * scaleFactor, MIN_USER_SCALE, MAX_USER_SCALE);
-                item.userScale = nextUserScale;
+                // Calculate raw scale but clamp heavily to simulate resistance
+                let rawScale = g.startUserScale * scaleFactor;
+                // Elastic clamping: allow deviation but dampened
+                const ELASTICITY = 0.1; // 10% max deviation
+                const minElastic = MIN_USER_SCALE * (1 - ELASTICITY);
+                const maxElastic = MAX_USER_SCALE * (1 + ELASTICITY);
+
+                // For Aura UIA 1.1: Standard scale is locked (userScale = 1.0 is ideal). 
+                // We assume MIN/MAX_USER_SCALE are set close to 1.0 or we enforce 1.0 here.
+                // If strict 1:1 is required, target is 1.0.
+                // Let's allow effective userScale to change slightly but rubberband back later?
+                // For now, we just clamp it tightly.
+
+                // However, the spec says "scaling is disabled by default". 
+                // So we should effectively ignore scale changes for the visual model size 
+                // OR allow it to visually scale but NOT persist?
+                // Simpler approach for v1.1: Allow clamping within 0.95 - 1.05 range (very stiff spring)
+                const STIFFNESS = 0.2;
+                const deviation = scaleFactor - 1;
+                const dampenedScale = g.startUserScale * (1 + deviation * STIFFNESS);
+
+                item.userScale = clamp(dampenedScale, 0.9, 1.1); // Hard limits
                 item.group.scale.setScalar(item.baseScale * item.userScale);
 
-                // Rotation
+                // Rotation with Magnetic Snap (45 deg)
                 const ang = angle2(a, b);
                 const delta = ang - g.startAngle;
-                // Invert delta because screen coordinates (Y-down) cause angle to increase CW,
-                // while 3D rotation (Y-up) increases CCW. We want CW -> CW.
-                item.group.rotation.y = g.startRotationY - delta;
+                let rawRotation = g.startRotationY - delta;
+
+                // Magnetic Snap
+                const SNAP_ANGLE = Math.PI / 4; // 45 degrees
+                const SNAP_THRESHOLD = Math.PI / 24; // ~7.5 degrees
+
+                // Find closest snap point
+                const snapTarget = Math.round(rawRotation / SNAP_ANGLE) * SNAP_ANGLE;
+                const distToSnap = Math.abs(rawRotation - snapTarget);
+
+                if (distToSnap < SNAP_THRESHOLD) {
+                    // Apply snap
+                    item.group.rotation.y = snapTarget;
+                } else {
+                    item.group.rotation.y = rawRotation;
+                }
             }
         };
 

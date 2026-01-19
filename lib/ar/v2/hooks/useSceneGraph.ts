@@ -127,7 +127,14 @@ export function useSceneGraph(): UseSceneGraphResult {
                 (rot[1] * Math.PI) / 180,
                 (rot[2] * Math.PI) / 180
             );
-            group.scale.setScalar(baseScale);
+
+            // Initial State for Drop Animation
+            // Start at scale 0 and slightly elevated
+            group.scale.setScalar(0.01);
+            group.position.y += 0.5; // Start 50cm higher
+
+            // Determine final position Y (usually 0 relative to anchor)
+            const targetY = pos[1];
 
             // Tag all meshes with item key for raycasting
             const key = `item-${nanoid()}`;
@@ -143,9 +150,45 @@ export function useSceneGraph(): UseSceneGraphResult {
                 objectId: obj.objectId,
                 group,
                 baseScale: baseScale,
-                userScale: 1,
+                userScale: 1, // Start logic at 1, visuals animate up
                 objectName: obj.name,
             });
+
+            // Trigger Drop Animation
+            const startTime = Date.now();
+            const animateDrop = () => {
+                const now = Date.now();
+                const progress = Math.min((now - startTime) / 600, 1); // 600ms duration
+
+                // Spring easing: overshoot slightly
+                // c3 = c1 + 1; p(x) = c3 * x^3 - c1 * x^2
+                // Or elastic out: 
+                const elasticOut = (t: number) => {
+                    const p = 0.3;
+                    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+                };
+
+                const ease = elasticOut(progress);
+
+                // Scale up
+                const currentScale = baseScale * ease;
+                group.scale.setScalar(Math.max(0.01, currentScale));
+
+                // Drop down
+                // Simple lerp for position looks solid enough with elastic scale
+                const dropProgress = Math.min((now - startTime) / 400, 1); // Drop faster
+                const dropEase = 1 - Math.pow(1 - dropProgress, 3); // Cubic out
+                group.position.y = pos[1] + 0.5 * (1 - dropEase);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateDrop);
+                } else {
+                    // Ensure final state
+                    group.scale.setScalar(baseScale);
+                    group.position.y = targetY;
+                }
+            };
+            requestAnimationFrame(animateDrop);
         });
 
         // Auto-select first item if single object

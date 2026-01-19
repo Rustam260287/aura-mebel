@@ -97,6 +97,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setClearColor(0x000000, 0);
         renderer.xr.enabled = true;
+        // Preserve drawing buffer for screenshots if needed (perf cost, but needed for 'Capture')
+        // Actually, for now let's keep it simple. If we want high-perf, we skip it.
+        // UIA says "Capture" -> "Freeze frame".
+        // Let's rely on "End Session" as the trigger for "Done" for now, or add a dedicated shutter button that ends session.
         renderer.domElement.style.width = '100%';
         renderer.domElement.style.height = '100%';
         renderer.domElement.style.display = 'block';
@@ -154,14 +158,49 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         // Cleanup
         return () => {
             console.log('[SceneARViewerV2] Unmounting and cleaning up Three.js');
+
+            // 1. Stop Loop
             renderer.setAnimationLoop(null);
+
+            // 2. Dispose Scene Resources (Geometries, Materials, Textures)
+            threeScene.traverse((object) => {
+                if ((object as any).isMesh) {
+                    const mesh = object as THREE.Mesh;
+                    mesh.geometry.dispose();
+
+                    if (Array.isArray(mesh.material)) {
+                        mesh.material.forEach(m => {
+                            m.dispose();
+                            // Dispose textures if any
+                            Object.values(m).forEach(v => {
+                                if (v && (v as any).isTexture) (v as THREE.Texture).dispose();
+                            });
+                        });
+                    } else if (mesh.material) {
+                        mesh.material.dispose();
+                        Object.values(mesh.material).forEach(v => {
+                            if (v && (v as any).isTexture) (v as THREE.Texture).dispose();
+                        });
+                    }
+                }
+            });
+
+            // 3. Dispose Renderer
             renderer.dispose();
-            container.removeChild(renderer.domElement);
+
+            // 4. DOM Cleanup
+            if (container.contains(renderer.domElement)) {
+                container.removeChild(renderer.domElement);
+            }
+
             rendererRef.current = null;
             sceneRef.current = null;
             cameraRef.current = null;
             reticleRef.current = null;
             anchorRef.current = null;
+
+            // Clear Accessor Caches
+            loadedModelsRef.current = null;
         };
     }, []);
 
@@ -381,6 +420,11 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 // Hide hint after timeout
                 setTimeout(() => setShowHint(false), GESTURE_HINT_DURATION_MS);
+
+                // Haptic Feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(20); // Short sharp tick
+                }
             };
 
             session.addEventListener('select', onSelect);
@@ -451,34 +495,63 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 {/* UI Layer (Buttons always on top of gestures) */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
 
-                    {/* Top bar */}
-                    <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-center justify-between gap-3">
-                        <div className="pointer-events-auto">
-                            {(stage === 'active' || stage === 'ready' || stage === 'error') && (
-                                <button
-                                    onClick={() => endSession()}
-                                    className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
-                                >
-                                    {stage === 'active' ? 'Завершить' : 'Закрыть'}
-                                </button>
-                            )}
-                        </div>
+                    {/* Top bar (Safe Zone: Corners) */}
+                    <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-start justify-between pointer-events-none">
 
+                        {/* Selected Item Label (Center Top, ephemeral or persistent) */}
                         {selectedLabel && (
-                            <div className="bg-white/70 backdrop-blur-md px-3 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate">
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-md px-3 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate pointer-events-auto">
                                 {selectedLabel}
                             </div>
                         )}
 
-                        <div className="pointer-events-auto flex items-center gap-2">
-                            <button
-                                onClick={sceneGraph.deleteSelected}
-                                disabled={!sceneGraph.selectedKey}
-                                className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors disabled:opacity-40"
-                            >
-                                Удалить
-                            </button>
+                        {/* Top Right: Close (X) - Minimalist */}
+                        <div className="pointer-events-auto ml-auto">
+                            {(stage === 'active' || stage === 'ready' || stage === 'error') && (
+                                <button
+                                    onClick={() => endSession()}
+                                    className="bg-white/80 backdrop-blur-md w-10 h-10 rounded-full shadow-soft flex items-center justify-center text-soft-black hover:bg-white transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            )}
                         </div>
+                    </div>
+
+                    {/* Bottom Controls (Safe Zone) */}
+                    <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+24px)] left-0 right-0 px-6 flex items-center justify-between pointer-events-none">
+
+                        {/* Delete Button (Bottom Left) */}
+                        <div className="pointer-events-auto">
+                            {stage === 'active' && sceneGraph.selectedKey && (
+                                <button
+                                    onClick={sceneGraph.deleteSelected}
+                                    className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
+                                >
+                                    Удалить
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Capture / Finish Button (Bottom Center) - Only after placement */}
+                        <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-0">
+                            {stage === 'active' && placedRef.current && (
+                                <button
+                                    onClick={() => endSession()} // "Capture" logic = End Session & Show Result
+                                    className="w-16 h-16 rounded-full bg-white border-4 border-white/50 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                    aria-label="Capture"
+                                >
+                                    <div className="w-12 h-12 rounded-full bg-brand-brown/10 border border-brand-brown/50" />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Spacer for symmetry or secondary action */}
+                        <div className="w-[88px]" />
                     </div>
 
                     {/* Center state */}
@@ -516,19 +589,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                                 {stage === 'starting' && (
                                     <>
-                                        <div className="text-sm font-semibold text-soft-black">Запускаю AR…</div>
-                                        <div className="text-xs text-muted-gray mt-2">Секунду.</div>
-                                    </>
-                                )}
-
-                                {stage === 'placing' && (
-                                    <>
-                                        <div className="text-sm font-semibold text-soft-black">Выберите место</div>
-                                        <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                                            {useFallbackPlacement
-                                                ? 'Можно поставить сразу или навести на пол.'
-                                                : 'Наведите телефон на пол — появится метка. Коснитесь экрана.'}
-                                        </div>
+                                        <div className="text-sm font-semibold text-soft-black">Запуск...</div>
                                     </>
                                 )}
 
@@ -548,6 +609,17 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                         </div>
                                     </>
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Placing Hint (Subtle Toast) - moved out of center card */}
+                    {stage === 'placing' && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-80">
+                            <div className="bg-white/70 backdrop-blur-md px-6 py-3 rounded-full text-sm font-medium text-soft-black shadow-soft animate-pulse">
+                                {useFallbackPlacement
+                                    ? 'Коснитесь экрана'
+                                    : 'Наведите на пол'}
                             </div>
                         </div>
                     )}
