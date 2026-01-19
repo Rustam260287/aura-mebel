@@ -76,7 +76,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Gestures
     // Gestures
-    useGestures({
+    const { gestureRef: gestureStateRef } = useGestures({
         overlayRef: gestureRef,
         anchorRef,
         itemsRef: sceneGraph.itemsRef,
@@ -488,6 +488,31 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         }
                     }
                 }
+
+
+                // Visual Feedback Loop
+                if (frame && placedRef.current) {
+                    const isManipulating = gestureStateRef.current.mode !== 'none';
+                    const activeKey = sceneGraph.selectedKeyRef.current;
+
+                    if (activeKey) {
+                        const item = sceneGraph.itemsRef.current.find(i => i.key === activeKey);
+                        const ring = item?.group.getObjectByName('selectionRing');
+
+                        if (ring && (ring as THREE.Mesh).material) {
+                            const mat = (ring as THREE.Mesh).material as THREE.LineBasicMaterial;
+                            if (isManipulating) {
+                                // Pulse opacity: 0.5 to 1.0
+                                const pulse = 0.75 + 0.25 * Math.sin(time / 150);
+                                mat.opacity = pulse;
+                            } else {
+                                // Reset to default
+                                mat.opacity = 0.8;
+                            }
+                        }
+                    }
+                }
+
                 renderer.render(threeScene, camera);
             });
 

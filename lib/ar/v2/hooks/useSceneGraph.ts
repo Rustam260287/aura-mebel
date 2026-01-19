@@ -19,6 +19,7 @@ interface SceneObject {
 
 interface UseSceneGraphResult {
     itemsRef: React.RefObject<PlacedItem[]>;
+    selectedKeyRef: React.MutableRefObject<string | null>;
     selectedKey: string | null;
     loadingProgress: LoadingProgress;
 
@@ -285,6 +286,7 @@ export function useSceneGraph(): UseSceneGraphResult {
 
     return {
         itemsRef,
+        selectedKeyRef,
         selectedKey,
         loadingProgress,
         loadModels,
