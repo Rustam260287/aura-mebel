@@ -18,7 +18,7 @@ import { useWebXRSession } from './hooks/useWebXRSession';
 import { useHitTest } from './hooks/useHitTest';
 import { useGestures } from './hooks/useGestures';
 import { useSceneGraph } from './hooks/useSceneGraph';
-import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS } from './constants';
+import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLACEMENT_DISTANCE_M } from './constants';
 import type { ARStage, SceneARViewerV2Props } from './types';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
@@ -51,6 +51,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const [error, setError] = useState<string | null>(null);
     const [showHint, setShowHint] = useState(false);
     const [showPostSessionUI, setShowPostSessionUI] = useState(false);
+    const [useFallbackPlacement, setUseFallbackPlacement] = useState(false);
+    const placingStartTimeRef = useRef<number | null>(null);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -111,14 +113,27 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.01, 100);
         cameraRef.current = camera;
 
-        // Lighting
-        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.1);
-        light.position.set(0.5, 1, 0.25);
-        threeScene.add(light);
+        // Lighting (Enhanced for PBR materials in AR)
+        // 1. Ambient - baseline fill to prevent black shadows
+        const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+        threeScene.add(ambient);
 
-        const directional = new THREE.DirectionalLight(0xffffff, 0.7);
+        // 2. Hemisphere - sky/ground color gradient
+        const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.4);
+        hemi.position.set(0.5, 1, 0.25);
+        threeScene.add(hemi);
+
+        // 3. Directional - main shadow-casting light
+        const directional = new THREE.DirectionalLight(0xffffff, 0.9);
         directional.position.set(5, 10, 7.5);
         threeScene.add(directional);
+
+        // 4. Fill light (follows camera, updated in render loop)
+        const fill = new THREE.PointLight(0xfff5e6, 0.4, 10);
+        fill.name = 'cameraFillLight';
+        camera.add(fill);
+        fill.position.set(0, 0.5, 0); // Slightly above camera
+        threeScene.add(camera); // Camera must be in scene for child lights to work
 
         // Reticle
         const reticleGeom = new THREE.RingGeometry(0.08, 0.12, 32);
@@ -314,15 +329,33 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // Placement handler
             const onSelect = () => {
                 if (placedRef.current) return;
-                if (!reticle.visible) return;
 
-                // Copy reticle position to anchor
-                const pos = new THREE.Vector3();
-                const quat = new THREE.Quaternion();
-                const scale = new THREE.Vector3();
-                reticle.matrix.decompose(pos, quat, scale);
+                const camera = cameraRef.current!;
+                let placementPos: THREE.Vector3;
 
-                anchor.position.copy(pos);
+                // Get position from reticle or fallback
+                if (reticle.visible) {
+                    const pos = new THREE.Vector3();
+                    const quat = new THREE.Quaternion();
+                    const scale = new THREE.Vector3();
+                    reticle.matrix.decompose(pos, quat, scale);
+                    placementPos = pos;
+                } else {
+                    // Fallback: place in front of camera
+                    placementPos = hitTest.getFallbackPosition(camera);
+                }
+
+                // Enforce minimum distance from camera
+                const cameraPos = camera.position.clone();
+                const distanceToCamera = placementPos.distanceTo(cameraPos);
+                if (distanceToCamera < MIN_PLACEMENT_DISTANCE_M) {
+                    // Push back along camera forward
+                    const direction = placementPos.clone().sub(cameraPos).normalize();
+                    placementPos.copy(cameraPos).addScaledVector(direction, MIN_PLACEMENT_DISTANCE_M);
+                    placementPos.y = 0; // Keep on ground
+                }
+
+                anchor.position.copy(placementPos);
                 anchor.quaternion.identity();
                 anchor.updateMatrixWorld(true);
 
@@ -344,6 +377,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 setStage('active');
                 setShowHint(true);
+                setUseFallbackPlacement(false);
 
                 // Hide hint after timeout
                 setTimeout(() => setShowHint(false), GESTURE_HINT_DURATION_MS);
@@ -351,10 +385,27 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             session.addEventListener('select', onSelect);
 
+            // Track when placing started for fallback timeout
+            placingStartTimeRef.current = Date.now();
+
             // Animation loop
             renderer.setAnimationLoop((time: number, frame?: XRFrame) => {
                 if (frame && !placedRef.current) {
-                    hitTest.updateReticle(frame, reticle);
+                    const hasHit = hitTest.updateReticle(frame, reticle);
+
+                    // Check for fallback timeout
+                    if (!hasHit && placingStartTimeRef.current) {
+                        const elapsed = Date.now() - placingStartTimeRef.current;
+                        if (elapsed > HIT_TEST_TIMEOUT_MS && !useFallbackPlacement) {
+                            setUseFallbackPlacement(true);
+                            // Show fallback reticle
+                            const fallbackPos = hitTest.getFallbackPosition(camera);
+                            reticle.position.copy(fallbackPos);
+                            reticle.rotation.x = -Math.PI / 2;
+                            reticle.visible = true;
+                            reticle.matrixAutoUpdate = true;
+                        }
+                    }
                 }
                 renderer.render(threeScene, camera);
             });
@@ -474,7 +525,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                     <>
                                         <div className="text-sm font-semibold text-soft-black">Выберите место</div>
                                         <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                                            Наведите телефон на пол — появится метка. Коснитесь экрана.
+                                            {useFallbackPlacement
+                                                ? 'Можно поставить сразу или навести на пол.'
+                                                : 'Наведите телефон на пол — появится метка. Коснитесь экрана.'}
                                         </div>
                                     </>
                                 )}

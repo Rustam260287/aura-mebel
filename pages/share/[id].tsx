@@ -2,7 +2,7 @@
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { getAdminDb } from '../../lib/firebaseAdmin';
 import { toPublicObject } from '../../lib/publicObject';
 import { COLLECTIONS } from '../../lib/db/collections';
@@ -12,9 +12,15 @@ import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import { Meta } from '../../components/Meta';
 import { trackJourneyEvent } from '../../lib/journey/client';
+import { shouldUseSceneARV2 } from '../../lib/ar/v2/platformDetect';
 
 const ARViewer = dynamic(
     () => import('../../components/ARViewer').then((mod) => mod.ARViewer),
+    { ssr: false }
+);
+
+const SceneARViewerV2 = dynamic(
+    () => import('../../lib/ar/v2/SceneARViewerV2').then((mod) => mod.SceneARViewerV2),
     { ssr: false }
 );
 
@@ -27,7 +33,22 @@ interface SharePageProps {
 export default function SharePage({ share, object, error }: SharePageProps) {
     const router = useRouter();
     const [showAR, setShowAR] = useState(false);
+    const [showSceneARV2, setShowSceneARV2] = useState(false);
     const arViewerRef = useRef<{ activateAR: () => void } | null>(null);
+
+    // Platform detection (same logic as ObjectDetail)
+    const isIOSDevice = useMemo(() => {
+        if (typeof navigator === 'undefined') return false;
+        return (
+            /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            (navigator.userAgent.includes('Macintosh') && (navigator as any).maxTouchPoints > 1)
+        );
+    }, []);
+
+    const shouldUseV2 = useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        return !isIOSDevice && shouldUseSceneARV2();
+    }, [isIOSDevice]);
 
     if (error || !share || !object) {
         return (
@@ -60,17 +81,35 @@ export default function SharePage({ share, object, error }: SharePageProps) {
 
     const handleStartAR = () => {
         trackJourneyEvent({
-            type: 'START_AR', // From share page
+            type: 'START_AR',
             objectId: object.id,
+            meta: { source: 'shared_link', shareId: share.id },
         });
-        setShowAR(true);
-        setTimeout(() => {
-            arViewerRef.current?.activateAR();
-        }, 100);
+
+        // Use SceneARViewerV2 on Android, ARViewer (model-viewer) on iOS
+        if (shouldUseV2 && object.modelGlbUrl) {
+            setShowSceneARV2(true);
+        } else {
+            setShowAR(true);
+            setTimeout(() => {
+                arViewerRef.current?.activateAR();
+            }, 100);
+        }
     };
 
     const handleCloseAR = () => {
         setShowAR(false);
+    };
+
+    const handleCloseSceneARV2 = (durationSec?: number, hasStarted?: boolean) => {
+        setShowSceneARV2(false);
+        if (hasStarted) {
+            trackJourneyEvent({
+                type: 'FINISH_AR',
+                objectId: object.id,
+                meta: { source: 'shared_link', durationSec },
+            });
+        }
     };
 
     const primaryImage = object.imageUrls?.[0];
@@ -140,7 +179,17 @@ export default function SharePage({ share, object, error }: SharePageProps) {
                     </div>
                 </div>
 
-                {/* AR Viewer (hidden until activated) */}
+                {/* AR Viewers */}
+                {showSceneARV2 && object.modelGlbUrl && (
+                    <SceneARViewerV2
+                        sceneId={object.id}
+                        sceneTitle={object.name}
+                        objects={[{ objectId: object.id, name: object.name, modelGlbUrl: object.modelGlbUrl }]}
+                        onClose={handleCloseSceneARV2}
+                    />
+                )}
+
+                {/* iOS/Fallback AR Viewer */}
                 <ARViewer
                     ref={arViewerRef}
                     src={object.modelGlbUrl}

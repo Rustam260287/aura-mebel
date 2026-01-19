@@ -8,12 +8,15 @@ import * as THREE from 'three';
 interface UseHitTestResult {
     setupHitTest: (session: XRSession) => Promise<void>;
     updateReticle: (frame: XRFrame, reticle: THREE.Object3D) => boolean;
+    getFallbackPosition: (camera: THREE.Camera) => THREE.Vector3;
+    hasValidHit: boolean;
     cleanup: () => void;
 }
 
 export function useHitTest(): UseHitTestResult {
     const hitTestSourceRef = useRef<XRHitTestSource | null>(null);
     const referenceSpaceRef = useRef<XRReferenceSpace | null>(null);
+    const hasValidHitRef = useRef(false);
 
     const setupHitTest = useCallback(async (session: XRSession) => {
         try {
@@ -44,6 +47,7 @@ export function useHitTest(): UseHitTestResult {
 
         if (!hitTestSource || !referenceSpace) {
             reticle.visible = false;
+            hasValidHitRef.current = false;
             return false;
         }
 
@@ -54,12 +58,28 @@ export function useHitTest(): UseHitTestResult {
             if (pose) {
                 reticle.visible = true;
                 reticle.matrix.fromArray(pose.transform.matrix);
+                hasValidHitRef.current = true;
                 return true;
             }
         }
 
         reticle.visible = false;
+        hasValidHitRef.current = false;
         return false;
+    }, []);
+
+    const getFallbackPosition = useCallback((camera: THREE.Camera): THREE.Vector3 => {
+        // Get position 1.5m in front of camera, on the ground plane (Y=0)
+        const direction = new THREE.Vector3(0, 0, -1);
+        direction.applyQuaternion(camera.quaternion);
+        direction.y = 0; // Project onto horizontal plane
+        direction.normalize();
+
+        const position = camera.position.clone();
+        position.addScaledVector(direction, 1.5);
+        position.y = 0; // Place on ground
+
+        return position;
     }, []);
 
     const cleanup = useCallback(() => {
@@ -73,6 +93,8 @@ export function useHitTest(): UseHitTestResult {
     return {
         setupHitTest,
         updateReticle,
+        getFallbackPosition,
+        hasValidHit: hasValidHitRef.current,
         cleanup,
     };
 }
