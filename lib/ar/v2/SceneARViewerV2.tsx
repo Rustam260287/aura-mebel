@@ -512,38 +512,20 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 {/* UI Layer (Buttons always on top of gestures) */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
 
-                    {/* Top bar (Safe Zone: Corners) */}
-                    <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] left-4 right-4 flex items-start justify-between pointer-events-none">
-
-                        {/* Selected Item Label (Center Top, ephemeral or persistent) */}
-                        {selectedLabel && (
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-md px-3 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate pointer-events-auto">
+                    {/* Selected Item Label (Bottom Center, above controls) */}
+                    {stage === 'active' && selectedLabel && (
+                        <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+100px)] left-1/2 -translate-x-1/2 pointer-events-none">
+                            <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate">
                                 {selectedLabel}
                             </div>
-                        )}
-
-                        {/* Top Right: Close (X) - Minimalist */}
-                        <div className="pointer-events-auto ml-auto">
-                            {(stage === 'active' || stage === 'ready' || stage === 'error') && (
-                                <button
-                                    onClick={() => endSession()}
-                                    className="bg-white/80 backdrop-blur-md w-10 h-10 rounded-full shadow-soft flex items-center justify-center text-soft-black hover:bg-white transition-colors"
-                                    aria-label="Close"
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                            )}
                         </div>
-                    </div>
+                    )}
 
-                    {/* Bottom Controls (Safe Zone) */}
+                    {/* Bottom Controls (Safe Zone - Primary interaction area per Apple HIG) */}
                     <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+24px)] left-0 right-0 px-6 flex items-center justify-between pointer-events-none">
 
                         {/* Delete Button (Bottom Left) */}
-                        <div className="pointer-events-auto">
+                        <div className="pointer-events-auto w-20">
                             {stage === 'active' && sceneGraph.selectedKey && (
                                 <button
                                     onClick={sceneGraph.deleteSelected}
@@ -555,10 +537,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         </div>
 
                         {/* Capture / Finish Button (Bottom Center) - Only after placement */}
-                        <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-0">
+                        <div className="pointer-events-auto">
                             {stage === 'active' && placedRef.current && (
                                 <button
-                                    onClick={() => endSession()} // "Capture" logic = End Session & Show Result
+                                    onClick={() => endSession()}
                                     className="w-16 h-16 rounded-full bg-white border-4 border-white/50 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
                                     aria-label="Capture"
                                 >
@@ -567,8 +549,21 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                             )}
                         </div>
 
-                        {/* Spacer for symmetry or secondary action */}
-                        <div className="w-[88px]" />
+                        {/* Close Button (Bottom Right) - Moved from top per Apple HIG */}
+                        <div className="pointer-events-auto w-20 flex justify-end">
+                            {(stage === 'active' || stage === 'placing') && (
+                                <button
+                                    onClick={() => endSession()}
+                                    className="bg-white/80 backdrop-blur-md w-10 h-10 rounded-full shadow-soft flex items-center justify-center text-soft-black hover:bg-white transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Center state */}
