@@ -17,6 +17,7 @@ interface UseGesturesOptions {
     isActive: boolean;
     onSelect: (key: string | null) => void;
     onManipulationChange?: (isManipulating: boolean) => void;
+    onGestureStart?: (action: 'drag' | 'scale' | 'rotate') => void;
 }
 
 interface UseGesturesResult {
@@ -43,6 +44,7 @@ export function useGestures({
     isActive,
     onSelect,
     onManipulationChange,
+    onGestureStart,
 }: UseGesturesOptions): UseGesturesResult {
     const gestureRef = useRef<GestureState>({ mode: 'none' });
     const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
@@ -144,6 +146,7 @@ export function useGestures({
                 const offset = item.group.position.clone().sub(local);
                 gestureRef.current = { mode: 'drag', pointerId: t.identifier, offsetLocal: offset };
                 if (onManipulationChange) onManipulationChange(true);
+                if (onGestureStart) onGestureStart('drag');
                 return;
             }
 
@@ -169,6 +172,8 @@ export function useGestures({
                     startRotationY: item.group.rotation.y,
                 };
                 if (onManipulationChange) onManipulationChange(true);
+                // Heuristic: pinch is usually scale, but we track 'scale' as the generic "pinch" action
+                if (onGestureStart) onGestureStart('scale');
             }
         };
 

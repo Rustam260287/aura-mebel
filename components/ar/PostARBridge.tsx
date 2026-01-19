@@ -12,6 +12,7 @@ interface PostARBridgeProps {
     arSessionId?: string; // v1.1: Link to AR session
     onClose: () => void;
     onRestart: () => void;
+    onSendToManager?: () => void; // v1.1: Override for custom logic (e.g. Agent Chat)
 }
 
 type BridgeState = 'saved' | 'share_options' | 'sent';
@@ -23,6 +24,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
     arSessionId,
     onClose,
     onRestart,
+    onSendToManager,
 }) => {
     const [state, setState] = useState<BridgeState>('saved');
     const [handoffId, setHandoffId] = useState<string | null>(null);
@@ -66,6 +68,10 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
     }, [objectId, snapshotUrl]);
 
     const handleSendToManager = () => {
+        if (onSendToManager) {
+            onSendToManager();
+            return;
+        }
         setState('share_options');
     };
 

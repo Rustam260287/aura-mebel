@@ -20,6 +20,9 @@ export const JOURNEY_EVENT_TYPES = [
   'EXTERNAL_BROWSER_ACTION_CLICKED',
   'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
   'PLACE_OBJECT',
+  'AR_ONBOARDING_SHOWN',
+  'AR_GESTURE_HINT_SHOWN',
+  'AR_FIRST_INTERACTION',
 ] as const;
 
 export type JourneyEventType = (typeof JOURNEY_EVENT_TYPES)[number];
@@ -76,6 +79,7 @@ export type JourneyMeta = {
   // Handoff tracking
   handoffId?: string;
   channel?: string;
+  variant?: string; // For A/B testing or specific UI variants
 };
 
 export type JourneyEventInput = {

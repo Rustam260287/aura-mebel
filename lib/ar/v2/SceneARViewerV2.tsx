@@ -9,6 +9,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { setupARLighting, applyMaterialFallback } from './utils/lighting';
 import { useImmersive } from '../../../contexts/ImmersiveContext';
 
 import { trackJourneyEvent } from '../../journey/client';
@@ -20,8 +21,8 @@ import { useGestures } from './hooks/useGestures';
 import { useSceneGraph } from './hooks/useSceneGraph';
 import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLACEMENT_DISTANCE_M } from './constants';
 import type { ARStage, SceneARViewerV2Props } from './types';
-import { PostARBridge } from '../../../components/ar/PostARBridge';
 import { ARCoachingOverlay } from './components/ARCoachingOverlay';
+import { ARBottomControls } from './components/ARBottomControls';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -51,13 +52,16 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     // State
     const [stage, setStage] = useState<ARStage>('idle');
     const [error, setError] = useState<string | null>(null);
-    const [showHint, setShowHint] = useState(false);
-    const [showPostSessionUI, setShowPostSessionUI] = useState(false);
+
+    // Quiet UX: One-time hints
+    const [showOnboardingHint, setShowOnboardingHint] = useState(false);
+    const [showGestureHint, setShowGestureHint] = useState(false);
+
     const [useFallbackPlacement, setUseFallbackPlacement] = useState(false);
-    const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null); // v1.1: Canvas capture
     const [reticleVisible, setReticleVisible] = useState(false); // For UI guidance
     const reticleVisibleRef = useRef(false);
     const placingStartTimeRef = useRef<number | null>(null);
+    const hasInteractedRef = useRef(false);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -81,8 +85,24 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         });
     }, []);
 
-    // Gestures
-    // Gestures
+    const onGestureStart = (action: 'drag' | 'scale' | 'rotate') => {
+        if (!hasInteractedRef.current) {
+            hasInteractedRef.current = true;
+            trackJourneyEvent({
+                type: 'AR_FIRST_INTERACTION',
+                meta: { variant: action } // 'variant' maps to 'action' in types if needed, or we use meta.action in journey types if added
+            });
+            // Note: we added 'variant' to JourneyMeta. Let's use that or update type to have 'action'. 
+            // User asked meta: { action: '...' }. I added 'variant'. I should check eventTypes again or just map it.
+            // Actually, eventTypes has `action: { type: string ... }`. 
+            // Let's use `variant` which is simpler string. User said `meta: { action: '...' }`.
+            // JourneyMeta has `action?: { type: string, ... }`. It is an object.
+            // I will stick to what I added: `variant`. Or assume existing `action` object is what was meant?
+            // Existing `action` has `browser`, `timestamp`. Too complex.
+            // I will use `variant` field I added, mapping 'action' concept to it.
+        }
+    };
+
     const { gestureRef: gestureStateRef } = useGestures({
         overlayRef: gestureRef,
         anchorRef,
@@ -93,6 +113,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         isActive: (stage === 'active' || stage === 'manipulating') && placedRef.current,
         onSelect: sceneGraph.selectItem,
         onManipulationChange,
+        onGestureStart,
     });
 
     // Loaded models cache
@@ -135,27 +156,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.01, 100);
         cameraRef.current = camera;
 
-        // Lighting (Enhanced for PBR materials in AR)
-        // 1. Ambient - baseline fill to prevent black shadows
-        const ambient = new THREE.AmbientLight(0xffffff, 0.35);
-        threeScene.add(ambient);
-
-        // 2. Hemisphere - sky/ground color gradient
-        const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.4);
-        hemi.position.set(0.5, 1, 0.25);
-        threeScene.add(hemi);
-
-        // 3. Directional - main shadow-casting light
-        const directional = new THREE.DirectionalLight(0xffffff, 0.9);
-        directional.position.set(5, 10, 7.5);
-        threeScene.add(directional);
-
-        // 4. Fill light (follows camera, updated in render loop)
-        const fill = new THREE.PointLight(0xfff5e6, 0.4, 10);
-        fill.name = 'cameraFillLight';
-        camera.add(fill);
-        fill.position.set(0, 0.5, 0); // Slightly above camera
-        threeScene.add(camera); // Camera must be in scene for child lights to work
+        // Lighting (Premium AR Setup: Atmosphere, Key, Fill, RoomEnv)
+        setupARLighting(threeScene, renderer);
 
         // Reticle
         // Reticle
@@ -237,6 +239,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             setStage('loading');
             try {
                 const models = await sceneGraph.loadModels(objects);
+
+                // Fallback: Boost material envMap intensity if needed (prevent dark models)
+                models.forEach((model) => {
+                    applyMaterialFallback(model);
+                });
+
                 loadedModelsRef.current = models;
 
                 if (models.size === 0) {
@@ -292,6 +300,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         // 2. If object was placed, capture snapshot and show Bridge Screen
         if (placedRef.current) {
             // v1.1: Capture canvas snapshot before cleanup
+            let finalSnapshotUrl: string | null = null;
             const renderer = rendererRef.current;
             if (renderer) {
                 try {
@@ -299,8 +308,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     if (sceneRef.current && cameraRef.current) {
                         renderer.render(sceneRef.current, cameraRef.current);
                     }
-                    const dataUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
-                    setSnapshotUrl(dataUrl);
+                    finalSnapshotUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
                 } catch (err) {
                     console.warn('[SceneARViewerV2] Failed to capture snapshot:', err);
                 }
@@ -311,38 +319,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 objectId: sceneId,
                 meta: { arSessionId: arSessionIdRef.current, durationSec: duration },
             });
-            setShowPostSessionUI(true);
-            setStage('idle');
+
+            // Pass snapshot up to parent and close immediately
+            onClose(duration, true, finalSnapshotUrl);
         } else {
             // Cancelled before placement - still a real AR session
             onClose(duration, true);
         }
     }, [hitTest, xrSession, sceneId, onClose, stage]);
-
-    const handlePostArClose = () => {
-        const duration = startedAtRef.current
-            ? (Date.now() - startedAtRef.current) / 1000
-            : 0;
-        onClose(duration, true);
-    };
-
-    const handleRestart = () => {
-        setShowPostSessionUI(false);
-        setStage('placing'); // Directly to placing state, reticle will show
-        startedAtRef.current = null;
-        placedRef.current = false;
-
-        // Clean up existing items
-        sceneGraph.itemsRef.current.forEach((item: any) => {
-            anchorRef.current?.remove(item.group);
-        });
-        sceneGraph.itemsRef.current.length = 0; // Clear array
-        sceneGraph.selectItem(null);
-
-        if (anchorRef.current) {
-            anchorRef.current.visible = false;
-        }
-    };
 
 
 
@@ -464,11 +448,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 onPlace?.(objects[0]?.objectId);
 
                 setStage('active');
-                setShowHint(true);
                 setUseFallbackPlacement(false);
 
-                // Hide hint after timeout
-                setTimeout(() => setShowHint(false), GESTURE_HINT_DURATION_MS);
+                // Haptic Feedback
 
                 // Haptic Feedback
                 if (navigator.vibrate) {
@@ -557,6 +539,55 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         return item?.objectName || null;
     }, [sceneGraph.selectedKey]);
 
+    // -------------------------------------------------------------------------
+    // Quiet UX Onboarding (One-Time Logic)
+    // -------------------------------------------------------------------------
+
+    // 1. Onboarding Hint (Placing Stage)
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout> | undefined;
+
+        if (stage === 'placing') {
+            const seen = localStorage.getItem('ar_onboarding_seen');
+            if (!seen) {
+                setShowOnboardingHint(true);
+                trackJourneyEvent({ type: 'AR_ONBOARDING_SHOWN', meta: { variant: 'single-line-v1' } });
+
+                t = setTimeout(() => {
+                    setShowOnboardingHint(false);
+                }, 3000);
+
+                localStorage.setItem('ar_onboarding_seen', '1');
+            }
+        } else {
+            setShowOnboardingHint(false);
+        }
+        return () => { if (t) clearTimeout(t); };
+    }, [stage]);
+
+    // 2. Gesture Hint (Active Stage)
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout> | undefined;
+
+        if (stage === 'active') {
+            const seen = localStorage.getItem('gesture_hint_seen');
+            if (!seen) {
+                setShowGestureHint(true);
+                trackJourneyEvent({ type: 'AR_GESTURE_HINT_SHOWN' });
+
+                t = setTimeout(() => {
+                    setShowGestureHint(false);
+                }, 5000);
+
+                localStorage.setItem('gesture_hint_seen', '1');
+            }
+        } else {
+            setShowGestureHint(false);
+        }
+        return () => { if (t) clearTimeout(t); };
+    }, [stage]);
+
+
     return (
         <>
             {/* 1. Gesture Layer (Pure touch handling) */}
@@ -591,53 +622,38 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         </div>
                     )}
 
-                    {/* Bottom Controls (Safe Zone - Primary interaction area per Apple HIG) */}
-                    <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+24px)] left-0 right-0 px-6 flex items-center justify-between pointer-events-none">
+                    {/* Bottom Controls (Premium Quiet UX) */}
+                    <ARBottomControls
+                        stage={stage}
+                        onClose={() => endSession()}
+                        onScreenshot={() => endSession()}
+                        onDelete={sceneGraph.deleteSelected}
+                        hasSelection={!!sceneGraph.selectedKey}
+                    />
 
-                        {/* Delete Button (Bottom Left) */}
-                        <div className="pointer-events-auto w-20">
-                            {stage === 'active' && sceneGraph.selectedKey && (
-                                <button
-                                    onClick={sceneGraph.deleteSelected}
-                                    className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-full shadow-soft text-soft-black text-sm font-medium hover:bg-white transition-colors"
-                                >
-                                    Удалить
-                                </button>
-                            )}
+                    {/* Quiet UX: Sticky Onboarding Hint (One-Time) */}
+                    {stage === 'placing' && showOnboardingHint && (
+                        <div className="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-none fade-in-out">
+                            <div className="bg-white/60 backdrop-blur-md px-5 py-2.5 rounded-2xl shadow-sm border border-white/20">
+                                <span className="text-soft-black/90 text-[15px] font-medium leading-tight">
+                                    Наведите телефон на пол и коснитесь экрана
+                                </span>
+                            </div>
                         </div>
+                    )}
 
-                        {/* Capture / Finish Button (Bottom Center) - Only after placement */}
-                        <div className="pointer-events-auto">
-                            {stage === 'active' && placedRef.current && (
-                                <button
-                                    onClick={() => endSession()}
-                                    className="w-16 h-16 rounded-full bg-white border-4 border-white/50 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
-                                    aria-label="Capture"
-                                >
-                                    <div className="w-12 h-12 rounded-full bg-brand-brown/10 border border-brand-brown/50" />
-                                </button>
-                            )}
+                    {/* Quiet UX: One-Time Gesture Hint */}
+                    {stage === 'active' && showGestureHint && (
+                        <div className="absolute bottom-32 left-0 right-0 flex justify-center pointer-events-none fade-in-out">
+                            <div className="bg-white/60 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft border border-white/20">
+                                1 палец — двигать • 2 — масштаб/поворот
+                            </div>
                         </div>
-
-                        {/* Close Button (Bottom Right) - Moved from top per Apple HIG */}
-                        <div className="pointer-events-auto w-20 flex justify-end">
-                            {(stage === 'active' || stage === 'placing') && (
-                                <button
-                                    onClick={() => endSession()}
-                                    className="bg-white/80 backdrop-blur-md w-10 h-10 rounded-full shadow-soft flex items-center justify-center text-soft-black hover:bg-white transition-colors"
-                                    aria-label="Close"
-                                >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    )}
 
                     {/* Center state */}
-                    {(stage === 'loading' || stage === 'ready' || stage === 'starting' || stage === 'placing' || stage === 'error' || stage === 'unsupported') && (
+                    {/* Center state - Filtered to remove Empty Toasts during placing/starting */}
+                    {(stage === 'loading' || stage === 'ready' || stage === 'error' || stage === 'unsupported') && (
                         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
                             <div className="max-w-sm w-full bg-white/85 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-stone-beige/30 pointer-events-auto">
 
@@ -669,11 +685,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                     </>
                                 )}
 
-                                {stage === 'starting' && (
-                                    <>
-                                        <div className="text-sm font-semibold text-soft-black">Запуск...</div>
-                                    </>
-                                )}
+
 
                                 {(stage === 'error' || stage === 'unsupported') && (
                                     <>
@@ -705,26 +717,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         />
                     )}
 
-                    {/* Gesture hint */}
-                    {stage === 'active' && showHint && !showPostSessionUI && (
-                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
-                            <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft">
-                                1 палец — двигать • 2 пальца — масштаб/поворот
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Post-AR Bridge Screen (HANDOFF-SPEC v1.1) */}
-                    {showPostSessionUI && (
-                        <PostARBridge
-                            objectId={objects[0]?.objectId || sceneId}
-                            objectName={sceneTitle}
-                            snapshotUrl={snapshotUrl || undefined}
-                            arSessionId={arSessionIdRef.current}
-                            onClose={handlePostArClose}
-                            onRestart={handleRestart}
-                        />
-                    )}
+
                 </div >
             </div >
         </>

@@ -1,6 +1,6 @@
-
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { PostARBridge } from './ar/PostARBridge';
 import { useRouter } from 'next/router';
 import type { ObjectPublic } from '../types';
 import { Button } from './Button';
@@ -37,8 +37,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [mediaMode, setMediaMode] = useState<MediaMode>('photo');
   const [showSceneARV2, setShowSceneARV2] = useState(false);
   const [inline3dState, setInline3dState] = useState<Inline3DState>('idle');
-  const [inline3dError, setInline3dError] = useState<string | null>(null);
+  // v1.1: AR Snapshot State
+  const [postArSnapshot, setPostArSnapshot] = useState<string | null>(null);
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
+  const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [postArHintVisible, setPostArHintVisible] = useState(false);
   const [isIOSDevice] = useState(() => {
     if (typeof navigator === 'undefined') return false;
@@ -114,13 +116,16 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [emitEvent, object.id, object.name, object.objectType]);
 
   const closeAR = useCallback(
-    (durationSec?: number, hasStarted?: boolean) => {
-      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted });
+    (durationSec?: number, hasStarted?: boolean, snapshotUrl?: string | null) => {
+      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted, hasSnapshot: !!snapshotUrl });
 
       // STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
       // This prevents false POST_AR from any code path where XR never actually started
       if (hasStarted === true) {
         setUiState('POST_AR');
+        if (snapshotUrl) {
+          setPostArSnapshot(snapshotUrl);
+        }
       } else {
         setUiState('DEFAULT');
       }
@@ -852,41 +857,35 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           )}
 
           {uiState === 'POST_AR' ? (
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={handleShare}
-                size="lg"
-                variant="secondary"
-                disabled={isShareCapturing}
-                className={[
-                  'w-full h-14 rounded-2xl shadow-sm border-none',
-                  'bg-white/90 backdrop-blur-md text-soft-black hover:bg-white',
-                  'transition-all duration-300 ease-out active:scale-[0.98]',
-                ].join(' ')}
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5 text-soft-black" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  Показать близким
-                </span>
-              </Button>
+            <PostARBridge
+              objectId={object.id}
+              objectName={object.name}
+              snapshotUrl={postArSnapshot || undefined}
+              onClose={() => {
+                setUiState('DEFAULT');
+                setPostArSnapshot(null);
+              }}
+              onRestart={() => {
+                setUiState('DEFAULT');
+                setShowSceneARV2(false);
+                setPostArSnapshot(null);
 
-              <button
-                onClick={() => {
-                  setUiState('DEFAULT');
+                // 🔒 Dirty Restart Protection: 1 frame gap ensure clean WebXR remount
+                requestAnimationFrame(() => {
                   handleOpenAr();
-                }}
-                className="text-xs text-white/70 underline hover:text-white transition-colors py-2"
-              >
-                Примерить ещё раз
-              </button>
-            </div>
+                });
+              }}
+              onSendToManager={() => {
+                emitMetaEvent({
+                  type: 'REQUEST_MANAGER_CONTACT',
+                  payload: {
+                    objectId: object.id,
+                    name: object.name,
+                    snapshotUrl: postArSnapshot
+                  }
+                });
+              }}
+            />
           ) : (hasGlb || hasUsdz) && (
             <Button
               onClick={handleOpenArTap}

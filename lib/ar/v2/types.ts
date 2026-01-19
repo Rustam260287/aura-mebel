@@ -71,7 +71,7 @@ export interface SceneARViewerV2Props {
     }>;
 
     /** Callback when AR session closes */
-    onClose: (durationSec?: number, hasStarted?: boolean) => void;
+    onClose: (durationSec?: number, hasStarted?: boolean, snapshotUrl?: string | null) => void;
 
     /** Optional: called when XR session starts */
     onSessionStart?: () => void;
