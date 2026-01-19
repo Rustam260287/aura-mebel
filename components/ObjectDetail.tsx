@@ -9,7 +9,7 @@ import { useSaved } from '../contexts/SavedContext';
 import { useToast } from '../contexts/ToastContext';
 import { ARViewer, type ARViewerHandle } from './ARViewer';
 import { SceneARViewerV2, shouldUseSceneARV2 } from '../lib/ar/v2';
-import { trackJourneyEvent } from '../lib/journey/client';
+import { trackJourneyEvent, startViewTimer, stopViewTimer } from '../lib/journey/client';
 import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
 import { useAssistant } from '../contexts/AssistantContext';
@@ -58,6 +58,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const { isSaved, addToSaved, removeFromSaved } = useSaved();
   const { addToast } = useToast();
   const isObjectSaved = isSaved(object.id);
+
+  // View time tracking - starts on mount, stops on unmount or object change
+  useEffect(() => {
+    if (!object?.id) return;
+    startViewTimer(object.id);
+    return () => {
+      stopViewTimer(object.id);
+    };
+  }, [object.id]);
   const inlineModelViewerRef = useRef<HTMLElement | null>(null);
   const arViewerRef = useRef<ARViewerHandle | null>(null);
   const open3dLoggedForObjectRef = useRef<string | null>(null);

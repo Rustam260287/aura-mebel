@@ -201,29 +201,74 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .where('createdAt', '>=', fromTs)
       .where('createdAt', '<=', toTs)
       .orderBy('createdAt', 'asc')
-      .select('type', 'objectId', 'meta')
+      .select('type', 'objectId', 'meta', 'visitorId')
       .get();
 
     const objects = new Map<
       string,
-      { objectId: string; viewed: number; saved: number; snapshots: number; arDurationSec: number }
+      {
+        objectId: string;
+        viewed: number;
+        saved: number;
+        snapshots: number;
+        arDurationSec: number;
+        uniqueVisitors: Set<string>;
+        viewTimes: number[];
+        returnVisitors: Set<string>;
+      }
     >();
+
+    // Track visitors per object for return rate calculation
+    const objectVisitorFirstSeen = new Map<string, Map<string, number>>();
 
     const ensureObject = (objectId: string) => {
       const existing = objects.get(objectId);
       if (existing) return existing;
-      const next = { objectId, viewed: 0, saved: 0, snapshots: 0, arDurationSec: 0 };
+      const next = {
+        objectId,
+        viewed: 0,
+        saved: 0,
+        snapshots: 0,
+        arDurationSec: 0,
+        uniqueVisitors: new Set<string>(),
+        viewTimes: [] as number[],
+        returnVisitors: new Set<string>(),
+      };
       objects.set(objectId, next);
+      objectVisitorFirstSeen.set(objectId, new Map());
       return next;
     };
 
     for (const doc of eventsSnap.docs) {
-      const d = doc.data() as { type?: unknown; objectId?: unknown; meta?: any };
+      const d = doc.data() as { type?: unknown; objectId?: unknown; meta?: any; visitorId?: unknown };
       const type = typeof d.type === 'string' ? d.type : '';
       const objectId = typeof d.objectId === 'string' ? d.objectId : '';
+      const visitorId = typeof d.visitorId === 'string' ? d.visitorId : (d.meta?.visitorId || '');
       if (!objectId) continue;
+
       const row = ensureObject(objectId);
-      if (type === 'VIEW_OBJECT') row.viewed += 1;
+
+      if (type === 'VIEW_OBJECT') {
+        row.viewed += 1;
+
+        // Track unique visitors
+        if (visitorId) {
+          const firstSeenMap = objectVisitorFirstSeen.get(objectId)!;
+          if (!firstSeenMap.has(visitorId)) {
+            firstSeenMap.set(visitorId, Date.now());
+            row.uniqueVisitors.add(visitorId);
+          } else {
+            row.returnVisitors.add(visitorId);
+          }
+        }
+
+        // Track view time
+        const viewTimeMs = d.meta?.viewTimeMs;
+        if (typeof viewTimeMs === 'number' && viewTimeMs > 0) {
+          row.viewTimes.push(Math.round(viewTimeMs / 1000));
+        }
+      }
+
       if (type === 'SAVE_OBJECT') row.saved += 1;
       if (type === 'AR_SNAPSHOT_CREATED') row.snapshots += 1;
       if (type === 'FINISH_AR') {
@@ -232,8 +277,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    // Helper for median
+    const median = (arr: number[]): number | null => {
+      if (arr.length === 0) return null;
+      const sorted = [...arr].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+    };
+
     const topObjects = Array.from(objects.values())
-      .sort((a, b) => b.saved - a.saved || b.arDurationSec - a.arDurationSec || b.viewed - a.viewed)
+      .map((o) => ({
+        objectId: o.objectId,
+        viewed: o.viewed,
+        saved: o.saved,
+        snapshots: o.snapshots,
+        arDurationSec: o.arDurationSec,
+        uniqueVisitors: o.uniqueVisitors.size,
+        avgViewTimeSec: o.viewTimes.length > 0 ? Math.round(o.viewTimes.reduce((a, b) => a + b, 0) / o.viewTimes.length) : null,
+        medianViewTimeSec: median(o.viewTimes),
+        returnVisitorRate: o.uniqueVisitors.size > 0 ? Math.round((o.returnVisitors.size / o.uniqueVisitors.size) * 100) : 0,
+      }))
+      .sort((a, b) => b.uniqueVisitors - a.uniqueVisitors || b.saved - a.saved || b.viewed - a.viewed)
       .slice(0, 20);
 
     return res.status(200).json({

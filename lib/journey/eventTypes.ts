@@ -66,6 +66,10 @@ export type JourneyMeta = {
   };
   source?: string;
   shareId?: string;
+  // Visitor tracking
+  visitorId?: string;
+  isUniqueVisit?: boolean;
+  viewTimeMs?: number;
 };
 
 export type JourneyEventInput = {
