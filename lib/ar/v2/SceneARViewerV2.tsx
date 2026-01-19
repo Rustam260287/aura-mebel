@@ -21,6 +21,7 @@ import { useSceneGraph } from './hooks/useSceneGraph';
 import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLACEMENT_DISTANCE_M } from './constants';
 import type { ARStage, SceneARViewerV2Props } from './types';
 import { PostARBridge } from '../../../components/ar/PostARBridge';
+import { ARCoachingOverlay } from './components/ARCoachingOverlay';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -40,7 +41,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-    const reticleRef = useRef<THREE.Mesh | null>(null);
+    const reticleRef = useRef<THREE.Group | null>(null);
     const anchorRef = useRef<THREE.Group | null>(null);
     const placedRef = useRef(false);
     const startedAtRef = useRef<number | null>(null);
@@ -54,6 +55,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const [showPostSessionUI, setShowPostSessionUI] = useState(false);
     const [useFallbackPlacement, setUseFallbackPlacement] = useState(false);
     const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null); // v1.1: Canvas capture
+    const [reticleVisible, setReticleVisible] = useState(false); // For UI guidance
+    const reticleVisibleRef = useRef(false);
     const placingStartTimeRef = useRef<number | null>(null);
 
     // Hooks
@@ -151,14 +154,19 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         threeScene.add(camera); // Camera must be in scene for child lights to work
 
         // Reticle
+        // Reticle
+        const reticleGroup = new THREE.Group();
+        reticleGroup.matrixAutoUpdate = false;
+        reticleGroup.visible = false;
+
         const reticleGeom = new THREE.RingGeometry(0.08, 0.12, 32);
         reticleGeom.rotateX(-Math.PI / 2);
         const reticleMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
-        const reticle = new THREE.Mesh(reticleGeom, reticleMat);
-        reticle.matrixAutoUpdate = false;
-        reticle.visible = false;
-        threeScene.add(reticle);
-        reticleRef.current = reticle;
+        const reticleMesh = new THREE.Mesh(reticleGeom, reticleMat);
+        reticleGroup.add(reticleMesh);
+
+        threeScene.add(reticleGroup);
+        reticleRef.current = reticleGroup; // Ref points to Group now
 
         // Anchor
         const anchor = new THREE.Group();
@@ -474,6 +482,19 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 if (frame && !placedRef.current) {
                     const hasHit = hitTest.updateReticle(frame, reticle);
 
+                    // Animate Reticle (Breathing)
+                    if (hasHit) {
+                        const scale = 1 + 0.15 * Math.sin(time / 200);
+                        // Reticle is now a Group, animate the child Mesh
+                        reticle.children[0].scale.set(scale, scale, scale);
+                    }
+
+                    // Sync reticle visibility state for UI (Guidance)
+                    if (hasHit !== reticleVisibleRef.current) {
+                        reticleVisibleRef.current = hasHit;
+                        setReticleVisible(hasHit);
+                    }
+
                     // Check for fallback timeout
                     if (!hasHit && placingStartTimeRef.current) {
                         const elapsed = Date.now() - placingStartTimeRef.current;
@@ -670,15 +691,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         </div>
                     )}
 
-                    {/* Placing Hint (Subtle Toast) - moved out of center card */}
-                    {stage === 'placing' && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-80">
-                            <div className="bg-white/70 backdrop-blur-md px-6 py-3 rounded-full text-sm font-medium text-soft-black shadow-soft animate-pulse">
-                                {useFallbackPlacement
-                                    ? 'Коснитесь экрана'
-                                    : 'Наведите на пол'}
-                            </div>
-                        </div>
+
+
+                    {/* Coaching Overlay (New v2 Guidance) */}
+                    {(stage === 'placing') && (
+                        <ARCoachingOverlay
+                            visible={true}
+                            hint={useFallbackPlacement || reticleVisible ? 'tap' : 'scan'}
+                        />
                     )}
 
                     {/* Gesture hint */}
@@ -701,8 +721,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                             onRestart={handleRestart}
                         />
                     )}
-                </div>
-            </div>
+                </div >
+            </div >
         </>
     );
 };
