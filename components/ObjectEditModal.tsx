@@ -4,7 +4,7 @@ import { Dialog, Transition, Tab } from '@headlessui/react';
 import { XMarkIcon, SparklesIcon, PhotoIcon, CubeIcon, PlusIcon } from './icons/index';
 import type { ModelProcessingStatus, ObjectAdmin, ObjectStatus } from '../types';
 import { ModelUploader } from './admin/ModelUploader';
-import { MediaUploader } from './admin/MediaUploader';
+import { ImageGalleryEditor } from './admin/ImageGalleryEditor';
 import { useAuth } from '../contexts/AuthContext';
 import { ModelPreview3D } from './admin/ModelPreview3D';
 
@@ -167,12 +167,10 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
     }));
   };
 
-  const handleRemoveImage = (index: number) => {
-    // We don't delete from storage here, assuming it's handled on save if needed.
-    // This just removes from the list to be saved.
+  const handleImagesChange = (urls: string[]) => {
     setFormData(prev => ({
       ...prev,
-      imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index),
+      imageUrls: urls,
     }));
   };
 
@@ -392,23 +390,11 @@ export const ObjectEditModal: React.FC<ObjectEditModalProps> = ({ isOpen, onClos
                       </Tab.Panel>
                       <Tab.Panel>
                         <h4 className="font-semibold text-gray-800 flex items-center gap-2 mb-4"><PhotoIcon className="w-5 h-5" />Галерея изображений</h4>
-                        <div className="grid grid-cols-4 gap-4">
-                          {(formData.imageUrls || []).map((url, index) => (
-                            <div key={index} className="relative group aspect-square">
-                              <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
-                              <button onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                <XMarkIcon className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                          <MediaUploader onUploadSuccess={handleMediaUpload}>
-                            {(open, isLoading) => (
-                              <button onClick={open} disabled={isLoading} className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 aspect-square">
-                                {isLoading ? '...' : <PlusIcon className="w-8 h-8 text-gray-400" />}
-                              </button>
-                            )}
-                          </MediaUploader>
-                        </div>
+                        <ImageGalleryEditor
+                          images={formData.imageUrls || []}
+                          onChange={handleImagesChange}
+                          folder="objects"
+                        />
                       </Tab.Panel>
                     </Tab.Panels>
                   </Tab.Group>
