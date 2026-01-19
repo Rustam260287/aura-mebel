@@ -13,6 +13,9 @@ export const JOURNEY_EVENT_TYPES = [
   'OPEN_SAVED',
   'CONTACT_MANAGER',
   'HANDOFF_REQUESTED',
+  'HANDOFF_CREATED',
+  'HANDOFF_SENT',
+  'HANDOFF_OPENED',
   'BROWSER_LIMITATION_DETECTED',
   'EXTERNAL_BROWSER_ACTION_CLICKED',
   'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
@@ -70,6 +73,9 @@ export type JourneyMeta = {
   visitorId?: string;
   isUniqueVisit?: boolean;
   viewTimeMs?: number;
+  // Handoff tracking
+  handoffId?: string;
+  channel?: string;
 };
 
 export type JourneyEventInput = {

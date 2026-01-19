@@ -20,6 +20,7 @@ import { useGestures } from './hooks/useGestures';
 import { useSceneGraph } from './hooks/useSceneGraph';
 import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLACEMENT_DISTANCE_M } from './constants';
 import type { ARStage, SceneARViewerV2Props } from './types';
+import { PostARBridge } from '../../../components/ar/PostARBridge';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -52,6 +53,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const [showHint, setShowHint] = useState(false);
     const [showPostSessionUI, setShowPostSessionUI] = useState(false);
     const [useFallbackPlacement, setUseFallbackPlacement] = useState(false);
+    const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null); // v1.1: Canvas capture
     const placingStartTimeRef = useRef<number | null>(null);
 
     // Hooks
@@ -266,8 +268,23 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         xrSession.endSession();
         hasArStartedRef.current = false; // Reset flag
 
-        // 2. If object was placed, show "Soft Finale"
+        // 2. If object was placed, capture snapshot and show Bridge Screen
         if (placedRef.current) {
+            // v1.1: Capture canvas snapshot before cleanup
+            const renderer = rendererRef.current;
+            if (renderer) {
+                try {
+                    // Force one more render to ensure current frame
+                    if (sceneRef.current && cameraRef.current) {
+                        renderer.render(sceneRef.current, cameraRef.current);
+                    }
+                    const dataUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
+                    setSnapshotUrl(dataUrl);
+                } catch (err) {
+                    console.warn('[SceneARViewerV2] Failed to capture snapshot:', err);
+                }
+            }
+
             trackJourneyEvent({
                 type: 'FINISH_AR',
                 objectId: sceneId,
@@ -633,29 +650,16 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         </div>
                     )}
 
-                    {/* Internal Post-AR Overlay (Soft Finale) */}
+                    {/* Post-AR Bridge Screen (HANDOFF-SPEC v1.1) */}
                     {showPostSessionUI && (
-                        <div className="absolute inset-0 z-[200] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm pointer-events-auto">
-                            <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center animate-in fade-in zoom-in duration-300">
-                                <div className="text-xl font-bold text-soft-black mb-2">Готово!</div>
-                                <div className="text-sm text-muted-gray mb-6">Фотографии можно сделать или поделиться ссылкой через кнопку ниже.</div>
-
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={handlePostArClose}
-                                        className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors"
-                                    >
-                                        Показать близким
-                                    </button>
-                                    <button
-                                        onClick={handleRestart}
-                                        className="w-full bg-stone-beige/20 text-soft-black py-3 rounded-xl font-medium hover:bg-stone-beige/30 transition-colors"
-                                    >
-                                        Примерить ещё раз
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <PostARBridge
+                            objectId={objects[0]?.objectId || sceneId}
+                            objectName={sceneTitle}
+                            snapshotUrl={snapshotUrl || undefined}
+                            arSessionId={arSessionIdRef.current}
+                            onClose={handlePostArClose}
+                            onRestart={handleRestart}
+                        />
                     )}
                 </div>
             </div>

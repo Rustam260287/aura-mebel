@@ -102,9 +102,20 @@ export function useGestures({
                 const t = e.touches[0];
                 let key = pickItem(t.clientX, t.clientY);
 
-                // Auto-select single object
-                if (!key && itemsRef.current.length === 1) {
-                    key = itemsRef.current[0].key;
+                // Relaxed picking logic:
+                // 1. If raycast missed but single object exists → select it
+                // 2. If raycast missed but we already have a selection → keep it
+                if (!key) {
+                    if (itemsRef.current.length === 1) {
+                        key = itemsRef.current[0].key;
+                    } else if (selectedKeyRef.current) {
+                        key = selectedKeyRef.current;
+                    }
+                }
+
+                // Haptic feedback on new selection
+                if (key && key !== selectedKeyRef.current && navigator.vibrate) {
+                    navigator.vibrate(15);
                 }
 
                 onSelect(key);
@@ -208,32 +219,11 @@ export function useGestures({
                 const dist = distance2(a, b);
                 if (dist < MIN_PINCH_DISTANCE_PX) return;
 
-                // Scale Lock with Elastic Feedback
-                // We allow a tiny bit of scaling (+/- 10%) to show the user "it works but is locked"
-                // This corresponds to the "Ghost Hint" requirement
+                // Direct scale application (no dampening)
+                // Full range 0.3x – 3.0x as per constants
                 const scaleFactor = g.startDistance > 0 ? dist / g.startDistance : 1;
-                // Calculate raw scale but clamp heavily to simulate resistance
-                let rawScale = g.startUserScale * scaleFactor;
-                // Elastic clamping: allow deviation but dampened
-                const ELASTICITY = 0.1; // 10% max deviation
-                const minElastic = MIN_USER_SCALE * (1 - ELASTICITY);
-                const maxElastic = MAX_USER_SCALE * (1 + ELASTICITY);
-
-                // For Aura UIA 1.1: Standard scale is locked (userScale = 1.0 is ideal). 
-                // We assume MIN/MAX_USER_SCALE are set close to 1.0 or we enforce 1.0 here.
-                // If strict 1:1 is required, target is 1.0.
-                // Let's allow effective userScale to change slightly but rubberband back later?
-                // For now, we just clamp it tightly.
-
-                // However, the spec says "scaling is disabled by default". 
-                // So we should effectively ignore scale changes for the visual model size 
-                // OR allow it to visually scale but NOT persist?
-                // Simpler approach for v1.1: Allow clamping within 0.95 - 1.05 range (very stiff spring)
-                const STIFFNESS = 0.2;
-                const deviation = scaleFactor - 1;
-                const dampenedScale = g.startUserScale * (1 + deviation * STIFFNESS);
-
-                item.userScale = clamp(dampenedScale, 0.9, 1.1); // Hard limits
+                const nextUserScale = clamp(g.startUserScale * scaleFactor, MIN_USER_SCALE, MAX_USER_SCALE);
+                item.userScale = nextUserScale;
                 item.group.scale.setScalar(item.baseScale * item.userScale);
 
                 // Rotation with Magnetic Snap (45 deg)

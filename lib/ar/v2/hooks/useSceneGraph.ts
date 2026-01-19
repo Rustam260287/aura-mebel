@@ -114,6 +114,25 @@ export function useSceneGraph(): UseSceneGraphResult {
             });
             group.add(clone);
 
+            // Add Selection Ring (visual feedback)
+            // Size based on model bounding box
+            const tempBbox = new THREE.Box3().setFromObject(clone);
+            const tempSize = tempBbox.getSize(new THREE.Vector3());
+            const ringRadius = Math.max(tempSize.x, tempSize.z) * 0.6;
+            const ringGeo = new THREE.RingGeometry(ringRadius, ringRadius + 0.03, 32);
+            ringGeo.rotateX(-Math.PI / 2);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0xFFF8F0, // Warm white
+                opacity: 0.7,
+                transparent: true,
+                side: THREE.DoubleSide,
+            });
+            const selectionRing = new THREE.Mesh(ringGeo, ringMat);
+            selectionRing.position.y = 0.005; // Slightly above floor
+            selectionRing.name = 'selectionRing';
+            selectionRing.visible = false; // Hidden by default
+            group.add(selectionRing);
+
             // Apply transforms
             const pos = obj.position || [0, 0, 0];
             const rot = obj.rotation || [0, 0, 0];
@@ -193,15 +212,26 @@ export function useSceneGraph(): UseSceneGraphResult {
 
         // Auto-select first item if single object
         if (itemsRef.current.length === 1) {
-            const firstKey = itemsRef.current[0].key;
-            selectedKeyRef.current = firstKey;
-            setSelectedKey(firstKey);
+            const firstItem = itemsRef.current[0];
+            selectedKeyRef.current = firstItem.key;
+            setSelectedKey(firstItem.key);
+            // Show selection ring
+            const ring = firstItem.group.getObjectByName('selectionRing');
+            if (ring) ring.visible = true;
         }
     }, []);
 
     const selectItem = useCallback((key: string | null) => {
         selectedKeyRef.current = key;
         setSelectedKey(key);
+
+        // Toggle selection ring visibility
+        itemsRef.current.forEach(item => {
+            const ring = item.group.getObjectByName('selectionRing');
+            if (ring) {
+                ring.visible = item.key === key;
+            }
+        });
     }, []);
 
     const deleteSelected = useCallback(() => {
