@@ -13,6 +13,7 @@ export type ARStage =
     | 'starting'    // Requesting XR session
     | 'placing'     // Hit-testing, showing reticle
     | 'active'      // Object placed, interaction enabled
+    | 'manipulating' // Active gesture in progress (drag/pinch)
     | 'error'       // Error occurred
     | 'unsupported'; // WebXR not supported
 

@@ -67,6 +67,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         selectedKeyRef.current = sceneGraph.selectedKey;
     }, [sceneGraph.selectedKey]);
 
+    // Handler for gesture manipulation state
+    const onManipulationChange = useCallback((isManipulating: boolean) => {
+        if (stage === 'active' || stage === 'manipulating') {
+            setStage(isManipulating ? 'manipulating' : 'active');
+        }
+    }, [stage]);
+
+    // Gestures
     // Gestures
     useGestures({
         overlayRef: gestureRef,
@@ -75,8 +83,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         selectedKeyRef,
         cameraRef,
         rendererRef,
-        isActive: stage === 'active' && placedRef.current,
+        isActive: (stage === 'active' || stage === 'manipulating') && placedRef.current,
         onSelect: sceneGraph.selectItem,
+        onManipulationChange,
     });
 
     // Loaded models cache
@@ -307,12 +316,23 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     const handleRestart = () => {
         setShowPostSessionUI(false);
-        setStage('ready');
+        setStage('placing'); // Directly to placing state, reticle will show
         startedAtRef.current = null;
         placedRef.current = false;
-        hasArStartedRef.current = false;
-        // Optionally auto-start? No, let user click "Start AR" again for safety/intent.
+
+        // Clean up existing items
+        sceneGraph.itemsRef.current.forEach((item: any) => {
+            anchorRef.current?.remove(item.group);
+        });
+        sceneGraph.itemsRef.current.length = 0; // Clear array
+        sceneGraph.selectItem(null);
+
+        if (anchorRef.current) {
+            anchorRef.current.visible = false;
+        }
     };
+
+
 
     // Lifecycle safety (Force exit on navigation/background)
     useEffect(() => {

@@ -16,6 +16,7 @@ interface UseGesturesOptions {
     rendererRef: React.RefObject<THREE.WebGLRenderer | null>;
     isActive: boolean;
     onSelect: (key: string | null) => void;
+    onManipulationChange?: (isManipulating: boolean) => void;
 }
 
 interface UseGesturesResult {
@@ -41,6 +42,7 @@ export function useGestures({
     rendererRef,
     isActive,
     onSelect,
+    onManipulationChange,
 }: UseGesturesOptions): UseGesturesResult {
     const gestureRef = useRef<GestureState>({ mode: 'none' });
     const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
@@ -141,6 +143,7 @@ export function useGestures({
 
                 const offset = item.group.position.clone().sub(local);
                 gestureRef.current = { mode: 'drag', pointerId: t.identifier, offsetLocal: offset };
+                if (onManipulationChange) onManipulationChange(true);
                 return;
             }
 
@@ -165,6 +168,7 @@ export function useGestures({
                     startUserScale: item.userScale,
                     startRotationY: item.group.rotation.y,
                 };
+                if (onManipulationChange) onManipulationChange(true);
             }
         };
 
@@ -250,10 +254,12 @@ export function useGestures({
 
         const endGesture = (e: TouchEvent) => {
             // Only reset gesture if ALL fingers are lifted.
-            // This prevents jank when switching from 2 fingers (pinch) to 0 (end)
-            // if one finger lifts slightly before the other.
             if (e.touches.length === 0) {
+                const wasManipulating = gestureRef.current.mode !== 'none';
                 gestureRef.current = { mode: 'none' };
+                if (wasManipulating && onManipulationChange) {
+                    onManipulationChange(false);
+                }
             }
         };
 
