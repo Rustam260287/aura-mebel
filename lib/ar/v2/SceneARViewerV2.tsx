@@ -189,19 +189,18 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // End session handler
     const endSession = useCallback(() => {
-        // 1. Guard: If XR never really started, don't try to end it or trigger post-flow
+        console.log('[SceneARViewerV2] endSession called', {
+            stage,
+            hasArStarted: hasArStartedRef.current,
+            placed: placedRef.current,
+            xrSession: !!xrSession.session,
+        });
+
+        // 1. CRITICAL GUARD: If XR never started, DO NOT trigger onClose with hasStarted=true
         if (!hasArStartedRef.current) {
-            console.warn('[SceneARViewerV2] endSession called before XR start');
-            // Check if we were just trying to start, if so, reset to ready or error
-            if (stage === 'starting') {
-                setStage('ready');
-            }
-            // If completely failed/unsupported, onClose might rely on caller to unmount,
-            // but we should just reset internal state if possible.
-            // If we are error state, we might want to close.
-            if (stage === 'error' || stage === 'unsupported') {
-                onClose(0, false);
-            }
+            console.warn('[SceneARViewerV2] endSession ignored — XR never started');
+            // Always pass hasStarted=false so ObjectDetail knows AR never happened
+            onClose(undefined, false);
             return;
         }
 
@@ -211,10 +210,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
         hitTest.cleanup();
         xrSession.endSession();
-        hasArStartedRef.current = false; // Reset flag so subsequent calls don't double-trigger
+        hasArStartedRef.current = false; // Reset flag
 
-        // 2. Logic: If object was placed, show "Soft Finale" (internal Post-AR)
-        // If nothing placed (user cancelled in 'placing'), exit immediately.
+        // 2. If object was placed, show "Soft Finale"
         if (placedRef.current) {
             trackJourneyEvent({
                 type: 'FINISH_AR',
@@ -222,10 +220,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 meta: { arSessionId: arSessionIdRef.current, durationSec: duration },
             });
             setShowPostSessionUI(true);
-            setStage('idle'); // Stop rendering AR loop, show overlay
+            setStage('idle');
         } else {
-            // Cancelled before placement
-            onClose(duration, true); // true because it DID start, just didn't result in value
+            // Cancelled before placement - still a real AR session
+            onClose(duration, true);
         }
     }, [hitTest, xrSession, sceneId, onClose, stage]);
 
@@ -248,8 +246,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     // Lifecycle safety (Force exit on navigation/background)
     useEffect(() => {
         const handleExit = () => {
-            // Only force exit if we are in a state that implies AR is active
-            // CRITICAL: Do NOT exit if stage is 'starting' because requestSession triggers visibility updates
+            // Only force exit if XR is ACTUALLY running (not just UI states)
+            // This prevents false exits during startup or other non-AR states
+            if (!hasArStartedRef.current) {
+                console.log('[SceneARViewerV2] Lifecycle event ignored — XR not active');
+                return;
+            }
+
             if (stage === 'active' || stage === 'placing') {
                 console.log('[SceneARViewerV2] Lifecycle exit triggered. Stage:', stage);
                 endSession();
@@ -257,15 +260,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         };
 
         window.addEventListener('popstate', handleExit);
-        window.addEventListener('visibilitychange', handleExit);
+        document.addEventListener('visibilitychange', handleExit);
         window.addEventListener('pagehide', handleExit);
 
         return () => {
             window.removeEventListener('popstate', handleExit);
-            window.removeEventListener('visibilitychange', handleExit);
+            document.removeEventListener('visibilitychange', handleExit);
             window.removeEventListener('pagehide', handleExit);
-            // Also ensure cleanup on unmount
-            handleExit();
         };
     }, [stage, endSession]);
 
@@ -360,6 +361,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
         } catch (e: any) {
             console.error('[SceneARViewerV2] startAR error:', e);
+            // XR failed to start - ensure flag is false
+            hasArStartedRef.current = false;
             setError(e?.message || 'Не удалось запустить AR');
             setStage('error');
         }

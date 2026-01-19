@@ -106,12 +106,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
 
   const closeAR = useCallback(
     (durationSec?: number, hasStarted?: boolean) => {
-      // Logic fix: Only go to POST_AR if AR actually started (WebXR session ran)
-      // Otherwise (user cancelled before start, or error), just close AR overlay.
+      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted });
 
-      const actuallyStarted = hasStarted || (durationSec && durationSec > 1);
-
-      if (actuallyStarted) {
+      // STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
+      // This prevents false POST_AR from any code path where XR never actually started
+      if (hasStarted === true) {
         setUiState('POST_AR');
       } else {
         setUiState('DEFAULT');
