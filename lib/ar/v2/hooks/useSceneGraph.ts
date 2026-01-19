@@ -114,24 +114,45 @@ export function useSceneGraph(): UseSceneGraphResult {
             });
             group.add(clone);
 
-            // Add Selection Ring (visual feedback)
-            // Size based on model bounding box
+            // Add Selection Footprint (rectangular outline based on XZ bounding box)
             const tempBbox = new THREE.Box3().setFromObject(clone);
             const tempSize = tempBbox.getSize(new THREE.Vector3());
-            const ringRadius = Math.max(tempSize.x, tempSize.z) * 0.6;
-            const ringGeo = new THREE.RingGeometry(ringRadius, ringRadius + 0.03, 32);
-            ringGeo.rotateX(-Math.PI / 2);
-            const ringMat = new THREE.MeshBasicMaterial({
+
+            // Footprint dimensions with padding
+            const footprintWidth = tempSize.x * 1.1;
+            const footprintDepth = tempSize.z * 1.1;
+            const cornerRadius = Math.min(footprintWidth, footprintDepth) * 0.08;
+
+            // Create rounded rectangle shape
+            const shape = new THREE.Shape();
+            const w = footprintWidth / 2;
+            const d = footprintDepth / 2;
+            const r = cornerRadius;
+
+            shape.moveTo(-w + r, -d);
+            shape.lineTo(w - r, -d);
+            shape.quadraticCurveTo(w, -d, w, -d + r);
+            shape.lineTo(w, d - r);
+            shape.quadraticCurveTo(w, d, w - r, d);
+            shape.lineTo(-w + r, d);
+            shape.quadraticCurveTo(-w, d, -w, d - r);
+            shape.lineTo(-w, -d + r);
+            shape.quadraticCurveTo(-w, -d, -w + r, -d);
+
+            // Create outline only (not filled)
+            const points = shape.getPoints(32);
+            const outlineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const outlineMat = new THREE.LineBasicMaterial({
                 color: 0xFFF8F0, // Warm white
-                opacity: 0.7,
                 transparent: true,
-                side: THREE.DoubleSide,
+                opacity: 0.8,
             });
-            const selectionRing = new THREE.Mesh(ringGeo, ringMat);
-            selectionRing.position.y = 0.005; // Slightly above floor
-            selectionRing.name = 'selectionRing';
-            selectionRing.visible = false; // Hidden by default
-            group.add(selectionRing);
+            const selectionOutline = new THREE.LineLoop(outlineGeo, outlineMat);
+            selectionOutline.rotation.x = -Math.PI / 2;
+            selectionOutline.position.y = 0.005; // Slightly above floor
+            selectionOutline.name = 'selectionRing'; // Keep name for compatibility
+            selectionOutline.visible = false;
+            group.add(selectionOutline);
 
             // Apply transforms
             const pos = obj.position || [0, 0, 0];
