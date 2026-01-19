@@ -64,6 +64,8 @@ export type JourneyMeta = {
     browser: string;
     timestamp: string;
   };
+  source?: string;
+  shareId?: string;
 };
 
 export type JourneyEventInput = {
