@@ -131,7 +131,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         if (!container) return;
 
         // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         renderer.setPixelRatio(Math.min(MAX_PIXEL_RATIO, window.devicePixelRatio || 1));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setClearColor(0x000000, 0);
@@ -293,14 +293,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             ? (Date.now() - startedAtRef.current) / 1000
             : 0;
 
-        hitTest.cleanup();
-        xrSession.endSession();
-        hasArStartedRef.current = false; // Reset flag
-
-        // 2. If object was placed, capture snapshot and show Bridge Screen
+        // 2. Capture snapshot BEFORE ending session
+        let finalSnapshotUrl: string | null = null;
         if (placedRef.current) {
-            // v1.1: Capture canvas snapshot before cleanup
-            let finalSnapshotUrl: string | null = null;
             const renderer = rendererRef.current;
             if (renderer) {
                 try {
@@ -313,7 +308,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     console.warn('[SceneARViewerV2] Failed to capture snapshot:', err);
                 }
             }
+        }
 
+        hitTest.cleanup();
+        xrSession.endSession();
+        hasArStartedRef.current = false; // Reset flag
+
+        if (placedRef.current) {
             trackJourneyEvent({
                 type: 'FINISH_AR',
                 objectId: sceneId,

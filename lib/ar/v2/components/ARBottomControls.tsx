@@ -39,16 +39,15 @@ export const ARBottomControls: React.FC<ARBottomControlsProps> = ({
                 </button>
             </div>
 
-            {/* Right: Screenshot / Capture */}
+            {/* Right: Done / Finish */}
             <div className={`pointer-events-auto transition-transform active:scale-95 duration-200 ${isVisible ? '' : 'pointer-events-none'}`}>
                 <button
                     onClick={onScreenshot}
                     className="w-12 h-12 bg-white/75 backdrop-blur-xl rounded-full flex items-center justify-center text-black/80 shadow-[0_6px_24px_rgba(0,0,0,0.12)] hover:bg-white/90 transition-colors"
-                    aria-label="Take Snapshot"
+                    aria-label="Готово"
                 >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                        <circle cx="12" cy="13" r="4" />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                 </button>
             </div>

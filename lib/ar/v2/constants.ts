@@ -26,4 +26,4 @@ export const MAX_PIXEL_RATIO = 2;
 // Hit-test timing
 export const HIT_TEST_TIMEOUT_MS = 3000;
 export const FALLBACK_PLACEMENT_DISTANCE_M = 1.5;
-export const MIN_PLACEMENT_DISTANCE_M = 1.2;
+export const MIN_PLACEMENT_DISTANCE_M = 0.8;

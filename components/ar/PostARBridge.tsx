@@ -122,8 +122,8 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-y-auto max-h-[90vh] flex flex-col">
                 {/* Hero: Snapshot */}
                 <div className="relative aspect-[4/3] bg-stone-100">
                     {snapshotUrl ? (
@@ -138,17 +138,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                         </div>
                     )}
 
-                    {/* Close X (Top Right - Optional backup) */}
-                    <button
-                        onClick={onClose}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-soft-black hover:bg-white transition-colors"
-                        aria-label="Закрыть"
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
+
                 </div>
 
                 {/* Content */}
