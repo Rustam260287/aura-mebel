@@ -779,6 +779,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       </section>
 
       {/* Top overlay */}
+      {/* Top overlay */}
       <div
         className={[
           'absolute inset-x-0 top-0 z-[60] px-4 pt-[calc(env(safe-area-inset-top)+14px)]',
@@ -786,6 +787,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           uiState === 'IN_AR' || isAROpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto',
         ].join(' ')}
       >
+        {/* ... (Existing Top Bar Content) ... */}
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
@@ -833,50 +835,41 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         </div>
       </div>
 
-      {/* Bottom overlay */}
+      {/* Post-AR Modal (Root Level to avoid Transform stacking context issues) */}
+      {uiState === 'POST_AR' && (
+        <PostARBridge
+          objectId={object.id}
+          objectName={object.name}
+          snapshotUrl={postArSnapshot || undefined}
+          onClose={() => {
+            setUiState('DEFAULT');
+            setPostArSnapshot(null);
+          }}
+          onRestart={() => {
+            setUiState('DEFAULT');
+            setShowSceneARV2(false);
+            setPostArSnapshot(null);
+
+            // 🔒 Dirty Restart Protection: 1 frame gap ensure clean WebXR remount
+            requestAnimationFrame(() => {
+              handleOpenAr();
+            });
+          }}
+        />
+      )}
+
+      {/* Bottom overlay (Regular Controls) */}
       <div
         className={[
           'absolute inset-x-0 bottom-0 z-[60] px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4',
           'transition-[opacity,transform] duration-300 ease-out will-change-transform',
-          uiState === 'IN_AR' || isAROpen
+          uiState === 'IN_AR' || isAROpen || uiState === 'POST_AR' // Hide in Post-AR too
             ? 'opacity-0 translate-y-1 pointer-events-none'
             : 'opacity-100 translate-y-0 pointer-events-auto',
         ].join(' ')}
       >
         <div className="mx-auto w-full max-w-md">
-          {uiState === 'POST_AR' && !isObjectSaved && (
-            <div
-              className={[
-                'pointer-events-none mb-2 px-3 text-center text-xs text-white/55',
-                'transition-opacity duration-300 ease-out',
-                postArHintVisible ? 'opacity-100' : 'opacity-0',
-              ].join(' ')}
-            >
-              Можно сохранить, чтобы вернуться позже.
-            </div>
-          )}
-
-          {uiState === 'POST_AR' ? (
-            <PostARBridge
-              objectId={object.id}
-              objectName={object.name}
-              snapshotUrl={postArSnapshot || undefined}
-              onClose={() => {
-                setUiState('DEFAULT');
-                setPostArSnapshot(null);
-              }}
-              onRestart={() => {
-                setUiState('DEFAULT');
-                setShowSceneARV2(false);
-                setPostArSnapshot(null);
-
-                // 🔒 Dirty Restart Protection: 1 frame gap ensure clean WebXR remount
-                requestAnimationFrame(() => {
-                  handleOpenAr();
-                });
-              }}
-            />
-          ) : (hasGlb || hasUsdz) && (
+          {(hasGlb || hasUsdz) && (
             <Button
               onClick={handleOpenArTap}
               onTouchEnd={handleOpenArTap as any}
@@ -888,44 +881,50 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 'transition-all duration-300 ease-out active:scale-[0.98]',
               ].join(' ')}
             >
-              Поместить в интерьер
+              <div className="flex items-center gap-3">
+                <CubeIcon className="w-6 h-6 text-soft-black" />
+                <span className="text-[17px] font-medium tracking-tight">Поместить в интерьер</span>
+              </div>
             </Button>
           )}
         </div>
       </div>
 
+
       {/* AR overlay: Strict Separation V1 / V2 */}
-      {(object.modelGlbUrl || object.modelUsdzUrl) && (
-        <>
-          {shouldUseV2 ? (
-            /* V2: Three.js + WebXR (Android) */
-            showSceneARV2 && object.modelGlbUrl && (
-              <SceneARViewerV2
-                sceneId={object.id}
-                sceneTitle={object.name}
-                objects={[{ objectId: object.id, name: object.name, modelGlbUrl: object.modelGlbUrl }]}
-                onClose={(duration, hasStarted) => {
-                  setShowSceneARV2(false);
-                  closeAR(duration, hasStarted);
-                }}
+      {
+        (object.modelGlbUrl || object.modelUsdzUrl) && (
+          <>
+            {shouldUseV2 ? (
+              /* V2: Three.js + WebXR (Android) */
+              showSceneARV2 && object.modelGlbUrl && (
+                <SceneARViewerV2
+                  sceneId={object.id}
+                  sceneTitle={object.name}
+                  objects={[{ objectId: object.id, name: object.name, modelGlbUrl: object.modelGlbUrl }]}
+                  onClose={(duration, hasStarted) => {
+                    setShowSceneARV2(false);
+                    closeAR(duration, hasStarted);
+                  }}
+                />
+              )
+            ) : (
+              /* V1 + iOS: model-viewer / Quick Look */
+              <ARViewer
+                ref={arViewerRef}
+                open={isAROpen}
+                src={object.modelGlbUrl}
+                iosSrc={object.modelUsdzUrl}
+                alt={object.name}
+                poster={object.imageUrls?.[0]}
+                objectId={object.id}
+                onClose={closeAR}
               />
-            )
-          ) : (
-            /* V1 + iOS: model-viewer / Quick Look */
-            <ARViewer
-              ref={arViewerRef}
-              open={isAROpen}
-              src={object.modelGlbUrl}
-              iosSrc={object.modelUsdzUrl}
-              alt={object.name}
-              poster={object.imageUrls?.[0]}
-              objectId={object.id}
-              onClose={closeAR}
-            />
-          )}
-        </>
-      )}
-    </div>
+            )}
+          </>
+        )
+      }
+    </div >
   );
 };
 
