@@ -875,16 +875,6 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                   handleOpenAr();
                 });
               }}
-              onSendToManager={() => {
-                emitMetaEvent({
-                  type: 'REQUEST_MANAGER_CONTACT',
-                  payload: {
-                    objectId: object.id,
-                    name: object.name,
-                    snapshotUrl: postArSnapshot
-                  }
-                });
-              }}
             />
           ) : (hasGlb || hasUsdz) && (
             <Button

@@ -627,8 +627,6 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         stage={stage}
                         onClose={() => endSession()}
                         onScreenshot={() => endSession()}
-                        onDelete={sceneGraph.deleteSelected}
-                        hasSelection={!!sceneGraph.selectedKey}
                     />
 
                     {/* Quiet UX: Sticky Onboarding Hint (One-Time) */}

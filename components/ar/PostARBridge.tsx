@@ -138,7 +138,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                         </div>
                     )}
 
-                    {/* Close X */}
+                    {/* Close X (Top Right - Optional backup) */}
                     <button
                         onClick={onClose}
                         className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-soft-black hover:bg-white transition-colors"
@@ -155,40 +155,43 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                 <div className="p-6 text-center">
                     {state === 'saved' && (
                         <>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-600">
-                                    <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                <span className="text-lg font-semibold text-soft-black">Этот вариант сохранён</span>
-                            </div>
+                            <h2 className="text-lg font-semibold text-soft-black mb-1 leading-tight">
+                                Предмет сохранён
+                            </h2>
                             <p className="text-sm text-muted-gray mb-6">
-                                Вы можете вернуться к нему позже
+                                Сохраните результат или примерьте снова
                             </p>
 
-                            {/* Primary CTA: Preserve the moment, no pressure */}
-                            <button
-                                onClick={onClose}
-                                disabled={isCreating}
-                                className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors disabled:opacity-50"
-                            >
-                                Сохранить и вернуться
-                            </button>
-
-                            {/* Secondary: Contact is optional, visually quieter */}
+                            {/* Primary: Share / Show to loved ones */}
                             <button
                                 onClick={handleSendToManager}
                                 disabled={isCreating}
-                                className="w-full mt-3 text-soft-black/70 py-3 rounded-xl text-sm hover:text-soft-black transition-colors"
+                                className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
-                                Отправить менеджеру →
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                                Показать близким
                             </button>
 
-                            {/* Tertiary: Try again */}
+                            {/* Secondary: Try Again */}
                             <button
                                 onClick={onRestart}
-                                className="w-full mt-1 text-muted-gray py-2 text-xs hover:text-soft-black/60 transition-colors"
+                                className="w-full mt-3 bg-stone-beige/10 text-soft-black py-3 rounded-xl font-medium hover:bg-stone-beige/20 transition-colors"
                             >
                                 Примерить ещё раз
+                            </button>
+
+                            {/* Tertiary: Back to Object */}
+                            <button
+                                onClick={onClose}
+                                className="w-full mt-2 text-muted-gray py-2 text-xs hover:text-soft-black/60 transition-colors"
+                            >
+                                Вернуться к объекту
                             </button>
                         </>
                     )}
@@ -196,7 +199,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                     {state === 'share_options' && (
                         <>
                             <div className="text-lg font-semibold text-soft-black mb-2">
-                                Как связаться?
+                                Выберите способ
                             </div>
                             <HandoffOptions
                                 contacts={{ whatsapp: 'any', telegram: 'any' }} // Will use generic share
@@ -212,17 +215,17 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-600">
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
-                                <span className="text-lg font-semibold text-soft-black">Отправлено</span>
+                                <span className="text-lg font-semibold text-soft-black">Ссылка создана</span>
                             </div>
                             <p className="text-sm text-muted-gray mb-6">
-                                Менеджер свяжется с вами
+                                Теперь вы можете отправить её близким
                             </p>
 
                             <button
                                 onClick={onClose}
                                 className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors"
                             >
-                                Закрыть
+                                Отлично, спасибо
                             </button>
                         </>
                     )}
