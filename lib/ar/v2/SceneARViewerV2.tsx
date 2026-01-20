@@ -299,10 +299,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             const renderer = rendererRef.current;
             if (renderer) {
                 try {
-                    // Force one more render to ensure current frame
-                    if (sceneRef.current && cameraRef.current) {
-                        renderer.render(sceneRef.current, cameraRef.current);
-                    }
+                    // Reliance on preserveDrawingBuffer: true to keep the last frame.
+                    // Do NOT manually render here as it might clear the buffer or target the wrong framebuffer in XR.
                     finalSnapshotUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
 
                     // Validate snapshot (check if it's too small or empty)
