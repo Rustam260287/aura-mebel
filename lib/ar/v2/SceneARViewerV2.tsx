@@ -304,6 +304,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         renderer.render(sceneRef.current, cameraRef.current);
                     }
                     finalSnapshotUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
+
+                    // Validate snapshot (check if it's too small or empty)
+                    if (finalSnapshotUrl.length < 1000) {
+                        console.warn('[SceneARViewerV2] Snapshot seemed empty, length:', finalSnapshotUrl.length);
+                        finalSnapshotUrl = null;
+                    }
                 } catch (err) {
                     console.warn('[SceneARViewerV2] Failed to capture snapshot:', err);
                 }
