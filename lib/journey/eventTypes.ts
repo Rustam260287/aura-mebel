@@ -23,6 +23,7 @@ export const JOURNEY_EVENT_TYPES = [
   'AR_ONBOARDING_SHOWN',
   'AR_GESTURE_HINT_SHOWN',
   'AR_FIRST_INTERACTION',
+  'AR_FALLBACK_SCENE_VIEWER',
 ] as const;
 
 export type JourneyEventType = (typeof JOURNEY_EVENT_TYPES)[number];

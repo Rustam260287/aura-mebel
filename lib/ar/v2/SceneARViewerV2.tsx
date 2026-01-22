@@ -23,6 +23,7 @@ import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLA
 import type { ARStage, SceneARViewerV2Props } from './types';
 import { ARCoachingOverlay } from './components/ARCoachingOverlay';
 import { ARBottomControls } from './components/ARBottomControls';
+import { openSceneViewer, shouldUseSceneViewerFallback } from './utils/sceneViewer';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -579,6 +580,34 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             hasArStartedRef.current = false;
             isStartingRef.current = false;
 
+            // =========================================================
+            // AUTOMATIC SCENE VIEWER FALLBACK
+            // WebXR failed, but Scene Viewer might work (native ARCore)
+            // =========================================================
+            const glbUrl = objects[0]?.modelGlbUrl;
+
+            if (shouldUseSceneViewerFallback() && glbUrl) {
+                console.log('[AR] WebXR failed, redirecting to Scene Viewer...');
+
+                trackJourneyEvent({
+                    type: 'AR_FALLBACK_SCENE_VIEWER',
+                    objectId: sceneId,
+                    meta: { arSessionId: arSessionIdRef.current, reason: e?.message },
+                });
+
+                const opened = openSceneViewer({
+                    glbUrl,
+                    title: sceneTitle || 'AR Preview',
+                });
+
+                if (opened) {
+                    // Scene Viewer will take over, close this component
+                    onClose(undefined, false);
+                    return;
+                }
+            }
+
+            // Scene Viewer also failed or not available — show error
             setError(e?.message || 'Не удалось запустить AR');
             setStage('error');
         }
