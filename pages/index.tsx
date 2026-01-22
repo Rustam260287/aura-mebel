@@ -59,7 +59,10 @@ export default function HomePage({ featuredObjects, error }: HomePageProps) {
       <main className="flex-grow bg-transparent transition-colors duration-300">
 
         {/* 1. Hero Block */}
-        <Hero onNavigate={handleNavigate} />
+        <Hero
+          onNavigate={handleNavigate}
+          heroImageUrl={featuredObjects?.[0]?.imageUrls?.[0]}
+        />
 
         {/* 2. Scenarios */}
         <div ref={scenariosRef} className="scroll-mt-24 pt-12 md:pt-24">
