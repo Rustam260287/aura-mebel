@@ -116,16 +116,13 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [emitEvent, object.id, object.name, object.objectType]);
 
   const closeAR = useCallback(
-    (durationSec?: number, hasStarted?: boolean, snapshotUrl?: string | null) => {
-      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted, hasSnapshot: !!snapshotUrl });
+    (durationSec?: number, hasStarted?: boolean) => {
+      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted });
 
       // STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
       // This prevents false POST_AR from any code path where XR never actually started
       if (hasStarted === true) {
         setUiState('POST_AR');
-        if (snapshotUrl) {
-          setPostArSnapshot(snapshotUrl);
-        }
       } else {
         setUiState('DEFAULT');
       }

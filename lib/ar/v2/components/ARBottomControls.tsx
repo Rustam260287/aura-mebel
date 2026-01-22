@@ -4,7 +4,6 @@ import type { ARStage } from '../types';
 interface ARBottomControlsProps {
     stage: ARStage;
     onClose: () => void;
-    onClose: () => void;
 }
 
 export const ARBottomControls: React.FC<ARBottomControlsProps> = ({

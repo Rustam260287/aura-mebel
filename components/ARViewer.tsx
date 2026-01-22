@@ -58,7 +58,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     const { addToast } = useToast();
     const [arSessionId, setArSessionId] = useState<string | null>(null);
     const arSessionIdRef = useRef<string | null>(null);
-    const [isCapturing, setIsCapturing] = useState(false);
+
     const arModes = isIOS ? 'quick-look' : 'webxr';
 
     useEffect(() => {
@@ -386,7 +386,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
             ar-scale="auto"
             style={{ touchAction: 'pan-y' }}
             className="w-full h-full"
-            preserve-drawing-buffer
+
           >
             {/* Share button - visible when viewer is open */}
 
