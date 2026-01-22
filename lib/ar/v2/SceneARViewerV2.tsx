@@ -138,7 +138,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         renderer.setPixelRatio(Math.min(MAX_PIXEL_RATIO, window.devicePixelRatio || 1));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setClearColor(0x000000, 0);
-        renderer.xr.enabled = true;
+        renderer.xr.enabled = false; // CRITICAL: Start disabled, enable after successful session
         // Preserve drawing buffer for screenshots if needed (perf cost, but needed for 'Capture')
         // Actually, for now let's keep it simple. If we want high-perf, we skip it.
         // UIA says "Capture" -> "Freeze frame".
@@ -297,7 +297,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             ? (Date.now() - startedAtRef.current) / 1000
             : 0;
 
-        // 2. No Snapshot - Simply close session
+        // 2. CRITICAL: Stop animation loop BEFORE ending session
+        const renderer = rendererRef.current;
+        if (renderer) {
+            renderer.setAnimationLoop(null);
+        }
+
+        // 3. Cleanup resources
         hitTest.cleanup();
         xrSession.endSession();
         hasArStartedRef.current = false; // Reset flag
@@ -387,13 +393,19 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
             }, 2500);
 
-            const session = await xrSession.startSession(renderer, overlay);
+            // CRITICAL: Pass overlay only if DOM overlay is actually supported
+            // Passing overlay when not supported can crash requestSession on some Android
+            const safeOverlay = xrSession.hasDomOverlay ? overlay : undefined;
+            const session = await xrSession.startSession(renderer, safeOverlay!);
 
             // Clear timeout on success
             if (xrStartTimeoutRef.current) {
                 clearTimeout(xrStartTimeoutRef.current);
                 xrStartTimeoutRef.current = null;
             }
+
+            // CRITICAL: Enable XR on renderer AFTER successful session start
+            renderer.xr.enabled = true;
 
             console.log('[AR] Session started successfully');
             startedAtRef.current = Date.now();
@@ -408,7 +420,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             onSessionStart?.();
 
-            await hitTest.setupHitTest(session);
+            // Setup hit-test (OPTIONAL — graceful fallback if not available)
+            const hitTestAvailable = await hitTest.setupHitTest(session);
+            if (!hitTestAvailable) {
+                console.log('[AR] Hit-test not available — will use fallback placement');
+                setUseFallbackPlacement(true);
+            }
 
             placedRef.current = false;
             anchor.visible = false;
@@ -469,11 +486,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 setStage('active');
                 setUseFallbackPlacement(false);
 
-                // Haptic Feedback
-
-                // Haptic Feedback
-                if (navigator.vibrate) {
-                    navigator.vibrate(20); // Short sharp tick
+                // Haptic Feedback (with safe guard for Android browsers)
+                if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+                    try {
+                        navigator.vibrate(20); // Short sharp tick
+                    } catch {
+                        // Ignore vibrate errors on some Android browsers
+                    }
                 }
             };
 
@@ -498,6 +517,11 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     if (hasHit !== reticleVisibleRef.current) {
                         reticleVisibleRef.current = hasHit;
                         setReticleVisible(hasHit);
+
+                        // CRITICAL: Reset matrixAutoUpdate when switching modes
+                        if (hasHit) {
+                            reticle.matrixAutoUpdate = false; // hit-test controls matrix
+                        }
                     }
 
                     // Check for fallback timeout
@@ -510,7 +534,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                             reticle.position.copy(fallbackPos);
                             reticle.rotation.x = -Math.PI / 2;
                             reticle.visible = true;
-                            reticle.matrixAutoUpdate = true;
+                            reticle.matrixAutoUpdate = true; // fallback controls position directly
                         }
                     }
                 }
