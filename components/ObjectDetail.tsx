@@ -38,7 +38,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [showSceneARV2, setShowSceneARV2] = useState(false);
   const [inline3dState, setInline3dState] = useState<Inline3DState>('idle');
   // v1.1: AR Snapshot State
-  const [postArSnapshot, setPostArSnapshot] = useState<string | null>(null);
+
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [postArHintVisible, setPostArHintVisible] = useState(false);
@@ -840,15 +840,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         <PostARBridge
           objectId={object.id}
           objectName={object.name}
-          snapshotUrl={postArSnapshot || undefined}
+
           onClose={() => {
             setUiState('DEFAULT');
-            setPostArSnapshot(null);
+
           }}
           onRestart={() => {
             setUiState('DEFAULT');
             setShowSceneARV2(false);
-            setPostArSnapshot(null);
+
 
             // 🔒 Dirty Restart Protection: 1 frame gap ensure clean WebXR remount
             requestAnimationFrame(() => {

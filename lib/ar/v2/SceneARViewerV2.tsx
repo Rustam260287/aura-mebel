@@ -131,7 +131,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         if (!container) return;
 
         // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(MAX_PIXEL_RATIO, window.devicePixelRatio || 1));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setClearColor(0x000000, 0);
@@ -293,27 +293,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             ? (Date.now() - startedAtRef.current) / 1000
             : 0;
 
-        // 2. Capture snapshot BEFORE ending session
-        let finalSnapshotUrl: string | null = null;
-        if (placedRef.current) {
-            const renderer = rendererRef.current;
-            if (renderer) {
-                try {
-                    // Reliance on preserveDrawingBuffer: true to keep the last frame.
-                    // Do NOT manually render here as it might clear the buffer or target the wrong framebuffer in XR.
-                    finalSnapshotUrl = renderer.domElement.toDataURL('image/jpeg', 0.85);
-
-                    // Validate snapshot (check if it's too small or empty)
-                    if (finalSnapshotUrl.length < 1000) {
-                        console.warn('[SceneARViewerV2] Snapshot seemed empty, length:', finalSnapshotUrl.length);
-                        finalSnapshotUrl = null;
-                    }
-                } catch (err) {
-                    console.warn('[SceneARViewerV2] Failed to capture snapshot:', err);
-                }
-            }
-        }
-
+        // 2. No Snapshot - Simply close session
         hitTest.cleanup();
         xrSession.endSession();
         hasArStartedRef.current = false; // Reset flag
@@ -325,8 +305,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 meta: { arSessionId: arSessionIdRef.current, durationSec: duration },
             });
 
-            // Pass snapshot up to parent and close immediately
-            onClose(duration, true, finalSnapshotUrl);
+            // Clean exit without snapshot
+            onClose(duration, true);
         } else {
             // Cancelled before placement - still a real AR session
             onClose(duration, true);
@@ -631,7 +611,6 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     <ARBottomControls
                         stage={stage}
                         onClose={() => endSession()}
-                        onScreenshot={() => endSession()}
                     />
 
                     {/* Quiet UX: Sticky Onboarding Hint (One-Time) */}

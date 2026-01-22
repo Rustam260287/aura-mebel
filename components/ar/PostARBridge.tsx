@@ -8,11 +8,11 @@ import { HandoffOptions } from '../Assistant/Handoff/HandoffOptions';
 interface PostARBridgeProps {
     objectId: string;
     objectName?: string;
-    snapshotUrl?: string; // Canvas capture or fallback image
-    arSessionId?: string; // v1.1: Link to AR session
+    // v1.1: Snapshot removed
+    arSessionId?: string; // Link to AR session
     onClose: () => void;
     onRestart: () => void;
-    onSendToManager?: () => void; // v1.1: Override for custom logic (e.g. Agent Chat)
+    onSendToManager?: () => void;
 }
 
 type BridgeState = 'saved' | 'share_options' | 'sent';
@@ -20,7 +20,6 @@ type BridgeState = 'saved' | 'share_options' | 'sent';
 export const PostARBridge: React.FC<PostARBridgeProps> = ({
     objectId,
     objectName,
-    snapshotUrl,
     arSessionId,
     onClose,
     onRestart,
@@ -42,8 +41,8 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                     body: JSON.stringify({
                         visitorId,
                         objectId,
-                        snapshotUrl,
-                        arSessionId, // v1.1
+                        // snapshotUrl removed
+                        arSessionId,
                         source: 'AR',
                     }),
                 });
@@ -65,7 +64,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
         };
 
         createHandoff();
-    }, [objectId, snapshotUrl]);
+    }, [objectId, arSessionId]);
 
     const handleSendToManager = () => {
         if (onSendToManager) {
@@ -123,103 +122,87 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
 
     return (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-y-auto max-h-[90vh] flex flex-col">
-                {/* Hero: Snapshot */}
-                <div className="relative aspect-[4/3] bg-stone-100">
-                    {snapshotUrl ? (
-                        <img
-                            src={snapshotUrl}
-                            alt="AR Scene"
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-gray text-sm">
-                            Ваш вариант
+            {/* Height auto, centered */}
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+                {state === 'saved' && (
+                    <>
+                        {/* No Image, just Text */}
+                        <h2 className="text-2xl font-bold text-soft-black mb-2 leading-tight">
+                            Готово
+                        </h2>
+                        <p className="text-base text-muted-gray mb-8">
+                            Вы можете показать этот вариант близким или примерить ещё раз
+                        </p>
+
+                        {/* Primary: Share / Show to loved ones */}
+                        <button
+                            onClick={handleSendToManager}
+                            disabled={isCreating}
+                            className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                            Показать близким
+                        </button>
+
+                        {/* Secondary: Try Again */}
+                        <button
+                            onClick={onRestart}
+                            className="w-full mt-3 bg-stone-beige/10 text-soft-black py-4 rounded-xl font-medium hover:bg-stone-beige/20 transition-colors"
+                        >
+                            Примерить ещё раз
+                        </button>
+
+                        {/* Tertiary: Back to Object */}
+                        <button
+                            onClick={onClose}
+                            className="w-full mt-4 text-muted-gray py-2 text-sm hover:text-soft-black/60 transition-colors"
+                        >
+                            Вернуться к объекту
+                        </button>
+                    </>
+                )}
+
+                {state === 'share_options' && (
+                    <>
+                        <div className="text-lg font-semibold text-soft-black mb-4">
+                            Выберите способ
                         </div>
-                    )}
+                        <HandoffOptions
+                            contacts={{ whatsapp: 'any', telegram: 'any' }}
+                            onSelect={handleChannelSelect}
+                            onCancel={handleCancel}
+                        />
+                    </>
+                )}
 
-
-                </div>
-
-                {/* Content */}
-                <div className="p-6 text-center">
-                    {state === 'saved' && (
-                        <>
-                            <h2 className="text-lg font-semibold text-soft-black mb-1 leading-tight">
-                                Предмет сохранён
-                            </h2>
-                            <p className="text-sm text-muted-gray mb-6">
-                                Сохраните результат или примерьте снова
-                            </p>
-
-                            {/* Primary: Share / Show to loved ones */}
-                            <button
-                                onClick={handleSendToManager}
-                                disabled={isCreating}
-                                className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="18" cy="5" r="3"></circle>
-                                    <circle cx="6" cy="12" r="3"></circle>
-                                    <circle cx="18" cy="19" r="3"></circle>
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                                </svg>
-                                Показать близким
-                            </button>
-
-                            {/* Secondary: Try Again */}
-                            <button
-                                onClick={onRestart}
-                                className="w-full mt-3 bg-stone-beige/10 text-soft-black py-3 rounded-xl font-medium hover:bg-stone-beige/20 transition-colors"
-                            >
-                                Примерить ещё раз
-                            </button>
-
-                            {/* Tertiary: Back to Object */}
-                            <button
-                                onClick={onClose}
-                                className="w-full mt-2 text-muted-gray py-2 text-xs hover:text-soft-black/60 transition-colors"
-                            >
-                                Вернуться к объекту
-                            </button>
-                        </>
-                    )}
-
-                    {state === 'share_options' && (
-                        <>
-                            <div className="text-lg font-semibold text-soft-black mb-2">
-                                Выберите способ
-                            </div>
-                            <HandoffOptions
-                                contacts={{ whatsapp: 'any', telegram: 'any' }} // Will use generic share
-                                onSelect={handleChannelSelect}
-                                onCancel={handleCancel}
-                            />
-                        </>
-                    )}
-
-                    {state === 'sent' && (
-                        <>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-600">
+                {state === 'sent' && (
+                    <>
+                        <div className="flex flex-col items-center justify-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
-                                <span className="text-lg font-semibold text-soft-black">Ссылка создана</span>
                             </div>
-                            <p className="text-sm text-muted-gray mb-6">
-                                Теперь вы можете отправить её близким
-                            </p>
+                            <span className="text-xl font-bold text-soft-black">Ссылка создана</span>
+                        </div>
+                        <p className="text-base text-muted-gray mb-8">
+                            Теперь вы можете отправить её близким
+                        </p>
 
-                            <button
-                                onClick={onClose}
-                                className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors"
-                            >
-                                Отлично, спасибо
-                            </button>
-                        </>
-                    )}
-                </div>
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-brand-brown text-white py-4 rounded-xl font-medium shadow-lg hover:bg-brand-charcoal transition-colors"
+                        >
+                            Отлично, спасибо
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );

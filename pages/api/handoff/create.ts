@@ -5,7 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 interface CreateHandoffBody {
     visitorId: string;
     objectId: string;
-    snapshotUrl?: string;
+
     arSessionId?: string; // v1.1: Link to AR session
     source?: 'AR' | 'SHARE';
 }
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const handoffData = {
             visitorId: body.visitorId,
             objectId: body.objectId,
-            snapshotUrl: body.snapshotUrl || null,
+
             arSessionId: body.arSessionId || null, // v1.1
             source: body.source || 'AR',
             status: 'saved',
