@@ -119,7 +119,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     (durationSec?: number, hasStarted?: boolean) => {
       console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted });
 
-      // STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
+      // 1. Synchronous state reset (order matters!)
+      setShowSceneARV2(false);
+      setIsAROpen(false);
+
+      // 2. STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
       // This prevents false POST_AR from any code path where XR never actually started
       if (hasStarted === true) {
         setUiState('POST_AR');
@@ -127,10 +131,18 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         setUiState('DEFAULT');
       }
 
-      setShowSceneARV2(false);
-      setIsAROpen(false);
-
+      // 3. Emit analytics
       emitEvent({ type: 'EXIT_AR', durationSec });
+
+      // 4. Dev assertion: Ensure no AR canvas remains
+      if (process.env.NODE_ENV === 'development') {
+        requestAnimationFrame(() => {
+          const leftoverCanvas = document.querySelector('canvas[data-ar]');
+          if (leftoverCanvas) {
+            console.error('[ObjectDetail] WARNING: AR canvas not cleaned up!', leftoverCanvas);
+          }
+        });
+      }
     },
     [emitEvent],
   );

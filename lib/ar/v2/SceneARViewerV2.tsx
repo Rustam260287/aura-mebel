@@ -47,11 +47,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const placedRef = useRef(false);
     const startedAtRef = useRef<number | null>(null);
     const hasArStartedRef = useRef(false);
+    const isStartingRef = useRef(false); // Single-entry protection
+    const xrStartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const arSessionIdRef = useRef(createArSessionId());
 
     // State
     const [stage, setStage] = useState<ARStage>('idle');
     const [error, setError] = useState<string | null>(null);
+    const [startupError, setStartupError] = useState<string | null>(null); // Separate startup error
 
     // Quiet UX: One-time hints
     const [showOnboardingHint, setShowOnboardingHint] = useState(false);
@@ -145,6 +148,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         renderer.domElement.style.display = 'block';
         renderer.domElement.style.touchAction = 'none';
         renderer.domElement.style.pointerEvents = 'none';
+        renderer.domElement.setAttribute('data-ar', 'true'); // For debugging cleanup
         container.appendChild(renderer.domElement);
         rendererRef.current = renderer;
 
@@ -318,15 +322,20 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     // Lifecycle safety (Force exit on navigation/background)
     useEffect(() => {
         const handleExit = () => {
-            // Only force exit if XR is ACTUALLY running (not just UI states)
-            // This prevents false exits during startup or other non-AR states
+            // CRITICAL: Block lifecycle exits during startup
+            if (isStartingRef.current) {
+                console.log('[AR] Lifecycle event ignored — XR is starting');
+                return;
+            }
+
+            // Only force exit if XR is ACTUALLY running
             if (!hasArStartedRef.current) {
-                console.log('[SceneARViewerV2] Lifecycle event ignored — XR not active');
+                console.log('[AR] Lifecycle event ignored — XR not active');
                 return;
             }
 
             if (stage === 'active' || stage === 'placing') {
-                console.log('[SceneARViewerV2] Lifecycle exit triggered. Stage:', stage);
+                console.log('[AR] Lifecycle exit triggered. Stage:', stage);
                 endSession();
             }
         };
@@ -344,8 +353,14 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Start AR session
     const startAR = useCallback(async () => {
-        console.log('[SceneARViewerV2] startAR called. Stage:', stage);
-        if (stage !== 'ready') return;
+        console.log('[AR] startAR called. Stage:', stage, 'isStarting:', isStartingRef.current);
+
+        // Single-entry protection
+        if (stage !== 'ready' || isStartingRef.current) {
+            console.warn('[AR] startAR blocked — not ready or already starting');
+            return;
+        }
+        isStartingRef.current = true;
 
         const overlay = overlayRef.current;
         const renderer = rendererRef.current;
@@ -360,11 +375,30 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         setError(null);
 
         try {
-            console.log('[SceneARViewerV2] Requesting XR Session...');
+            console.log('[AR] Requesting XR Session...');
+
+            // Fail-safe timer: If session doesn't start in 2.5s, show error
+            xrStartTimeoutRef.current = setTimeout(() => {
+                if (!hasArStartedRef.current && isStartingRef.current) {
+                    console.error('[AR] XR start timeout — session failed to initialize');
+                    isStartingRef.current = false;
+                    setStartupError('AR не запустился. Попробуйте ещё раз.');
+                    setStage('ready'); // Return to ready state so user can retry
+                }
+            }, 2500);
+
             const session = await xrSession.startSession(renderer, overlay);
-            console.log('[SceneARViewerV2] Session started successfully');
+
+            // Clear timeout on success
+            if (xrStartTimeoutRef.current) {
+                clearTimeout(xrStartTimeoutRef.current);
+                xrStartTimeoutRef.current = null;
+            }
+
+            console.log('[AR] Session started successfully');
             startedAtRef.current = Date.now();
             hasArStartedRef.current = true;
+            isStartingRef.current = false; // Release lock
 
             trackJourneyEvent({
                 type: 'START_AR',
@@ -509,9 +543,18 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             });
 
         } catch (e: any) {
-            console.error('[SceneARViewerV2] startAR error:', e);
-            // XR failed to start - ensure flag is false
+            console.error('[AR] startAR error:', e);
+
+            // Clear timeout
+            if (xrStartTimeoutRef.current) {
+                clearTimeout(xrStartTimeoutRef.current);
+                xrStartTimeoutRef.current = null;
+            }
+
+            // Release locks
             hasArStartedRef.current = false;
+            isStartingRef.current = false;
+
             setError(e?.message || 'Не удалось запустить AR');
             setStage('error');
         }
@@ -653,15 +696,26 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                 {stage === 'ready' && (
                                     <>
                                         <div className="text-sm font-semibold text-soft-black">{sceneTitle}</div>
+
+                                        {/* Startup Error (timeout, etc) */}
+                                        {startupError && (
+                                            <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                                                <div className="text-xs text-amber-800">{startupError}</div>
+                                            </div>
+                                        )}
+
                                         <div className="text-xs text-muted-gray mt-2 leading-relaxed">
                                             Наведите телефон на пол и коснитесь экрана, чтобы поставить.
                                         </div>
                                         <div className="mt-4">
                                             <button
-                                                onClick={startAR}
+                                                onClick={() => {
+                                                    setStartupError(null);
+                                                    startAR();
+                                                }}
                                                 className="w-full bg-brand-brown text-white px-6 py-4 rounded-xl shadow-lg font-medium hover:bg-brand-charcoal transition-colors"
                                             >
-                                                Начать AR
+                                                {startupError ? 'Попробовать ещё раз' : 'Начать AR'}
                                             </button>
                                         </div>
                                     </>
