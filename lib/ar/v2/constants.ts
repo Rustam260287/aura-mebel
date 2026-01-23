@@ -27,3 +27,6 @@ export const MAX_PIXEL_RATIO = 2;
 export const HIT_TEST_TIMEOUT_MS = 3000;
 export const FALLBACK_PLACEMENT_DISTANCE_M = 1.5;
 export const MIN_PLACEMENT_DISTANCE_M = 0.8;
+
+// Scene Viewer fallback: minimum time in background to consider valid return
+export const MIN_BACKGROUND_DURATION_MS = 2000;

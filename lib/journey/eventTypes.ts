@@ -81,6 +81,8 @@ export type JourneyMeta = {
   handoffId?: string;
   channel?: string;
   variant?: string; // For A/B testing or specific UI variants
+  // AR runtime tracking
+  runtime?: 'webxr' | 'scene_viewer';
 };
 
 export type JourneyEventInput = {
