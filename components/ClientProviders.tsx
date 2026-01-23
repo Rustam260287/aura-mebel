@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -18,6 +17,7 @@ import { ImmersiveProvider, useImmersive } from '../contexts/ImmersiveContext';
 import { pingVisitor } from '../lib/journey/client';
 import { ExperienceProvider } from '../contexts/ExperienceContext';
 import { ExperienceStateOrchestrator } from './ExperienceStateOrchestrator';
+import { getFirebaseAnalytics, logPageView } from '../lib/firebase/analytics';
 
 const ImageZoomModal = dynamic(() => import('./ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
@@ -108,6 +108,26 @@ export const ClientProviders: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     void pingVisitor();
   }, []);
+
+  // Initialize Firebase Analytics on mount
+  useEffect(() => {
+    void getFirebaseAnalytics();
+  }, []);
+
+  // Log page_view on route changes
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      void logPageView(url, document.title);
+    };
+
+    // Log initial page view
+    void logPageView(router.asPath, document.title);
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.asPath, router.events]);
 
   useEffect(() => {
     // Ensure <model-viewer> is defined early to avoid race conditions when users tap AR/3D quickly.

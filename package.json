@@ -1,5 +1,5 @@
 {
-  "name": "aura-мебель",
+  "name": "aura-mebel",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "optimize:3d": "node scripts/optimize-and-upload-3d.mjs",
-    "generate:3d": "node scripts/generate-3d-models.mjs"
+    "generate:3d": "node scripts/generate-3d-models.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.8.0",

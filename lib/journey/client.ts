@@ -2,6 +2,7 @@ import type { JourneyEventInput, JourneyMeta } from './eventTypes';
 import { inferDevice, inferOs } from './userAgent';
 import { getAuth } from 'firebase/auth';
 import { getOrCreateVisitorId, isUniqueObjectVisit } from '../analytics/visitorId';
+import { logAnalyticsEvent } from '../firebase/analytics';
 
 const isBrowser = () => typeof window !== 'undefined';
 
@@ -52,6 +53,12 @@ export function trackJourneyEvent(input: JourneyEventInput): void {
       isUniqueVisit: isUnique,
     } as JourneyMeta,
   };
+
+  // Mirror to Firebase Analytics (Fire and forget)
+  void logAnalyticsEvent(input.type, {
+    object_id: input.objectId,
+    ...input.meta,
+  });
 
   try {
     const body = JSON.stringify(payload);
