@@ -29,7 +29,7 @@ const FooterComponent: React.FC = () => {
         </div>
 
         <div className="mt-10 pt-6 border-t border-stone-beige/20 text-xs text-muted-gray">
-          © {new Date().getFullYear()} AURA
+          © 2026 AURA
         </div>
       </div>
     </footer>

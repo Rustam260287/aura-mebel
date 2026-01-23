@@ -41,7 +41,7 @@ export const HandoffOptions: React.FC<HandoffOptionsProps> = ({ contacts, onSele
         return (
             <div className="flex flex-col gap-2 mt-4 w-full animate-fade-in-up">
                 <div className="text-center text-xs text-gray-500 mb-2">
-                    Контакты этого куратора скрыты.
+                    Нет доступных способов связи.
                 </div>
                 <button
                     onClick={onCancel}

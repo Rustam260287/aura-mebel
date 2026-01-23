@@ -11,28 +11,21 @@ import { useExperience } from '../contexts/ExperienceContext';
 const addresses = [
   {
     city: 'Альметьевск',
-    line: 'ул. Ленина, 85а',
-    phone: '+7 (987) 216-70-75',
-    hours: 'Пн–Сб 10:00–20:00, Вс 11:00–19:00',
+    line: 'ул. Ленина, 85А',
+    hours: 'Пн–Сб: 10:00–20:00, Вс: 11:00–19:00',
     coordinates: 'https://yandex.ru/map-widget/v1/?ll=52.298522%2C54.901576&mode=search&ol=geo&ouri=ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgg1NzQ1MzAzORJG0KDQvtGB0YHQuNGPLCDQoNC10YHQv9GD0LHQu9C40LrQsCDQotCw0YLQsNGA0YHRgtCw0L0sINCQ0LvRjNC80LXRgtGM0LXQstGB0LosINGD0LvQuNGG0LAg0JvQtdC90LjQvdCwLCA4NUEiCg2hQlFCFcRyUUI%2C&z=17.09'
   },
 ];
 
 const ContactsPage: React.FC = memo(() => {
-  const { state, emitEvent } = useExperience();
-  const openChat = (text: string) => {
-    void text;
-    if (state === 'THREE_D_ACTIVE') {
-      emitEvent({ type: 'EXIT_3D' });
-    }
-    emitEvent({ type: 'OPEN_ASSISTANT' });
-  };
+  // No useExperience needed for contacts unless tracking visits, 
+  // but "openChat" is explicitly FORBIDDEN here.
 
   return (
     <>
       <Meta
-        title="Контакты — Labelcom"
-        description="Мы на связи, когда вам удобно. Выберите удобный способ связи, и мы ответим спокойно и без спешки."
+        title="Контакты — Aura"
+        description="Мы на связи, когда вам удобно. Выберите подходящий способ — мы ответим без спешки."
       />
       <Header />
       <main className="bg-warm-white min-h-screen">
@@ -65,29 +58,35 @@ const ContactsPage: React.FC = memo(() => {
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium text-soft-black">Связь</h3>
                   <div className="space-y-1 text-sm text-muted-gray font-light">
-                    <a href="mailto:hello@labelcom.store" className="block hover:text-soft-black transition-colors">
-                      hello@labelcom.store
+                    <a href="mailto:hello@aura-room.ru" className="block hover:text-soft-black transition-colors underline decoration-transparent hover:decoration-soft-black underline-offset-4">
+                      hello@aura-room.ru
                     </a>
-                    <p>+7 (987) 216-70-75</p>
+                    <p className="cursor-default">+7 (987) 216-70-75</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 3. Способы связи */}
+            {/* 3. Способы связи (Quiet Buttons) */}
             <div className="lg:col-span-5">
               <div className="bg-white p-8 rounded-2xl shadow-soft border border-stone-beige/10">
                 <h3 className="text-lg font-medium text-soft-black mb-6">Написать нам</h3>
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30">
-                    <WhatsAppIcon className="w-5 h-5 mr-3 text-[#25D366]" /> WhatsApp
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30">
-                    <TelegramIcon className="w-5 h-5 mr-3 text-[#0088cc]" /> Telegram
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30" onClick={() => openChat('Здравствуйте!')}>
-                    <ChatBubbleLeftRightIcon className="w-5 h-5 mr-3 text-brand-brown" /> Онлайн-чат
-                  </Button>
+                  <a href="https://wa.me/79872167075" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30 hover:border-stone-beige/60 grayscale hover:grayscale-0 transition-all">
+                      <WhatsAppIcon className="w-5 h-5 mr-3 text-[#25D366]" /> WhatsApp
+                    </Button>
+                  </a>
+                  <a href="https://t.me/+79872167075" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30 hover:border-stone-beige/60 grayscale hover:grayscale-0 transition-all">
+                      <TelegramIcon className="w-5 h-5 mr-3 text-[#0088cc]" /> Telegram
+                    </Button>
+                  </a>
+                  <a href="tel:+79872167075" className="block w-full">
+                    <Button variant="outline" className="w-full justify-start h-14 rounded-xl border-stone-beige/30 hover:border-stone-beige/60 grayscale hover:grayscale-0 transition-all">
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 mr-3 text-brand-charcoal" /> MAX
+                    </Button>
+                  </a>
                 </div>
               </div>
             </div>

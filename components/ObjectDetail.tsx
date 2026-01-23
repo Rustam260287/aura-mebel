@@ -823,15 +823,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               </button>
             )}
 
-            {experienceState !== 'THREE_D_ACTIVE' && (
-              <button
-                onClick={handleOpenAssistant}
-                aria-label="Задать вопрос"
-                className="rounded-full bg-white/70 backdrop-blur-md border border-stone-beige/30 shadow-soft p-3 text-soft-black hover:bg-white transition-colors"
-              >
-                <ChatBubbleLeftRightIcon className="w-5 h-5" />
-              </button>
-            )}
+
 
             <button
               onClick={handleSaveToggle}
@@ -877,7 +869,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             : 'opacity-100 translate-y-0 pointer-events-auto',
         ].join(' ')}
       >
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md flex flex-col items-center">
           {(hasGlb || hasUsdz) && (
             <Button
               onClick={handleOpenArTap}
@@ -896,6 +888,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
               </div>
             </Button>
           )}
+
+          {/* Assistant Secondary CTA - Quiet */}
+          <button
+            onClick={handleOpenAssistant}
+            className="mt-4 text-sm font-medium text-white/60 hover:text-white transition-colors"
+          >
+            Спросить ассистента
+          </button>
+
         </div>
       </div>
 

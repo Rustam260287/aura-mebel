@@ -39,20 +39,18 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 </div>
                             )}
                         </div>
-                        {isOnline && (
-                            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
-                        )}
+
                     </div>
                     <div>
                         <h3 className="font-serif text-lg text-brand-charcoal leading-tight">
                             {profile.displayName || 'Куратор Aura'}
                         </h3>
                         <p className="text-xs text-gray-500 uppercase tracking-wide mt-0.5">
-                            {profile.roleLabel || 'Персональный менеджер'}
+                            {profile.roleLabel || 'Персональный куратор'}
                         </p>
                         {profile.workingHours && (
                             <p className="text-[10px] text-gray-400 mt-1">
-                                {isOnline ? 'Сейчас онлайн' : 'Офлайн'} • {profile.workingHours}
+                                {profile.workingHours}
                             </p>
                         )}
                     </div>
@@ -88,15 +86,7 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <span>→</span>
                         </button>
                     )}
-                    {profile.contacts?.phone && (
-                        <button
-                            onClick={() => handleContact('phone')}
-                            className="w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-xl flex items-center justify-between transition-colors border border-gray-100"
-                        >
-                            <span className="font-medium">Позвонить</span>
-                            <span>{profile.contacts.phone}</span>
-                        </button>
-                    )}
+
                 </div>
             </div>
 

@@ -42,8 +42,13 @@ export class MetaAgent {
         // --- 2. Handle Explicit UI Actions (Open/Close) ---
         if (event.type === 'REQUEST_MANAGER_CONTACT') {
             assistantMode = 'chat';
-            // Use new card type
-            content = { type: 'handoff_card', payload: event.payload };
+            if (event.payload?.source === 'object_detail_button') {
+                // Open chat with default greeting (handled by ChatBubble if content is undefined/null)
+                content = undefined;
+            } else {
+                // Use new card type for explicit contact requests (e.g. from HandoffOptions)
+                content = { type: 'handoff_card', payload: event.payload };
+            }
         } else if (event.type === 'DISMISSED_NOTIFICATION') {
             assistantMode = 'hidden';
             content = undefined;
@@ -159,14 +164,8 @@ export class MetaAgent {
 
                     const profile = this.curatorProfile || {};
                     const name = profile.managerName || 'Куратор';
-                    const isOnline = profile.availabilityStatus === 'online';
-
-                    let text = `Если есть вопросы по размерам или доставке — я на связи.`;
-                    if (isOnline) {
-                        text = `${name} сейчас онлайн. Могу подсказать по размерам и материалам.`;
-                    } else {
-                        text = `${name} сейчас офлайн, но вы можете оставить вопрос — я отвечу утром.`;
-                    }
+                    // Quiet Mode: No online/offline check. Just simple availability.
+                    const text = `${name}. Могу подсказать по размерам и материалам, если нужно.`;
 
                     content = {
                         text: text,

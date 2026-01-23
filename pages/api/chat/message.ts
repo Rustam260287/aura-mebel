@@ -5,7 +5,7 @@ import { checkRateLimit } from '../../../lib/rate-limit';
 import { checkIsAdmin } from '../../../lib/auth/admin-check';
 
 const HANDOFF_CONFIRMATION_REPLY =
-  'Я передал ваш вопрос менеджеру.\nОн уже видит, какой объект вы смотрели.';
+  'Я не подсказываю по стоимости или покупке.\nЕсли это важно, можно обсудить с куратором.';
 
 function isPricingRequest(input: unknown): boolean {
   const text = typeof input === 'string' ? input : '';
@@ -95,20 +95,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let visionAnalysis = "";
 
     if (imageUrl) {
-        try {
-            const visionResult: any = await askAI({
-                key: 'IMAGE_VISION',
-                variables: {},
-                context: [{ role: "user", content: [{ type: "text", text: "Analyze this image" }, { type: "image_url", image_url: { url: imageUrl } }] }],
-                responseFormat: 'json',
-                model: 'gpt-4o'
-            });
-            if (visionResult) {
-                visionAnalysis = `ВИЗУАЛЬНЫЙ АНАЛИЗ ФОТО: ${visionResult.detected_item}, Стиль: ${visionResult.style}, Материалы: ${visionResult.materials?.join(', ')}`;
-            }
-        } catch (e) {
-            console.error("Vision failed", e);
+      try {
+        const visionResult: any = await askAI({
+          key: 'IMAGE_VISION',
+          variables: {},
+          context: [{ role: "user", content: [{ type: "text", text: "Analyze this image" }, { type: "image_url", image_url: { url: imageUrl } }] }],
+          responseFormat: 'json',
+          model: 'gpt-4o'
+        });
+        if (visionResult) {
+          visionAnalysis = `ВИЗУАЛЬНЫЙ АНАЛИЗ ФОТО: ${visionResult.detected_item}, Стиль: ${visionResult.style}, Материалы: ${visionResult.materials?.join(', ')}`;
         }
+      } catch (e) {
+        console.error("Vision failed", e);
+      }
     }
 
     const promptKey: any = 'ASSISTANT_DECISION_SUPPORT';
@@ -119,22 +119,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 5. Final Generation
     const contextMessages = history.map((msg: any) => ({
-        role: msg.role === 'assistant' ? 'assistant' : 'user',
-        content: msg.content,
+      role: msg.role === 'assistant' ? 'assistant' : 'user',
+      content: msg.content,
     }));
     contextMessages.push({ role: "user", content: message });
 
     const response: any = await askAI({
-        key: promptKey,
-        variables: contextVariables,
-        context: contextMessages,
-        responseFormat: 'json',
-        model: 'gpt-4o'
+      key: promptKey,
+      variables: contextVariables,
+      context: contextMessages,
+      responseFormat: 'json',
+      model: 'gpt-4o'
     });
 
-    res.status(200).json({ 
-        reply: containsCommerceContent(response?.reply) ? HANDOFF_CONFIRMATION_REPLY : response.reply,
-        handoffRequired: Boolean(response?.handoffRequired) || containsCommerceContent(response?.reply),
+    const isHandoff = Boolean(response?.handoffRequired) || containsCommerceContent(response?.reply);
+    const reply = isHandoff ? HANDOFF_CONFIRMATION_REPLY : response.reply;
+
+    res.status(200).json({
+      reply,
+      handoffRequired: isHandoff,
     });
 
   } catch (error: any) {
