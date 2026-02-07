@@ -11,7 +11,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { openSceneViewer, shouldUseSceneViewerFallback } from '../utils/sceneViewer';
-import { PostSceneViewerUI } from './PostSceneViewerUI';
+import { PostARBridge } from '../../../../components/ar/PostARBridge';
 import { MIN_BACKGROUND_DURATION_MS } from '../constants';
 import { trackJourneyEvent } from '../../../journey/client';
 import { createArSessionId } from '../../../journey/arSession';
@@ -175,12 +175,11 @@ export const SceneViewerBridge: React.FC<SceneViewerBridgeProps> = ({
     // Render Post-AR UI
     if (showPostAR) {
         return (
-            <PostSceneViewerUI
+            <PostARBridge
                 objectId={objectId}
                 objectName={objectName}
-                durationSec={durationSec}
-                onShare={handleShare}
-                onRetry={handleRetry}
+                arSessionId={arSessionIdRef.current}
+                onRestart={handleRetry}
                 onClose={handleClose}
             />
         );
