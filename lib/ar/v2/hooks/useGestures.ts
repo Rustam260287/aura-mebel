@@ -52,6 +52,11 @@ export function useGestures({
     const tmpVec = useRef(new THREE.Vector3());
     const tmpNdc = useRef(new THREE.Vector2());
 
+    // Smooth interpolation for native-like feel
+    // Target position is set immediately, actual position lerps towards it
+    const targetPositionRef = useRef<THREE.Vector3 | null>(null);
+    const LERP_FACTOR = 0.35; // Higher = more responsive, Lower = smoother (0.25-0.4 feels native)
+
     // Build ray from touch position
     const buildRay = useCallback((clientX: number, clientY: number): THREE.Raycaster | null => {
         const renderer = rendererRef.current;
@@ -212,8 +217,12 @@ export function useGestures({
                     next.setLength(MAX_DRAG_DISTANCE_M);
                 }
 
-                item.group.position.x = next.x;
-                item.group.position.z = next.z;
+                // Smooth interpolation for native-like feel
+                // Use lerp instead of direct assignment
+                const currentX = item.group.position.x;
+                const currentZ = item.group.position.z;
+                item.group.position.x = currentX + (next.x - currentX) * LERP_FACTOR;
+                item.group.position.z = currentZ + (next.z - currentZ) * LERP_FACTOR;
                 return;
             }
 
@@ -228,11 +237,14 @@ export function useGestures({
                 const dist = distance2(a, b);
                 if (dist < MIN_PINCH_DISTANCE_PX) return;
 
-                // Direct scale application (no dampening)
-                // Full range 0.3x – 3.0x as per constants
+                // Smooth scale with lerp for native feel
                 const scaleFactor = g.startDistance > 0 ? dist / g.startDistance : 1;
-                const nextUserScale = clamp(g.startUserScale * scaleFactor, MIN_USER_SCALE, MAX_USER_SCALE);
-                item.userScale = nextUserScale;
+                const targetUserScale = clamp(g.startUserScale * scaleFactor, MIN_USER_SCALE, MAX_USER_SCALE);
+
+                // Lerp scale for smooth feel
+                const currentScale = item.userScale;
+                const smoothedScale = currentScale + (targetUserScale - currentScale) * LERP_FACTOR;
+                item.userScale = smoothedScale;
                 item.group.scale.setScalar(item.baseScale * item.userScale);
 
                 // Rotation with Magnetic Snap (45 deg)
@@ -240,7 +252,7 @@ export function useGestures({
                 const delta = ang - g.startAngle;
                 let rawRotation = g.startRotationY - delta;
 
-                // Magnetic Snap
+                // Magnetic Snap with haptic feedback
                 const SNAP_ANGLE = Math.PI / 4; // 45 degrees
                 const SNAP_THRESHOLD = Math.PI / 24; // ~7.5 degrees
 
@@ -248,12 +260,21 @@ export function useGestures({
                 const snapTarget = Math.round(rawRotation / SNAP_ANGLE) * SNAP_ANGLE;
                 const distToSnap = Math.abs(rawRotation - snapTarget);
 
+                let targetRotation: number;
                 if (distToSnap < SNAP_THRESHOLD) {
-                    // Apply snap
-                    item.group.rotation.y = snapTarget;
+                    targetRotation = snapTarget;
+                    // Haptic on snap (only when just snapped)
+                    const wasSnapped = Math.abs(item.group.rotation.y - snapTarget) < 0.01;
+                    if (!wasSnapped && navigator.vibrate) {
+                        navigator.vibrate(10); // Very short tick
+                    }
                 } else {
-                    item.group.rotation.y = rawRotation;
+                    targetRotation = rawRotation;
                 }
+
+                // Smooth rotation lerp
+                const currentRot = item.group.rotation.y;
+                item.group.rotation.y = currentRot + (targetRotation - currentRot) * LERP_FACTOR;
             }
         };
 

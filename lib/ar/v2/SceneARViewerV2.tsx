@@ -133,16 +133,19 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         const container = containerRef.current;
         if (!container) return;
 
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        // Renderer — Optimized for Native-like Performance
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+            stencil: false, // Not needed, saves memory
+            depth: true,
+        });
         renderer.setPixelRatio(Math.min(MAX_PIXEL_RATIO, window.devicePixelRatio || 1));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setClearColor(0x000000, 0);
         renderer.xr.enabled = false; // CRITICAL: Start disabled, enable after successful session
-        // Preserve drawing buffer for screenshots if needed (perf cost, but needed for 'Capture')
-        // Actually, for now let's keep it simple. If we want high-perf, we skip it.
-        // UIA says "Capture" -> "Freeze frame".
-        // Let's rely on "End Session" as the trigger for "Done" for now, or add a dedicated shutter button that ends session.
+        // Optimizations for smooth 60fps
         renderer.domElement.style.width = '100%';
         renderer.domElement.style.height = '100%';
         renderer.domElement.style.display = 'block';
@@ -467,9 +470,38 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 anchor.quaternion.identity();
                 anchor.updateMatrixWorld(true);
 
-                // Spawn objects
+                // Spawn objects with pop-in animation
                 if (loadedModelsRef.current) {
                     sceneGraph.spawnObjects(loadedModelsRef.current, objects, anchor);
+
+                    // Pop-in animation: scale from 0 to 1 with easing
+                    anchor.scale.setScalar(0.01); // Start tiny
+                    anchor.visible = true;
+
+                    // Animate scale up (native-like spring pop)
+                    const startTime = performance.now();
+                    const ANIM_DURATION = 300; // ms
+
+                    const animatePopIn = () => {
+                        const elapsed = performance.now() - startTime;
+                        const progress = Math.min(elapsed / ANIM_DURATION, 1);
+
+                        // Ease out back (slight overshoot for "pop" feel)
+                        const easeOutBack = (t: number) => {
+                            const c1 = 1.70158;
+                            const c3 = c1 + 1;
+                            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+                        };
+
+                        const scale = easeOutBack(progress);
+                        anchor.scale.setScalar(scale);
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animatePopIn);
+                        }
+                    };
+
+                    requestAnimationFrame(animatePopIn);
                 }
 
                 placedRef.current = true;
@@ -489,7 +521,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 // Haptic Feedback (with safe guard for Android browsers)
                 if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
                     try {
-                        navigator.vibrate(20); // Short sharp tick
+                        navigator.vibrate([15, 30, 15]); // Double tap pattern for placement
                     } catch {
                         // Ignore vibrate errors on some Android browsers
                     }
