@@ -1,12 +1,13 @@
 /**
  * useWebXRSession — WebXR session lifecycle management
  * 
- * AURA BASELINE AR CONFIGURATION
+ * AURA PRODUCTION BASELINE v1.0
  * ================================
- * - requiredFeatures: ['local'] — самый безопасный минимум
- * - optionalFeatures: ['hit-test', 'dom-overlay'] — graceful degradation
- * - НЕ используем: local-floor (нестабилен), plane-detection, depth-sensing
- * - Fallback: если hit-test недоступен — placement 1.5м перед камерой
+ * - requiredFeatures: [] — EMPTY для максимальной совместимости
+ * - optionalFeatures: ['local-floor', 'hit-test', 'dom-overlay', 'light-estimation']
+ * - Feature detection через try-catch на соответствующих API
+ * - Cascading reference space: local-floor → local → viewer
+ * - Fallback placement: 2м перед камерой если hit-test недоступен
  */
 
 import { useCallback, useRef, useState } from 'react';
@@ -19,13 +20,17 @@ export type ARSupportReason =
     | 'check-failed'
     | 'session-failed';
 
+export type ReferenceSpaceType = 'local-floor' | 'local' | 'viewer';
+
 interface UseWebXRSessionResult {
     session: XRSession | null;
     isSupported: boolean | null;
     supportReason: ARSupportReason | null;
     error: string | null;
-    hasHitTest: boolean; // Доступен ли hit-test после старта
-    hasDomOverlay: boolean; // Доступен ли DOM overlay после старта
+    hasHitTest: boolean;
+    hasDomOverlay: boolean;
+    hasLightEstimation: boolean;
+    referenceSpaceType: ReferenceSpaceType | null;
 
     checkSupport: () => Promise<{ supported: boolean; reason: ARSupportReason }>;
     startSession: (renderer: THREE.WebGLRenderer, overlayRoot: HTMLElement) => Promise<XRSession>;
@@ -39,6 +44,8 @@ export function useWebXRSession(): UseWebXRSessionResult {
     const [error, setError] = useState<string | null>(null);
     const [hasHitTest, setHasHitTest] = useState(false);
     const [hasDomOverlay, setHasDomOverlay] = useState(false);
+    const [hasLightEstimation, setHasLightEstimation] = useState(false);
+    const [referenceSpaceType, setReferenceSpaceType] = useState<ReferenceSpaceType | null>(null);
 
     const sessionRef = useRef<XRSession | null>(null);
 
@@ -103,22 +110,26 @@ export function useWebXRSession(): UseWebXRSessionResult {
         setError(null);
         setHasHitTest(false);
         setHasDomOverlay(false);
+        setHasLightEstimation(false);
+        setReferenceSpaceType(null);
 
         try {
-            console.log('[AR] Requesting session with BASELINE config...');
+            console.log('[AR] Requesting session with PRODUCTION BASELINE v1.0...');
 
-            // ✅ AURA BASELINE AR CONFIGURATION
+            // ✅ AURA PRODUCTION BASELINE v1.0
             const sessionInit: XRSessionInit = {
-                // REQUIRED: Only 'local' — самый безопасный минимум
-                requiredFeatures: ['local'],
+                // REQUIRED: EMPTY — максимальная совместимость устройств
+                requiredFeatures: [],
 
-                // OPTIONAL: Всё остальное — graceful degradation
+                // OPTIONAL: Всё опционально с graceful degradation
                 optionalFeatures: [
-                    'hit-test',      // Для точного placement (fallback если нет)
-                    'dom-overlay',   // Для UI поверх камеры
+                    'local-floor',       // Floor-relative coordinates
+                    'hit-test',          // Surface placement
+                    'dom-overlay',       // UI overlay
+                    'light-estimation',  // Realistic lighting
                 ],
 
-                // DOM Overlay config — ONLY if root is provided to avoid crashes
+                // DOM Overlay config
                 ...(overlayRoot ? { domOverlay: { root: overlayRoot } } : {}),
             } as any;
 
@@ -159,15 +170,37 @@ export function useWebXRSession(): UseWebXRSessionResult {
             // Setup renderer for XR
             await renderer.xr.setSession(xrSession);
 
-            // Get reference space — prefer local-floor, fallback to local
-            // We don't manually call setReferenceSpace on renderer as it's risky on Android
+            // Cascading reference space: local-floor → local → viewer
+            let spaceType: ReferenceSpaceType = 'viewer';
             try {
                 await xrSession.requestReferenceSpace('local-floor');
-                console.log('[AR] local-floor reference space requested (stable Y=0)');
+                spaceType = 'local-floor';
+                console.log('[AR] Reference space: local-floor (ideal)');
             } catch {
-                await xrSession.requestReferenceSpace('local');
-                console.log('[AR] local reference space requested (fallback)');
+                try {
+                    await xrSession.requestReferenceSpace('local');
+                    spaceType = 'local';
+                    console.log('[AR] Reference space: local (no floor)');
+                } catch {
+                    await xrSession.requestReferenceSpace('viewer');
+                    spaceType = 'viewer';
+                    console.log('[AR] Reference space: viewer (fallback)');
+                }
             }
+            setReferenceSpaceType(spaceType);
+
+            // 3. Light estimation check
+            let lightEstimationAvailable = false;
+            try {
+                const lightProbe = await (xrSession as any).requestLightProbe();
+                if (lightProbe) {
+                    lightEstimationAvailable = true;
+                }
+            } catch {
+                console.log('[AR] Light estimation: not available');
+            }
+            setHasLightEstimation(lightEstimationAvailable);
+            console.log('[AR] Light estimation:', lightEstimationAvailable ? 'available' : 'not available');
 
             // Handle session end
             const onEnd = () => {
@@ -176,6 +209,8 @@ export function useWebXRSession(): UseWebXRSessionResult {
                 setSession(null);
                 setHasHitTest(false);
                 setHasDomOverlay(false);
+                setHasLightEstimation(false);
+                setReferenceSpaceType(null);
                 xrSession.removeEventListener('end', onEnd);
             };
             xrSession.addEventListener('end', onEnd);
@@ -218,6 +253,8 @@ export function useWebXRSession(): UseWebXRSessionResult {
         setSession(null);
         setHasHitTest(false);
         setHasDomOverlay(false);
+        setHasLightEstimation(false);
+        setReferenceSpaceType(null);
     }, []);
 
     return {
@@ -227,6 +264,8 @@ export function useWebXRSession(): UseWebXRSessionResult {
         error,
         hasHitTest,
         hasDomOverlay,
+        hasLightEstimation,
+        referenceSpaceType,
         checkSupport,
         startSession,
         endSession,

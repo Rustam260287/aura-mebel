@@ -23,8 +23,6 @@ import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLA
 import type { ARStage, SceneARViewerV2Props } from './types';
 import { ARCoachingOverlay } from './components/ARCoachingOverlay';
 import { ARBottomControls } from './components/ARBottomControls';
-import { openSceneViewer, shouldUseSceneViewerFallback } from './utils/sceneViewer';
-import { SceneViewerBridge } from './components/SceneViewerBridge';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -67,9 +65,6 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const reticleVisibleRef = useRef(false);
     const placingStartTimeRef = useRef<number | null>(null);
     const hasInteractedRef = useRef(false);
-
-    // Scene Viewer fallback state
-    const [sceneViewerActive, setSceneViewerActive] = useState(false);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -584,35 +579,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             hasArStartedRef.current = false;
             isStartingRef.current = false;
 
-            // =========================================================
-            // AUTOMATIC SCENE VIEWER FALLBACK
-            // WebXR failed, but Scene Viewer might work (native ARCore)
-            // =========================================================
-            const glbUrl = objects[0]?.modelGlbUrl;
-
-            if (shouldUseSceneViewerFallback() && glbUrl) {
-                console.log('[AR] WebXR failed, redirecting to Scene Viewer...');
-
-                trackJourneyEvent({
-                    type: 'AR_FALLBACK_SCENE_VIEWER',
-                    objectId: sceneId,
-                    meta: { arSessionId: arSessionIdRef.current, reason: e?.message, runtime: 'scene_viewer' },
-                });
-
-                const opened = openSceneViewer({
-                    glbUrl,
-                    title: sceneTitle || 'AR Preview',
-                });
-
-                if (opened) {
-                    // Scene Viewer will take over — activate bridge to handle return
-                    setSceneViewerActive(true);
-                    setStage('idle'); // Hide WebXR UI while in Scene Viewer
-                    return;
-                }
-            }
-
-            // Scene Viewer also failed or not available — show error
+            // WebXR session failed — show error and offer 3D fallback
+            // Scene Viewer fallback removed per single-runtime strategy
             setError(e?.message || 'Не удалось запустить AR');
             setStage('error');
         }
@@ -816,18 +784,6 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 </div >
             </div >
-
-            {/* Scene Viewer Bridge (handles fallback return + Post-AR UI) */}
-            <SceneViewerBridge
-                objectId={sceneId}
-                objectName={sceneTitle}
-                glbUrl={objects[0]?.modelGlbUrl}
-                isActive={sceneViewerActive}
-                onDismiss={() => {
-                    setSceneViewerActive(false);
-                    onClose(undefined, true);
-                }}
-            />
         </>
     );
 };

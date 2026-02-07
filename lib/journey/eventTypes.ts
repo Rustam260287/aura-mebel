@@ -23,7 +23,6 @@ export const JOURNEY_EVENT_TYPES = [
   'AR_ONBOARDING_SHOWN',
   'AR_GESTURE_HINT_SHOWN',
   'AR_FIRST_INTERACTION',
-  'AR_FALLBACK_SCENE_VIEWER',
 ] as const;
 
 export type JourneyEventType = (typeof JOURNEY_EVENT_TYPES)[number];
@@ -43,7 +42,7 @@ export type JourneyMeta = {
     timestamp: number;
     modelId?: string;
     device?: 'android' | 'ios' | 'web';
-    arMode?: 'webxr' | 'quick-look' | 'scene-viewer';
+    arMode?: 'webxr' | 'quick-look';
     width?: number;
     height?: number;
     orientation?: 'portrait' | 'landscape';
