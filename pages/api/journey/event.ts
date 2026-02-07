@@ -64,7 +64,7 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
     // New Fields
     const timestamp = typeof s.timestamp === 'number' ? s.timestamp : typeof s.timestamp === 'string' ? parseInt(s.timestamp, 10) : Date.now();
     const device = s.device === 'android' || s.device === 'ios' || s.device === 'web' ? s.device : undefined;
-    const arMode = s.arMode === 'webxr' || s.arMode === 'quick-look' || s.arMode === 'scene-viewer' ? s.arMode : undefined;
+    const arMode = s.arMode === 'webxr' || s.arMode === 'quick-look' ? s.arMode : undefined;
     const modelId = typeof s.modelId === 'string' ? s.modelId.trim().slice(0, 120) : undefined;
 
     if (sessionId && storagePath) {
