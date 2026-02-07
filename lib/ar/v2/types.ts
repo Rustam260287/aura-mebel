@@ -14,6 +14,7 @@ export type ARStage =
     | 'placing'     // Hit-testing, showing reticle
     | 'active'      // Object placed, interaction enabled
     | 'manipulating' // Active gesture in progress (drag/pinch)
+    | 'completed'   // AR done, showing freeze frame + share UI
     | 'error'       // Error occurred
     | 'unsupported'; // WebXR not supported
 

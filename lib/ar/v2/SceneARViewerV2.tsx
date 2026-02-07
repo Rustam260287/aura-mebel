@@ -23,6 +23,7 @@ import { MAX_PIXEL_RATIO, GESTURE_HINT_DURATION_MS, HIT_TEST_TIMEOUT_MS, MIN_PLA
 import type { ARStage, SceneARViewerV2Props } from './types';
 import { ARCoachingOverlay } from './components/ARCoachingOverlay';
 import { ARBottomControls } from './components/ARBottomControls';
+import { PostARUI } from './components/PostARUI';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -65,6 +66,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const reticleVisibleRef = useRef(false);
     const placingStartTimeRef = useRef<number | null>(null);
     const hasInteractedRef = useRef(false);
+
+    // Post-AR state
+    const [arDurationSec, setArDurationSec] = useState<number>(0);
+    const [isSaved, setIsSaved] = useState(false);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -318,10 +323,11 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 meta: { arSessionId: arSessionIdRef.current, durationSec: duration, runtime: 'webxr' },
             });
 
-            // Clean exit without snapshot
-            onClose(duration, true);
+            // Go to completed stage for Post-AR UI
+            setArDurationSec(duration);
+            setStage('completed');
         } else {
-            // Cancelled before placement - still a real AR session
+            // Cancelled before placement - close immediately
             onClose(duration, true);
         }
     }, [hitTest, xrSession, sceneId, onClose, stage]);
@@ -811,7 +817,45 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         />
                     )}
 
+                    {/* Post-AR UI (Freeze Frame + Share) */}
+                    {stage === 'completed' && (
+                        <PostARUI
+                            objectId={sceneId}
+                            objectName={sceneTitle || objects[0]?.name || 'Объект'}
+                            isSaved={isSaved}
+                            onShare={async () => {
+                                // Web Share API
+                                const shareData = {
+                                    title: sceneTitle || 'Посмотрите как смотрится!',
+                                    text: `Я примерил${objects[0]?.name ? ` "${objects[0].name}"` : ''} в своём интерьере!`,
+                                    url: window.location.href,
+                                };
 
+                                if (navigator.share) {
+                                    await navigator.share(shareData);
+                                    trackJourneyEvent({
+                                        type: 'AR_SNAPSHOT_SHARED',
+                                        objectId: sceneId,
+                                        meta: { arSessionId: arSessionIdRef.current, durationSec: arDurationSec },
+                                    });
+                                }
+                            }}
+                            onSave={() => {
+                                setIsSaved(!isSaved);
+                                // Haptic feedback
+                                if (navigator.vibrate) navigator.vibrate(15);
+
+                                trackJourneyEvent({
+                                    type: isSaved ? 'REMOVE_OBJECT' : 'SAVE_OBJECT',
+                                    objectId: sceneId,
+                                    meta: { arSessionId: arSessionIdRef.current, source: 'post_ar' },
+                                });
+                            }}
+                            onDone={() => {
+                                onClose(arDurationSec, true);
+                            }}
+                        />
+                    )}
 
 
                 </div >
