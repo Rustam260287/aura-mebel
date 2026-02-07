@@ -167,26 +167,33 @@ export function useWebXRSession(): UseWebXRSessionResult {
             setHasHitTest(hitTestAvailable);
             console.log('[AR] Hit-test API:', hitTestAvailable ? 'available' : 'not available');
 
-            // Setup renderer for XR
-            await renderer.xr.setSession(xrSession);
-
             // Cascading reference space: local-floor → local → viewer
-            let spaceType: ReferenceSpaceType = 'viewer';
+            // CRITICAL: Set reference space type on renderer BEFORE setSession
+            let spaceType: ReferenceSpaceType = 'local-floor';
+            let referenceSpace: XRReferenceSpace;
+
             try {
-                await xrSession.requestReferenceSpace('local-floor');
+                referenceSpace = await xrSession.requestReferenceSpace('local-floor');
                 spaceType = 'local-floor';
                 console.log('[AR] Reference space: local-floor (ideal)');
             } catch {
                 try {
-                    await xrSession.requestReferenceSpace('local');
+                    referenceSpace = await xrSession.requestReferenceSpace('local');
                     spaceType = 'local';
                     console.log('[AR] Reference space: local (no floor)');
                 } catch {
-                    await xrSession.requestReferenceSpace('viewer');
+                    referenceSpace = await xrSession.requestReferenceSpace('viewer');
                     spaceType = 'viewer';
                     console.log('[AR] Reference space: viewer (fallback)');
                 }
             }
+
+            // Set reference space type for Three.js renderer
+            renderer.xr.setReferenceSpaceType(spaceType);
+
+            // Setup renderer for XR (after setting reference space type)
+            await renderer.xr.setSession(xrSession);
+
             setReferenceSpaceType(spaceType);
 
             // 3. Light estimation check
