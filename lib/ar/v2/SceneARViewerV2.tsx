@@ -199,7 +199,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // 1. Stop Loop
             renderer.setAnimationLoop(null);
 
-            // 2. Dispose Scene Resources (Geometries, Materials, Textures)
+            // 2. CRITICAL: Reset XR state to prevent corruption
+            renderer.xr.enabled = false;
+
+            // 3. Dispose Scene Resources (Geometries, Materials, Textures)
             threeScene.traverse((object) => {
                 if ((object as any).isMesh) {
                     const mesh = object as THREE.Mesh;
@@ -222,22 +225,28 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
             });
 
-            // 3. Dispose Renderer
+            // 4. Clear scene (removes all children)
+            threeScene.clear();
+
+            // 5. Dispose Renderer
             renderer.dispose();
 
-            // 4. DOM Cleanup
+            // 6. DOM Cleanup
             if (container.contains(renderer.domElement)) {
                 container.removeChild(renderer.domElement);
             }
 
+            // 7. Null all refs (prevents stale references)
             rendererRef.current = null;
             sceneRef.current = null;
             cameraRef.current = null;
             reticleRef.current = null;
             anchorRef.current = null;
 
-            // Clear Accessor Caches
+            // 8. Clear Accessor Caches
             loadedModelsRef.current = null;
+
+            console.log('[SceneARViewerV2] Cleanup complete');
         };
     }, []);
 
@@ -429,11 +438,18 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             onSessionStart?.();
 
-            // Setup hit-test (OPTIONAL — graceful fallback if not available)
-            const hitTestAvailable = await hitTest.setupHitTest(session);
-            if (!hitTestAvailable) {
-                console.log('[AR] Hit-test not available — will use fallback placement');
+            // Setup hit-test with SHARED reference space (CRITICAL for coordinate consistency)
+            // MUST use the same referenceSpace as renderer to prevent "flying model" issue
+            const sharedRefSpace = xrSession.referenceSpace;
+            if (!sharedRefSpace) {
+                console.error('[AR] CRITICAL: No reference space available after session start!');
                 setUseFallbackPlacement(true);
+            } else {
+                const hitTestAvailable = await hitTest.setupHitTest(session, sharedRefSpace);
+                if (!hitTestAvailable) {
+                    console.log('[AR] Hit-test not available — will use fallback placement');
+                    setUseFallbackPlacement(true);
+                }
             }
 
             placedRef.current = false;
@@ -474,40 +490,30 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 anchor.position.copy(placementPos);
                 anchor.quaternion.identity();
+
+                // CRITICAL: Disable matrixAutoUpdate BEFORE updateMatrixWorld
+                // This prevents Three.js from recalculating the matrix each frame
+                // which causes jitter/drift on Android
+                anchor.matrixAutoUpdate = false;
                 anchor.updateMatrixWorld(true);
 
-                // Spawn objects with pop-in animation
+                // Spawn objects
                 if (loadedModelsRef.current) {
                     sceneGraph.spawnObjects(loadedModelsRef.current, objects, anchor);
 
-                    // Pop-in animation: scale from 0 to 1 with easing
+                    // CRITICAL: Disable matrixAutoUpdate on all children too
+                    anchor.traverse((child) => {
+                        child.matrixAutoUpdate = false;
+                    });
+                    anchor.updateMatrixWorld(true);
+
+                    // Pop-in animation setup (will be animated in main XR loop)
+                    // NO parallel requestAnimationFrame - that causes conflicts!
                     anchor.scale.setScalar(0.01); // Start tiny
                     anchor.visible = true;
 
-                    // Animate scale up (native-like spring pop)
-                    const startTime = performance.now();
-                    const ANIM_DURATION = 300; // ms
-
-                    const animatePopIn = () => {
-                        const elapsed = performance.now() - startTime;
-                        const progress = Math.min(elapsed / ANIM_DURATION, 1);
-
-                        // Ease out back (slight overshoot for "pop" feel)
-                        const easeOutBack = (t: number) => {
-                            const c1 = 1.70158;
-                            const c3 = c1 + 1;
-                            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-                        };
-
-                        const scale = easeOutBack(progress);
-                        anchor.scale.setScalar(scale);
-
-                        if (progress < 1) {
-                            requestAnimationFrame(animatePopIn);
-                        }
-                    };
-
-                    requestAnimationFrame(animatePopIn);
+                    // Store animation start time for main loop to handle
+                    (anchor as any)._popInStart = performance.now();
                 }
 
                 placedRef.current = true;
@@ -541,7 +547,25 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             // Animation loop
             renderer.setAnimationLoop((time: number, frame?: XRFrame) => {
-                if (frame && !placedRef.current) {
+                // ========================================
+                // FIRST FRAME GUARDS (CRITICAL FOR ANDROID)
+                // Prevents rendering before everything is ready
+                // ========================================
+                if (!frame) {
+                    console.log('[AR_LOOP] Skip: no frame');
+                    return;
+                }
+                if (!loadedModelsRef.current) {
+                    console.log('[AR_LOOP] Skip: models not loaded');
+                    return;
+                }
+                // Guard against rendering during startup phases
+                if (isStartingRef.current) {
+                    console.log('[AR_LOOP] Skip: still starting');
+                    return;
+                }
+
+                if (!placedRef.current) {
                     const hasHit = hitTest.updateReticle(frame, reticle);
 
                     // Animate Reticle (Breathing)
@@ -598,6 +622,29 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                 mat.opacity = 0.8;
                             }
                         }
+                    }
+                }
+
+                // Pop-in animation (handled in main loop, not separate RAF)
+                const popInStart = (anchor as any)._popInStart;
+                if (popInStart !== undefined && popInStart !== null) {
+                    const ANIM_DURATION = 300; // ms
+                    const elapsed = performance.now() - popInStart;
+                    const progress = Math.min(elapsed / ANIM_DURATION, 1);
+
+                    // Ease out back (slight overshoot for "pop" feel)
+                    const easeOutBack = (t: number) => {
+                        const c1 = 1.70158;
+                        const c3 = c1 + 1;
+                        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+                    };
+
+                    const scale = easeOutBack(progress);
+                    anchor.scale.setScalar(scale);
+
+                    if (progress >= 1) {
+                        // Animation complete - clear the marker
+                        (anchor as any)._popInStart = null;
                     }
                 }
 

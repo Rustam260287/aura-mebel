@@ -31,6 +31,8 @@ interface UseWebXRSessionResult {
     hasDomOverlay: boolean;
     hasLightEstimation: boolean;
     referenceSpaceType: ReferenceSpaceType | null;
+    /** CRITICAL: Single shared reference space for entire AR session */
+    referenceSpace: XRReferenceSpace | null;
 
     checkSupport: () => Promise<{ supported: boolean; reason: ARSupportReason }>;
     startSession: (renderer: THREE.WebGLRenderer, overlayRoot: HTMLElement) => Promise<XRSession>;
@@ -46,8 +48,10 @@ export function useWebXRSession(): UseWebXRSessionResult {
     const [hasDomOverlay, setHasDomOverlay] = useState(false);
     const [hasLightEstimation, setHasLightEstimation] = useState(false);
     const [referenceSpaceType, setReferenceSpaceType] = useState<ReferenceSpaceType | null>(null);
+    const [referenceSpace, setReferenceSpace] = useState<XRReferenceSpace | null>(null);
 
     const sessionRef = useRef<XRSession | null>(null);
+    const referenceSpaceRef = useRef<XRReferenceSpace | null>(null);
 
     /**
      * Pre-check AR support BEFORE attempting to start session
@@ -188,6 +192,10 @@ export function useWebXRSession(): UseWebXRSessionResult {
                 }
             }
 
+            // CRITICAL: Store reference space for sharing with other hooks
+            referenceSpaceRef.current = referenceSpace;
+            setReferenceSpace(referenceSpace);
+
             // Set reference space type for Three.js renderer
             renderer.xr.setReferenceSpaceType(spaceType);
 
@@ -195,6 +203,7 @@ export function useWebXRSession(): UseWebXRSessionResult {
             await renderer.xr.setSession(xrSession);
 
             setReferenceSpaceType(spaceType);
+            console.log('[AR] Reference space stored for sharing');
 
             // 3. Light estimation check
             let lightEstimationAvailable = false;
@@ -257,7 +266,9 @@ export function useWebXRSession(): UseWebXRSessionResult {
         }
 
         sessionRef.current = null;
+        referenceSpaceRef.current = null;
         setSession(null);
+        setReferenceSpace(null);
         setHasHitTest(false);
         setHasDomOverlay(false);
         setHasLightEstimation(false);
@@ -273,6 +284,7 @@ export function useWebXRSession(): UseWebXRSessionResult {
         hasDomOverlay,
         hasLightEstimation,
         referenceSpaceType,
+        referenceSpace,
         checkSupport,
         startSession,
         endSession,

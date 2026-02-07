@@ -134,7 +134,20 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       // 3. Emit analytics
       emitEvent({ type: 'EXIT_AR', durationSec });
 
-      // 4. Dev assertion: Ensure no AR canvas remains
+      // 4. CRITICAL: Resume model-viewer AFTER AR cleanup
+      // Double RAF to ensure AR WebGL context is fully disposed
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const mv = inlineModelViewerRef.current as any;
+          if (mv) {
+            console.log('[3D] Resuming model-viewer after AR');
+            mv.style.visibility = 'visible';
+            mv.play?.();
+          }
+        });
+      });
+
+      // 5. Dev assertion: Ensure no AR canvas remains
       if (process.env.NODE_ENV === 'development') {
         requestAnimationFrame(() => {
           const leftoverCanvas = document.querySelector('canvas[data-ar]');
@@ -592,6 +605,16 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       emitMetaEvent({ type: 'OPENED_AR' });
       setPostArHintVisible(false);
       setUiState('IN_AR');
+
+      // CRITICAL: Pause model-viewer BEFORE opening AR
+      // Two WebGL contexts on Android = crash/corruption
+      const mv = inlineModelViewerRef.current as any;
+      if (mv) {
+        console.log('[3D] Pausing model-viewer for AR');
+        mv.pause?.();
+        mv.style.visibility = 'hidden';
+      }
+
       setShowSceneARV2(true);
       return;
     }

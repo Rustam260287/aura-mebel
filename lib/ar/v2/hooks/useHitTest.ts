@@ -12,7 +12,8 @@ import { useCallback, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface UseHitTestResult {
-    setupHitTest: (session: XRSession) => Promise<boolean>; // Returns true if hit-test available
+    /** CRITICAL: Pass the SHARED referenceSpace from useWebXRSession */
+    setupHitTest: (session: XRSession, sharedReferenceSpace: XRReferenceSpace) => Promise<boolean>;
     updateReticle: (frame: XRFrame, reticle: THREE.Object3D) => boolean;
     getFallbackPosition: (camera: THREE.Camera) => THREE.Vector3;
     isHitTestAvailable: boolean;
@@ -28,9 +29,13 @@ export function useHitTest(): UseHitTestResult {
 
     /**
      * Setup hit-test source
+     * CRITICAL: Uses the SAME referenceSpace as the renderer for coordinate consistency
      * Returns TRUE if hit-test is available, FALSE if not (graceful fallback)
      */
-    const setupHitTest = useCallback(async (session: XRSession): Promise<boolean> => {
+    const setupHitTest = useCallback(async (
+        session: XRSession,
+        sharedReferenceSpace: XRReferenceSpace // PASSED FROM PARENT - DO NOT CREATE NEW
+    ): Promise<boolean> => {
         // Check if hit-test is supported on this session
         if (!session.requestHitTestSource) {
             console.log('[HitTest] requestHitTestSource not available — using fallback');
@@ -39,16 +44,10 @@ export function useHitTest(): UseHitTestResult {
         }
 
         try {
-            // Get reference space — prefer local-floor, fallback to local
-            let localSpace: XRReferenceSpace;
-            try {
-                localSpace = await session.requestReferenceSpace('local-floor');
-                console.log('[HitTest] Using local-floor reference space');
-            } catch {
-                localSpace = await session.requestReferenceSpace('local');
-                console.log('[HitTest] Using local reference space');
-            }
-            referenceSpaceRef.current = localSpace;
+            // CRITICAL: Use the SHARED reference space from parent, NOT a new one
+            // This ensures hit-test coordinates match renderer coordinates
+            referenceSpaceRef.current = sharedReferenceSpace;
+            console.log('[HitTest] Using SHARED reference space from parent');
 
             // Get viewer space for hit-test ray origin
             const viewerSpace = await session.requestReferenceSpace('viewer');
@@ -64,7 +63,7 @@ export function useHitTest(): UseHitTestResult {
 
             hitTestSourceRef.current = hitTestSource;
             setIsHitTestAvailable(true);
-            console.log('[HitTest] Hit-test source created successfully');
+            console.log('[HitTest] Hit-test source created with shared reference space');
             return true;
         } catch (e) {
             console.warn('[HitTest] Setup failed (non-critical) — using fallback:', e);
