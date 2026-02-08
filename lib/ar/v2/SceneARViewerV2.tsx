@@ -623,11 +623,23 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
 
 
-                // Visual Feedback Loop
+                // Visual Feedback Loop (FIXED: gestures + pop-in now run ALWAYS, not just when no selection)
                 if (frame && placedRef.current) {
+                    // 1. Calculate delta time (ALWAYS after placement)
+                    const now = time / 1000;
+                    const delta = (anchor as any)._lastFrameTime ? (now - (anchor as any)._lastFrameTime) : 0.016;
+                    (anchor as any)._lastFrameTime = now;
+                    const safeDelta = Math.min(delta, 0.1); // Cap to prevent huge jumps
+
+                    // 2. Update gestures (ALWAYS when active/manipulating) - CRITICAL FIX
+                    const currentStage = stageRef.current;
+                    if (currentStage === 'active' || currentStage === 'manipulating') {
+                        updateGestures(safeDelta);
+                    }
+
+                    // 3. Visual feedback - ring pulsing for selected item
                     const isManipulating = gestureStateRef.current.mode !== 'none';
                     const activeKey = sceneGraph.selectedKeyRef.current;
-
                     if (activeKey) {
                         const item = sceneGraph.itemsRef.current.find(i => i.key === activeKey);
                         const ring = item?.group.getObjectByName('selectionRing');
@@ -635,52 +647,25 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         if (ring && (ring as THREE.Mesh).material) {
                             const mat = (ring as THREE.Mesh).material as THREE.LineBasicMaterial;
                             if (isManipulating) {
-                                // Pulse opacity: 0.5 to 1.0
-                                const pulse = 0.75 + 0.25 * Math.sin(time / 150);
-                                mat.opacity = pulse;
+                                mat.opacity = 0.75 + 0.25 * Math.sin(time / 150);
                             } else {
-                                // Reset to default
                                 mat.opacity = 0.8;
                             }
                         }
-                    } else {
-                        // Update Physics / Gestures
-                        // We calculate sloppy delta time since Three's Clock might restart on session changes/pauses
-                        // For AR, frame rate can vary wildly.
-                        // To be safe, we can use (time - lastTime) / 1000
-                        // But 'time' passed by setAnimationLoop is relative to session start.
-                        // This is robust.
-                        const now = time / 1000;
-                        const delta = (anchor as any)._lastFrameTime ? (now - (anchor as any)._lastFrameTime) : 0.016;
-                        (anchor as any)._lastFrameTime = now;
+                    }
 
-                        // Cap delta to prevent huge jumps if thread hangs
-                        const safeDelta = Math.min(delta, 0.1);
+                    // 4. Pop-in animation (runs independently of selection)
+                    const popInStart = (anchor as any)._popInStart;
+                    if (popInStart) {
+                        const progress = Math.min(1, (time - popInStart) / 600);
+                        const ease = 1 - Math.pow(1 - progress, 3);
+                        const targetScale = 1;
+                        const currentScale = 0.01 + (targetScale - 0.01) * ease;
+                        anchor.scale.setScalar(currentScale);
+                        anchor.updateMatrix();
 
-                        // USE REF FOR STAGE CHECK (Prevents stale closure bug)
-                        const currentStage = stageRef.current;
-                        if (currentStage === 'active' || currentStage === 'manipulating') {
-                            // Use the frame-rate independent update function
-                            updateGestures(safeDelta);
-                        }
-
-                        // Pop-in animation
-                        const popInStart = (anchor as any)._popInStart;
-                        if (popInStart) {
-                            const progress = Math.min(1, (time - popInStart) / 600); // 600ms pop-in
-                            // Elastic ease out
-                            // const ease = 1 + Math.pow(2, -10 * progress) * Math.sin((progress * 10 - 0.75) * ((2 * Math.PI) / 3));
-                            // Simple ease out cubic is safer for AR stability
-                            const ease = 1 - Math.pow(1 - progress, 3);
-
-                            const targetScale = 1;
-                            const currentScale = 0.01 + (targetScale - 0.01) * ease;
-                            anchor.scale.setScalar(currentScale);
-                            anchor.updateMatrix(); // Manual update since we disabled auto
-
-                            if (progress >= 1) {
-                                (anchor as any)._popInStart = null; // Animation done
-                            }
+                        if (progress >= 1) {
+                            (anchor as any)._popInStart = null;
                         }
                     }
                 }
