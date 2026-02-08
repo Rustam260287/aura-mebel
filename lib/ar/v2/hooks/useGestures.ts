@@ -22,6 +22,7 @@ interface UseGesturesOptions {
 
 interface UseGesturesResult {
     gestureRef: React.RefObject<GestureState>;
+    updateGestures: (deltaTimeSec: number) => void;
 }
 
 // Helpers
@@ -52,10 +53,16 @@ export function useGestures({
     const tmpVec = useRef(new THREE.Vector3());
     const tmpNdc = useRef(new THREE.Vector2());
 
-    // Smooth interpolation for native-like feel
-    // Target position is set immediately, actual position lerps towards it
+    // Target states for smooth interpolation (Frame-Rate Independent)
+    // We update these in touchmove, and LERP towards them in animation loop
     const targetPositionRef = useRef<THREE.Vector3 | null>(null);
-    const LERP_FACTOR = 0.35; // Higher = more responsive, Lower = smoother (0.25-0.4 feels native)
+    const targetScaleRef = useRef<number | null>(null);
+    const targetRotationRef = useRef<number | null>(null);
+
+    // Speed factors (roughly 10-15 feels snappy yet smooth at 60fps)
+    const POS_LERP_SPEED = 12;
+    const SCALE_LERP_SPEED = 10;
+    const ROT_LERP_SPEED = 10;
 
     // Build ray from touch position
     const buildRay = useCallback((clientX: number, clientY: number): THREE.Raycaster | null => {
@@ -64,13 +71,10 @@ export function useGestures({
         if (!renderer || !camera) return null;
 
         // For WebXR DOM Overlay, coordinates are relative to the viewport (window)
-        // NOT the canvas element (which might be scaled/transformed by the XR compositor)
         const x = (clientX / window.innerWidth) * 2 - 1;
         const y = -(clientY / window.innerHeight) * 2 + 1;
         tmpNdc.current.set(x, y);
 
-        // Always use reference camera for consistent raycasting
-        // (Anchor is in world space, cameraRef is updated by WebXR manager implicitly or explicitly)
         raycasterRef.current.setFromCamera(tmpNdc.current, camera);
         return raycasterRef.current;
     }, [cameraRef, rendererRef]);
@@ -111,9 +115,7 @@ export function useGestures({
                 const t = e.touches[0];
                 let key = pickItem(t.clientX, t.clientY);
 
-                // Relaxed picking logic:
-                // 1. If raycast missed but single object exists → select it
-                // 2. If raycast missed but we already have a selection → keep it
+                // Relaxed picking logic
                 if (!key) {
                     if (itemsRef.current.length === 1) {
                         key = itemsRef.current[0].key;
@@ -131,6 +133,8 @@ export function useGestures({
 
                 if (!key) {
                     gestureRef.current = { mode: 'none' };
+                    // Reset targets
+                    targetPositionRef.current = null;
                     return;
                 }
 
@@ -148,6 +152,11 @@ export function useGestures({
                 const item = itemsRef.current.find(i => i.key === key);
                 if (!item) return;
 
+                // Init targets with current state to avoid jumps
+                targetPositionRef.current = item.group.position.clone();
+                targetScaleRef.current = item.userScale;
+                targetRotationRef.current = item.group.rotation.y;
+
                 const offset = item.group.position.clone().sub(local);
                 gestureRef.current = { mode: 'drag', pointerId: t.identifier, offsetLocal: offset };
                 if (onManipulationChange) onManipulationChange(true);
@@ -159,7 +168,6 @@ export function useGestures({
                 const [a, b] = [e.touches[0], e.touches[1]];
                 let key = selectedKeyRef.current;
 
-                // Auto-select for pinch
                 if (!key && itemsRef.current.length === 1) {
                     key = itemsRef.current[0].key;
                     onSelect(key);
@@ -169,6 +177,11 @@ export function useGestures({
                 const item = itemsRef.current.find(i => i.key === key);
                 if (!item) return;
 
+                // Init targets
+                targetPositionRef.current = item.group.position.clone();
+                targetScaleRef.current = item.userScale;
+                targetRotationRef.current = item.group.rotation.y;
+
                 gestureRef.current = {
                     mode: 'pinch',
                     startDistance: distance2(a, b),
@@ -177,7 +190,6 @@ export function useGestures({
                     startRotationY: item.group.rotation.y,
                 };
                 if (onManipulationChange) onManipulationChange(true);
-                // Heuristic: pinch is usually scale, but we track 'scale' as the generic "pinch" action
                 if (onGestureStart) onGestureStart('scale');
             }
         };
@@ -205,11 +217,6 @@ export function useGestures({
                 if (!anchor) return;
                 const local = anchor.worldToLocal(hit.clone());
 
-                const key = selectedKeyRef.current;
-                if (!key) return;
-                const item = itemsRef.current.find(i => i.key === key);
-                if (!item) return;
-
                 const next = local.add(g.offsetLocal);
 
                 // Clamp drag distance
@@ -217,42 +224,28 @@ export function useGestures({
                     next.setLength(MAX_DRAG_DISTANCE_M);
                 }
 
-                // Smooth interpolation for native-like feel
-                // Use lerp instead of direct assignment
-                const currentX = item.group.position.x;
-                const currentZ = item.group.position.z;
-                item.group.position.x = currentX + (next.x - currentX) * LERP_FACTOR;
-                item.group.position.z = currentZ + (next.z - currentZ) * LERP_FACTOR;
+                // Update TARGET only (Physics happens in updateGestures)
+                targetPositionRef.current = next;
                 return;
             }
 
             // Pinch (2 fingers)
             if (e.touches.length >= 2 && g.mode === 'pinch') {
                 const [a, b] = [e.touches[0], e.touches[1]];
-                const key = selectedKeyRef.current;
-                if (!key) return;
-                const item = itemsRef.current.find(i => i.key === key);
-                if (!item) return;
 
                 const dist = distance2(a, b);
                 if (dist < MIN_PINCH_DISTANCE_PX) return;
 
-                // Smooth scale with lerp for native feel
+                // Scale
                 const scaleFactor = g.startDistance > 0 ? dist / g.startDistance : 1;
                 const targetUserScale = clamp(g.startUserScale * scaleFactor, MIN_USER_SCALE, MAX_USER_SCALE);
+                targetScaleRef.current = targetUserScale;
 
-                // Lerp scale for smooth feel
-                const currentScale = item.userScale;
-                const smoothedScale = currentScale + (targetUserScale - currentScale) * LERP_FACTOR;
-                item.userScale = smoothedScale;
-                item.group.scale.setScalar(item.baseScale * item.userScale);
-
-                // Rotation with Magnetic Snap (45 deg)
+                // Rotation
                 const ang = angle2(a, b);
                 const delta = ang - g.startAngle;
                 let rawRotation = g.startRotationY - delta;
 
-                // Magnetic Snap with haptic feedback
                 const SNAP_ANGLE = Math.PI / 4; // 45 degrees
                 const SNAP_THRESHOLD = Math.PI / 24; // ~7.5 degrees
 
@@ -260,29 +253,47 @@ export function useGestures({
                 const snapTarget = Math.round(rawRotation / SNAP_ANGLE) * SNAP_ANGLE;
                 const distToSnap = Math.abs(rawRotation - snapTarget);
 
-                let targetRotation: number;
+                let startSnapTargetRotation: number;
                 if (distToSnap < SNAP_THRESHOLD) {
-                    targetRotation = snapTarget;
-                    // Haptic on snap (only when just snapped)
-                    const wasSnapped = Math.abs(item.group.rotation.y - snapTarget) < 0.01;
-                    if (!wasSnapped && navigator.vibrate) {
-                        navigator.vibrate(10); // Very short tick
+                    startSnapTargetRotation = snapTarget;
+                    // Haptic (we can still do side-effects here, or move to update loop)
+                    // Moving haptic to here is fine for now as it's triggered by input state crossing threshold
+                    const key = selectedKeyRef.current;
+                    if (key) {
+                        const item = itemsRef.current.find(i => i.key === key);
+                        if (item) {
+                            const wasSnapped = Math.abs(item.group.rotation.y - snapTarget) < 0.01;
+                            if (!wasSnapped && navigator.vibrate) {
+                                navigator.vibrate(10);
+                            }
+                        }
                     }
                 } else {
-                    targetRotation = rawRotation;
+                    startSnapTargetRotation = rawRotation;
                 }
 
-                // Smooth rotation lerp
-                const currentRot = item.group.rotation.y;
-                item.group.rotation.y = currentRot + (targetRotation - currentRot) * LERP_FACTOR;
+                targetRotationRef.current = startSnapTargetRotation;
             }
         };
 
         const endGesture = (e: TouchEvent) => {
-            // Only reset gesture if ALL fingers are lifted.
             if (e.touches.length === 0) {
                 const wasManipulating = gestureRef.current.mode !== 'none';
                 gestureRef.current = { mode: 'none' };
+                // Keep targets as they are (settled), or null them?
+                // Nulling them stops LERPing, which saves CPU.
+                // But we might want a bit of "settle" time.
+                // For simplicity: Null them to stop updates, assuming we reached target or close to it.
+                // Actually no, let's keep them valid for a few frames or just let updateGestures handle null check.
+                // Ideally we want to stop LERPing eventually.
+                // Let's set targets to null here to verify "input stopped".
+                // But if we stop abruptly, the LERP stops. 
+                // Better strategy: Let updateGestures check distance. If close, snap and stop.
+                // For now, let's keep targets active until nullified or mode change.
+                // Actually, if we nullify here, the movement stops instantly.
+                // We want the smoothing to finish.
+                // So let's NOT nullify here.
+
                 if (wasManipulating && onManipulationChange) {
                     onManipulationChange(false);
                 }
@@ -312,5 +323,42 @@ export function useGestures({
         selectedKeyRef,
     ]);
 
-    return { gestureRef };
+    // Frame update function (called from main loop)
+    const updateGestures = useCallback((deltaTimeSec: number) => {
+        const key = selectedKeyRef.current;
+        if (!key) return;
+
+        const item = itemsRef.current.find(i => i.key === key);
+        if (!item) return;
+
+        // 1. Position LERP
+        if (targetPositionRef.current) {
+            // Frame-rate independent damping
+            // lerp(current, target, 1 - exp(-speed * dt))
+            const lambda = 1 - Math.exp(-POS_LERP_SPEED * deltaTimeSec);
+            item.group.position.lerp(targetPositionRef.current, lambda);
+        }
+
+        // 2. Scale LERP
+        if (targetScaleRef.current !== null) {
+            const lambda = 1 - Math.exp(-SCALE_LERP_SPEED * deltaTimeSec);
+            const current = item.userScale;
+            const next = current + (targetScaleRef.current - current) * lambda;
+            item.userScale = next;
+            item.group.scale.setScalar(item.baseScale * next);
+        }
+
+        // 3. Rotation LERP
+        if (targetRotationRef.current !== null) {
+            const lambda = 1 - Math.exp(-ROT_LERP_SPEED * deltaTimeSec);
+            const current = item.group.rotation.y;
+            // Handle wrap-around? Not needed for Y rotation unless we clamp, but for furniture Y is usually bounded or continuous.
+            // Simple lerp is fine.
+            const next = current + (targetRotationRef.current - current) * lambda;
+            item.group.rotation.y = next;
+        }
+
+    }, [itemsRef, selectedKeyRef]);
+
+    return { gestureRef, updateGestures };
 }

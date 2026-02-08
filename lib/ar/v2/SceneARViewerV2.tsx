@@ -51,11 +51,17 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const isStartingRef = useRef(false); // Single-entry protection
     const xrStartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const arSessionIdRef = useRef(createArSessionId());
+    const stageRef = useRef<ARStage>('idle'); // For animation loop access
 
     // State
     const [stage, setStage] = useState<ARStage>('idle');
     const [error, setError] = useState<string | null>(null);
     const [startupError, setStartupError] = useState<string | null>(null); // Separate startup error
+
+    // Sync stage to ref for loop access
+    useEffect(() => {
+        stageRef.current = stage;
+    }, [stage]);
 
     // Quiet UX: One-time hints
     const [showOnboardingHint, setShowOnboardingHint] = useState(false);
@@ -111,7 +117,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         }
     };
 
-    const { gestureRef: gestureStateRef } = useGestures({
+    const { gestureRef: gestureStateRef, updateGestures } = useGestures({
         overlayRef: gestureRef,
         anchorRef,
         itemsRef: sceneGraph.itemsRef,
@@ -414,7 +420,20 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // CRITICAL: Pass overlay only if DOM overlay is actually supported
             // Passing overlay when not supported can crash requestSession on some Android
             const safeOverlay = xrSession.hasDomOverlay ? overlay : undefined;
-            const session = await xrSession.startSession(renderer, safeOverlay!);
+            const { session, referenceSpace } = await xrSession.startSession(renderer, safeOverlay!);
+
+            // 🚨 CRITICAL ZOMBIE GUARD
+            // If the timeout fired (or user cancelled) while we were awaiting, 
+            // the UI is already reset. We MUST kill this late-arriving session.
+            if (!isStartingRef.current) {
+                console.warn('[AR] Zombie XR session detected. Terminating immediately.');
+                try {
+                    await session.end();
+                } catch (e) {
+                    console.warn('[AR] Failed to kill zombie session (ignored):', e);
+                }
+                return;
+            }
 
             // Clear timeout on success
             if (xrStartTimeoutRef.current) {
@@ -440,7 +459,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             // Setup hit-test with SHARED reference space (CRITICAL for coordinate consistency)
             // MUST use the same referenceSpace as renderer to prevent "flying model" issue
-            const sharedRefSpace = xrSession.referenceSpace;
+            const sharedRefSpace = referenceSpace;
             if (!sharedRefSpace) {
                 console.error('[AR] CRITICAL: No reference space available after session start!');
                 setUseFallbackPlacement(true);
@@ -622,29 +641,45 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                                 mat.opacity = 0.8;
                             }
                         }
-                    }
-                }
+                    } else {
+                        // Update Physics / Gestures
+                        // We calculate sloppy delta time since Three's Clock might restart on session changes/pauses
+                        // For AR, frame rate can vary wildly.
+                        // To be safe, we can use (time - lastTime) / 1000
+                        // But 'time' passed by setAnimationLoop is relative to session start.
+                        // This is robust.
+                        const now = time / 1000;
+                        const delta = (anchor as any)._lastFrameTime ? (now - (anchor as any)._lastFrameTime) : 0.016;
+                        (anchor as any)._lastFrameTime = now;
 
-                // Pop-in animation (handled in main loop, not separate RAF)
-                const popInStart = (anchor as any)._popInStart;
-                if (popInStart !== undefined && popInStart !== null) {
-                    const ANIM_DURATION = 300; // ms
-                    const elapsed = performance.now() - popInStart;
-                    const progress = Math.min(elapsed / ANIM_DURATION, 1);
+                        // Cap delta to prevent huge jumps if thread hangs
+                        const safeDelta = Math.min(delta, 0.1);
 
-                    // Ease out back (slight overshoot for "pop" feel)
-                    const easeOutBack = (t: number) => {
-                        const c1 = 1.70158;
-                        const c3 = c1 + 1;
-                        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-                    };
+                        // USE REF FOR STAGE CHECK (Prevents stale closure bug)
+                        const currentStage = stageRef.current;
+                        if (currentStage === 'active' || currentStage === 'manipulating') {
+                            // Use the frame-rate independent update function
+                            updateGestures(safeDelta);
+                        }
 
-                    const scale = easeOutBack(progress);
-                    anchor.scale.setScalar(scale);
+                        // Pop-in animation
+                        const popInStart = (anchor as any)._popInStart;
+                        if (popInStart) {
+                            const progress = Math.min(1, (time - popInStart) / 600); // 600ms pop-in
+                            // Elastic ease out
+                            // const ease = 1 + Math.pow(2, -10 * progress) * Math.sin((progress * 10 - 0.75) * ((2 * Math.PI) / 3));
+                            // Simple ease out cubic is safer for AR stability
+                            const ease = 1 - Math.pow(1 - progress, 3);
 
-                    if (progress >= 1) {
-                        // Animation complete - clear the marker
-                        (anchor as any)._popInStart = null;
+                            const targetScale = 1;
+                            const currentScale = 0.01 + (targetScale - 0.01) * ease;
+                            anchor.scale.setScalar(currentScale);
+                            anchor.updateMatrix(); // Manual update since we disabled auto
+
+                            if (progress >= 1) {
+                                (anchor as any)._popInStart = null; // Animation done
+                            }
+                        }
                     }
                 }
 
