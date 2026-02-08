@@ -420,7 +420,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // CRITICAL: Pass overlay only if DOM overlay is actually supported
             // Passing overlay when not supported can crash requestSession on some Android
             const safeOverlay = xrSession.hasDomOverlay ? overlay : undefined;
-            const { session, referenceSpace } = await xrSession.startSession(renderer, safeOverlay!);
+            const startResult = await xrSession.startSession(renderer, safeOverlay!);
+            const activeSession = startResult.session;
+            const activeRefSpace = startResult.referenceSpace;
 
             // 🚨 CRITICAL ZOMBIE GUARD
             // If the timeout fired (or user cancelled) while we were awaiting, 
@@ -428,7 +430,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             if (!isStartingRef.current) {
                 console.warn('[AR] Zombie XR session detected. Terminating immediately.');
                 try {
-                    await session.end();
+                    await activeSession.end();
                 } catch (e) {
                     console.warn('[AR] Failed to kill zombie session (ignored):', e);
                 }
@@ -459,12 +461,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             // Setup hit-test with SHARED reference space (CRITICAL for coordinate consistency)
             // MUST use the same referenceSpace as renderer to prevent "flying model" issue
-            const sharedRefSpace = referenceSpace;
+            const sharedRefSpace = activeRefSpace;
             if (!sharedRefSpace) {
                 console.error('[AR] CRITICAL: No reference space available after session start!');
                 setUseFallbackPlacement(true);
             } else {
-                const hitTestAvailable = await hitTest.setupHitTest(session, sharedRefSpace);
+                const hitTestAvailable = await hitTest.setupHitTest(activeSession, sharedRefSpace);
                 if (!hitTestAvailable) {
                     console.log('[AR] Hit-test not available — will use fallback placement');
                     setUseFallbackPlacement(true);
@@ -559,7 +561,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
             };
 
-            session.addEventListener('select', onSelect);
+            activeSession.addEventListener('select', onSelect);
 
             // Track when placing started for fallback timeout
             placingStartTimeRef.current = Date.now();

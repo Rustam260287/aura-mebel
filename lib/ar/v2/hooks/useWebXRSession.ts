@@ -35,7 +35,7 @@ interface UseWebXRSessionResult {
     referenceSpace: XRReferenceSpace | null;
 
     checkSupport: () => Promise<{ supported: boolean; reason: ARSupportReason }>;
-    startSession: (renderer: THREE.WebGLRenderer, overlayRoot: HTMLElement) => Promise<XRSession>;
+    startSession: (renderer: THREE.WebGLRenderer, overlayRoot: HTMLElement) => Promise<{ session: XRSession; referenceSpace: XRReferenceSpace; hasHitTest: boolean; hasDomOverlay: boolean; hasLightEstimation: boolean; referenceSpaceType: ReferenceSpaceType; }>;
     endSession: () => Promise<void>;
 }
 
@@ -99,7 +99,7 @@ export function useWebXRSession(): UseWebXRSessionResult {
     const startSession = useCallback(async (
         renderer: THREE.WebGLRenderer,
         overlayRoot: HTMLElement
-    ): Promise<XRSession> => {
+    ): Promise<{ session: XRSession; referenceSpace: XRReferenceSpace; hasHitTest: boolean; hasDomOverlay: boolean; hasLightEstimation: boolean; referenceSpaceType: ReferenceSpaceType; }> => {
         const xr = (navigator as any)?.xr;
         if (!xr) {
             throw new Error('WebXR not available');
@@ -108,7 +108,18 @@ export function useWebXRSession(): UseWebXRSessionResult {
         // Prevent double start
         if (sessionRef.current) {
             console.warn('[AR] Session already active');
-            return sessionRef.current;
+            if (referenceSpaceRef.current) {
+                return {
+                    session: sessionRef.current,
+                    referenceSpace: referenceSpaceRef.current,
+                    hasHitTest,
+                    hasDomOverlay,
+                    hasLightEstimation,
+                    referenceSpaceType: referenceSpaceType || 'local-floor'
+                };
+            }
+            // Should not happen if session is active, but fallback:
+            throw new Error('Session active but no reference space');
         }
 
         setError(null);
@@ -231,7 +242,14 @@ export function useWebXRSession(): UseWebXRSessionResult {
             };
             xrSession.addEventListener('end', onEnd);
 
-            return xrSession;
+            return {
+                session: xrSession,
+                referenceSpace,
+                hasHitTest: hitTestAvailable,
+                hasDomOverlay: overlayAvailable,
+                hasLightEstimation: lightEstimationAvailable,
+                referenceSpaceType: spaceType
+            };
         } catch (e: any) {
             console.error('[AR] startSession error:', e);
 
