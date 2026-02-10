@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { nanoid } from 'nanoid';
 import type { PlacedItem, LoadingProgress } from '../types';
+import { createContactShadow } from '../utils/contactShadow';
 
 interface SceneObject {
     objectId: string;
@@ -154,6 +155,11 @@ export function useSceneGraph(): UseSceneGraphResult {
             selectionOutline.name = 'selectionRing'; // Keep name for compatibility
             selectionOutline.visible = false;
             group.add(selectionOutline);
+
+            // Contact Shadow (iOS Quick Look style — soft blob shadow beneath object)
+            const contactShadow = createContactShadow(tempSize.x, tempSize.z);
+            contactShadow.name = 'contactShadow';
+            group.add(contactShadow);
 
             // Apply transforms
             const pos = obj.position || [0, 0, 0];

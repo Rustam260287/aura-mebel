@@ -10,6 +10,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { setupARLighting, applyMaterialFallback } from './utils/lighting';
+import { disposeShadowCache } from './utils/contactShadow';
 import { useImmersive } from '../../../contexts/ImmersiveContext';
 
 import { trackJourneyEvent } from '../../journey/client';
@@ -81,12 +82,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const xrSession = useWebXRSession();
     const hitTest = useHitTest();
     const sceneGraph = useSceneGraph();
-    const selectedKeyRef = useRef<string | null>(null);
-
-    // Update selectedKeyRef when sceneGraph.selectedKey changes
-    useEffect(() => {
-        selectedKeyRef.current = sceneGraph.selectedKey;
-    }, [sceneGraph.selectedKey]);
+    // Use sceneGraph's selectedKeyRef DIRECTLY — no delay, no sync issues
+    const selectedKeyRef = sceneGraph.selectedKeyRef;
 
     // Handler for gesture manipulation state
     const onManipulationChange = useCallback((isManipulating: boolean) => {
@@ -177,20 +174,51 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         // Lighting (Premium AR Setup: Atmosphere, Key, Fill, RoomEnv)
         setupARLighting(threeScene, renderer);
 
-        // Reticle
-        // Reticle
+        // Reticle (iOS Quick Look style — outer ring + center dot + crosshairs)
         const reticleGroup = new THREE.Group();
         reticleGroup.matrixAutoUpdate = false;
         reticleGroup.visible = false;
 
-        const reticleGeom = new THREE.RingGeometry(0.08, 0.12, 32);
-        reticleGeom.rotateX(-Math.PI / 2);
-        const reticleMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
-        const reticleMesh = new THREE.Mesh(reticleGeom, reticleMat);
-        reticleGroup.add(reticleMesh);
+        // Outer ring
+        const outerRingGeom = new THREE.RingGeometry(0.10, 0.12, 48);
+        outerRingGeom.rotateX(-Math.PI / 2);
+        const outerRingMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            opacity: 0.85,
+            transparent: true,
+            depthWrite: false,
+        });
+        const outerRing = new THREE.Mesh(outerRingGeom, outerRingMat);
+        reticleGroup.add(outerRing);
+
+        // Center dot
+        const dotGeom = new THREE.CircleGeometry(0.012, 24);
+        dotGeom.rotateX(-Math.PI / 2);
+        const dotMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            opacity: 0.95,
+            transparent: true,
+            depthWrite: false,
+        });
+        const centerDot = new THREE.Mesh(dotGeom, dotMat);
+        centerDot.position.y = 0.001;
+        reticleGroup.add(centerDot);
+
+        // Subtle fill disc (very faint to show surface detection area)
+        const fillGeom = new THREE.CircleGeometry(0.10, 48);
+        fillGeom.rotateX(-Math.PI / 2);
+        const fillMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            opacity: 0.08,
+            transparent: true,
+            depthWrite: false,
+        });
+        const fillDisc = new THREE.Mesh(fillGeom, fillMat);
+        fillDisc.position.y = 0.0005;
+        reticleGroup.add(fillDisc);
 
         threeScene.add(reticleGroup);
-        reticleRef.current = reticleGroup; // Ref points to Group now
+        reticleRef.current = reticleGroup;
 
         // Anchor
         const anchor = new THREE.Group();
@@ -251,6 +279,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             // 8. Clear Accessor Caches
             loadedModelsRef.current = null;
+
+            // 9. Dispose shared shadow texture
+            disposeShadowCache();
 
             console.log('[SceneARViewerV2] Cleanup complete');
         };
@@ -588,11 +619,18 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 if (!placedRef.current) {
                     const hasHit = hitTest.updateReticle(frame, reticle);
 
-                    // Animate Reticle (Breathing)
+                    // Animate Reticle (iOS Quick Look style)
                     if (hasHit) {
-                        const scale = 1 + 0.15 * Math.sin(time / 200);
-                        // Reticle is now a Group, animate the child Mesh
-                        reticle.children[0].scale.set(scale, scale, scale);
+                        const t = time / 1000;
+                        // Outer ring: gentle breathing scale
+                        const ringScale = 1 + 0.08 * Math.sin(t * 2.5);
+                        reticle.children[0].scale.set(ringScale, ringScale, ringScale);
+                        // Center dot: subtle opacity pulse
+                        const dotMat = (reticle.children[1] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+                        dotMat.opacity = 0.7 + 0.25 * Math.sin(t * 3);
+                        // Fill disc: very subtle fade
+                        const fillMat = (reticle.children[2] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+                        fillMat.opacity = 0.05 + 0.04 * Math.sin(t * 2);
                     }
 
                     // Sync reticle visibility state for UI (Guidance)
@@ -655,17 +693,29 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         }
                     }
 
-                    // 4. Pop-in animation (runs independently of selection)
+                    // 4. Pop-in animation (iOS Quick Look spring bounce)
                     const popInStart = (anchor as any)._popInStart;
                     if (popInStart) {
-                        const progress = Math.min(1, (time - popInStart) / 600);
-                        const ease = 1 - Math.pow(1 - progress, 3);
-                        const targetScale = 1;
-                        const currentScale = 0.01 + (targetScale - 0.01) * ease;
+                        const elapsed = time - popInStart;
+                        const duration = 800; // 800ms for elastic feel
+                        const progress = Math.min(1, elapsed / duration);
+
+                        // Elastic ease-out: overshoots then settles
+                        // Creates the satisfying iOS "snap into place" feel
+                        const elasticOut = (t: number): number => {
+                            if (t === 0 || t === 1) return t;
+                            const p = 0.35;
+                            return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+                        };
+
+                        const ease = elasticOut(progress);
+                        const currentScale = 0.01 + (1 - 0.01) * ease;
                         anchor.scale.setScalar(currentScale);
                         anchor.updateMatrix();
 
                         if (progress >= 1) {
+                            anchor.scale.setScalar(1);
+                            anchor.updateMatrix();
                             (anchor as any)._popInStart = null;
                         }
                     }
