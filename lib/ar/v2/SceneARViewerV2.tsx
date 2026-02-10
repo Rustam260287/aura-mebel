@@ -522,10 +522,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 if (loadedModelsRef.current) {
                     sceneGraph.spawnObjects(loadedModelsRef.current, objects, anchor);
 
-                    // CRITICAL: Disable matrixAutoUpdate on all children too
-                    anchor.traverse((child) => {
-                        child.matrixAutoUpdate = false;
-                    });
+                    // CRITICAL: Only lock anchor matrix, NOT children
+                    // Children (item groups) need matrixAutoUpdate=true so gesture
+                    // position/scale/rotation changes are rendered each frame
                     anchor.updateMatrixWorld(true);
 
                     // Pop-in animation setup (will be animated in main XR loop)
@@ -635,6 +634,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     const currentStage = stageRef.current;
                     if (currentStage === 'active' || currentStage === 'manipulating') {
                         updateGestures(safeDelta);
+                        // CRITICAL: Propagate position/scale/rotation changes to GPU
+                        anchor.updateMatrixWorld(true);
                     }
 
                     // 3. Visual feedback - ring pulsing for selected item
