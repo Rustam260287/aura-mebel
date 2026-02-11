@@ -23,14 +23,16 @@ export type ARImplementation = 'quick-look' | 'scene-ar-v2' | 'preview-only';
 // ==================== Gesture ====================
 
 export type GestureState =
-    | { mode: 'none' }
+    | { mode: 'none'; touchCount?: number }
     | {
         mode: 'drag';
+        touchCount?: number;
         pointerId: number;
         offsetLocal: THREE.Vector3;
     }
     | {
         mode: 'pinch';
+        touchCount?: number;
         startDistance: number;
         startAngle: number;
         startUserScale: number;

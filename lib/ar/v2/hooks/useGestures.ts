@@ -107,20 +107,22 @@ export function useGestures({
         if (!overlay) return;
 
         const onTouchStart = (e: TouchEvent) => {
+            const touchCount = e.touches.length;
             console.log('[GESTURE] touchstart', {
-                touches: e.touches.length,
+                touches: touchCount,
                 isActive,
                 selectedKey: selectedKeyRef.current,
                 itemCount: itemsRef.current.length,
             });
-            if (!isActive) {
-                console.log('[GESTURE] touchstart BLOCKED — isActive=false');
-                return;
-            }
-            if (e.touches.length === 0) return;
+
+            if (!isActive) return;
+            if (touchCount === 0) return;
             e.preventDefault();
 
-            if (e.touches.length === 1) {
+            // Default state if no interaction starts
+            gestureRef.current = { mode: 'none', touchCount };
+
+            if (touchCount === 1) {
                 const t = e.touches[0];
                 let key = pickItem(t.clientX, t.clientY);
 
@@ -128,21 +130,33 @@ export function useGestures({
                 if (!key) {
                     if (itemsRef.current.length === 1) {
                         key = itemsRef.current[0].key;
+                        // HACK: Start drag immediately if single item
+                        if (!selectedKeyRef.current && key) {
+                            onSelect(key);
+                        }
                     } else if (selectedKeyRef.current) {
+                        // Reselect current if tapping elsewhere?
+                        // Or deselect? 
+                        // Behavior: Tap outside -> deselect usually.
+                        // But here we want to be forgiving.
+                        // Let's keep current selection if we didn't pick anything new?
+                        // Actually, tap outside usually means stick to current.
                         key = selectedKeyRef.current;
                     }
                 }
 
-                // Haptic feedback on new selection
-                if (key && key !== selectedKeyRef.current && navigator.vibrate) {
-                    navigator.vibrate(15);
+                if (key) {
+                    // Haptic feedback on new selection
+                    if (key !== selectedKeyRef.current && navigator.vibrate) {
+                        navigator.vibrate(15);
+                    }
+                    if (key !== selectedKeyRef.current) {
+                        onSelect(key);
+                    }
                 }
 
-                onSelect(key);
-
                 if (!key) {
-                    gestureRef.current = { mode: 'none' };
-                    // Reset targets
+                    gestureRef.current = { mode: 'none', touchCount };
                     targetPositionRef.current = null;
                     return;
                 }
@@ -152,7 +166,13 @@ export function useGestures({
                 if (!raycaster) return;
 
                 const hit = tmpVec.current;
-                if (!raycaster.ray.intersectPlane(planeRef.current, hit)) return;
+                // Raycast against infinite plane at anchor height
+                if (!raycaster.ray.intersectPlane(planeRef.current, hit)) {
+                    // Fallback: if ray misses plane (e.g. horizon), project to plane distance?
+                    // Or just use anchor position?
+                    // For now, abort to avoid jumps.
+                    return;
+                }
 
                 const anchor = anchorRef.current;
                 if (!anchor) return;
@@ -167,13 +187,20 @@ export function useGestures({
                 targetRotationRef.current = item.group.rotation.y;
 
                 const offset = item.group.position.clone().sub(local);
-                gestureRef.current = { mode: 'drag', pointerId: t.identifier, offsetLocal: offset };
+
+                // START DRAG
+                gestureRef.current = {
+                    mode: 'drag',
+                    pointerId: t.identifier,
+                    offsetLocal: offset,
+                    touchCount
+                };
                 if (onManipulationChange) onManipulationChange(true);
                 if (onGestureStart) onGestureStart('drag');
                 return;
             }
 
-            if (e.touches.length >= 2) {
+            if (touchCount >= 2) {
                 const [a, b] = [e.touches[0], e.touches[1]];
                 let key = selectedKeyRef.current;
 
@@ -197,6 +224,7 @@ export function useGestures({
                     startAngle: angle2(a, b),
                     startUserScale: item.userScale,
                     startRotationY: item.group.rotation.y,
+                    touchCount
                 };
                 if (onManipulationChange) onManipulationChange(true);
                 if (onGestureStart) onGestureStart('scale');
@@ -208,6 +236,12 @@ export function useGestures({
             if (e.touches.length === 0) return;
             e.preventDefault();
             const g = gestureRef.current;
+
+            // Debug: track count
+            if (g.mode !== 'none') {
+                g.touchCount = e.touches.length;
+            }
+
             if (g.mode !== 'none') {
                 console.log('[GESTURE] touchmove', { mode: g.mode, touches: e.touches.length });
             }
@@ -290,7 +324,7 @@ export function useGestures({
         const endGesture = (e: TouchEvent) => {
             if (e.touches.length === 0) {
                 const wasManipulating = gestureRef.current.mode !== 'none';
-                gestureRef.current = { mode: 'none' };
+                gestureRef.current = { mode: 'none', touchCount: 0 }; // Consistent reset
                 // Keep targets as they are (settled), or null them?
                 // Nulling them stops LERPing, which saves CPU.
                 // But we might want a bit of "settle" time.
@@ -307,6 +341,18 @@ export function useGestures({
 
                 if (wasManipulating && onManipulationChange) {
                     onManipulationChange(false);
+                }
+            } else {
+                // Touches changed but not 0 (e.g. 2->1)
+                // Need logic to switch gesture?
+                // For now, if we go 2->1, we are still in 'pinch' mode but 1 finger?
+                // Pinch logic needs 2 fingers.
+                // So pinched -> lift 1 finger -> mode stays pinch? -> pinch logic guards checks touches.length >= 2.
+                // It will stop updating targets.
+                // Ideally we should switch to drag or just stop.
+                // For v2 simplicity, let's just update touchCount.
+                if (gestureRef.current.mode !== 'none') {
+                    gestureRef.current.touchCount = e.touches.length;
                 }
             }
         };

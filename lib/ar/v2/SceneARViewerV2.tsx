@@ -42,6 +42,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const overlayRef = useRef<HTMLDivElement>(null); // DOM Overlay root
     const gestureRef = useRef<HTMLDivElement>(null); // Gesture surface (merged with overlay)
     const debugRef = useRef<HTMLDivElement>(null); // Diagnostic panel
+    const hasDomOverlayRef = useRef(false); // To access state in loop
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -81,6 +82,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Hooks
     const xrSession = useWebXRSession();
+    const { hasDomOverlay } = xrSession;
     const hitTest = useHitTest();
     const sceneGraph = useSceneGraph();
     // Use sceneGraph's selectedKeyRef DIRECTLY — no delay, no sync issues
@@ -114,6 +116,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // I will use `variant` field I added, mapping 'action' concept to it.
         }
     };
+    // Update ref for loop access
+    useEffect(() => {
+        hasDomOverlayRef.current = hasDomOverlay;
+    }, [hasDomOverlay]);
 
     const { gestureRef: gestureStateRef, updateGestures } = useGestures({
         overlayRef: gestureRef,
@@ -681,7 +687,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     if (debugRef.current) {
                         const g = gestureStateRef.current;
                         const k = sceneGraph.selectedKeyRef.current;
-                        debugRef.current.innerText = `S:${currentStage} | M:${g.mode} | K:${k ? 'YES' : 'NO'}`;
+                        const items = sceneGraph.itemsRef.current;
+                        const doStatus = hasDomOverlayRef.current ? 'YES' : 'NO';
+                        const tCount = g.touchCount ?? 0;
+                        debugRef.current.innerText = `S:${currentStage} | DO:${doStatus} | M:${g.mode} | K:${k ? 'YES' : 'NO'} | T:${tCount} | I:${items.length}`;
                     }
 
                     // 3. Visual feedback - ring pulsing for selected item
