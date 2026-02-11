@@ -107,7 +107,16 @@ export function useGestures({
         if (!overlay) return;
 
         const onTouchStart = (e: TouchEvent) => {
-            if (!isActive) return;
+            console.log('[GESTURE] touchstart', {
+                touches: e.touches.length,
+                isActive,
+                selectedKey: selectedKeyRef.current,
+                itemCount: itemsRef.current.length,
+            });
+            if (!isActive) {
+                console.log('[GESTURE] touchstart BLOCKED — isActive=false');
+                return;
+            }
             if (e.touches.length === 0) return;
             e.preventDefault();
 
@@ -198,8 +207,10 @@ export function useGestures({
             if (!isActive) return;
             if (e.touches.length === 0) return;
             e.preventDefault();
-
             const g = gestureRef.current;
+            if (g.mode !== 'none') {
+                console.log('[GESTURE] touchmove', { mode: g.mode, touches: e.touches.length });
+            }
 
             // Drag (1 finger)
             if (e.touches.length === 1 && g.mode === 'drag') {

@@ -802,25 +802,27 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     return (
         <>
-            {/* 1. Gesture Layer (Pure touch handling) */}
-            {/* 1. DOM Overlay Root (Wrapper for everything) */}
+            {/* DOM Overlay Root = Gesture Surface (MERGED)
+                CRITICAL: In WebXR DOM Overlay mode, touch events are ONLY dispatched 
+                to the overlay root element. If it has pointerEvents:'none', ALL child
+                touch events are blocked. So the root MUST have pointerEvents:'auto'.
+                The isActive guard inside useGestures handlers prevents gesture processing
+                during non-active stages (placing, loading, etc).
+            */}
             <div
-                ref={overlayRef}
+                ref={(el) => {
+                    // Both refs point to the same element
+                    (overlayRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+                    (gestureRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+                }}
                 className="fixed inset-0 z-[100] bg-transparent"
-                style={{ pointerEvents: 'none' }} // Root doesn't capture, children do
+                style={{
+                    touchAction: 'none', // Prevent browser scroll/zoom in AR
+                    pointerEvents: 'auto', // CRITICAL: Must be 'auto' for WebXR DOM Overlay touch events
+                }}
             >
                 {/* Canvas Container */}
-                <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ pointerEvents: 'none' }} />
-
-                {/* Gesture Surface (Active only when AR is active) */}
-                <div
-                    ref={gestureRef}
-                    className="absolute inset-0 z-0 bg-transparent"
-                    style={{
-                        touchAction: 'none', // Always prevent browser scrolling/zooming in AR
-                        pointerEvents: (stage === 'active' || stage === 'manipulating') ? 'auto' : 'none',
-                    }}
-                />
+                <div ref={containerRef} className="absolute inset-0" style={{ pointerEvents: 'none' }} />
 
                 {/* UI Layer (Buttons always on top of gestures) */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
