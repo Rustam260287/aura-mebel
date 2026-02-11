@@ -39,8 +39,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const gestureRef = useRef<HTMLDivElement>(null);
+    const overlayRef = useRef<HTMLDivElement>(null); // DOM Overlay root
+    const gestureRef = useRef<HTMLDivElement>(null); // Gesture surface (merged with overlay)
+    const debugRef = useRef<HTMLDivElement>(null); // Diagnostic panel
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -676,6 +677,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         anchor.updateMatrixWorld(true);
                     }
 
+                    // Diagnostic Update (Real-time)
+                    if (debugRef.current) {
+                        const g = gestureStateRef.current;
+                        const k = sceneGraph.selectedKeyRef.current;
+                        debugRef.current.innerText = `S:${currentStage} | M:${g.mode} | K:${k ? 'YES' : 'NO'}`;
+                    }
+
                     // 3. Visual feedback - ring pulsing for selected item
                     const isManipulating = gestureStateRef.current.mode !== 'none';
                     const activeKey = sceneGraph.selectedKeyRef.current;
@@ -809,6 +817,13 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 The isActive guard inside useGestures handlers prevents gesture processing
                 during non-active stages (placing, loading, etc).
             */}
+            {/* DOM Overlay Root = Gesture Surface (MERGED)
+                CRITICAL: In WebXR DOM Overlay mode, touch events are ONLY dispatched 
+                to the overlay root element. If it has pointerEvents:'none', ALL child
+                touch events are blocked. So the root MUST have pointerEvents:'auto'.
+                The isActive guard inside useGestures handlers prevents gesture processing
+                during non-active stages (placing, loading, etc).
+            */}
             <div
                 ref={(el) => {
                     // Both refs point to the same element
@@ -821,6 +836,15 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     pointerEvents: 'auto', // CRITICAL: Must be 'auto' for WebXR DOM Overlay touch events
                 }}
             >
+                {/* Debug Panel (Top-Left) */}
+                <div
+                    ref={debugRef}
+                    className="absolute top-unsafe-inset-top left-4 mt-12 bg-black/60 text-white text-[10px] p-2 rounded pointer-events-none z-[200] font-mono"
+                    style={{ minWidth: '120px' }}
+                >
+                    INIT
+                </div>
+
                 {/* Canvas Container */}
                 <div ref={containerRef} className="absolute inset-0" style={{ pointerEvents: 'none' }} />
 

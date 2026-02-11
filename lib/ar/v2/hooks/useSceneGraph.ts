@@ -161,6 +161,21 @@ export function useSceneGraph(): UseSceneGraphResult {
             contactShadow.name = 'contactShadow';
             group.add(contactShadow);
 
+            // Hit Box (Invisible larger box for easier touch selection)
+            // 1.5x larger than object to forgive imprecise taps
+            const hitGeo = new THREE.BoxGeometry(tempSize.x * 1.5, tempSize.y, tempSize.z * 1.5);
+            const hitMat = new THREE.MeshBasicMaterial({
+                visible: true, // Must be visible for Raycaster to hit it
+                transparent: true,
+                opacity: 0.0, // Fully invisible to user
+                depthWrite: false,
+            });
+            const hitBox = new THREE.Mesh(hitGeo, hitMat);
+            hitBox.name = 'hitBox';
+            // Center the hitbox on the model's bounding box center
+            tempBbox.getCenter(hitBox.position);
+            group.add(hitBox);
+
             // Apply transforms
             const pos = obj.position || [0, 0, 0];
             const rot = obj.rotation || [0, 0, 0];
