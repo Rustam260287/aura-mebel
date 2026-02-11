@@ -455,10 +455,11 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
             }, 2500);
 
-            // CRITICAL: Pass overlay only if DOM overlay is actually supported
-            // Passing overlay when not supported can crash requestSession on some Android
-            const safeOverlay = xrSession.hasDomOverlay ? overlay : undefined;
-            const startResult = await xrSession.startSession(renderer, safeOverlay!);
+            // ALWAYS pass overlay root to requestSession.
+            // dom-overlay is in optionalFeatures, so browsers that don't support it 
+            // will simply ignore it. Previously we checked hasDomOverlay BEFORE starting,
+            // but that value is only set AFTER session start — causing overlay to NEVER be passed.
+            const startResult = await xrSession.startSession(renderer, overlay);
             const activeSession = startResult.session;
             const activeRefSpace = startResult.referenceSpace;
 
