@@ -117,6 +117,14 @@ export function useGestures({
 
             if (!isActive) return;
             if (touchCount === 0) return;
+
+            // Let UI buttons (Done, Close, etc.) handle their own events
+            const target = e.target as HTMLElement;
+            if (target?.closest?.('button, a, [data-ui-control]')) {
+                // Do NOT preventDefault — allow click/tap to fire on buttons
+                return;
+            }
+
             e.preventDefault();
 
             // Default state if no interaction starts
@@ -234,6 +242,11 @@ export function useGestures({
         const onTouchMove = (e: TouchEvent) => {
             if (!isActive) return;
             if (e.touches.length === 0) return;
+
+            // Let UI buttons handle their own events
+            const target = e.target as HTMLElement;
+            if (target?.closest?.('button, a, [data-ui-control]')) return;
+
             e.preventDefault();
             const g = gestureRef.current;
 
