@@ -108,12 +108,10 @@ export function useGestures({
 
         const onTouchStart = (e: TouchEvent) => {
             const touchCount = e.touches.length;
-            console.log('[GESTURE] touchstart', {
-                touches: touchCount,
-                isActive,
-                selectedKey: selectedKeyRef.current,
-                itemCount: itemsRef.current.length,
-            });
+            // Debug: minimal log (avoid spam on rapid taps)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[GESTURE] touchstart', touchCount, isActive ? 'ACT' : 'OFF');
+            }
 
             if (!isActive) return;
             if (touchCount === 0) return;
@@ -255,9 +253,7 @@ export function useGestures({
                 g.touchCount = e.touches.length;
             }
 
-            if (g.mode !== 'none') {
-                console.log('[GESTURE] touchmove', { mode: g.mode, touches: e.touches.length });
-            }
+            // REMOVED: console.log was firing at 60fps during drag — major CPU/GC waste
 
             // Drag (1 finger)
             if (e.touches.length === 1 && g.mode === 'drag') {

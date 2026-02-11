@@ -269,6 +269,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             // 4. Clear scene (removes all children)
             threeScene.clear();
 
+            // 4.5 Dispose environment texture (GPU memory leak if not freed)
+            if (threeScene.environment) {
+                (threeScene.environment as THREE.Texture).dispose();
+                threeScene.environment = null;
+            }
+
             // 5. Dispose Renderer
             renderer.dispose();
 
@@ -519,6 +525,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
             setStage('placing');
 
+            // Reusable temp objects for animation loop (avoid per-frame allocation)
+            const _tmpPos = new THREE.Vector3();
+            const _tmpQuat = new THREE.Quaternion();
+            const _tmpScale = new THREE.Vector3();
+            let _frameCount = 0; // For throttling debug updates
+
             // Placement handler
             const onSelect = () => {
                 if (placedRef.current) return;
@@ -528,11 +540,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 // Get position from reticle or fallback
                 if (reticle.visible) {
-                    const pos = new THREE.Vector3();
-                    const quat = new THREE.Quaternion();
-                    const scale = new THREE.Vector3();
-                    reticle.matrix.decompose(pos, quat, scale);
-                    placementPos = pos;
+                    reticle.matrix.decompose(_tmpPos, _tmpQuat, _tmpScale);
+                    placementPos = _tmpPos.clone();
                 } else {
                     // Fallback: place in front of camera
                     placementPos = hitTest.getFallbackPosition(camera);
@@ -684,8 +693,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                         anchor.updateMatrixWorld(true);
                     }
 
-                    // Diagnostic Update (Real-time)
-                    if (debugRef.current) {
+                    // Diagnostic Update (throttled: every 10th frame to save CPU)
+                    _frameCount++;
+                    if (debugRef.current && (_frameCount % 10 === 0)) {
                         const g = gestureStateRef.current;
                         const k = sceneGraph.selectedKeyRef.current;
                         const items = sceneGraph.itemsRef.current;
