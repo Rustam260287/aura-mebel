@@ -41,7 +41,8 @@ export type NotificationType =
     | 'AR_HINT'
     | '3D_HINT'
     | 'SAVE_HINT'
-    | 'POST_SHARE_REFLECTION';
+    | 'POST_SHARE_REFLECTION'
+    | 'SNAPSHOT_TAKEN';
 
 export interface SessionHistory {
     pageEnterTimestamp: number;

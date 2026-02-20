@@ -34,16 +34,19 @@ const options = {
   objectIds: new Set(),
   processAll: false,
   dryRun: false,
+  force: false,
 };
 
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
-  if ((arg === '--object' || arg === '--product') && args[i + 1]) {
+  if ((arg === '--object' || arg === '--product' || arg === '--id') && args[i + 1]) {
     options.objectIds.add(args[++i]);
   } else if (arg === '--all') {
     options.processAll = true;
   } else if (arg === '--dry') {
     options.dryRun = true;
+  } else if (arg === '--force') {
+    options.force = true;
   } else {
     console.warn('Unknown flag:', arg);
   }
@@ -86,16 +89,14 @@ const gltfArgs = [
   '-o',
   '', // placeholder
   '-d',
-  '--dracoCompressionLevel',
+  '--draco.compressionLevel',
   '7',
-  '--dracoQuantizePosition',
-  '16384',
-  '--dracoQuantizeNormal',
-  '4096',
-  '--dracoQuantizeTexcoord',
-  '4096',
-  '--removeUnusedElements',
-  '--prioritizeSpeed',
+  '--draco.quantizePositionBits',
+  '14',
+  '--draco.quantizeNormalBits',
+  '10',
+  '--draco.quantizeTexcoordBits',
+  '12',
 ];
 
 const runGltfPipeline = (input, output) =>
@@ -104,10 +105,49 @@ const runGltfPipeline = (input, output) =>
     args[1] = input;
     args[3] = output;
 
-    const proc = spawn('npx', ['gltf-pipeline', ...args], { stdio: 'inherit' });
+    let cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    let commandArgs = ['gltf-pipeline', ...args];
+
+    if (process.platform === 'win32' && fs.existsSync('./node_modules/.bin/gltf-pipeline.cmd')) {
+      cmd = path.resolve('./node_modules/.bin/gltf-pipeline.cmd');
+      commandArgs = args;
+    }
+
+    console.log(`[spawn] ${cmd} ${commandArgs.join(' ')}`);
+    const proc = spawn(cmd, commandArgs, { stdio: ['inherit', 'inherit', 'pipe'], shell: true });
+
+    let stderr = '';
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString();
+      process.stderr.write(data);
+    });
+
     proc.on('close', (code) => {
       if (code === 0) return resolve();
-      reject(new Error(`gltf-pipeline exited with ${code}`));
+
+      // If Draco failed, try without Draco as fallback
+      if (args.includes('-d')) {
+        console.warn(`   ⚠️ Draco optimization failed for ${input}, attempting without Draco...`);
+        const fallbackArgs = args.filter(a =>
+          a !== '-d' &&
+          !a.startsWith('--draco') &&
+          !commandArgs.includes(a) // avoid duplicating positional args if any
+        );
+        // We need to re-handle commandArgs for the fallback
+        let fallbackCommandArgs = ['gltf-pipeline', '-i', input, '-o', output, ...fallbackArgs.filter(a => a !== input && a !== output)];
+        if (cmd.endsWith('.cmd')) {
+          fallbackCommandArgs = ['-i', input, '-o', output, ...fallbackArgs.filter(a => a !== input && a !== output)];
+        }
+
+        const fallbackProc = spawn(cmd, fallbackCommandArgs, { stdio: 'inherit', shell: true });
+        fallbackProc.on('close', (fcode) => {
+          if (fcode === 0) return resolve();
+          reject(new Error(`gltf-pipeline failed even without Draco for ${input}. Exit code: ${fcode}`));
+        });
+        return;
+      }
+
+      reject(new Error(`gltf-pipeline exited with ${code} for object ${input}\nStderr: ${stderr}`));
     });
   });
 
@@ -412,9 +452,11 @@ const processObject = async (objectId) => {
 const run = async () => {
   const targets = options.processAll
     ? (await db.collection('products').where('has3D', '==', true).get())
-        .docs.map(doc => doc.id)
+      .docs.filter(doc => options.force || !doc.data().model3dOptimizedAt)
+      .map(doc => doc.id)
     : Array.from(options.objectIds);
 
+  console.log(`Planned to process ${targets.length} objects.`);
   for (const objectId of targets) {
     await processObject(objectId);
   }

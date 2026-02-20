@@ -7,6 +7,7 @@ import type { ObjectPublic, ScenePresetPublic } from '../types';
 import { useImmersive } from '../contexts/ImmersiveContext';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { useToast } from '../contexts/ToastContext';
+import { useAssistant } from '../contexts/AssistantContext';
 import { createArSessionId } from '../lib/journey/arSession';
 import { createArSnapshot } from '../lib/journey/snapshotsClient';
 
@@ -56,6 +57,7 @@ const angle2 = (a: Touch, b: Touch) => Math.atan2(b.clientY - a.clientY, b.clien
 export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, onClose, onSessionStart }) => {
   const { setImmersive } = useImmersive();
   const { addToast } = useToast();
+  const { emitMetaEvent } = useAssistant();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -377,7 +379,10 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
   const selectItemByKey = useCallback((key: string | null) => {
     selectedKeyRef.current = key;
     setSelectedKey(key);
-  }, []);
+    if (key) {
+      emitMetaEvent({ type: 'USER_SELECT_OBJECT', payload: { objectId: key.split(':')[0] } });
+    }
+  }, [emitMetaEvent]);
 
   const updatePlaneToAnchor = useCallback(() => {
     const anchor = anchorRef.current;
@@ -581,6 +586,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
         objectId: scene.id,
         capture: { blob, width: canvas.width, height: canvas.height },
       });
+      emitMetaEvent({ type: 'SNAPSHOT_TAKEN' });
       addToast('Снимок сохранён', 'success', 1600);
     } catch (e) {
       console.warn('[SceneARViewer] snapshot failed:', e);

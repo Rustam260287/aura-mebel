@@ -15,6 +15,9 @@ import { useImmersive } from '../../../contexts/ImmersiveContext';
 
 import { trackJourneyEvent } from '../../journey/client';
 import { createArSessionId } from '../../journey/arSession';
+import { createArSnapshot } from '../../journey/snapshotsClient';
+import { useAssistant } from '../../../contexts/AssistantContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 import { useWebXRSession } from './hooks/useWebXRSession';
 import { useHitTest } from './hooks/useHitTest';
@@ -35,6 +38,8 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     onPlace,
 }) => {
     const { setImmersive } = useImmersive();
+    const { emitMetaEvent } = useAssistant();
+    const { addToast } = useToast();
 
 
     // Refs
@@ -79,6 +84,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     // Post-AR state
     const [arDurationSec, setArDurationSec] = useState<number>(0);
     const [isSaved, setIsSaved] = useState(false);
+    const [isCapturing, setIsCapturing] = useState(false);
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -445,6 +451,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
         if (!overlay || !renderer || !threeScene || !camera || !reticle || !anchor) return;
 
+        emitMetaEvent({ type: 'OPENED_AR' });
         setStage('starting');
         setError(null);
 
@@ -770,7 +777,38 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             setError(e?.message || 'Не удалось запустить AR');
             setStage('error');
         }
-    }, [stage, xrSession, hitTest, sceneGraph, objects, sceneId, onSessionStart, onPlace]);
+    }, [stage, xrSession, hitTest, sceneGraph, objects, sceneId, onSessionStart, onPlace, emitMetaEvent]);
+
+    const handleSnapshot = useCallback(async () => {
+        if (isCapturing || !rendererRef.current) return;
+        const canvas = rendererRef.current.domElement;
+        if (!canvas) return;
+
+        setIsCapturing(true);
+        try {
+            // Haptic feedback for shutter
+            if (navigator.vibrate) navigator.vibrate(20);
+
+            const blob = await new Promise<Blob | null>(resolve => {
+                canvas.toBlob(b => resolve(b), 'image/jpeg', 0.95);
+            });
+
+            if (blob) {
+                await createArSnapshot({
+                    sessionId: arSessionIdRef.current,
+                    objectId: sceneId,
+                    capture: { blob, width: canvas.width, height: canvas.height }
+                });
+                emitMetaEvent({ type: 'SNAPSHOT_TAKEN' });
+                addToast('Снимок в галерее', 'success', 2000);
+            }
+        } catch (err) {
+            console.error('[AR] Snapshot error:', err);
+            addToast('Не удалось сохранить фото', 'error');
+        } finally {
+            setIsCapturing(false);
+        }
+    }, [sceneId, emitMetaEvent, addToast, isCapturing]);
 
     // Selected item label
     const selectedLabel = useMemo(() => {
@@ -884,6 +922,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     <ARBottomControls
                         stage={stage}
                         onClose={() => endSession()}
+                        onSnapshot={handleSnapshot}
                     />
 
                     {/* Quiet UX: Sticky Onboarding Hint (One-Time) */}

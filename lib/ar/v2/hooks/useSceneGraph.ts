@@ -5,6 +5,7 @@
 import { useCallback, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { nanoid } from 'nanoid';
 import type { PlacedItem, LoadingProgress } from '../types';
 import { createContactShadow } from '../utils/contactShadow';
@@ -43,6 +44,9 @@ export function useSceneGraph(): UseSceneGraphResult {
     const loadModels = useCallback(async (objects: SceneObject[]): Promise<Map<string, THREE.Object3D>> => {
         const models = new Map<string, THREE.Object3D>();
         const loader = new GLTFLoader();
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+        loader.setDRACOLoader(dracoLoader);
 
         const validObjects = objects.filter(o => o.modelGlbUrl);
         setLoadingProgress({ loaded: 0, total: validObjects.length });

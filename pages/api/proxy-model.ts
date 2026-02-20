@@ -10,12 +10,7 @@ function getAllowedHosts(): Set<string> {
   return new Set([...staticAllowedHosts, ...fromEnv]);
 }
 
-function setCorsHeaders(res: NextApiResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, ETag');
-}
+import { setCorsHeaders } from '../../lib/api/cors';
 
 function inferContentType(targetUrl: string, upstreamContentType: string | null) {
   const cleanUrl = targetUrl.split('?')[0]?.toLowerCase() || '';
@@ -44,10 +39,10 @@ function sanitizeFilename(filename: string) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  setCorsHeaders(res);
+  setCorsHeaders(req, res);
 
   if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+    return res.status(200).end();
   }
 
   if (req.method !== 'GET' && req.method !== 'HEAD') {

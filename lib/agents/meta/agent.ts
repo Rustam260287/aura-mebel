@@ -69,8 +69,12 @@ export class MetaAgent {
             nextState = AssistantState.SELECTING;
             assistantMode = 'hidden';
             content = undefined;
-        } else if (event.type === 'VIEW_IN_AR') {
+        } else if (event.type === 'VIEW_IN_AR' || event.type === 'OPENED_AR') {
             nextState = AssistantState.AR_PREPARING;
+            assistantMode = 'hidden';
+            content = undefined;
+        } else if (event.type === 'OPENED_3D') {
+            nextState = AssistantState.SELECTING;
             assistantMode = 'hidden';
             content = undefined;
         } else if (event.type === 'AR_STARTED') {
@@ -88,6 +92,11 @@ export class MetaAgent {
                 action: 'share'
             };
             this.markNotificationShown('SHARE_SUGGESTION');
+        } else if (event.type === 'SNAPSHOT_TAKEN') {
+            nextState = AssistantState.SNAPSHOT_TAKEN;
+            assistantMode = 'toast';
+            content = { message: "📸 Снимок сохранён в галерее" };
+            this.markNotificationShown('SNAPSHOT_TAKEN');
         } else if (event.type === 'PHOTO_UPLOADED') {
             assistantMode = 'chat';
             content = {
@@ -130,6 +139,14 @@ export class MetaAgent {
             if ((this.currentState === AssistantState.SELECTING || this.currentState === AssistantState.BROWSING)
                 && actualTime > AGENT_TIMINGS.HESITATING_THRESHOLD_MS) {
                 // Determine if we should really switch state or just keep internal track
+            }
+
+            // Reset SNAPSHOT_TAKEN after 3 seconds
+            if (this.currentState === AssistantState.SNAPSHOT_TAKEN && actualTime > (this.sessionHistory.notificationsShown['SNAPSHOT_TAKEN']?.shownAt || 0) + 3000) {
+                // Return to AR_ACTIVE or POST_AR depending on context?
+                // For now, let's just return to AR_ACTIVE
+                nextState = AssistantState.AR_ACTIVE;
+                assistantMode = 'hidden';
             }
 
             // Only show hints if hidden

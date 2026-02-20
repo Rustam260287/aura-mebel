@@ -82,6 +82,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     : undefined;
   const canPreview3d = Boolean(threeDSrcUrl);
 
+  const v2Objects = useMemo(() => {
+    if (!object.id || !threeDSrcUrl) return [];
+    return [{
+      objectId: object.id,
+      name: object.name,
+      modelGlbUrl: threeDSrcUrl,
+    }];
+  }, [object.id, object.name, threeDSrcUrl]);
+
   useEffect(() => {
     if (isIOSDevice) {
       setWebXrArSupported(null);
@@ -193,17 +202,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   // --- Meta-Agent Integration: Tracking & Notifications ---
   // Replaces local hint logic with centralized Agent logic.
 
-  // 1. Session Start (User Entered Object) & Time Tick
+  // 1. Session Start (User Entered Object)
   useEffect(() => {
-    const startTime = Date.now();
     emitMetaEvent({ type: 'USER_ENTERED_OBJECT', payload: { objectId: object.id } });
-
-    const interval = setInterval(() => {
-      const timeOnPage = Date.now() - startTime;
-      emitMetaEvent({ type: 'TIME_TICK', payload: { timeOnPage } });
-    }, 1000); // 1s tick for precision in Agent
-
-    return () => clearInterval(interval);
   }, [emitMetaEvent, object.id]);
 
   // 2. Clear Hints on Exit
@@ -934,7 +935,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 <SceneARViewerV2
                   sceneId={object.id}
                   sceneTitle={object.name}
-                  objects={[{ objectId: object.id, name: object.name, modelGlbUrl: object.modelGlbUrl }]}
+                  objects={v2Objects}
                   onClose={(duration, hasStarted) => {
                     setShowSceneARV2(false);
                     closeAR(duration, hasStarted);

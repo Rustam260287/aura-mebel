@@ -1,26 +1,26 @@
 # Aura Assistant State Machine Implementation
 
-- [ ] **Exploration**
+- [x] **Exploration**
   - [x] Find existing Assistant UI component (`components/ChatWidget.tsx`) <!-- id: 0 -->
-  - [/] Identify current session state management <!-- id: 1 -->
-  - [/] Locate where events like `AR_STARTED` are currently handled <!-- id: 2 -->
-- [ ] **Type Definitions**
-  - [ ] Define `AssistantState` types <!-- id: 3 -->
-  - [ ] Define `ActionPlan` types <!-- id: 4 -->
-- [ ] **Meta Agent Implementation** (`lib/agents/meta/`)
-  - [ ] Create `MetaAgent` class <!-- id: 5 -->
-  - [ ] Implement state transition logic (switch-case) <!-- id: 6 -->
-  - [ ] Implement `ActionPlan` generation <!-- id: 7 -->
-- [ ] **Frontend Refactoring**
-  - [ ] Refactor Assistant Context/Hook to store `ActionPlan` <!-- id: 8 -->
-  - [ ] Create `AssistantRenderer` component <!-- id: 9 -->
-  - [ ] Update main Assistant UI to use `AssistantRenderer` <!-- id: 10 -->
-- [ ] **Integration**
-  - [ ] Wire up `AR_STARTED` event to Meta Agent <!-- id: 11 -->
-  - [ ] Wire up `SNAPSHOT_CREATED` event to Meta Agent <!-- id: 12 -->
-  - [ ] Wire up `AR_FINISHED` event to Meta Agent <!-- id: 13 -->
-  - [ ] Wire up `USER_SELECT_OBJECT` event to Meta Agent <!-- id: 14 -->
+  - [x] Identify current session state management <!-- id: 1 -->
+  - [x] Locate where events like `AR_STARTED` are currently handled <!-- id: 2 -->
+- [x] **Type Definitions**
+  - [x] Define `AssistantState` types <!-- id: 3 -->
+  - [x] Define `ActionPlan` types <!-- id: 4 -->
+- [x] **Meta Agent Implementation** (`lib/agents/meta/`)
+  - [x] Create `MetaAgent` class <!-- id: 5 -->
+  - [x] Implement state transition logic (switch-case) <!-- id: 6 -->
+  - [x] Implement `ActionPlan` generation <!-- id: 7 -->
+- [x] **Frontend Refactoring**
+  - [x] Refactor Assistant Context/Hook to store `ActionPlan` <!-- id: 8 -->
+  - [x] Create `AssistantRenderer` component <!-- id: 9 -->
+  - [x] Update main Assistant UI to use `AssistantRenderer` <!-- id: 10 -->
+- [x] **Integration**
+  - [x] Wire up `AR_STARTED` event to Meta Agent <!-- id: 11 -->
+  - [x] Wire up `SNAPSHOT_TAKEN` event to Meta Agent <!-- id: 12 -->
+  - [x] Wire up `AR_ENDED` event to Meta Agent <!-- id: 13 -->
+  - [x] Wire up `USER_SELECT_OBJECT` event to Meta Agent <!-- id: 14 -->
 - [ ] **Verification**
-  - [ ] Verify state transitions in typical user flow <!-- id: 15 -->
-  - [ ] Check AR silence <!-- id: 16 -->
-  - [ ] Check Snapshot toast behavior <!-- id: 17 -->
+  - [/] Verify state transitions in typical user flow <!-- id: 15 -->
+  - [/] Check AR silence <!-- id: 16 -->
+  - [/] Check Snapshot toast behavior <!-- id: 17 -->
