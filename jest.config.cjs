@@ -1,17 +1,17 @@
 
-import type { Config } from 'jest';
-import nextJest from 'next/jest';
+const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
   dir: './',
 });
 
-const config: Config = {
+/** @type {import('jest').Config} */
+const config = {
   coverageProvider: 'v8',
   testEnvironment: 'jest-environment-jsdom',
   // ИСПРАВЛЕНИЕ: ссылка на .js файл
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  
+
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.firebase/', '<rootDir>/node_modules/'],
   modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.firebase/'],
   moduleNameMapper: {
@@ -23,10 +23,10 @@ const config: Config = {
     '^@/types$': '<rootDir>/types.ts',
     '^jose': require.resolve('jose'),
   },
-  
+
   transformIgnorePatterns: [
     '/node_modules/(?!(firebase-admin|jose|@panva/hkdf|uuid|@google-cloud/firestore|google-auth-library|@firebase/util)/)',
   ],
 };
 
-export default createJestConfig(config);
+module.exports = createJestConfig(config);

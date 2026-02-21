@@ -50,8 +50,8 @@ export const AssistantRenderer: React.FC = () => {
     }
 
     // Chat Bubble or Curator Card Rendering
-    if (assistant?.mode === 'chat' && assistant.content) {
-        if (assistant.content.type === 'handoff' || assistant.content.type === 'handoff_card') {
+    if (assistant?.mode === 'chat') {
+        if (assistant.content?.type === 'handoff' || assistant.content?.type === 'handoff_card') {
             return (
                 <CuratorCard onClose={() => emitMetaEvent({ type: 'DISMISSED_NOTIFICATION', payload: { type: 'handoff' } })} />
             );
@@ -59,7 +59,7 @@ export const AssistantRenderer: React.FC = () => {
 
         return (
             <ChatBubble
-                text={assistant.content.text}
+                text={assistant.content?.text}
                 content={assistant.content}
                 state={session.state}
             />
