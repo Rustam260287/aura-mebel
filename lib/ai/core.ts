@@ -76,13 +76,14 @@ async function askGemini(systemPrompt: string, context: any[], model: string, re
 
   const geminiModel = genAI.getGenerativeModel({
     model: model.startsWith('gemini-') ? model : 'gemini-2.0-flash',
+    systemInstruction: { role: 'user', parts: [{ text: systemPrompt }] },
     generationConfig: responseFormat === 'json' ? { responseMimeType: 'application/json' } : undefined
   });
 
   // Convert OpenAI style context to Gemini
   let history = context.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: msg.content }]
+    parts: [{ text: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content) }]
   }));
 
   // Gemini history MUST start with a user message.
@@ -95,7 +96,6 @@ async function askGemini(systemPrompt: string, context: any[], model: string, re
 
   const chat = geminiModel.startChat({
     history: history,
-    systemInstruction: systemPrompt
   });
 
   const result = await chat.sendMessage(prompt);
