@@ -176,8 +176,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error("Delete object error:", error);
       res.status(500).json({ error: 'Failed to delete object' });
     }
+  } else if (req.method === 'GET') {
+    try {
+      const docRef = db.collection(COLLECTIONS.objects).doc(id as string);
+      let snap = await docRef.get();
+
+      // Fallback: search by 'id' field (slug)
+      if (!snap.exists) {
+        const q = await db.collection(COLLECTIONS.objects).where('id', '==', id).limit(1).get();
+        if (!q.empty) snap = q.docs[0];
+      }
+
+      if (!snap.exists) {
+        return res.status(404).json({ error: 'Object not found' });
+      }
+
+      const { toPublicObject: toPublic } = await import('../../../lib/publicObject');
+      const obj = toPublic(snap.data(), snap.id);
+
+      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+      return res.status(200).json(obj);
+    } catch (error) {
+      console.error('GET object error:', error);
+      return res.status(500).json({ error: 'Failed to fetch object' });
+    }
   } else {
-    res.setHeader('Allow', ['PUT', 'DELETE']);
+    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

@@ -74,7 +74,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
         setState('share_options');
     };
 
-    const handleChannelSelect = async (channel: 'whatsapp' | 'telegram' | 'phone') => {
+    const handleChannelSelect = async (channel: 'whatsapp' | 'telegram' | 'max' | 'phone') => {
         // Update status to 'sent'
         if (handoffId) {
             try {
@@ -107,6 +107,8 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
             url = `https://wa.me/?text=${message}`;
         } else if (channel === 'telegram') {
             url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${message}`;
+        } else if (channel === 'max') {
+            url = `https://max.ru/call?text=${message}`;
         }
 
         if (url) {
@@ -174,7 +176,7 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                             Выберите способ
                         </div>
                         <HandoffOptions
-                            contacts={{ whatsapp: 'any', telegram: 'any' }}
+                            contacts={{ whatsapp: 'any', telegram: 'any', max: 'any' }}
                             onSelect={handleChannelSelect}
                             onCancel={handleCancel}
                         />

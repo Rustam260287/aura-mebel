@@ -1,6 +1,6 @@
 
 import { GetServerSideProps } from 'next';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { getAdminDb } from '../../lib/firebaseAdmin';
@@ -16,6 +16,7 @@ import { toPublicObject } from '../../lib/publicObject';
 import { useExperience } from '../../contexts/ExperienceContext';
 import { SceneCard } from '../../components/SceneCard';
 import { toScenePresetPublic } from '../../lib/scenePreset';
+import { ObjectSheet } from '../../components/ObjectSheet';
 
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
@@ -40,6 +41,39 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
   const router = useRouter();
   // Filter Sidebar удален для чистоты интерфейса
   const { emitEvent } = useExperience();
+
+  // --- Object Sheet (overlay) state ---
+  const [sheetObject, setSheetObject] = useState<ObjectPublic | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSheetLoading, setIsSheetLoading] = useState(false);
+
+  const handleObjectSelect = useCallback(async (objectId: string) => {
+    setIsSheetLoading(true);
+    try {
+      const res = await fetch(`/api/objects/${objectId}`);
+      if (!res.ok) {
+        // Fallback: navigate to page
+        router.push(`/objects/${objectId}`);
+        return;
+      }
+      const data = await res.json();
+      setSheetObject(data);
+      setIsSheetOpen(true);
+    } catch {
+      // Fallback: navigate to page
+      router.push(`/objects/${objectId}`);
+    } finally {
+      setIsSheetLoading(false);
+    }
+  }, [router]);
+
+  const handleSheetClose = useCallback(() => {
+    setIsSheetOpen(false);
+    // Restore URL to catalog
+    window.history.pushState(null, '', '/objects');
+    // Allow animation to finish before clearing object
+    setTimeout(() => setSheetObject(null), 400);
+  }, []);
 
   useEffect(() => {
     emitEvent({ type: 'ENTER_GALLERY' });
@@ -174,7 +208,7 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
           <Catalog
             allObjects={objects}
             isLoading={false}
-            onObjectSelect={(id) => router.push(`/objects/${id}`)}
+            onObjectSelect={handleObjectSelect}
             onImageClick={handleImageClick}
           />
 
@@ -210,6 +244,13 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
         initialIndex={imageModalState.initialIndex}
         objectTitle={imageModalState.objectName}
         onClose={closeImageModal}
+      />
+
+      {/* Object Detail Sheet (overlay — no page reload) */}
+      <ObjectSheet
+        object={sheetObject}
+        isOpen={isSheetOpen}
+        onClose={handleSheetClose}
       />
     </>
   );
