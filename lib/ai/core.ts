@@ -2,9 +2,9 @@ import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PROMPTS, PromptKey } from './prompts';
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 
@@ -52,6 +52,7 @@ export async function askAI(options: AIRequestOptions) {
 }
 
 async function askOpenAI(systemPrompt: string, context: any[], model: string, responseFormat: string) {
+  if (!openai) throw new Error('OpenAI API key not configured');
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: systemPrompt },
     ...context
