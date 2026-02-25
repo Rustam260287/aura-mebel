@@ -25,7 +25,7 @@ interface UseSceneGraphResult {
     selectedKey: string | null;
     loadingProgress: LoadingProgress;
 
-    loadModels: (objects: SceneObject[]) => Promise<Map<string, THREE.Object3D>>;
+    loadModels: (objects: SceneObject[], signal?: AbortSignal) => Promise<Map<string, THREE.Object3D>>;
     spawnObjects: (
         loadedModels: Map<string, THREE.Object3D>,
         objects: SceneObject[],
@@ -41,7 +41,7 @@ export function useSceneGraph(): UseSceneGraphResult {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [loadingProgress, setLoadingProgress] = useState<LoadingProgress>({ loaded: 0, total: 0 });
 
-    const loadModels = useCallback(async (objects: SceneObject[]): Promise<Map<string, THREE.Object3D>> => {
+    const loadModels = useCallback(async (objects: SceneObject[], signal?: AbortSignal): Promise<Map<string, THREE.Object3D>> => {
         const models = new Map<string, THREE.Object3D>();
         const loader = new GLTFLoader();
         const dracoLoader = new DRACOLoader();
@@ -56,7 +56,16 @@ export function useSceneGraph(): UseSceneGraphResult {
         await Promise.all(
             validObjects.map(async (obj) => {
                 try {
-                    const gltf = await loader.loadAsync(obj.modelGlbUrl);
+                    const res = await fetch(obj.modelGlbUrl, { signal });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const arrayBuffer = await res.arrayBuffer();
+
+                    if (signal?.aborted) throw new Error('Aborted');
+
+                    const gltf = await new Promise<any>((resolve, reject) => {
+                        loader.parse(arrayBuffer, '', resolve, reject);
+                    });
+
                     const model = gltf.scene;
 
 

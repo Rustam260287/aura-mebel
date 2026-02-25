@@ -6,6 +6,7 @@ import Head from 'next/head';
 
 import { AuraField } from '../components/AuraField';
 import { MobileHeader } from '../components/MobileHeader';
+import { InAppBrowserGate } from '../components/InAppBrowserGate';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -15,8 +16,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <AuraField />
       <ClientProviders>
-        <MobileHeader />
-        <Component {...pageProps} />
+        <InAppBrowserGate>
+          <MobileHeader />
+          <Component {...pageProps} />
+        </InAppBrowserGate>
       </ClientProviders>
     </>
   );

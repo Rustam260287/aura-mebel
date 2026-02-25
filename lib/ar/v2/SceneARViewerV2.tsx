@@ -82,6 +82,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const hasInteractedRef = useRef(false);
 
     // Post-AR state
+    const [isExiting, setIsExiting] = useState(false);
     const [arDurationSec, setArDurationSec] = useState<number>(0);
     const [isSaved, setIsSaved] = useState(false);
     const [isCapturing, setIsCapturing] = useState(false);
@@ -312,10 +313,12 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     useEffect(() => {
         if (stage !== 'idle') return;
 
+        const abortController = new AbortController();
+
         const load = async () => {
             setStage('loading');
             try {
-                const models = await sceneGraph.loadModels(objects);
+                const models = await sceneGraph.loadModels(objects, abortController.signal);
 
                 // Fallback: Boost material envMap intensity if needed (prevent dark models)
                 models.forEach((model) => {
@@ -330,6 +333,23 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     return;
                 }
 
+                // --- 3. Precompile Shader ---
+                // Создаем временный WebGLRenderer скрыто чтобы прекомпилировать материалы
+                try {
+                    const tempCanvas = document.createElement('canvas');
+                    const tempRenderer = new THREE.WebGLRenderer({ canvas: tempCanvas, alpha: true });
+                    const tempCamera = new THREE.PerspectiveCamera();
+                    const tempScene = new THREE.Scene();
+                    models.forEach(model => tempScene.add(model.clone()));
+                    tempScene.add(new THREE.AmbientLight(0xffffff, 1));
+                    tempScene.add(new THREE.DirectionalLight(0xffffff, 1));
+                    tempRenderer.compile(tempScene, tempCamera);
+                    tempRenderer.dispose();
+                    console.log('[SceneARViewerV2] Shaders precompiled');
+                } catch (e) {
+                    console.warn('[SceneARViewerV2] Failed to precompile shaders', e);
+                }
+
                 // Check WebXR support
                 const supported = await xrSession.checkSupport();
                 if (!supported) {
@@ -339,7 +359,11 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 }
 
                 setStage('ready');
-            } catch (e) {
+            } catch (e: any) {
+                if (e.message === 'Aborted') {
+                    console.log('[SceneARViewerV2] Load aborted');
+                    return;
+                }
                 console.error('[SceneARViewerV2] load error:', e);
                 setError('Не удалось загрузить модели');
                 setStage('error');
@@ -347,6 +371,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         };
 
         load();
+
+        return () => {
+            abortController.abort();
+        };
     }, [objects, sceneGraph, stage, xrSession]);
 
     // End session handler
@@ -370,31 +398,38 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             ? (Date.now() - startedAtRef.current) / 1000
             : 0;
 
-        // 2. CRITICAL: Stop animation loop BEFORE ending session
-        const renderer = rendererRef.current;
-        if (renderer) {
-            renderer.setAnimationLoop(null);
-        }
+        // 4. Anti-Jank Fade to black
+        setIsExiting(true);
 
-        // 3. Cleanup resources
-        hitTest.cleanup();
-        xrSession.endSession();
-        hasArStartedRef.current = false; // Reset flag
+        setTimeout(() => {
+            // 2. CRITICAL: Stop animation loop BEFORE ending session
+            const renderer = rendererRef.current;
+            if (renderer) {
+                renderer.setAnimationLoop(null);
+            }
 
-        if (placedRef.current) {
-            trackJourneyEvent({
-                type: 'FINISH_AR',
-                objectId: sceneId,
-                meta: { arSessionId: arSessionIdRef.current, durationSec: duration, runtime: 'webxr' },
-            });
+            // 3. Cleanup resources
+            hitTest.cleanup();
+            if (xrSession.session) {
+                xrSession.endSession();
+            }
+            hasArStartedRef.current = false; // Reset flag
 
-            // Go to completed stage for Post-AR UI
-            setArDurationSec(duration);
-            setStage('completed');
-        } else {
-            // Cancelled before placement - close immediately
-            onClose(duration, true);
-        }
+            if (placedRef.current) {
+                trackJourneyEvent({
+                    type: 'FINISH_AR',
+                    objectId: sceneId,
+                    meta: { arSessionId: arSessionIdRef.current, durationSec: duration, runtime: 'webxr' },
+                });
+
+                // Go to completed stage for Post-AR UI
+                setArDurationSec(duration);
+                setStage('completed');
+            } else {
+                // Cancelled before placement - close immediately
+                onClose(duration, true);
+            }
+        }, 300);
     }, [hitTest, xrSession, sceneId, onClose, stage]);
 
 
@@ -868,6 +903,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     return (
         <>
+            {/* Anti-Jank Exit Overlay */}
+            <div
+                className={`fixed inset-0 bg-black z-[10000] pointer-events-none transition-opacity duration-300 ${isExiting ? 'opacity-100' : 'opacity-0'}`}
+            />
             {/* DOM Overlay Root = Gesture Surface (MERGED)
                 CRITICAL: In WebXR DOM Overlay mode, touch events are ONLY dispatched 
                 to the overlay root element. If it has pointerEvents:'none', ALL child

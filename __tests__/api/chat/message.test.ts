@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import handler from './message';
+import handler from '../../../pages/api/chat/message';
 
 // Mock dependencies
 jest.mock('../../../lib/ai/core', () => ({

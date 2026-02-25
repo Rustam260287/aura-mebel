@@ -97,6 +97,7 @@ export interface ObjectPublic {
   presence?: 'compact' | 'balanced' | 'dominant';
 
   status?: ObjectStatus;
+  price?: number;
 }
 
 export interface ObjectAdmin extends ObjectPublic {
