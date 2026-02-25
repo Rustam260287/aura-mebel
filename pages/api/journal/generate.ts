@@ -9,11 +9,11 @@ async function getAllObjectsSummary() {
     const db = getAdminDb();
     if (!db) return [];
     const snapshot = await db.collection(COLLECTIONS.objects).select('name', 'objectType', 'category', 'imageUrls').get();
-    return snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        name: doc.data().name, 
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name,
         objectType: doc.data().objectType ?? doc.data().category,
-        imageUrls: doc.data().imageUrls || [] 
+        imageUrls: doc.data().imageUrls || []
     }));
 }
 
@@ -56,7 +56,7 @@ async function generateAndUploadImage(imagePrompt: string, postId: string): Prom
 
         // Формируем публичную ссылку
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
-        
+
         console.log("Image uploaded to:", publicUrl);
         return publicUrl;
 
@@ -74,22 +74,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log("Starting journal generation for topic:", topic);
         const objects = await getAllObjectsSummary();
-        
+
         // 1. Генерируем текст через единый AI Core
         // Можно передавать список объектов, если хотим, чтобы AI их упоминал
         // Для простоты пока передаем тему, но можем расширить промпт в будущем
-        
+
         const entryData: any = await askAI({
             key: 'JOURNAL_ENTRY',
             variables: { topic },
             responseFormat: 'json',
-            model: 'gpt-4o'
+            model: 'gemini-2.0-flash'
         });
 
         console.log("Text content generated.");
-        
-        const postId = Date.now().toString(); 
-        
+
+        const postId = Date.now().toString();
+
         // --- ЛОГИКА ВЫБОРА КАРТИНКИ ---
         let imageUrl = '';
 
@@ -101,33 +101,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 3. Запасные варианты картинок
         if (!imageUrl) {
-             // Поиск по типу объекта
-             const matchingObject = objects.find(p => 
-                p.imageUrls && p.imageUrls.length > 0 && 
+            // Поиск по типу объекта
+            const matchingObject = objects.find(p =>
+                p.imageUrls && p.imageUrls.length > 0 &&
                 (topic.toLowerCase().includes(String(p.objectType || '').toLowerCase()) || String(p.objectType || '').toLowerCase().includes(topic.toLowerCase()))
-             );
-             if (matchingObject) {
-                 imageUrl = matchingObject.imageUrls[0];
-             }
+            );
+            if (matchingObject) {
+                imageUrl = matchingObject.imageUrls[0];
+            }
         }
 
         if (!imageUrl) {
-             imageUrl = `https://loremflickr.com/1200/630/furniture,interior/all?lock=${Math.floor(Math.random() * 100)}`;
+            imageUrl = `https://loremflickr.com/1200/630/furniture,interior/all?lock=${Math.floor(Math.random() * 100)}`;
         }
-        
-        const newPost = { 
-            id: postId, 
-            ...entryData, 
-            imageUrl: imageUrl, 
-            status: 'draft', 
+
+        const newPost = {
+            id: postId,
+            ...entryData,
+            imageUrl: imageUrl,
+            status: 'draft',
             createdAt: new Date().toISOString()
         };
-        
+
         const db = getAdminDb();
         if (db) {
-             await db.collection('blog').doc(newPost.id).set(newPost);
+            await db.collection('blog').doc(newPost.id).set(newPost);
         }
-        
+
         res.status(200).json({ ok: true, entry: newPost });
 
     } catch (error) {

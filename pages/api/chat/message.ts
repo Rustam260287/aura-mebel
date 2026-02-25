@@ -103,9 +103,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const visionResult: any = await askAI({
           key: 'IMAGE_VISION',
           variables: {},
-          context: [{ role: "user", content: [{ type: "text", text: "Analyze this image" }, { type: "image_url", image_url: { url: imageUrl } }] }],
+          context: [{ role: "user", content: `Analyze this image: ${imageUrl}` }],
           responseFormat: 'json',
-          model: 'gpt-4o'
+          model: 'gemini-2.0-flash'
         });
         if (visionResult) {
           visionAnalysis = `ВИЗУАЛЬНЫЙ АНАЛИЗ ФОТО: ${visionResult.detected_item}, Стиль: ${visionResult.style}, Материалы: ${visionResult.materials?.join(', ')}`;
@@ -133,7 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       variables: contextVariables,
       context: contextMessages,
       responseFormat: 'json',
-      model: 'gpt-4o'
+      model: 'gemini-2.0-flash'
     });
 
     const isHandoff = Boolean(response?.handoffRequired) || containsCommerceContent(response?.reply);
