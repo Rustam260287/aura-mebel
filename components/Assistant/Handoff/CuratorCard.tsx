@@ -1,18 +1,21 @@
 import React from 'react';
 import { useAssistant } from '../../../contexts/AssistantContext';
-import { getWhatsAppLink, getTelegramLink } from '../../../lib/config/contacts';
+import { getWhatsAppLink, getTelegramLink, getMaxLink } from '../../../lib/config/contacts';
 
 export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { curatorProfile } = useAssistant();
     // Cast to any or Partial to avoid "Property does not exist on type {}"
     const profile = curatorProfile || ({} as any);
 
-    const handleContact = (type: 'whatsapp' | 'telegram' | 'phone') => {
+    const handleContact = (type: 'whatsapp' | 'telegram' | 'max' | 'phone') => {
         let url = '';
         if (type === 'whatsapp' && profile.contacts?.whatsapp) {
             url = getWhatsAppLink(profile.contacts.whatsapp!);
         } else if (type === 'telegram' && profile.contacts?.telegram) {
             url = getTelegramLink(profile.contacts.telegram!);
+        } else if (type === 'max' && profile.contacts?.max) {
+            const maxVal = profile.contacts.max;
+            url = maxVal.startsWith('http') ? maxVal : getMaxLink(maxVal);
         } else if (type === 'phone' && profile.contacts?.phone) {
             url = `tel:${profile.contacts.phone.replace(/[^\d+]/g, '')}`;
         }
@@ -58,11 +61,6 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
                 {/* Body Message */}
                 <div className="text-sm text-gray-600 mb-5 leading-relaxed bg-brand-lightbeige/30 p-3 rounded-lg border border-brand-warmbeige/20">
-                    {/* Message field is not on CuratorProfile yet, extending or using simple default for now, or maybe check types/curator.ts if I missed it? 
-                       Actually types/curator.ts does NOT have messageAfterAr. 
-                       I will use a static fallback or we need to add it to CuratorProfile if strictly needed.
-                       For now, let's assume it might not be there and just use the fallback text.
-                    */ }
                     {'Если у вас возникли вопросы по размерам, материалам или доставке — напишите мне, я помогу.'}
                 </div>
 
@@ -83,6 +81,15 @@ export const CuratorCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl flex items-center justify-between transition-colors border border-blue-100"
                         >
                             <span className="font-medium">Написать в Telegram</span>
+                            <span>→</span>
+                        </button>
+                    )}
+                    {profile.contacts?.max && (
+                        <button
+                            onClick={() => handleContact('max')}
+                            className="w-full py-3 px-4 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl flex items-center justify-between transition-colors border border-purple-100"
+                        >
+                            <span className="font-medium">Написать в MAX</span>
                             <span>→</span>
                         </button>
                     )}

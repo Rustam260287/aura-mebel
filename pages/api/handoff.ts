@@ -92,6 +92,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!String(merged.telegram || '').trim() && hasDigits) {
       merged.telegram = `https://t.me/+${digits.replace(/\D/g, '')}`;
     }
+    if (!String((merged as any).max || '').trim() && hasDigits) {
+      (merged as any).max = `https://max.ru/call?phone=${digits.replace(/\D/g, '')}`;
+    }
 
     return res.status(200).json(merged);
   } catch (error) {

@@ -27,6 +27,12 @@ export const getTelegramLink = (username: string): string => {
     return `https://t.me/${clean}`;
 };
 
+export const getMaxLink = (phone: string): string => {
+    const clean = phone.replace(/[^\d]/g, '');
+    if (!clean) return '';
+    return `https://max.ru/call?phone=${clean}`;
+};
+
 // Helper to determine active channels
 export const getActiveChannels = (config?: ContactConfig) => {
     const effective = config || DEFAULT_CONTACTS;

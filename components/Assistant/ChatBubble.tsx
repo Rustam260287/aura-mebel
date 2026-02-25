@@ -64,7 +64,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
     const roleLabel = curatorProfile?.roleLabel || '';
     const avatarUrl = curatorProfile?.avatarUrl;
 
-    const handleContactSelect = (channel: 'whatsapp' | 'telegram' | 'phone') => {
+    const handleContactSelect = (channel: 'whatsapp' | 'telegram' | 'max' | 'phone') => {
         trackJourneyEvent({
             type: 'HANDOFF_REQUESTED',
             meta: { handoff: { reason: 'contact', channel } }
@@ -139,6 +139,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
     const currentContacts: CuratorContacts | undefined = curatorProfile?.contacts ? {
         whatsapp: curatorProfile.contacts.whatsapp,
         telegram: curatorProfile.contacts.telegram,
+        max: (curatorProfile.contacts as any).max,
         phone: curatorProfile.contacts.phone
     } : undefined;
 
@@ -269,8 +270,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
                                 onClick={handleSendMessage}
                                 disabled={!inputText.trim() && !previewImage || isSending}
                                 className={`mb-1 p-2 rounded-full transition-colors ${(!inputText.trim() && !previewImage) || isSending
-                                        ? 'text-gray-300'
-                                        : 'text-brand-charcoal hover:bg-gray-100'
+                                    ? 'text-gray-300'
+                                    : 'text-brand-charcoal hover:bg-gray-100'
                                     }`}
                             >
                                 <ChatBubbleLeftRightIcon className="w-5 h-5" />
