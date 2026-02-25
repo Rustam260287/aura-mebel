@@ -24,6 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
         }
 
+        // Auto-populate MAX from WhatsApp number if not explicitly set
+        if (activeCurator.contacts?.whatsapp && !activeCurator.contacts?.max) {
+            activeCurator.contacts.max = activeCurator.contacts.whatsapp;
+        }
+
         return res.status(200).json(activeCurator);
     } catch (error) {
         console.error('Active curator fetch error:', error);

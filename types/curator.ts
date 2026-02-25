@@ -11,6 +11,7 @@ export interface CuratorProfile {
     contacts: {
         whatsapp?: string; // Normalized phone digits
         telegram?: string; // Username without @
+        max?: string; // Phone digits for MAX messenger
         phone?: string; // E164 format
     };
 

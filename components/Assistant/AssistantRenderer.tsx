@@ -59,6 +59,7 @@ export const AssistantRenderer: React.FC = () => {
 
         return (
             <ChatBubble
+                key={assistant.chatSessionId || 0}
                 text={assistant.content?.text}
                 content={assistant.content}
                 state={session.state}

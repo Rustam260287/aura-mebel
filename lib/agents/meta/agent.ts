@@ -18,6 +18,7 @@ export class MetaAgent {
     // Cache last content to persist it across time ticks if chat is open
     private lastContent: any = undefined;
     private curatorProfile: any = null;
+    private chatSessionId: number = 0;
 
     public setCuratorProfile(profile: any) {
         this.curatorProfile = profile;
@@ -42,6 +43,7 @@ export class MetaAgent {
         // --- 2. Handle Explicit UI Actions (Open/Close) ---
         if (event.type === 'REQUEST_MANAGER_CONTACT') {
             assistantMode = 'chat';
+            this.chatSessionId = Date.now(); // Force new ChatBubble instance
             if (event.payload?.source === 'object_detail_button') {
                 // Open chat with default greeting (handled by ChatBubble if content is undefined/null)
                 content = undefined;
@@ -150,6 +152,7 @@ export class MetaAgent {
             assistant: {
                 mode: assistantMode,
                 content: content,
+                chatSessionId: this.chatSessionId,
             },
         };
         return plan;

@@ -139,7 +139,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, content, state }) 
     const currentContacts: CuratorContacts | undefined = curatorProfile?.contacts ? {
         whatsapp: curatorProfile.contacts.whatsapp,
         telegram: curatorProfile.contacts.telegram,
-        max: (curatorProfile.contacts as any).max,
+        max: curatorProfile.contacts.max,
         phone: curatorProfile.contacts.phone
     } : undefined;
 

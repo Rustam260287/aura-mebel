@@ -62,5 +62,6 @@ export interface ActionPlan {
         mode: 'chat' | 'toast' | 'hidden';
         content?: any;
         tone?: 'silent' | 'neutral' | 'supportive';
+        chatSessionId?: number; // Unique per open, forces remount
     };
 }
