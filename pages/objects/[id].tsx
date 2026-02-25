@@ -8,6 +8,7 @@ import { ObjectDetail } from '../../components/ObjectDetail';
 import { Meta } from '../../components/Meta';
 import { toPublicObject } from '../../lib/publicObject';
 import { COLLECTIONS } from '../../lib/db/collections';
+import type { Product, WithContext } from 'schema-dts';
 
 interface ObjectPageProps {
   object?: ObjectPublic;
@@ -45,6 +46,24 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
     ? object.imageUrls[0]
     : undefined;
 
+  // JSON-LD Schema.org (Product)
+  const jsonLd: WithContext<Product> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: object.name,
+    image: object.imageUrls || [],
+    description: seoDescription || `Примерьте ${object.name} в вашем интерьере.`,
+    ...(object.price ? {
+      offers: {
+        '@type': 'Offer',
+        price: (object.price / 100).toString(),
+        priceCurrency: 'RUB',
+        availability: 'https://schema.org/InStock',
+        url: `https://aura-room.ru/objects/${object.id}`
+      }
+    } : {})
+  };
+
   return (
     <>
       <Meta
@@ -52,6 +71,10 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
         description={seoDescription || `Примерьте ${object.name} в вашем интерьере.`}
         image={seoImage}
         url={`/objects/${object.id}`}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ObjectDetail
         object={object}
