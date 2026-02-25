@@ -526,17 +526,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [emitEvent, emitMetaEvent, experienceState]);
 
   const handleBack = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const entry = window.sessionStorage.getItem('label_last_entry_path');
-        if (entry && entry !== router.asPath) {
-          router.push(entry);
-          return;
-        }
-      } catch { }
-    }
-    router.push('/objects');
-  }, [router]);
+    // If onBack is provided (e.g. from ObjectSheet overlay), use it directly
+    onBack();
+  }, [onBack]);
 
   const arUnavailableTrackedRef = useRef(false);
   const supportsWebXrAr = !isIOSDevice && webXrArSupported === true;

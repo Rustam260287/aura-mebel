@@ -894,14 +894,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     pointerEvents: 'auto', // CRITICAL: Must be 'auto' for WebXR DOM Overlay touch events
                 }}
             >
-                {/* Debug Panel (Top-Left) */}
-                <div
-                    ref={debugRef}
-                    className="absolute top-unsafe-inset-top left-4 mt-12 bg-black/60 text-white text-[10px] p-2 rounded pointer-events-none z-[200] font-mono"
-                    style={{ minWidth: '120px' }}
-                >
-                    INIT
-                </div>
+
 
                 {/* Canvas Container */}
                 <div ref={containerRef} className="absolute inset-0" style={{ pointerEvents: 'none' }} />
@@ -922,7 +915,6 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                     <ARBottomControls
                         stage={stage}
                         onClose={() => endSession()}
-                        onSnapshot={handleSnapshot}
                     />
 
                     {/* Quiet UX: Sticky Onboarding Hint (One-Time) */}
