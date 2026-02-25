@@ -55,16 +55,6 @@ export class MetaAgent {
         } else if (event.type === 'RESET') {
             assistantMode = 'hidden';
             content = undefined;
-            // Check for Post-Share Reflection
-            if (this.sessionHistory.hasShared && !this.sessionHistory.notificationsShown['POST_SHARE_REFLECTION']) {
-                assistantMode = 'chat';
-                content = {
-                    text: "Если появятся вопросы по размерам или доставке — я здесь.",
-                    type: 'hint',
-                    notificationType: 'POST_SHARE_REFLECTION'
-                };
-                this.markNotificationShown('POST_SHARE_REFLECTION');
-            }
         } else if (event.type === 'USER_SELECT_OBJECT' || event.type === 'USER_ENTERED_OBJECT') {
             nextState = AssistantState.SELECTING;
             assistantMode = 'hidden';
@@ -83,15 +73,9 @@ export class MetaAgent {
             content = undefined;
         } else if (event.type === 'AR_ENDED') {
             nextState = AssistantState.POST_AR_REFLECTION;
-            // Immediate "Share" suggestion
-            assistantMode = 'chat';
-            content = {
-                text: "Классно смотрится! Хотите сохранить или отправить близким?",
-                type: 'suggestion',
-                notificationType: 'SHARE_SUGGESTION',
-                action: 'share'
-            };
-            this.markNotificationShown('SHARE_SUGGESTION');
+            // Assistant stays hidden — user can open via "Спросить ассистента"
+            assistantMode = 'hidden';
+            content = undefined;
         } else if (event.type === 'SNAPSHOT_TAKEN') {
             nextState = AssistantState.SNAPSHOT_TAKEN;
             assistantMode = 'toast';
@@ -149,50 +133,9 @@ export class MetaAgent {
                 assistantMode = 'hidden';
             }
 
-            // Only show hints if hidden
-            if (assistantMode === 'hidden') {
-                if (this.shouldShowNotification('SHARE_SUGGESTION', actualTime)) {
-                    assistantMode = 'chat';
-                    content = {
-                        text: "Классно смотрится! Хотите сохранить или отправить близким?",
-                        type: 'suggestion',
-                        notificationType: 'SHARE_SUGGESTION',
-                        action: 'share'
-                    };
-                    this.markNotificationShown('SHARE_SUGGESTION');
-                } else if (this.shouldShowNotification('AR_HINT', actualTime)) {
-                    assistantMode = 'chat';
-                    content = {
-                        text: "Хочешь посмотреть, как она будет в твоей комнате?",
-                        type: 'hint',
-                        notificationType: 'AR_HINT'
-                    };
-                    this.markNotificationShown('AR_HINT');
-                } else if (this.shouldShowNotification('SOFT_CTA', actualTime)) {
-                    assistantMode = 'chat';
-                    content = {
-                        text: "Эта модель отлично подходит для гостиной. Хотите примерить?",
-                        type: 'hint',
-                        notificationType: 'SOFT_CTA'
-                    };
-                    this.markNotificationShown('SOFT_CTA');
-                } else if (this.shouldShowNotification('CONTACT_SUGGESTION', actualTime)) {
-                    assistantMode = 'chat';
-
-                    const profile = this.curatorProfile || {};
-                    const name = profile.managerName || 'Куратор';
-                    // Quiet Mode: No online/offline check. Just simple availability.
-                    const text = `${name}. Могу подсказать по размерам и материалам, если нужно.`;
-
-                    content = {
-                        text: text,
-                        type: 'suggestion',
-                        notificationType: 'CONTACT_SUGGESTION',
-                        action: 'contact'
-                    };
-                    this.markNotificationShown('CONTACT_SUGGESTION');
-                }
-            }
+            // Auto-popup chat hints are DISABLED.
+            // Assistant only appears when user explicitly clicks "Спросить ассистента".
+            // Toast-only notifications (ONBOARDING_HINT, AR_GUIDANCE, SNAPSHOT reset) remain above.
         }
 
         // Final State Update & Return (Unified)

@@ -12,8 +12,8 @@ interface MetaProps {
 
 const SITE_NAME = 'AURA';
 const DEFAULT_DESCRIPTION = 'AURA делает будущий интерьер видимым. Спокойная примерка мебели в вашем пространстве.';
-const DEFAULT_IMAGE = '/og-image.jpg';
-const SITE_URL = 'https://aura.app'; // Бренд AURA
+const DEFAULT_IMAGE = '/og-image.png';
+const SITE_URL = 'https://aura-room.ru';
 
 export const Meta: React.FC<MetaProps> = ({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_IMAGE, url }) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
