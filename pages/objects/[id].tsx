@@ -4,6 +4,7 @@ import type { GetServerSideProps } from 'next';
 import { getAdminDb, getAdminStorage } from '../../lib/firebaseAdmin';
 import type { ObjectPublic } from '../../types';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { ObjectDetail } from '../../components/ObjectDetail';
 import { Meta } from '../../components/Meta';
 import { toPublicObject } from '../../lib/publicObject';
@@ -35,6 +36,13 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
     // ... existing fallback ...
     return null;
   }
+
+  // Fire view_item exactly once on page mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).ym) {
+      (window as any).ym(106314786, 'reachGoal', 'view_item');
+    }
+  }, []);
 
   // ... rest of component
   const descriptionText = object.description || '';

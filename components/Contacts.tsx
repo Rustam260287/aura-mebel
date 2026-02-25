@@ -98,7 +98,12 @@ export const Contacts: React.FC = memo(() => {
                   href={waLink}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER' })}
+                  onClick={() => {
+                    trackJourneyEvent({ type: 'CONTACT_MANAGER' });
+                    if (typeof window !== 'undefined' && (window as any).ym) {
+                      (window as any).ym(106314786, 'reachGoal', 'handoff_request');
+                    }
+                  }}
                   className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all font-bold uppercase text-xs tracking-widest"
                 >
                   <WhatsAppIcon className="w-5 h-5" /> WhatsApp
@@ -107,7 +112,12 @@ export const Contacts: React.FC = memo(() => {
                   href={tgLink}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => trackJourneyEvent({ type: 'CONTACT_MANAGER' })}
+                  onClick={() => {
+                    trackJourneyEvent({ type: 'CONTACT_MANAGER' });
+                    if (typeof window !== 'undefined' && (window as any).ym) {
+                      (window as any).ym(106314786, 'reachGoal', 'handoff_request');
+                    }
+                  }}
                   className="flex items-center justify-center gap-3 py-4 rounded-sm border border-[#0088cc] text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-all font-bold uppercase text-xs tracking-widest"
                 >
                   <TelegramIcon className="w-5 h-5" /> Telegram

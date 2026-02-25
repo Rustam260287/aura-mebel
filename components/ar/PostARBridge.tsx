@@ -88,6 +88,9 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
                     objectId,
                     meta: { handoffId, channel },
                 });
+                if (typeof window !== 'undefined' && (window as any).ym) {
+                    (window as any).ym(106314786, 'reachGoal', 'handoff_sent');
+                }
             } catch (err) {
                 console.error('[PostARBridge] Failed to update handoff status:', err);
             }

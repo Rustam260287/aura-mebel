@@ -175,6 +175,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
               objectId,
               meta: { ...(arSessionIdRef.current ? { arSessionId: arSessionIdRef.current } : {}) },
             });
+            if (typeof window !== 'undefined' && (window as any).ym) {
+              (window as any).ym(106314786, 'reachGoal', 'ar_start');
+            }
           }
           return;
         }
@@ -263,6 +266,9 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           objectId,
           meta: { ...(arSessionIdRef.current ? { arSessionId: arSessionIdRef.current } : {}) },
         });
+        if (typeof window !== 'undefined' && (window as any).ym) {
+          (window as any).ym(106314786, 'reachGoal', 'ar_start');
+        }
       }
       const modelViewer = modelViewerRef.current as any;
       if (!modelViewer) return;

@@ -549,6 +549,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 meta: { arSessionId: arSessionIdRef.current, runtime: 'webxr' },
             });
 
+            if (typeof window !== 'undefined' && (window as any).ym) {
+                (window as any).ym(106314786, 'reachGoal', 'ar_start');
+            }
+
             onSessionStart?.();
 
             // Setup hit-test with SHARED reference space (CRITICAL for coordinate consistency)

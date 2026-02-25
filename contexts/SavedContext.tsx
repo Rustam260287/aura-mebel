@@ -73,6 +73,9 @@ export const SavedProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     for (const id of nextSet) {
       if (!prevSet.has(id)) {
         trackJourneyEvent({ type: 'SAVE_OBJECT', objectId: id });
+        if (typeof window !== 'undefined' && (window as any).ym) {
+          (window as any).ym(106314786, 'reachGoal', 'add_to_saved');
+        }
       }
     }
 

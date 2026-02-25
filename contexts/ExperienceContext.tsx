@@ -246,6 +246,9 @@ export const ExperienceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             },
           } satisfies JourneyMeta,
         });
+        if (typeof window !== 'undefined' && (window as any).ym) {
+          (window as any).ym(106314786, 'reachGoal', 'handoff_request');
+        }
         setState('HANDOFF_REQUESTED');
         return;
       }
