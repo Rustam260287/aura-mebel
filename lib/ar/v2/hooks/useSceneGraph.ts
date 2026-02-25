@@ -58,13 +58,18 @@ export function useSceneGraph(): UseSceneGraphResult {
                 try {
                     const res = await fetch(obj.modelGlbUrl, { signal });
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    const arrayBuffer = await res.arrayBuffer();
+                    const blob = await res.blob();
 
                     if (signal?.aborted) throw new Error('Aborted');
 
-                    const gltf = await new Promise<any>((resolve, reject) => {
-                        loader.parse(arrayBuffer, '', resolve, reject);
-                    });
+                    const objectUrl = URL.createObjectURL(blob);
+                    let gltf;
+                    try {
+                        // Use loadAsync with objectUrl so GLTFLoader handles the GLB natively
+                        gltf = await loader.loadAsync(objectUrl);
+                    } finally {
+                        URL.revokeObjectURL(objectUrl);
+                    }
 
                     const model = gltf.scene;
 
@@ -88,11 +93,16 @@ export function useSceneGraph(): UseSceneGraphResult {
 
                     loaded++;
                     setLoadingProgress({ loaded, total: validObjects.length });
-                } catch (e) {
+                } catch (e: any) {
+                    if (e.name === 'AbortError' || e.message === 'Aborted' || signal?.aborted) {
+                        throw e;
+                    }
                     console.error(`[useSceneGraph] Failed to load model ${obj.objectId}:`, e);
                 }
             })
         );
+
+        dracoLoader.dispose();
 
         return models;
     }, []);

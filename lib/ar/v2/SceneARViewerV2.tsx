@@ -311,7 +311,10 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
     // Load models on mount
     useEffect(() => {
-        if (stage !== 'idle') return;
+        // Prevent continuous reloading but allow remounts to load if aborted.
+        // We only return early if we've successfully moved past the 'loading' or 'idle' stage
+        // UNLESS it's an error stage (meaning user pressed retry).
+        if (stage === 'ready' || stage === 'active') return;
 
         const abortController = new AbortController();
 
@@ -360,7 +363,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
 
                 setStage('ready');
             } catch (e: any) {
-                if (e.message === 'Aborted') {
+                if (e.name === 'AbortError' || e.message === 'Aborted' || abortController.signal.aborted) {
                     console.log('[SceneARViewerV2] Load aborted');
                     return;
                 }
@@ -375,7 +378,9 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
         return () => {
             abortController.abort();
         };
-    }, [objects, sceneGraph, stage, xrSession]);
+        // Disable exhaustive-deps to prevent infinite loops from unstable sceneGraph and stage
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [objects]);
 
     // End session handler
     const endSession = useCallback(() => {
