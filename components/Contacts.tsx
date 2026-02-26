@@ -86,7 +86,7 @@ export const Contacts: React.FC = memo(() => {
                   <div className="w-6 flex justify-center">
                     <EnvelopeIcon className="w-5 h-5 text-gray-400" />
                   </div>
-                  <a href="mailto:hello@aura.app" className="text-lg text-brand-charcoal hover:text-brand-terracotta transition-colors">hello@aura.app</a>
+                  <a href="mailto:daniyagizatulina005@gmail.com" className="text-lg text-brand-charcoal hover:text-brand-terracotta transition-colors">daniyagizatulina005@gmail.com</a>
                 </div>
               </div>
             </div>

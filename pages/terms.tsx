@@ -95,7 +95,7 @@ export default function TermsPage() {
               <p className="text-sm">
                 ИП Гизатулина Дания Амировна<br />
                 ИНН: 745000639026<br />
-                Email: <a href="mailto:support@aura-mebel.ru" className="text-brand-brown hover:underline">support@aura-mebel.ru</a>
+                Email: <a href="mailto:daniyagizatulina005@gmail.com" className="text-brand-brown hover:underline">daniyagizatulina005@gmail.com</a>
               </p>
             </section>
           </div>

@@ -58,8 +58,8 @@ const ContactsPage: React.FC = memo(() => {
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium text-soft-black">Связь</h3>
                   <div className="space-y-1 text-sm text-muted-gray font-light">
-                    <a href="mailto:hello@aura-room.ru" className="block hover:text-soft-black transition-colors underline decoration-transparent hover:decoration-soft-black underline-offset-4">
-                      hello@aura-room.ru
+                    <a href="mailto:daniyagizatulina005@gmail.com" className="block hover:text-soft-black transition-colors underline decoration-transparent hover:decoration-soft-black underline-offset-4">
+                      daniyagizatulina005@gmail.com
                     </a>
                     <p className="cursor-default">+7 (987) 216-70-75</p>
                   </div>

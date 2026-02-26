@@ -120,7 +120,7 @@ export default function PrivacyPage() {
               <h2 className="text-xl font-bold text-brand-charcoal">7. Обратная связь</h2>
               <p>
                 Если у вас есть вопросы по поводу конфиденциальности или работы сервиса, напишите нам:<br />
-                <strong>Email:</strong> <a href="mailto:support@aura-mebel.ru" className="text-brand-brown hover:underline">support@aura-mebel.ru</a>
+                <strong>Email:</strong> <a href="mailto:daniyagizatulina005@gmail.com" className="text-brand-brown hover:underline">daniyagizatulina005@gmail.com</a>
               </p>
             </section>
           </div>
