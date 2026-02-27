@@ -126,16 +126,20 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [emitEvent, object.id, object.name, object.objectType]);
 
   const closeAR = useCallback(
-    (durationSec?: number, hasStarted?: boolean) => {
-      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted });
+    (durationSec?: number, hasStarted?: boolean, isFailed?: boolean) => {
+      console.log('[ObjectDetail] closeAR called', { durationSec, hasStarted, isFailed });
 
       // 1. Synchronous state reset (order matters!)
       setShowSceneARV2(false);
       setIsAROpen(false);
 
+      if (isFailed) {
+        setShowExternalBrowserModal(true);
+      }
+
       // 2. STRICT: Only go to POST_AR if hasStarted is EXPLICITLY true
       // This prevents false POST_AR from any code path where XR never actually started
-      if (hasStarted === true) {
+      if (!isFailed && hasStarted === true) {
         setUiState('POST_AR');
       } else {
         setUiState('DEFAULT');
@@ -537,6 +541,18 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
     // 1. Detection on Click (New Architecture)
     if (typeof window !== 'undefined') {
       const env = getBrowserEnvironment();
+
+      if (env.platform === 'android' && env.requiresExternalBrowser) {
+        trackJourneyEvent({
+          type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
+          meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: env.browser } }
+        });
+        const res = openInChromeAndroid();
+        if (res === 'manual_needed') {
+          addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
+        }
+        return;
+      }
 
       if (env.requiresExternalBrowser) {
         setShowExternalBrowserModal(true);

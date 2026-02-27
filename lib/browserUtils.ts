@@ -28,7 +28,7 @@ export const getBrowserEnvironment = (): BrowserEnv => {
     const isVK = /VK|vkontakte/i.test(ua);
     const isFacebook = /FBAN|FBAV|FB_IAB/i.test(ua);
     const isTikTok = /TikTok|musical_ly/i.test(ua);
-    const isYandexApp = /YaApp_Android|YaApp_iOS|YandexSearch|YandexMobile/i.test(ua);
+    const isYandexApp = /YaApp_Android|YaApp_iOS|YaSearchBrowser|YandexSearch|YandexMobile/i.test(ua);
 
     // Generic WebView detection for Android
     // Android WebView UA includes "wv" in parentheses, e.g. "(wv)"
@@ -97,7 +97,8 @@ export const openInChromeAndroid = (): 'redirected' | 'manual_needed' => {
     // Check if this looks like an in-app browser (WebView)
     const isAndroidWebView = /; wv\)/i.test(ua);
     const isKnownInApp = /Telegram|Instagram|VK|FBAN|FBAV|TikTok/i.test(ua);
-    const isInApp = isYandex || isAndroidWebView || isKnownInApp;
+    const isYandexApp = /YaApp_Android|YaApp_iOS|YaSearchBrowser|YandexSearch|YandexMobile/i.test(ua);
+    const isInApp = isYandex || isYandexApp || isAndroidWebView || isKnownInApp;
 
     console.log('[Browser] openInChromeAndroid called, isInApp:', isInApp, 'UA:', ua.substring(0, 120));
 

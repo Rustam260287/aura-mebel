@@ -29,7 +29,7 @@ interface ARViewerProps {
   poster?: string;
   objectId?: string;
   open?: boolean;
-  onClose?: (arDurationSec?: number) => void;
+  onClose?: (arDurationSec?: number, isFailed?: boolean) => void;
 }
 
 export type ARViewerHandle = {
@@ -196,6 +196,8 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         if (status === 'failed') {
           wasPresentingRef.current = false;
           setIsPresentingAr(false);
+          const durationSec = finishArIfNeeded();
+          onClose?.(durationSec ?? undefined, true);
         }
       };
 
@@ -385,9 +387,6 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
             scale="1 1 1"
             ar
             // IMPORTANT:
-            // Do NOT add `scene-viewer` to ar-modes.
-            // It causes Android to open Google Play via external intent.
-            // Labelcom uses WebXR-only AR on Android by design.
             ar-modes={arModes}
             ar-scale="auto"
             style={{ touchAction: 'pan-y' }}
@@ -395,7 +394,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
           >
             {/* Share button - visible when viewer is open */}
-
+            <div slot="ar-failure" className="hidden"></div>
           </model-viewer>
         ) : (
           <div className="w-full h-full flex items-center justify-center px-6 text-center">
