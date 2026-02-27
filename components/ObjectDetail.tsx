@@ -42,6 +42,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [inline3dProgress, setInline3dProgress] = useState<number | null>(null);
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [postArHintVisible, setPostArHintVisible] = useState(false);
+  const [showExternalBrowserModal, setShowExternalBrowserModal] = useState(false);
   const [isIOSDevice] = useState(() => {
     if (typeof navigator === 'undefined') return false;
     return (
@@ -534,39 +535,15 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const supportsWebXrAr = !isIOSDevice && webXrArSupported === true;
   const handleOpenAr = useCallback(() => {
     // 1. Detection on Click (New Architecture)
-    // 1. Detection on Click (New Architecture)
     if (typeof window !== 'undefined') {
       const env = getBrowserEnvironment();
 
       if (env.requiresExternalBrowser) {
-        let hasRedirected = false;
-        try {
-          hasRedirected = Boolean(window.sessionStorage.getItem('ar_redirected'));
-        } catch { }
-
-        if (!hasRedirected) {
-          try {
-            window.sessionStorage.setItem('ar_redirected', '1');
-          } catch { }
-
-          trackJourneyEvent({
-            type: 'BROWSER_LIMITATION_DETECTED',
-            meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
-          });
-          trackJourneyEvent({
-            type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-            meta: { action: { type: 'redirect', browser: env.browser, timestamp: new Date().toISOString() } }
-          });
-
-          if (env.platform === 'android') {
-            const result = openInChromeAndroid();
-            if (result === 'manual_needed') {
-              addToast('✨ Ссылка скопирована! Откройте Chrome и вставьте — AR заработает там.', 'info', 6000);
-            }
-          } else {
-            openInSafari();
-          }
-        }
+        setShowExternalBrowserModal(true);
+        trackJourneyEvent({
+          type: 'BROWSER_LIMITATION_DETECTED',
+          meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
+        });
         return;
       }
     }
@@ -950,7 +927,53 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           </>
         )
       }
-    </div >
+      {showExternalBrowserModal && (
+        <div className="fixed inset-0 z-[10000] bg-warm-white dark:bg-[#121212] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+          <div className="w-16 h-16 mb-6 rounded-2xl bg-brand-brown/10 dark:bg-white/5 flex items-center justify-center relative shadow-inner">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-brand-brown dark:text-white" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-serif italic text-soft-black dark:text-white mb-3">
+            Требуется браузер
+          </h2>
+
+          <p className="text-[#6B6B6B] dark:text-[#A0A0A0] text-[15px] max-w-[280px] mb-8">
+            AR не работает внутри мессенджеров
+          </p>
+
+          <button
+            onClick={() => {
+              trackJourneyEvent({
+                type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
+                meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: getBrowserEnvironment().browser } }
+              });
+              if (getBrowserEnvironment().platform === 'android') {
+                const res = openInChromeAndroid();
+                if (res === 'manual_needed') {
+                  addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
+                }
+              } else {
+                openInSafari();
+              }
+            }}
+            className="w-full max-w-[280px] bg-brand-brown hover:bg-brand-brown/90 text-white font-medium py-[15px] px-6 rounded-full transition-transform active:scale-95 shadow-soft"
+          >
+            {getBrowserEnvironment().platform === 'ios' ? '👉 Открыть в Safari' : '👉 Открыть в Chrome'}
+          </button>
+
+          <button
+            onClick={() => setShowExternalBrowserModal(false)}
+            className="mt-6 text-[15px] font-medium text-[#8E8E8E] px-4 py-2 hover:text-soft-black transition-colors"
+          >
+            Закрыть
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

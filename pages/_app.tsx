@@ -6,7 +6,7 @@ import Head from 'next/head';
 
 import { AuraField } from '../components/AuraField';
 import { MobileHeader } from '../components/MobileHeader';
-import { InAppBrowserGate } from '../components/InAppBrowserGate';
+import { WebViewAutoRedirectGuard } from '../components/WebViewAutoRedirectGuard';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -16,10 +16,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <AuraField />
       <ClientProviders>
-        <InAppBrowserGate>
+        <WebViewAutoRedirectGuard>
           <MobileHeader />
           <Component {...pageProps} />
-        </InAppBrowserGate>
+        </WebViewAutoRedirectGuard>
       </ClientProviders>
     </>
   );
