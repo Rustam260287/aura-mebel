@@ -545,7 +545,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       if (env.platform === 'android' && env.requiresExternalBrowser) {
         trackJourneyEvent({
           type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-          meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: env.browser } }
+          meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: 'webview' } }
         });
         const res = openInChromeAndroid();
         if (res === 'manual_needed') {
@@ -558,7 +558,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         setShowExternalBrowserModal(true);
         trackJourneyEvent({
           type: 'BROWSER_LIMITATION_DETECTED',
-          meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
+          meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
         });
         return;
       }
@@ -965,7 +965,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             onClick={() => {
               trackJourneyEvent({
                 type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-                meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: getBrowserEnvironment().browser } }
+                meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: 'webview' } }
               });
               if (getBrowserEnvironment().platform === 'android') {
                 const res = openInChromeAndroid();

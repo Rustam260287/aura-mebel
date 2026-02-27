@@ -116,11 +116,11 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
 
           trackJourneyEvent({
             type: 'BROWSER_LIMITATION_DETECTED',
-            meta: { limitations: { reason: 'in_app_browser', browser: env.browser, platform: env.platform, timestamp: new Date().toISOString() } }
+            meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
           });
           trackJourneyEvent({
             type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-            meta: { action: { type: 'redirect', browser: env.browser, timestamp: new Date().toISOString() } }
+            meta: { action: { type: 'redirect', browser: 'webview', timestamp: new Date().toISOString() } }
           });
 
           if (env.platform === 'android') {
