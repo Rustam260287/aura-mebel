@@ -550,7 +550,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
             });
 
             if (typeof window !== 'undefined' && (window as any).ym) {
-                (window as any).ym(106314786, 'reachGoal', 'ar_start');
+                (window as any).ym(106314786, 'reachGoal', 'AR_START');
             }
 
             onSessionStart?.();
