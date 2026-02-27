@@ -134,6 +134,19 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
               addToast('✨ Ссылка скопирована! Откройте Safari и вставьте — AR заработает там.', 'info', 6000);
             }
           }
+        } else {
+          // Already tried redirecting once, now force the toast/copy again just in case
+          if (env.platform === 'android') {
+            const result = openInChromeAndroid();
+            if (result === 'manual_needed') {
+              addToast('Ссылка скопирована! Откройте Chrome.', 'info', 6000);
+            }
+          } else {
+            const result = openInSafari();
+            if (result === 'manual_needed') {
+              addToast('Ссылка скопирована! Откройте Safari.', 'info', 6000);
+            }
+          }
         }
         // ALWAYS exit here - never proceed to AR init in unsupported browsers
         return;
