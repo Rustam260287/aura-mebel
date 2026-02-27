@@ -81,7 +81,18 @@ export const openInChromeAndroid = (): 'redirected' | 'manual_needed' => {
     return isYandexApp ? 'manual_needed' : 'redirected';
 };
 
-export const openInSafari = () => {
-    if (typeof window === 'undefined') return;
-    window.location.href = window.location.href;
+export const openInSafari = (): 'manual_needed' => {
+    if (typeof window === 'undefined') return 'manual_needed';
+
+    const url = window.location.href;
+    try {
+        navigator.clipboard.writeText(url);
+    } catch { }
+
+    // Мягкий переход, который иногда вызывает системный iOS prompt для перехода в Safari
+    setTimeout(() => {
+        window.location.href = url;
+    }, 50);
+
+    return 'manual_needed';
 };

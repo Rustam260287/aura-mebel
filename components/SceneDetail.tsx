@@ -129,7 +129,10 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
               addToast('✨ Ссылка скопирована! Откройте Chrome и вставьте — AR заработает там.', 'info', 6000);
             }
           } else {
-            openInSafari();
+            const result = openInSafari();
+            if (result === 'manual_needed') {
+              addToast('✨ Ссылка скопирована! Откройте Safari и вставьте — AR заработает там.', 'info', 6000);
+            }
           }
         }
         // ALWAYS exit here - never proceed to AR init in unsupported browsers

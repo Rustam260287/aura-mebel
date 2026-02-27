@@ -973,7 +973,10 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                   addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
                 }
               } else {
-                openInSafari();
+                const res = openInSafari();
+                if (res === 'manual_needed') {
+                  addToast('Ссылка скопирована! Откройте Safari и вставьте её.', 'info', 6000);
+                }
               }
             }}
             className="w-full max-w-[280px] bg-brand-brown hover:bg-brand-brown/90 text-white font-medium py-[15px] px-6 rounded-full transition-transform active:scale-95 shadow-soft"
