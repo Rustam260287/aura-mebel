@@ -551,7 +551,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         if (res === 'manual_needed') {
           addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
         }
-        return;
+        return; // CRITICAL: Stop execution here
       }
 
       if (env.requiresExternalBrowser) {
@@ -560,7 +560,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
           type: 'BROWSER_LIMITATION_DETECTED',
           meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
         });
-        return;
+        return; // CRITICAL: Stop execution here
       }
     }
 
