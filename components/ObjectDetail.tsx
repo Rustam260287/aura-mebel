@@ -957,9 +957,13 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             Требуется браузер
           </h2>
 
-          <p className="text-[#6B6B6B] dark:text-[#A0A0A0] text-[15px] max-w-[280px] mb-8">
-            AR не работает внутри мессенджеров
-          </p>
+          <div className="text-[#6B6B6B] dark:text-[#A0A0A0] text-[15px] max-w-[280px] mb-8 text-left mx-auto space-y-2">
+            <p className="font-medium text-center mb-4">AR не работает внутри мессенджеров.</p>
+            <p>1. Нажмите кнопку ниже.</p>
+            <p>2. Ссылка будет скопирована.</p>
+            <p>3. Откройте штатный браузер экрана (Safari/Chrome).</p>
+            <p>4. Вставьте ссылку в адресную строку.</p>
+          </div>
 
           <button
             onClick={() => {
