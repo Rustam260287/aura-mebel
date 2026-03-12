@@ -159,80 +159,23 @@ async function generateWithAI(
 
         console.log('[Redesign] Prompt:', editPrompt);
 
-        const output = await replicate.run(
-            "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
-            {
-                input: {
-                    image: imageUrl,
-                    prompt: editPrompt,
-                    negative_prompt: negativePrompt,
-                    num_inference_steps: 50,
-                    guidance_scale: guidanceScale,
-                    prompt_strength: promptStrength,
-                }
-            }
-        ) as any;
+        const output = await runReplicatePrediction(replicate, {
+            image: imageUrl,
+            prompt: editPrompt,
+            negative_prompt: negativePrompt,
+            num_inference_steps: 50,
+            guidance_scale: guidanceScale,
+            prompt_strength: promptStrength,
+        });
 
-        console.log('[Redesign] ✓ Got response:', typeof output, Array.isArray(output));
+        console.log(
+            '[Redesign] ✓ Got response:',
+            typeof output,
+            Array.isArray(output),
+            output?.constructor?.name || 'unknown'
+        );
 
-        // Handle different response types
-        let resultUrl: string | null = null;
-
-        if (typeof output === 'string') {
-            // Direct URL
-            resultUrl = output;
-        } else if (Array.isArray(output) && output.length > 0) {
-            const firstItem = output[0];
-            if (typeof firstItem === 'string') {
-                resultUrl = firstItem;
-            } else if (firstItem && typeof firstItem.getReader === 'function') {
-                // It's a ReadableStream with binary image data
-                console.log('[Redesign] Reading image stream...');
-                const reader = firstItem.getReader();
-                const chunks: Uint8Array[] = [];
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                }
-
-                // Combine chunks into single buffer
-                const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-                const combined = new Uint8Array(totalLength);
-                let offset = 0;
-                for (const chunk of chunks) {
-                    combined.set(chunk, offset);
-                    offset += chunk.length;
-                }
-
-                // Check if it's binary image data (PNG starts with specific bytes)
-                const isPng = combined[0] === 0x89 && combined[1] === 0x50;
-                const isJpeg = combined[0] === 0xFF && combined[1] === 0xD8;
-
-                if (isPng || isJpeg) {
-                    console.log('[Redesign] Uploading generated image to Firebase...');
-                    // Upload binary to Firebase
-                    const { getAdminStorage } = await import('../firebaseAdmin');
-                    const storage = getAdminStorage();
-                    const bucket = storage.bucket();
-
-                    const ext = isPng ? 'png' : 'jpg';
-                    const filename = `redesign-results/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-                    const file = bucket.file(filename);
-
-                    await file.save(Buffer.from(combined), {
-                        contentType: isPng ? 'image/png' : 'image/jpeg',
-                        public: true
-                    });
-
-                    resultUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
-                    console.log('[Redesign] ✓ Result saved:', resultUrl);
-                } else {
-                    // Might be a URL as text
-                    resultUrl = new TextDecoder().decode(combined);
-                }
-            }
-        }
+        const resultUrl = await extractReplicateResultUrl(output);
 
         if (!resultUrl) {
             console.error('[Redesign] ❌ Could not extract result');
@@ -246,6 +189,192 @@ async function generateWithAI(
         console.error('[Redesign] ❌ Error:', error?.message || error);
         return input.roomImageUrl;
     }
+}
+
+async function runReplicatePrediction(
+    replicate: Replicate,
+    input: Record<string, unknown>,
+    maxAttempts: number = 2
+): Promise<unknown> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        try {
+            return await replicate.run(
+                'adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38',
+                { input }
+            );
+        } catch (error: any) {
+            lastError = error;
+            if (!shouldRetryReplicate(error) || attempt >= maxAttempts) {
+                throw error;
+            }
+
+            const delayMs = getReplicateRetryDelayMs(error, attempt);
+            console.warn(`[Redesign] Replicate throttled. Retrying in ${delayMs}ms...`);
+            await sleep(delayMs);
+        }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error('Replicate prediction failed');
+}
+
+function shouldRetryReplicate(error: unknown): boolean {
+    const status = typeof error === 'object' && error !== null && 'status' in error
+        ? (error as { status?: unknown }).status
+        : undefined;
+    const message = typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+
+    return status === 429 || message.includes('429 Too Many Requests');
+}
+
+function getReplicateRetryDelayMs(error: unknown, attempt: number): number {
+    const message = typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+    const retryAfterMatch = message.match(/"retry_after"\s*:\s*(\d+)/);
+    const retryAfterSeconds = retryAfterMatch ? Number.parseInt(retryAfterMatch[1], 10) : 0;
+    const backoffMs = Math.min(15_000, 1_500 * attempt);
+    return Math.max(backoffMs, retryAfterSeconds * 1_000);
+}
+
+async function extractReplicateResultUrl(output: unknown): Promise<string | null> {
+    if (!output) return null;
+
+    if (typeof output === 'string') {
+        return normalizePotentialUrl(output);
+    }
+
+    if (output instanceof URL) {
+        return output.toString();
+    }
+
+    if (Array.isArray(output)) {
+        for (const item of output) {
+            const nested = await extractReplicateResultUrl(item);
+            if (nested) return nested;
+        }
+        return null;
+    }
+
+    if (typeof output === 'object') {
+        const candidate = output as {
+            url?: (() => string | Promise<string>) | string;
+            href?: string;
+            getReader?: () => ReadableStreamDefaultReader<Uint8Array>;
+            toString?: () => string;
+        };
+
+        if (typeof candidate.getReader === 'function') {
+            try {
+                const streamed = await uploadGeneratedStream(candidate as ReadableStream<Uint8Array>);
+                if (streamed) return streamed;
+            } catch (error) {
+                console.warn('[Redesign] Stream upload failed, falling back to provider URL:', error);
+            }
+        }
+
+        if (typeof candidate.url === 'function') {
+            const result = await candidate.url();
+            const normalized = normalizePotentialUrl(result);
+            if (normalized) return normalized;
+        }
+
+        if (typeof candidate.url === 'string') {
+            const normalized = normalizePotentialUrl(candidate.url);
+            if (normalized) return normalized;
+        }
+
+        if (typeof candidate.href === 'string') {
+            const normalized = normalizePotentialUrl(candidate.href);
+            if (normalized) return normalized;
+        }
+
+        if (typeof candidate.toString === 'function') {
+            const normalized = normalizePotentialUrl(candidate.toString());
+            if (normalized) return normalized;
+        }
+    }
+
+    return null;
+}
+
+function normalizePotentialUrl(value: unknown): string | null {
+    if (value instanceof URL) {
+        return value.toString();
+    }
+
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+}
+
+async function uploadGeneratedStream(stream: ReadableStream<Uint8Array>): Promise<string | null> {
+    console.log('[Redesign] Reading image stream...');
+    const reader = stream.getReader();
+    const chunks: Uint8Array[] = [];
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) chunks.push(value);
+    }
+
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+    if (totalLength === 0) return null;
+
+    const combined = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+    }
+
+    const inferredUrl = normalizePotentialUrl(new TextDecoder().decode(combined));
+    if (inferredUrl) {
+        return inferredUrl;
+    }
+
+    return uploadGeneratedBinary(Buffer.from(combined));
+}
+
+async function uploadGeneratedBinary(buffer: Buffer): Promise<string | null> {
+    const isPng = buffer[0] === 0x89 && buffer[1] === 0x50;
+    const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8;
+    const isWebp = buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46;
+
+    if (!isPng && !isJpeg && !isWebp) {
+        return null;
+    }
+
+    console.log('[Redesign] Uploading generated image to Firebase...');
+    const { getAdminStorage } = await import('../firebaseAdmin');
+    const storage = getAdminStorage();
+    const bucket = storage.bucket();
+
+    const ext = isPng ? 'png' : isWebp ? 'webp' : 'jpg';
+    const contentType = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+    const filename = `redesign-results/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const file = bucket.file(filename);
+
+    await file.save(buffer, {
+        contentType,
+        public: true,
+    });
+
+    const resultUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+    console.log('[Redesign] ✓ Result saved:', resultUrl);
+    return resultUrl;
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function uploadToFirebase(dataUrl: string): Promise<string> {
