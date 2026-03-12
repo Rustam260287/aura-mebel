@@ -7,11 +7,11 @@ import { buildSavedRedesignSignature } from '../../lib/saved/types';
 import { Button } from '../Button';
 
 const OBJECT_LABELS: Record<string, string> = {
-    sofa: 'диван',
-    armchair: 'кресло',
-    table: 'стол',
-    chair: 'стул',
-    bed: 'кровать',
+    sofa: 'диваном',
+    armchair: 'креслом',
+    table: 'столом',
+    chair: 'стулом',
+    bed: 'кроватью',
 };
 
 const STYLE_LABELS: Record<string, string> = {
@@ -47,10 +47,10 @@ export const StepResultRedesign: React.FC = () => {
         router.push('/objects');
     };
 
-    const objectLabel = OBJECT_LABELS[input.object_type || 'sofa'] || 'объект';
+    const objectLabel = OBJECT_LABELS[input.object_type || 'sofa'] || 'объектом';
     const styleLabel = STYLE_LABELS[input.style || 'minimal'] || 'спокойным';
     const moodLabel = MOOD_LABELS[input.mood || 'calm'] || 'спокойным';
-    const summaryText = `Мы собрали ориентир для комнаты с ${objectLabel}ом, который делает пространство ${styleLabel} и ${moodLabel}.`;
+    const summaryText = `Мы собрали ориентир для комнаты с ${objectLabel}, который делает пространство ${styleLabel} и ${moodLabel}.`;
     const savedSignature = result ? buildSavedRedesignSignature({
         objectId: canOpenObject ? targetObjectId || undefined : undefined,
         objectName: selectedFurniture?.name || 'Мебель из интерьера',
@@ -76,6 +76,7 @@ export const StepResultRedesign: React.FC = () => {
         ? 'Откройте объект отдельно, чтобы посмотреть 3D и примерить его в интерьере.'
         : 'Откройте объект отдельно, чтобы перейти к деталям и продолжить исследование.';
     const visualChanged = result.after !== result.before;
+    const isFallbackResult = result.generationStatus === 'fallback' || !visualChanged;
     const handleSave = () => {
         if (!result || !selectedFurniture) return;
 
@@ -98,9 +99,17 @@ export const StepResultRedesign: React.FC = () => {
         <div className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto">
             <div className="max-w-2xl w-full space-y-5">
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-medium text-soft-black">Визуализация готова</h2>
+                    <h2 className="text-2xl font-medium text-soft-black">
+                        {isFallbackResult ? 'Ориентир готов' : 'Визуализация готова'}
+                    </h2>
                     <p className="text-sm text-muted-gray max-w-xl mx-auto">{summaryText}</p>
                 </div>
+
+                {result.generationNote && (
+                    <div className="rounded-2xl border border-stone-beige/40 bg-white/82 px-4 py-3 text-sm text-soft-black shadow-sm">
+                        {result.generationNote}
+                    </div>
+                )}
 
                 <div className="flex justify-center">
                     <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
@@ -150,7 +159,7 @@ export const StepResultRedesign: React.FC = () => {
 
                 {!visualChanged && (
                     <div className="text-sm text-muted-gray text-center px-4">
-                        Визуализация получилась очень близкой к исходному фото. Можно изменить стиль или попробовать ещё раз позже.
+                        Визуализация получилась очень близкой к исходному фото. Можно изменить стиль или сразу перейти к подобранной мебели.
                     </div>
                 )}
 

@@ -30,6 +30,8 @@ env:
   #   firebase apphosting:secrets:set HANDOFF_PHONE
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
+  - variable: REPLICATE_API_TOKEN
+    secret: REPLICATE_API_TOKEN
   - variable: FIREBASE_SERVICE_ACCOUNT
     secret: FIREBASE_SERVICE_ACCOUNT
   - variable: ADMIN_EMAILS

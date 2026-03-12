@@ -11,8 +11,9 @@ export const WizardLayout: React.FC = () => {
     const activeStep = Math.min(currentStep, totalSteps - 1);
 
     return (
-        <div className="dark fixed inset-0 bg-aura-dark-base overflow-hidden z-50 animate-presence-enter">
-            <div className="absolute top-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-stone-beige/20 bg-white/70 px-4 py-2 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95),_rgba(245,242,237,0.98)_44%,_rgba(239,233,224,1)_100%)] animate-presence-enter">
+            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
+            <div className="absolute top-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-stone-beige/30 bg-white/88 px-4 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.06)] backdrop-blur-md">
                 {Array.from({ length: totalSteps }).map((_, index) => (
                     <span
                         key={index}

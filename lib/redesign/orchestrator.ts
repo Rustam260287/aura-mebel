@@ -1,7 +1,6 @@
-import type { RedesignInput, RedesignResult, RedesignVariant } from './types';
-import { db } from '../firebaseAdmin';
+import type { RedesignInput, RedesignResult } from './types';
 import Replicate from 'replicate';
-import { COLLECTIONS } from '../db/collections';
+import { selectCatalogObject } from '../catalog/objectMatching';
 
 // Параметры для разных вариантов
 // Параметры для разных вариантов
@@ -15,20 +14,6 @@ const PRESETS = {
     // 3. Subtle: High preservation.
     subtle: { image_guidance: 1.8, guidance: 3.5, label: 'Минимум' },
 } as const;
-
-const STYLE_KEYWORDS: Record<RedesignInput['style'], string[]> = {
-    minimal: ['minimal', 'миним', 'clean', 'scandi', 'scandinav'],
-    cozy: ['cozy', 'уют', 'soft', 'warm', 'homey'],
-    modern: ['modern', 'соврем', 'contemporary', 'clean'],
-    classic: ['classic', 'класс', 'timeless', 'traditional'],
-};
-
-const MOOD_MAP: Record<RedesignInput['mood'], string[]> = {
-    calm: ['calm', 'soft', 'strict'],
-    warm: ['soft', 'calm'],
-    fresh: ['expressive', 'calm'],
-    dramatic: ['expressive', 'strict'],
-};
 
 /**
  * AI Room Redesign Orchestrator
@@ -49,8 +34,19 @@ export async function runRedesign(
     console.log(`[Redesign] Generating 1 variant (${preset})...`);
 
     let afterUrl = input.roomImageUrl;
+    let generationStatus: RedesignResult['generationStatus'] = 'fallback';
+    let generationNote: string | undefined = 'Показываем исходное фото, потому что визуализация пока недоступна.';
+
     try {
         afterUrl = await generateWithAI(input, furniture, params.image_guidance, params.guidance);
+        if (afterUrl && afterUrl !== input.roomImageUrl) {
+            generationStatus = 'generated';
+            generationNote = undefined;
+        } else if (furniture.id !== 'demo') {
+            generationNote = 'AI-визуализация временно недоступна. Мы уже подобрали подходящий объект, и его можно открыть в интерьере.';
+        } else {
+            generationNote = 'AI-визуализация временно недоступна. Попробуйте другой стиль или откройте коллекцию вручную.';
+        }
     } catch (err) {
         console.error('[Redesign] Generation failed:', err);
     }
@@ -59,6 +55,8 @@ export async function runRedesign(
         before: input.roomImageUrl,
         after: afterUrl,
         currentPreset: preset,
+        generationStatus,
+        generationNote,
         selectedFurniture: {
             id: furniture.id,
             name: furniture.name,
@@ -77,95 +75,44 @@ export async function runRedesign(
 
 async function selectFurnitureFromCollection(input: RedesignInput) {
     try {
-        const objectsCollection = db.collection(COLLECTIONS.objects);
-        const snapshot = await objectsCollection
-            .where('objectType', '==', input.object_type)
-            .limit(20)
-            .get();
+        const matchedObject = await selectCatalogObject({
+            objectType: input.object_type,
+            mood: input.mood,
+            style: input.style,
+        });
 
-        const scoreCandidate = (data: FirebaseFirestore.DocumentData) => {
-            let score = 0;
-            const rawTokens = [
-                data.name,
-                data.description,
-                ...(Array.isArray(data.tags) ? data.tags : []),
-                ...(Array.isArray(data.styleTags) ? data.styleTags : []),
-                ...(Array.isArray(data.materialTags) ? data.materialTags : []),
-            ]
-                .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0)
-                .join(' ')
-                .toLowerCase();
-
-            const compatibleMoods = MOOD_MAP[input.mood] || [];
-            if (compatibleMoods.includes(String(data.mood || '').toLowerCase())) {
-                score += 10;
-            }
-
-            const styleKeywords = STYLE_KEYWORDS[input.style] || [];
-            if (styleKeywords.some((keyword) => rawTokens.includes(keyword))) {
-                score += 8;
-            }
-
-            if (data.has3D || data.modelGlbUrl || data.modelUsdzUrl) {
-                score += 6;
-            }
-
-            if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
-                score += 3;
-            }
-
-            if (String(data.status || '').toLowerCase() === 'ready') {
-                score += 2;
-            }
-
-            return score;
-        };
-
-        const candidates = snapshot.docs
-            .map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
-                const data = doc.data();
-                const has3D = Boolean(data.has3D || data.modelGlbUrl || data.modelUsdzUrl);
-                return { id: doc.id, data, score: scoreCandidate(data), has3D };
-            });
-
-        const with3D = candidates.filter((candidate) => candidate.has3D);
-        const rankedCandidates = with3D.length > 0 ? with3D : candidates;
-
-        if (rankedCandidates.length === 0) {
+        if (!matchedObject) {
             console.log(`[Redesign] No objects found for ${input.object_type}`);
             return {
                 id: 'demo',
                 name: 'Подходящий объект из коллекции',
-                imageUrl: null,
-                modelGlbUrl: null,
-                modelUsdzUrl: null,
+                imageUrl: undefined,
+                modelGlbUrl: undefined,
+                modelUsdzUrl: undefined,
                 has3D: false,
                 description: 'Откройте коллекцию, чтобы выбрать объект для дальнейшей примерки.',
             };
         }
 
-        rankedCandidates.sort((a, b) => b.score - a.score);
-        const best = rankedCandidates[0];
-
-        console.log('[Redesign] Selected:', best.data.name, '(has 3D:', best.has3D, ')');
+        console.log('[Redesign] Selected:', matchedObject.name, '(has 3D:', matchedObject.has3D, ')');
 
         return {
-            id: best.id,
-            name: best.data.name || 'Мебель',
-            imageUrl: best.data.imageUrls?.[0] || null,
-            modelGlbUrl: best.data.modelGlbUrl || null,
-            modelUsdzUrl: best.data.modelUsdzUrl || null,
-            has3D: best.has3D,
-            description: best.data.description || null,
+            id: matchedObject.id,
+            name: matchedObject.name || 'Мебель',
+            imageUrl: matchedObject.imageUrl,
+            modelGlbUrl: matchedObject.modelGlbUrl,
+            modelUsdzUrl: matchedObject.modelUsdzUrl,
+            has3D: matchedObject.has3D,
+            description: matchedObject.description,
         };
     } catch (error) {
         console.error('Error selecting furniture:', error);
         return {
             id: 'demo',
             name: 'Подходящий объект из коллекции',
-            imageUrl: null,
-            modelGlbUrl: null,
-            modelUsdzUrl: null,
+            imageUrl: undefined,
+            modelGlbUrl: undefined,
+            modelUsdzUrl: undefined,
             has3D: false,
             description: 'Откройте коллекцию, чтобы выбрать объект для дальнейшей примерки.',
         };

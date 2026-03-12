@@ -27,7 +27,11 @@ export const MobileHeader = () => {
         // Hidden on AR/3D explicit states (managed by ExperienceContext usually, but for header we check route/state)
         // Also hidden on Admin possibly? Or handled by Admin layout.
         // For now, let's keep it visible on all public pages.
-        const hidden = router.pathname === '/404' || router.pathname.startsWith('/admin');
+        const hidden =
+            router.pathname === '/404' ||
+            router.pathname.startsWith('/admin') ||
+            router.pathname === '/wizard' ||
+            router.pathname === '/redesign';
         setIsInvisibleRoute(hidden);
     }, [router.pathname]);
 

@@ -19,6 +19,8 @@ export interface RedesignResult {
     after: string;
     currentPreset?: 'creative' | 'balanced' | 'subtle';
     variants?: RedesignVariant[];
+    generationStatus?: 'generated' | 'fallback';
+    generationNote?: string;
     selectedFurniture: {
         id: string;
         name: string;

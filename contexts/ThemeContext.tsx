@@ -13,24 +13,15 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Routes that should always be in "focus" (dark) mode
-const FOCUS_ROUTES = ['/wizard', '/redesign'];
-
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
     const { state: experienceState } = useExperience();
     const [mode, setMode] = useState<ThemeMode>('light');
 
     useEffect(() => {
-        // Determine if we're in focus mode based on:
-        // 1. Experience state (3D or AR active)
-        // 2. Route (wizard, redesign)
+        // Focus mode is reserved for immersive 3D / AR states only.
         const isFocusExperience = experienceState === 'THREE_D_ACTIVE' || experienceState === 'AR_ACTIVE';
-        const isFocusRoute = FOCUS_ROUTES.some(r => router.pathname.startsWith(r));
-
-        const shouldBeFocus = isFocusExperience || isFocusRoute;
-
-        setMode(shouldBeFocus ? 'focus' : 'light');
+        setMode(isFocusExperience ? 'focus' : 'light');
     }, [experienceState, router.pathname]);
 
     // NOTE: We no longer modify `document.documentElement` here.

@@ -14,7 +14,8 @@ export const RedesignLayout: React.FC = () => {
     const showResult = result !== null && !isProcessing;
 
     return (
-        <div className="dark fixed inset-0 bg-aura-dark-base overflow-hidden z-50 animate-presence-enter">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.96),_rgba(246,242,236,0.98)_42%,_rgba(238,231,221,1)_100%)] animate-presence-enter">
+            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
             {/* Step container with soft transitions */}
             <div className="absolute inset-0 transition-opacity duration-700 ease-out">
                 {showProcessing ? (
