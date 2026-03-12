@@ -3,16 +3,15 @@ import Replicate from 'replicate';
 import { selectCatalogObject } from '../catalog/objectMatching';
 
 // Параметры для разных вариантов
-// Параметры для разных вариантов
 const PRESETS = {
-    // 1. Creative: Low image guidance = allows AI to hallucinate/change more. High prompt guidance.
-    creative: { image_guidance: 1.1, guidance: 7.0, label: 'Максимум' },
+    // 1. Creative: сильное изменение интерьера
+    creative: { prompt_strength: 0.85, guidance: 8.0, label: 'Максимум' },
 
-    // 2. Balanced: Medium preservation.
-    balanced: { image_guidance: 1.4, guidance: 5.0, label: 'Баланс' },
+    // 2. Balanced: умеренное изменение
+    balanced: { prompt_strength: 0.65, guidance: 6.0, label: 'Баланс' },
 
-    // 3. Subtle: High preservation.
-    subtle: { image_guidance: 1.8, guidance: 3.5, label: 'Минимум' },
+    // 3. Subtle: минимальное изменение, сохраняет оригинал
+    subtle: { prompt_strength: 0.45, guidance: 4.0, label: 'Минимум' },
 } as const;
 
 /**
@@ -38,7 +37,7 @@ export async function runRedesign(
     let generationNote: string | undefined = 'Показываем исходное фото, потому что визуализация пока недоступна.';
 
     try {
-        afterUrl = await generateWithAI(input, furniture, params.image_guidance, params.guidance);
+        afterUrl = await generateWithAI(input, furniture, params.prompt_strength, params.guidance);
         if (afterUrl && afterUrl !== input.roomImageUrl) {
             generationStatus = 'generated';
             generationNote = undefined;
@@ -122,8 +121,8 @@ async function selectFurnitureFromCollection(input: RedesignInput) {
 async function generateWithAI(
     input: RedesignInput,
     furniture: any,
-    imageGuidance: number = 2.0,
-    guidanceScale: number = 4.5
+    promptStrength: number = 0.65,
+    guidanceScale: number = 6.0
 ): Promise<string> {
     const token = process.env.REPLICATE_API_TOKEN;
 
@@ -147,20 +146,29 @@ async function generateWithAI(
 
         const furnitureName = furniture.name || input.object_type;
 
-        // More subtle prompt that preserves the room
-        const editPrompt = `Add a beautiful ${furnitureName} to this room, keep the original room layout and lighting`;
+        const styleMap: Record<string, string> = {
+            minimal: 'minimalist style, clean lines, neutral tones',
+            cozy: 'cozy warm style, soft textures, warm lighting',
+            modern: 'modern contemporary style, sleek design',
+            classic: 'classic elegant style, timeless design',
+        };
+        const styleDesc = styleMap[input.style] || input.style;
+
+        const editPrompt = `Interior design photo, ${styleDesc}, featuring a ${furnitureName}, beautiful room, high quality, photorealistic`;
+        const negativePrompt = 'ugly, blurry, distorted, low quality, watermark, text, deformed furniture';
 
         console.log('[Redesign] Prompt:', editPrompt);
 
         const output = await replicate.run(
-            "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
+            "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
             {
                 input: {
                     image: imageUrl,
                     prompt: editPrompt,
+                    negative_prompt: negativePrompt,
                     num_inference_steps: 50,
-                    image_guidance_scale: imageGuidance,
                     guidance_scale: guidanceScale,
+                    prompt_strength: promptStrength,
                 }
             }
         ) as any;
