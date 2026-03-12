@@ -111,41 +111,43 @@ export const StepResultRedesign: React.FC = () => {
                     </div>
                 )}
 
-                <div className="flex justify-center">
-                    <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
-                        <button
-                            onClick={() => setShowBefore(false)}
-                            className={[
-                                'px-4 py-2 rounded-full text-sm transition-colors',
-                                !showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
-                            ].join(' ')}
-                        >
-                            После
-                        </button>
-                        <button
-                            onClick={() => setShowBefore(true)}
-                            className={[
-                                'px-4 py-2 rounded-full text-sm transition-colors',
-                                showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
-                            ].join(' ')}
-                        >
-                            До
-                        </button>
+                {!isFallbackResult && (
+                    <div className="flex justify-center">
+                        <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
+                            <button
+                                onClick={() => setShowBefore(false)}
+                                className={[
+                                    'px-4 py-2 rounded-full text-sm transition-colors',
+                                    !showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
+                                ].join(' ')}
+                            >
+                                После
+                            </button>
+                            <button
+                                onClick={() => setShowBefore(true)}
+                                className={[
+                                    'px-4 py-2 rounded-full text-sm transition-colors',
+                                    showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
+                                ].join(' ')}
+                            >
+                                До
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="relative aspect-video rounded-[28px] overflow-hidden bg-stone-100 shadow-[0_24px_80px_rgba(0,0,0,0.10)]">
                     <img
-                        src={showBefore ? result.before : result.after}
-                        alt={showBefore ? 'Исходная комната' : 'Визуализированная комната'}
+                        src={isFallbackResult ? result.before : showBefore ? result.before : result.after}
+                        alt={isFallbackResult ? 'Фото комнаты' : showBefore ? 'Исходная комната' : 'Визуализированная комната'}
                         className="w-full h-full object-cover"
                     />
 
                     <div className="absolute top-4 left-4 flex gap-2">
                         <div className="px-3 py-1.5 bg-white/92 backdrop-blur-sm rounded-full text-xs font-medium text-soft-black">
-                            {showBefore ? 'До' : 'После'}
+                            {isFallbackResult ? 'Ваше фото' : showBefore ? 'До' : 'После'}
                         </div>
-                        {!showBefore && result.currentPreset && (
+                        {!isFallbackResult && !showBefore && result.currentPreset && (
                             <div className="px-3 py-1.5 bg-white/92 backdrop-blur-sm rounded-full text-xs font-medium text-muted-gray">
                                 {result.currentPreset === 'creative'
                                     ? 'Более смелый вариант'
