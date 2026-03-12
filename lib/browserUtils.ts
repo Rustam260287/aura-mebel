@@ -1,16 +1,24 @@
-export type BrowserEnv = {
+export type ArEnvironment = {
     platform: 'android' | 'ios' | 'desktop';
     isInApp: boolean;
-    isSafari: boolean;
+    canUseWebXR: boolean;
+    canUseQuickLook: boolean;
     requiresExternalBrowser: boolean;
 };
 
-export const getBrowserEnvironment = (): BrowserEnv => {
+export const getArEnvironment = (): ArEnvironment => {
     if (typeof window === 'undefined') {
-        return { platform: 'desktop', isInApp: false, isSafari: false, requiresExternalBrowser: false };
+        return {
+            platform: 'desktop',
+            isInApp: false,
+            canUseWebXR: false,
+            canUseQuickLook: false,
+            requiresExternalBrowser: false,
+        };
     }
 
-    const ua = window.navigator.userAgent;
+    const ua = navigator.userAgent;
+
     const isAndroid = /Android/i.test(ua);
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
     const platform = isAndroid ? 'android' : isIOS ? 'ios' : 'desktop';
@@ -23,28 +31,40 @@ export const getBrowserEnvironment = (): BrowserEnv => {
     const isYandexApp = /YaApp_Android|YaApp_iOS|YaSearchBrowser|YandexSearch|YandexMobile/i.test(ua);
     const isAndroidWebView = isAndroid && /; wv\)/i.test(ua);
 
-    const isInApp = Boolean(
+    const isInApp =
         isTelegram ||
         isVK ||
         isInstagram ||
         isFacebook ||
         isTikTok ||
         isYandexApp ||
-        isAndroidWebView
-    );
+        isAndroidWebView;
 
-    const isSafari = Boolean(
+    const isSafari =
         isIOS &&
         /Safari/i.test(ua) &&
-        !/CriOS|FxiOS|EdgiOS|YaBrowser|OPiOS|DuckDuckGo/i.test(ua)
-    );
+        !/CriOS|FxiOS|EdgiOS|YaBrowser/i.test(ua);
 
-    const requiresExternalBrowser = Boolean(
+    const canUseWebXR =
+        platform === 'android' &&
+        !isInApp &&
+        typeof (navigator as any).xr !== 'undefined';
+
+    const canUseQuickLook =
+        platform === 'ios' &&
+        isSafari;
+
+    const requiresExternalBrowser =
         (platform === 'android' && isInApp) ||
-        (platform === 'ios' && !isSafari)
-    );
+        (platform === 'ios' && !isSafari);
 
-    return { platform, isInApp, isSafari, requiresExternalBrowser };
+    return {
+        platform,
+        isInApp,
+        canUseWebXR,
+        canUseQuickLook,
+        requiresExternalBrowser,
+    };
 };
 
 export const openInChromeAndroid = (): 'redirected' | 'manual_needed' => {

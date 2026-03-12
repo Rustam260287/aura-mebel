@@ -9,7 +9,7 @@ import { ObjectDetail } from '../../components/ObjectDetail';
 import { Meta } from '../../components/Meta';
 import { toPublicObject } from '../../lib/publicObject';
 import { COLLECTIONS } from '../../lib/db/collections';
-import type { Product, WithContext } from 'schema-dts';
+import { isProductionReadyObject } from '../../lib/catalog/publicReadiness';
 
 interface ObjectPageProps {
   object?: ObjectPublic;
@@ -54,24 +54,6 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
     ? object.imageUrls[0]
     : undefined;
 
-  // JSON-LD Schema.org (Product)
-  const jsonLd: WithContext<Product> = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: object.name,
-    image: object.imageUrls || [],
-    description: seoDescription || `Примерьте ${object.name} в вашем интерьере.`,
-    ...(object.price ? {
-      offers: {
-        '@type': 'Offer',
-        price: (object.price / 100).toString(),
-        priceCurrency: 'RUB',
-        availability: 'https://schema.org/InStock',
-        url: `https://aura-room.ru/objects/${object.id}`
-      }
-    } : {})
-  };
-
   return (
     <>
       <Meta
@@ -79,10 +61,6 @@ export default function ObjectPage({ object, error }: ObjectPageProps) {
         description={seoDescription || `Примерьте ${object.name} в вашем интерьере.`}
         image={seoImage}
         url={`/objects/${object.id}`}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ObjectDetail
         object={object}
@@ -135,21 +113,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     // Draft protection: Hide non-active objects in production
     const isDev = process.env.NODE_ENV === 'development';
 
-    const SOFT_CATEGORIES = ['Мягкая мебель', 'sofa', 'Диваны', 'Кресла', 'Пуфы'];
-    const category = objectData.category || '';
-    const type = objectData.objectType || '';
-    const isSoft = SOFT_CATEGORIES.some(c =>
-      category.toLowerCase() === c.toLowerCase() ||
-      type.toLowerCase() === c.toLowerCase()
-    );
-
     if (!isDev) {
-      if (objectData.status === 'archived') {
-        return { notFound: true };
-      }
-      // Block drafts ONLY if they are NOT soft furniture
-      // (We allow soft furniture drafts because they are effectively the "active" catalog now)
-      if (!isSoft && objectData.status === 'draft') {
+      if (!isProductionReadyObject(objectData)) {
         return { notFound: true };
       }
     }

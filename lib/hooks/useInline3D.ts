@@ -9,6 +9,8 @@ interface UseInline3DOptions {
     active: boolean;
     /** URL to the 3D model (proxied GLB) */
     modelUrl?: string;
+    /** Optional target size passed to model-viewer autofit */
+    targetSize?: number;
     /** Object ID for tracking */
     objectId?: string;
     /** Callback when 3D view is entered (interaction starts) */
@@ -37,6 +39,7 @@ interface UseInline3DReturn {
 export const useInline3D = ({
     active,
     modelUrl,
+    targetSize,
     objectId,
     onEnter3D,
     onExit3D,
@@ -165,7 +168,7 @@ export const useInline3D = ({
                 }
             } catch { }
 
-            try { autofitModelViewer(el); } catch { }
+            try { autofitModelViewer(el, targetSize != null ? { targetSize } : undefined); } catch { }
 
             requestAnimationFrame(() => setState('loaded'));
             onLoad?.();
@@ -202,7 +205,7 @@ export const useInline3D = ({
             el.removeEventListener('pointercancel', exit3d);
             el.removeEventListener('mouseleave', exit3d);
         };
-    }, [active, modelUrl, objectId, onEnter3D, onExit3D, onLoad]);
+    }, [active, modelUrl, targetSize, objectId, onEnter3D, onExit3D, onLoad]);
 
     // Autofit on resize
     useEffect(() => {
@@ -213,7 +216,7 @@ export const useInline3D = ({
         const schedule = () => {
             if (raf) cancelAnimationFrame(raf);
             raf = requestAnimationFrame(() => {
-                try { autofitModelViewer(el); } catch { }
+                try { autofitModelViewer(el, targetSize != null ? { targetSize } : undefined); } catch { }
             });
         };
 
@@ -229,7 +232,7 @@ export const useInline3D = ({
             if (raf) cancelAnimationFrame(raf);
             ro?.disconnect();
         };
-    }, [state]);
+    }, [state, targetSize]);
 
     return {
         modelViewerRef,

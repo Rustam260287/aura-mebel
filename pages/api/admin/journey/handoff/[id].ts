@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../../lib/firebaseAdmin';
 import { requireAdminSession } from '../../../../../lib/auth/admin-session';
 import { COLLECTIONS } from '../../../../../lib/db/collections';
+import { parseStoredHandoffReason, type StoredHandoffReason } from '../../../../../lib/journey/handoff';
 
 const toIso = (value: unknown): string | null => {
   if (!value || typeof value !== 'object') return null;
@@ -14,7 +15,7 @@ type HandoffDetailResponse = {
   visitorId: string;
   handoff: {
     at: string | null;
-    reason: 'pricing' | 'purchase' | 'contact' | null;
+    reason: StoredHandoffReason | null;
     objectId: string | null;
     objectName: string | null;
     actions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
@@ -68,9 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const handoffAt = toIso(v.lastHandoffAt);
     if (!handoffAt) return res.status(404).json({ error: 'No hand-off for this visitor' });
 
-    const reasonRaw = v.lastHandoffReason;
-    const reason: HandoffDetailResponse['handoff']['reason'] =
-      reasonRaw === 'pricing' || reasonRaw === 'purchase' || reasonRaw === 'contact' ? reasonRaw : null;
+    const reason: HandoffDetailResponse['handoff']['reason'] = parseStoredHandoffReason(v.lastHandoffReason);
 
     const objectId = typeof v.lastObjectId === 'string' ? v.lastObjectId : null;
     const objectName = typeof v.lastHandoffObjectName === 'string' ? v.lastHandoffObjectName : null;

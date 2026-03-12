@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next';
 import { COLLECTIONS } from '../lib/db/collections';
-import { getAdminDb } from '../lib/firebaseAdmin';
+import { listPublicCollectionDocuments } from '../lib/firestore/publicFetch';
+import { toPublicObject } from '../lib/publicObject';
+import { isProductionReadyObject } from '../lib/catalog/publicReadiness';
 
 // Кэшируем генерацию sitemap на 1 час (3600 сек). 
 // Firebase запросы не будут дергаться при каждом обращении поисковика.
@@ -23,24 +25,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'daily',
             priority: 0.9,
         },
-        {
-            url: `${baseUrl}/collection`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-        },
-        {
-            url: `${baseUrl}/about`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.6,
-        },
-        {
-            url: `${baseUrl}/contacts`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.6,
-        },
+        { url: `${baseUrl}/wizard`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+        { url: `${baseUrl}/redesign`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+        { url: `${baseUrl}/saved`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.4 },
         {
             url: `${baseUrl}/privacy`,
             lastModified: new Date(),
@@ -75,39 +62,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
  * Работает только на сервере (в Node.js), что абсолютно безопасно для App Router.
  */
 async function getAllObjects() {
-    const db = getAdminDb();
-    if (!db) {
-        console.warn('[Sitemap] Database is not initialized');
-        return [];
-    }
-
     try {
-        // Мы используем getAdminDb(), потому что sitemap.ts выполняется скриптом Next.js Server
-        const snapshot = await db.collection(COLLECTIONS.objects)
-            // Желательно показывать ботам только активные товары
-            .where('status', '==', 'active')
-            .get();
+        const documents = await listPublicCollectionDocuments(COLLECTIONS.objects);
 
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
+        return documents
+            .map((doc) => {
+                const publicObject = toPublicObject(doc, String(doc.id || ''));
+                if (!isProductionReadyObject(publicObject)) return null;
 
-            // Защита от кривых дат в БД (например пустые updatedAt)
-            let updatedDate = new Date();
-            if (data.updatedAt) {
-                const parsed = new Date(data.updatedAt);
-                if (!isNaN(parsed.getTime())) {
-                    updatedDate = parsed;
+                // Защита от кривых дат в БД (например пустые updatedAt)
+                let updatedDate = new Date();
+                if (typeof doc.updatedAt === 'string' || typeof doc.updateTime === 'string') {
+                    const parsed = new Date(String(doc.updatedAt || doc.updateTime));
+                    if (!isNaN(parsed.getTime())) {
+                        updatedDate = parsed;
+                    }
                 }
-            }
 
-            return {
-                id: doc.id,
-                slug: data.slug || doc.id, // Если нет slug (legacy), берем ID документа
-                updatedAt: updatedDate,
-            };
-        });
+                return {
+                    id: String(doc.id || ''),
+                    slug: String(doc.slug || doc.id || ''),
+                    updatedAt: updatedDate,
+                };
+            })
+            .filter((value): value is { id: string; slug: string; updatedAt: Date } => Boolean(value));
     } catch (error) {
-        console.error('[Sitemap] Failed to fetch objects:', error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`[Sitemap] Skipping dynamic objects: ${message}`);
         return [];
     }
 }

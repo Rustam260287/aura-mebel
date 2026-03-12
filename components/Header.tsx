@@ -7,11 +7,6 @@ import { HeartIcon } from './icons/index';
 import { Logo } from './Logo';
 import { cn } from '../utils';
 
-const navLinks = [
-  { label: 'Галерея', href: '/objects' },
-  { label: 'О проекте', href: '/about' },
-];
-
 const HeaderComponent: React.FC = () => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -22,40 +17,34 @@ const HeaderComponent: React.FC = () => {
 
   return (
     <>
-      <header className={cn("hidden md:block sticky top-0 z-40 bg-warm-white/80 dark:bg-aura-dark-base/90 backdrop-blur-md transition-all duration-300 border-b border-stone-beige/20 dark:border-aura-dark-border")}>
-        <div className="container mx-auto flex items-center justify-between px-6 h-20 relative">
+      <header className={cn("hidden md:block sticky top-0 z-40 bg-warm-white/72 dark:bg-aura-dark-base/88 backdrop-blur-md transition-all duration-300")}>
+        <div className="container mx-auto flex items-center justify-between px-6 h-[76px] relative">
 
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity z-10">
             <Logo variant="dark" />
           </Link>
 
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {/* Defer rendering of this block until client-side mount to prevent hydration mismatch */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
             {mounted && (
-              <nav className="flex items-center gap-8 text-[15px] font-medium text-soft-black dark:text-aura-dark-text-main">
-                {navLinks.map(link => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="hover:opacity-70 transition-opacity"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <div className="px-4 py-2 rounded-full bg-white/60 dark:bg-aura-dark-surface/70 border border-stone-beige/30 dark:border-aura-dark-border text-[12px] tracking-[0.16em] uppercase text-muted-gray dark:text-aura-dark-text-muted">
+                Aura
+              </div>
             )}
           </div>
 
           <div className="flex items-center gap-5 text-soft-black dark:text-aura-dark-text-main z-10 ml-auto lg:ml-0">
-            <button onClick={() => router.push('/saved')} className="hover:opacity-70 transition-opacity p-1">
-              <HeartIcon className="w-6 h-6 stroke-1" />
+            <button
+              onClick={() => router.push('/saved')}
+              className="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-aura-dark-surface/70 border border-stone-beige/30 dark:border-aura-dark-border px-4 py-2.5 hover:opacity-80 transition-opacity"
+              aria-label="Открыть сохранённое"
+            >
+              <HeartIcon className="w-4 h-4 stroke-[1.6]" />
+              <span className="text-sm font-medium">Saved</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu is client-side only by nature, so it's safe */}
-      {/* ... (Mobile menu code remains unchanged) ... */}
     </>
   );
 };

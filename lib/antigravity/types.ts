@@ -21,7 +21,8 @@ export interface SpaceConstraints {
 }
 
 export interface FurnitureSelection {
-    model_key: string; // Maps to /public/models/{model_key}.glb
+    object_id: string; // Canonical catalog object selected for the experience
+    asset_key?: string; // Optional pre-generated asset key for future AR/runtime mapping
 }
 
 export interface ScaleFit {
@@ -34,9 +35,10 @@ export interface VisualJudgement {
 }
 
 export interface FittingResult {
-    model_key: string;
+    object_id: string;
     scale: number;
     intent: string;
+    asset_key?: string;
 }
 
 // ============================================

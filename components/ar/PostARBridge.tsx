@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getOrCreateVisitorId } from '../../lib/analytics/visitorId';
 import { trackJourneyEvent } from '../../lib/journey/client';
 import { HandoffOptions } from '../Assistant/Handoff/HandoffOptions';
+import { createShareLink } from '../../lib/shareClient';
 
 interface PostARBridgeProps {
     objectId: string;
@@ -97,9 +98,9 @@ export const PostARBridge: React.FC<PostARBridgeProps> = ({
         }
 
         // Generate share message
-        const shareUrl = handoffId
-            ? `${window.location.origin}/saved/${handoffId}`
-            : window.location.href;
+        const shareUrl =
+            (await createShareLink({ objectId })) ||
+            window.location.href;
 
         const message = encodeURIComponent(
             `Здравствуйте. Я посмотрел(а) вариант мебели «${objectName || 'мебель'}» в своей комнате через Aura. Хочу обсудить этот вариант.\n\n${shareUrl}`

@@ -3,22 +3,64 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { useExperience } from './ExperienceContext';
+import {
+  buildSavedRedesignSignature,
+  buildSavedWizardSignature,
+  sanitizeSavedImageUrl,
+  type SavedRedesign,
+  type SavedRedesignInput,
+  type SavedWizardConfig,
+  type SavedWizardConfigInput,
+} from '../lib/saved/types';
 
 interface SavedContextType {
   savedObjectIds: string[];
+  savedWizardConfigs: SavedWizardConfig[];
+  savedRedesigns: SavedRedesign[];
   addToSaved: (id: string) => void;
   removeFromSaved: (id: string) => void;
   isSaved: (id: string) => boolean;
+  saveWizardConfig: (input: SavedWizardConfigInput) => { id: string; isNew: boolean };
+  removeWizardConfig: (id: string) => void;
+  isWizardConfigSaved: (signature: string) => boolean;
+  saveRedesign: (input: SavedRedesignInput) => { id: string; isNew: boolean };
+  removeRedesign: (id: string) => void;
+  isRedesignSaved: (signature: string) => boolean;
   savedCount: number;
 }
 
 const STORAGE_KEY = 'label_saved_objects';
+const WIZARD_STORAGE_KEY = 'label_saved_wizard_configs';
+const REDESIGN_STORAGE_KEY = 'label_saved_redesigns';
 const LEGACY_KEYS = ['aura_wishlist'];
+const MAX_WIZARD_ITEMS = 24;
+const MAX_REDESIGN_ITEMS = 12;
 
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
 
+const loadStoredArray = <T,>(key: string): T[] => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed as T[] : [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+const buildLocalId = (prefix: string) => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+};
+
 export const SavedProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [savedObjectIds, setSavedObjectIds] = useState<string[]>([]);
+  const [savedWizardConfigs, setSavedWizardConfigs] = useState<SavedWizardConfig[]>([]);
+  const [savedRedesigns, setSavedRedesigns] = useState<SavedRedesign[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const previousSavedIdsRef = useRef<string[] | null>(null);
   const { emitEvent } = useExperience();
@@ -41,6 +83,8 @@ export const SavedProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           }
         }
       }
+      setSavedWizardConfigs(loadStoredArray<SavedWizardConfig>(WIZARD_STORAGE_KEY));
+      setSavedRedesigns(loadStoredArray<SavedRedesign>(REDESIGN_STORAGE_KEY));
     } catch (error) {
       console.error(error);
     } finally {
@@ -57,6 +101,24 @@ export const SavedProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     }
   }, [savedObjectIds, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      window.localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(savedWizardConfigs));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [savedWizardConfigs, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      window.localStorage.setItem(REDESIGN_STORAGE_KEY, JSON.stringify(savedRedesigns));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [savedRedesigns, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -102,15 +164,113 @@ export const SavedProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return savedObjectIds.includes(id);
   }, [savedObjectIds]);
 
-  const savedCount = savedObjectIds.length;
+  const saveWizardConfig = useCallback((input: SavedWizardConfigInput) => {
+    const sanitizedInput: SavedWizardConfigInput = {
+      ...input,
+      objectImageUrl: sanitizeSavedImageUrl(input.objectImageUrl),
+    };
+    const signature = buildSavedWizardSignature(sanitizedInput);
+    let response = { id: '', isNew: false };
+
+    setSavedWizardConfigs((prev) => {
+      const existing = prev.find((item) => item.signature === signature);
+      if (existing) {
+        response = { id: existing.id, isNew: false };
+        return prev;
+      }
+
+      const next: SavedWizardConfig = {
+        ...sanitizedInput,
+        id: buildLocalId('wizard'),
+        signature,
+        savedAt: new Date().toISOString(),
+      };
+
+      response = { id: next.id, isNew: true };
+      return [next, ...prev].slice(0, MAX_WIZARD_ITEMS);
+    });
+
+    return response;
+  }, []);
+
+  const removeWizardConfig = useCallback((id: string) => {
+    setSavedWizardConfigs((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const isWizardConfigSaved = useCallback((signature: string) => {
+    return savedWizardConfigs.some((item) => item.signature === signature);
+  }, [savedWizardConfigs]);
+
+  const saveRedesign = useCallback((input: SavedRedesignInput) => {
+    const sanitizedInput: SavedRedesignInput = {
+      ...input,
+      objectImageUrl: sanitizeSavedImageUrl(input.objectImageUrl),
+      beforeImageUrl: sanitizeSavedImageUrl(input.beforeImageUrl),
+      afterImageUrl: sanitizeSavedImageUrl(input.afterImageUrl),
+    };
+    const signature = buildSavedRedesignSignature(sanitizedInput);
+    let response = { id: '', isNew: false };
+
+    setSavedRedesigns((prev) => {
+      const existing = prev.find((item) => item.signature === signature);
+      if (existing) {
+        response = { id: existing.id, isNew: false };
+        return prev;
+      }
+
+      const next: SavedRedesign = {
+        ...sanitizedInput,
+        id: buildLocalId('redesign'),
+        signature,
+        savedAt: new Date().toISOString(),
+      };
+
+      response = { id: next.id, isNew: true };
+      return [next, ...prev].slice(0, MAX_REDESIGN_ITEMS);
+    });
+
+    return response;
+  }, []);
+
+  const removeRedesign = useCallback((id: string) => {
+    setSavedRedesigns((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const isRedesignSaved = useCallback((signature: string) => {
+    return savedRedesigns.some((item) => item.signature === signature);
+  }, [savedRedesigns]);
+
+  const savedCount = savedObjectIds.length + savedWizardConfigs.length + savedRedesigns.length;
 
   const contextValue = useMemo(() => ({
     savedObjectIds,
+    savedWizardConfigs,
+    savedRedesigns,
     addToSaved,
     removeFromSaved,
     isSaved,
+    saveWizardConfig,
+    removeWizardConfig,
+    isWizardConfigSaved,
+    saveRedesign,
+    removeRedesign,
+    isRedesignSaved,
     savedCount
-  }), [savedObjectIds, addToSaved, removeFromSaved, isSaved, savedCount]);
+  }), [
+    savedObjectIds,
+    savedWizardConfigs,
+    savedRedesigns,
+    addToSaved,
+    removeFromSaved,
+    isSaved,
+    saveWizardConfig,
+    removeWizardConfig,
+    isWizardConfigSaved,
+    saveRedesign,
+    removeRedesign,
+    isRedesignSaved,
+    savedCount
+  ]);
 
   return (
     <SavedContext.Provider value={contextValue}>

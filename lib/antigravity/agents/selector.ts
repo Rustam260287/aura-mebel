@@ -1,5 +1,6 @@
 import type { WizardIntent, IntentProfile, FurnitureSelection } from '../types';
 import { db } from '../../firebaseAdmin';
+import { COLLECTIONS } from '../../db/collections';
 
 /**
  * FurnitureSelector: Selects ONE pre-existing model from Firestore based on intent.
@@ -9,9 +10,10 @@ export class FurnitureSelector {
     static async select(input: WizardIntent, profile: IntentProfile): Promise<FurnitureSelection> {
         try {
             const { object_type, mood, presence } = input;
+            const objectsCollection = db.collection(COLLECTIONS.objects);
 
             // Start with base query
-            let query = db.collection('products')
+            let query = objectsCollection
                 .where('objectType', '==', object_type)
                 .limit(10); // Get more candidates for filtering
 
@@ -20,15 +22,15 @@ export class FurnitureSelector {
 
             if (snapshot.empty) {
                 // Fallback: try without objectType filter
-                const fallbackSnapshot = await db.collection('products')
+                const fallbackSnapshot = await objectsCollection
                     .limit(10)
                     .get();
 
                 if (fallbackSnapshot.empty) {
-                    return { model_key: 'fallback_default' };
+                    throw new Error('No objects available for wizard selection');
                 }
 
-                return { model_key: fallbackSnapshot.docs[0].id };
+                return { object_id: fallbackSnapshot.docs[0].id };
             }
 
             // Filter by mood and presence if available
@@ -56,18 +58,18 @@ export class FurnitureSelector {
             scored.sort((a: { id: string; score: number }, b: { id: string; score: number }) => b.score - a.score);
 
             // Return best match
-            return { model_key: scored[0].id };
+            return { object_id: scored[0].id };
         } catch (error) {
             console.error('FurnitureSelector error:', error);
             // Fallback to any object
             try {
-                const fallbackSnapshot = await db.collection('products').limit(1).get();
+                const fallbackSnapshot = await db.collection(COLLECTIONS.objects).limit(1).get();
                 if (!fallbackSnapshot.empty) {
-                    return { model_key: fallbackSnapshot.docs[0].id };
+                    return { object_id: fallbackSnapshot.docs[0].id };
                 }
             } catch { }
 
-            return { model_key: 'fallback_default' };
+            throw new Error('No objects available for wizard selection');
         }
     }
 }

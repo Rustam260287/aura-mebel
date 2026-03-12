@@ -8,7 +8,7 @@ import { ScenePreview3D } from './ScenePreview3D';
 import { useToast } from '../contexts/ToastContext';
 import { useExperience } from '../contexts/ExperienceContext';
 import { trackJourneyEvent } from '../lib/journey/client';
-import { getBrowserEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
+import { getArEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
 
 const SceneARViewer = dynamic(() => import('./SceneARViewer').then((m) => m.SceneARViewer), { ssr: false });
 
@@ -24,33 +24,10 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
   const { addToast } = useToast();
   const { emitEvent } = useExperience();
   const [isArOpen, setIsArOpen] = useState(false);
+  const [showExternalBrowserModal, setShowExternalBrowserModal] = useState(false);
   const [supportsWebXrAr, setSupportsWebXrAr] = useState<SupportsAr>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const opened3dRef = useRef(false);
-
-  useEffect(() => {
-    trackJourneyEvent({ type: 'VIEW_OBJECT', objectId: scene.id });
-    emitEvent({ type: 'VIEW_OBJECT', objectId: scene.id, name: scene.title, objectType: 'scene' });
-  }, [emitEvent, scene.id, scene.title]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !(navigator as any).xr?.isSessionSupported) {
-      setSupportsWebXrAr(false);
-      return;
-    }
-    let active = true;
-    (navigator as any).xr
-      .isSessionSupported('immersive-ar')
-      .then((v: boolean) => {
-        if (active) setSupportsWebXrAr(Boolean(v));
-      })
-      .catch(() => {
-        if (active) setSupportsWebXrAr(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const sceneObjects = scene.objects || [];
 
@@ -90,9 +67,11 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
       <SceneARViewer
         scene={scene}
         objects={objects}
-        onClose={(durationSec) => {
+        onClose={(durationSec, hasStarted) => {
           setIsArOpen(false);
-          emitEvent({ type: 'EXIT_AR', ...(typeof durationSec === 'number' ? { durationSec } : {}) });
+          if (hasStarted === true) {
+            emitEvent({ type: 'EXIT_AR', ...(typeof durationSec === 'number' ? { durationSec } : {}) });
+          }
         }}
         onSessionStart={() => emitEvent({ type: 'ENTER_AR' })}
       />
@@ -101,68 +80,30 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
 
   const handleTrySceneAr = () => {
     // 1. Detection on Click (New Architecture)
-    if (typeof window !== 'undefined') {
-      const env = getBrowserEnvironment();
-      if (env.requiresExternalBrowser) {
-        let hasRedirected = false;
-        try {
-          hasRedirected = Boolean(window.sessionStorage.getItem('ar_redirected'));
-        } catch { }
+    const env = getArEnvironment();
 
-        if (!hasRedirected) {
-          try {
-            window.sessionStorage.setItem('ar_redirected', '1');
-          } catch { }
-
-          trackJourneyEvent({
-            type: 'BROWSER_LIMITATION_DETECTED',
-            meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
-          });
-          trackJourneyEvent({
-            type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-            meta: { action: { type: 'redirect', browser: 'webview', timestamp: new Date().toISOString() } }
-          });
-
-          if (env.platform === 'android') {
-            const result = openInChromeAndroid();
-            if (result === 'manual_needed') {
-              addToast('✨ Ссылка скопирована! Откройте Chrome и вставьте — AR заработает там.', 'info', 6000);
-            }
-          } else {
-            const result = openInSafari();
-            if (result === 'manual_needed') {
-              addToast('✨ Ссылка скопирована! Откройте Safari и вставьте — AR заработает там.', 'info', 6000);
-            }
-          }
-        } else {
-          // Already tried redirecting once, now force the toast/copy again just in case
-          if (env.platform === 'android') {
-            const result = openInChromeAndroid();
-            if (result === 'manual_needed') {
-              addToast('Ссылка скопирована! Откройте Chrome.', 'info', 6000);
-            }
-          } else {
-            const result = openInSafari();
-            if (result === 'manual_needed') {
-              addToast('Ссылка скопирована! Откройте Safari.', 'info', 6000);
-            }
-          }
-        }
-        // ALWAYS exit here - never proceed to AR init in unsupported browsers
-        return;
+    if (env.requiresExternalBrowser) {
+      setShowExternalBrowserModal(true);
+      if (env.platform === 'android') {
+        openInChromeAndroid();
       }
+      trackJourneyEvent({
+        type: 'BROWSER_LIMITATION_DETECTED',
+        meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
+      });
+      return; // ЖЁСТКИЙ СТОП
     }
 
-    if (supportsWebXrAr === false) {
-      addToast('AR-комплекты доступны в Chrome на Android. На iPhone можно примерять предметы по отдельности.', 'info');
+    if (env.platform === 'ios') {
+      addToast('На iPhone можно примерять предметы из сцены по отдельности. Полная сцена в AR доступна на Android с WebXR.', 'info');
       listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    if (supportsWebXrAr === null) {
-      addToast('Проверяю поддержку AR…', 'info', 1500);
+
+    if (!env.canUseWebXR) {
+      addToast('AR не поддерживается вашим браузером или устройством.', 'info');
       return;
     }
-    emitEvent({ type: 'ENTER_AR' });
     setIsArOpen(true);
   };
 
@@ -205,7 +146,7 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
           <div className="flex flex-col pt-2 pb-24 md:pb-0">
             <div className="inline-flex items-center gap-2 mb-6 text-sm text-soft-black/60 bg-white/50 px-3 py-1.5 rounded-full border border-stone-beige/20 w-fit">
               <CheckCircleIcon className="w-4 h-4 text-brand-gold" />
-              Композиция из отдельных предметов
+              Сцена из отдельных предметов
             </div>
 
             <h1 className="text-3xl md:text-4xl font-medium text-soft-black mb-6 leading-tight tracking-tight">
@@ -223,7 +164,7 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
                 variant="primary"
                 className="w-full h-14 text-base font-medium rounded-xl shadow-lg shadow-soft-black/10"
               >
-                Примерить комплект в комнате
+                Посмотреть сцену в комнате
               </Button>
 
               <button
@@ -231,12 +172,12 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
                 onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="w-full text-sm text-muted-gray hover:text-soft-black transition-colors py-2"
               >
-                Примерить по отдельности
+                Открыть предметы по отдельности
               </button>
             </div>
 
             <div ref={listRef} className="mt-12">
-              <h2 className="text-lg font-semibold text-soft-black mb-4">Состав</h2>
+              <h2 className="text-lg font-semibold text-soft-black mb-4">Предметы в этой сцене</h2>
               <div className="space-y-3">
                 {composedObjects.map((obj) => (
                   <div
@@ -264,12 +205,67 @@ const SceneDetailComponent: React.FC<SceneDetailProps> = ({ scene, objects, onBa
               </div>
 
               <p className="text-xs text-muted-gray mt-6 leading-relaxed">
-                На iPhone (Quick Look) пока доступна примерка предметов по отдельности. Комплекты в AR требуют WebXR.
+                На iPhone можно примерять предметы по отдельности. Полная сцена в AR пока доступна на устройствах с WebXR.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {showExternalBrowserModal && (
+        <div className="fixed inset-0 z-[10000] bg-warm-white dark:bg-[#121212] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+          <div className="w-16 h-16 mb-6 rounded-2xl bg-brand-brown/10 dark:bg-white/5 flex items-center justify-center relative shadow-inner">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-brand-brown dark:text-white" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-serif italic text-soft-black dark:text-white mb-3">
+            Требуется браузер
+          </h2>
+
+          <div className="text-[#6B6B6B] dark:text-[#A0A0A0] text-[15px] max-w-[280px] mb-8 text-left mx-auto space-y-2">
+            <p className="font-medium text-center mb-4">AR не работает внутри мессенджеров.</p>
+            <p>1. Нажмите кнопку ниже.</p>
+            <p>2. Ссылка будет скопирована.</p>
+            <p>3. Откройте штатный браузер экрана (Safari/Chrome).</p>
+            <p>4. Вставьте ссылку в адресную строку.</p>
+          </div>
+
+          <button
+            onClick={() => {
+              trackJourneyEvent({
+                type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
+                meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: 'webview' } }
+              });
+              const env = getArEnvironment();
+              if (env.platform === 'android') {
+                const res = openInChromeAndroid();
+                if (res === 'manual_needed') {
+                  addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
+                }
+              } else {
+                const res = openInSafari();
+                if (res === 'manual_needed') {
+                  addToast('Ссылка скопирована! Откройте Safari и вставьте её.', 'info', 6000);
+                }
+              }
+            }}
+            className="w-full max-w-[280px] bg-brand-brown hover:bg-brand-brown/90 text-white font-medium py-[15px] px-6 rounded-full transition-transform active:scale-95 shadow-soft"
+          >
+            {getArEnvironment().platform === 'ios' ? '👉 Открыть в Safari' : '👉 Открыть в Chrome'}
+          </button>
+
+          <button
+            onClick={() => setShowExternalBrowserModal(false)}
+            className="mt-6 text-[15px] font-medium text-[#8E8E8E] px-4 py-2 hover:text-soft-black transition-colors"
+          >
+            Закрыть
+          </button>
+        </div>
+      )}
     </div>
   );
 };

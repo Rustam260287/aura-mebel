@@ -13,23 +13,17 @@ export const StepUpload: React.FC = () => {
 
         setIsUploading(true);
 
-        // Create preview
         const reader = new FileReader();
         reader.onload = (event) => {
             const dataUrl = event.target?.result as string;
             setPreview(dataUrl);
-        };
-        reader.readAsDataURL(file);
-
-        // For demo, use data URL directly
-        // In production: upload to Firebase Storage
-        const reader2 = new FileReader();
-        reader2.onload = (event) => {
-            const dataUrl = event.target?.result as string;
             setRoomImage(dataUrl);
             setIsUploading(false);
         };
-        reader2.readAsDataURL(file);
+        reader.onerror = () => {
+            setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleContinue = () => {
@@ -43,7 +37,9 @@ export const StepUpload: React.FC = () => {
             <div className="max-w-md w-full space-y-8">
                 <div className="text-center space-y-2">
                     <h2 className="text-2xl font-medium text-soft-black">Ваше пространство</h2>
-                    <p className="text-sm text-muted-gray">Загрузите фото комнаты для визуализации</p>
+                    <p className="text-sm text-muted-gray">
+                        Загрузите фото комнаты. Мы соберём визуальный ориентир и предложим подходящую мебель.
+                    </p>
                 </div>
 
                 {preview ? (
@@ -63,16 +59,17 @@ export const StepUpload: React.FC = () => {
                                 {!isAnalyzing && roomAnalysis && (
                                     <>
                                         <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-soft-black shadow-sm animate-fade-in">
-                                            🏠 {roomAnalysis.room_type}
+                                            Похоже на {roomAnalysis.room_type === 'living_room' ? 'гостиную' :
+                                                roomAnalysis.room_type === 'bedroom' ? 'спальню' :
+                                                    roomAnalysis.room_type === 'kitchen' ? 'кухню' :
+                                                        roomAnalysis.room_type === 'office' ? 'кабинет' :
+                                                            roomAnalysis.room_type === 'dining' ? 'столовую' : 'комнату'}
                                         </div>
                                         {roomAnalysis.lighting === 'natural' && (
                                             <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-soft-black shadow-sm animate-fade-in">
-                                                ☀️ Естественный свет
+                                                Много естественного света
                                             </div>
                                         )}
-                                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-stone-500 shadow-sm animate-fade-in">
-                                            Confidence: {Math.round(roomAnalysis.confidence * 100)}%
-                                        </div>
                                     </>
                                 )}
                             </div>
@@ -91,7 +88,7 @@ export const StepUpload: React.FC = () => {
                                 onClick={handleContinue}
                                 className="flex-1 py-3 rounded-xl bg-soft-black text-white hover:bg-black transition-colors"
                             >
-                                Продолжить
+                                Использовать это фото
                             </button>
                         </div>
                     </div>
@@ -108,7 +105,7 @@ export const StepUpload: React.FC = () => {
                                 <svg className="w-12 h-12 text-muted-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <span className="text-sm text-muted-gray">Нажмите для загрузки</span>
+                                <span className="text-sm text-muted-gray">Выбрать фото комнаты</span>
                             </>
                         )}
                     </button>

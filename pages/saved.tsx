@@ -6,12 +6,13 @@ import { SavedPage as SavedPageComponent } from '../components/SavedPage';
 import { useRouter } from 'next/router';
 import type { ObjectPublic, View } from '../types';
 import { useSaved } from '../contexts/SavedContext';
+import type { SavedRedesign, SavedWizardConfig } from '../lib/saved/types';
 import { trackJourneyEvent } from '../lib/journey/client';
 import { useExperience } from '../contexts/ExperienceContext';
 
 export default function Saved() {
   const router = useRouter();
-  const { savedObjectIds } = useSaved();
+  const { savedObjectIds, savedWizardConfigs, savedRedesigns, removeWizardConfig, removeRedesign } = useSaved();
   const { emitEvent } = useExperience();
   const [objects, setObjects] = useState<ObjectPublic[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,6 +57,8 @@ export default function Saved() {
       <main className="flex-grow">
         <SavedPageComponent 
             objects={objects}
+            wizardConfigs={savedWizardConfigs}
+            redesigns={savedRedesigns}
             isLoading={loading}
             onNavigate={(view: View) => {
                  if (view.page === 'object' && 'objectId' in view) {
@@ -65,6 +68,19 @@ export default function Saved() {
                      router.push('/objects');
                  }
             }}
+            onOpenWizardConfig={(config: SavedWizardConfig) => {
+              const scale = Number.isFinite(config.scale) ? config.scale.toFixed(2) : '1.00';
+              router.push(`/objects/${config.objectId}?source=saved&wizardScale=${encodeURIComponent(scale)}`);
+            }}
+            onRemoveWizardConfig={removeWizardConfig}
+            onOpenRedesign={(redesign: SavedRedesign) => {
+              if (redesign.objectId) {
+                router.push(`/objects/${redesign.objectId}?source=saved`);
+                return;
+              }
+              router.push('/objects');
+            }}
+            onRemoveRedesign={removeRedesign}
             onQuickView={() => {}} // Пустая функция, т.к. не используется на этой странице
             onVirtualStage={() => {}} // Пустая функция
         />

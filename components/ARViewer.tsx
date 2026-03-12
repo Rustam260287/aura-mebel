@@ -4,6 +4,7 @@ import { trackJourneyEvent } from '../lib/journey/client';
 import { useImmersive } from '../contexts/ImmersiveContext';
 import { useToast } from '../contexts/ToastContext';
 import { createArSessionId } from '../lib/journey/arSession';
+import { formatModelViewerScale, normalizeObjectRuntimeScale } from '../lib/objects/runtimeScale';
 
 
 interface ModelViewerElement extends HTMLElement {
@@ -28,8 +29,9 @@ interface ARViewerProps {
   alt: string;
   poster?: string;
   objectId?: string;
+  initialScale?: number;
   open?: boolean;
-  onClose?: (arDurationSec?: number, isFailed?: boolean) => void;
+  onClose?: (arDurationSec?: number, hasStarted?: boolean, isFailed?: boolean) => void;
 }
 
 export type ARViewerHandle = {
@@ -37,7 +39,7 @@ export type ARViewerHandle = {
 };
 
 const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
-  ({ src, iosSrc, alt, poster, objectId, open = false, onClose }, ref) => {
+  ({ src, iosSrc, alt, poster, objectId, initialScale, open = false, onClose }, ref) => {
     const modelViewerRef = useRef<ModelViewerElement>(null);
     const quickLookRef = useRef<HTMLAnchorElement | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -115,6 +117,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
     const proxiedSrc = src ? `/api/proxy-model.glb?url=${encodeURIComponent(src)}` : undefined;
     const proxiedIosSrc = iosSrc ? `/api/proxy-model.usdz?url=${encodeURIComponent(iosSrc)}` : undefined;
     const effectiveIosSrc = proxiedIosSrc || iosSrc;
+    const modelViewerScale = formatModelViewerScale(normalizeObjectRuntimeScale(initialScale));
 
     const canPreview3d = Boolean(proxiedSrc);
     const canStartAr = isIOS ? Boolean(effectiveIosSrc) : Boolean(proxiedSrc);
@@ -188,7 +191,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           setIsPresentingAr(false);
           if (ended) {
             const durationSec = finishArIfNeeded();
-            onClose?.(durationSec ?? undefined);
+            onClose?.(durationSec ?? undefined, true, false);
           }
           return;
         }
@@ -197,7 +200,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           wasPresentingRef.current = false;
           setIsPresentingAr(false);
           const durationSec = finishArIfNeeded();
-          onClose?.(durationSec ?? undefined, true);
+          onClose?.(durationSec ?? undefined, false, true);
         }
       };
 
@@ -224,7 +227,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           setIsPresentingAr(false);
           if (ended) {
             const durationSec = finishArIfNeeded();
-            onClose?.(durationSec ?? undefined);
+            onClose?.(durationSec ?? undefined, true, false);
           }
         }
       };
@@ -384,7 +387,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
             camera-controls
             auto-rotate
             interaction-prompt="none"
-            scale="1 1 1"
+            scale={modelViewerScale}
             ar
             // IMPORTANT:
             ar-modes={arModes}
@@ -438,7 +441,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
           <button
             onClick={() => {
               const durationSec = finishArIfNeeded();
-              onClose(durationSec ?? undefined);
+              onClose(durationSec ?? undefined, wasPresentingRef.current || isPresentingAr, false);
             }}
             className="absolute top-6 left-6 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-soft z-[120] hover:bg-white transition-colors"
           >

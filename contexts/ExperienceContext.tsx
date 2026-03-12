@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { trackJourneyEvent } from '../lib/journey/client';
 import type { JourneyMeta } from '../lib/journey/eventTypes';
+import type { HandoffReason } from '../lib/journey/handoff';
 
 export type ExperienceState =
   | 'IDLE'
@@ -52,7 +53,7 @@ type ExperienceEvent =
   | { type: 'OPEN_ASSISTANT' }
   | { type: 'CLOSE_ASSISTANT' }
   | { type: 'ASSISTANT_QUESTION'; text: string }
-  | { type: 'HANDOFF_REQUESTED'; reason: 'pricing' | 'purchase' | 'contact'; lastUserMessage: string };
+  | { type: 'HANDOFF_REQUESTED'; reason: HandoffReason; lastUserMessage: string };
 
 type ExperienceContextValue = {
   state: ExperienceState;

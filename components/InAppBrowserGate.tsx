@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { getBrowserEnvironment } from '../lib/browserUtils';
+import { getArEnvironment } from '../lib/browserUtils';
 
 export const InAppBrowserGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [requiresExternal, setRequiresExternal] = useState(false);
     const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | null>(null);
 
     useEffect(() => {
-        const env = getBrowserEnvironment();
+        const env = getArEnvironment();
         if (env.requiresExternalBrowser) {
             setRequiresExternal(true);
             setPlatform(env.platform);

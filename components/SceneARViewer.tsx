@@ -40,7 +40,7 @@ type GestureState =
 interface SceneARViewerProps {
   scene: ScenePresetPublic;
   objects: ObjectPublic[];
-  onClose: (durationSec?: number) => void;
+  onClose: (durationSec?: number, hasStarted?: boolean, isFailed?: boolean) => void;
   onSessionStart?: () => void;
 }
 
@@ -133,6 +133,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
       const startedAt = startedAtRef.current;
       const durationSec =
         startedAt != null ? Math.max(0, Math.round((Date.now() - startedAt) / 1000)) : undefined;
+      const hasStarted = startedAt != null;
 
       try {
         const session = xrSessionRef.current;
@@ -162,7 +163,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
       }
 
       if (reason !== 'unmount') {
-        onClose(durationSec);
+        onClose(durationSec, hasStarted, false);
       }
     },
     [onClose, scene.id, setImmersive],
@@ -236,7 +237,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
         const supported = await xr.isSessionSupported('immersive-ar');
         if (!supported) {
           setStage('unsupported');
-          setError('AR-комплекты доступны в Chrome на Android.');
+          setError('Полная сцена в AR доступна в Chrome на Android.');
           return;
         }
       } catch {
@@ -835,9 +836,9 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
 
             {stage === 'ready-to-start' && (
               <>
-                <div className="text-sm font-semibold text-soft-black">AR‑примерка комплекта</div>
+                <div className="text-sm font-semibold text-soft-black">AR‑примерка сцены</div>
                 <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                  Наведите телефон на пол. Коснитесь экрана, чтобы поставить комплект. Затем можно двигать и масштабировать каждый предмет отдельно.
+                  Наведите телефон на пол. Коснитесь экрана, чтобы поставить сцену. Затем можно двигать и масштабировать каждый предмет отдельно.
                 </div>
                 <div className="mt-4">
                   <button
@@ -861,7 +862,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
               <>
                 <div className="text-sm font-semibold text-soft-black">Выберите место</div>
                 <div className="text-xs text-muted-gray mt-2 leading-relaxed">
-                  Наведите телефон на пол — появится метка. Коснитесь экрана, чтобы поставить комплект.
+                  Наведите телефон на пол — появится метка. Коснитесь экрана, чтобы поставить сцену.
                 </div>
               </>
             )}
@@ -872,7 +873,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
                 <div className="text-xs text-muted-gray mt-2 leading-relaxed">{error}</div>
                 <div className="mt-4">
                   <button
-                    onClick={() => void endSession('user')}
+                    onClick={() => onClose(undefined, false, true)}
                     className="w-full bg-brand-brown text-white px-6 py-4 rounded-xl shadow-lg font-medium hover:bg-brand-charcoal transition-colors"
                   >
                     Закрыть
@@ -887,7 +888,7 @@ export const SceneARViewer: React.FC<SceneARViewerProps> = ({ scene, objects, on
                 <div className="text-xs text-muted-gray mt-2 leading-relaxed">{error || 'Попробуйте ещё раз позже.'}</div>
                 <div className="mt-4">
                   <button
-                    onClick={() => void endSession('user')}
+                    onClick={() => onClose(undefined, false, true)}
                     className="w-full bg-brand-brown text-white px-6 py-4 rounded-xl shadow-lg font-medium hover:bg-brand-charcoal transition-colors"
                   >
                     Закрыть

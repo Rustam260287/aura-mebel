@@ -3,13 +3,13 @@ import { useWizard } from '../../contexts/WizardContext';
 import type { Presence } from '../../lib/antigravity/types';
 
 const OPTIONS: { value: Presence; label: string; description: string }[] = [
-    { value: 'compact', label: 'Уютно', description: 'Компактное присутствие' },
-    { value: 'balanced', label: 'Сбалансировано', description: 'Гармоничное присутствие' },
-    { value: 'dominant', label: 'Просторно', description: 'Выразительное присутствие' },
+    { value: 'compact', label: 'Компактный', description: 'Спокойнее впишется и займёт меньше визуального внимания' },
+    { value: 'balanced', label: 'Стандартный', description: 'Нейтральный баланс для большинства интерьеров' },
+    { value: 'dominant', label: 'Просторный', description: 'Будет ощущаться заметнее и выразительнее' },
 ];
 
 export const StepScale: React.FC = () => {
-    const { setSelection, nextStep, selections } = useWizard();
+    const { setSelection, nextStep, prevStep, selections } = useWizard();
 
     const handleSelect = (value: Presence) => {
         setSelection('presence', value);
@@ -22,8 +22,8 @@ export const StepScale: React.FC = () => {
             <div className="max-w-md w-full space-y-8">
                 {/* Quiet heading */}
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-medium text-soft-black">Ощущение масштаба</h2>
-                    <p className="text-sm text-muted-gray">Как объект будет чувствоваться в пространстве?</p>
+                    <h2 className="text-2xl font-medium text-soft-black">Размер</h2>
+                    <p className="text-sm text-muted-gray">Каким он должен ощущаться в комнате?</p>
                 </div>
 
                 {/* Options */}
@@ -47,6 +47,13 @@ export const StepScale: React.FC = () => {
                         </button>
                     ))}
                 </div>
+
+                <button
+                    onClick={prevStep}
+                    className="text-sm text-muted-gray hover:text-soft-black transition-colors mx-auto block"
+                >
+                    ← Назад
+                </button>
             </div>
         </div>
     );

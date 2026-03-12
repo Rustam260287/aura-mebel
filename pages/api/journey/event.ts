@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { getAdminDb } from '../../../lib/firebaseAdmin';
 import { parseCookies, serializeCookie } from '../../../lib/journey/cookies';
 import { isJourneyEventType, type JourneyEventInput, type JourneyMeta } from '../../../lib/journey/eventTypes';
+import { normalizeHandoffReason } from '../../../lib/journey/handoff';
 import { inferCountry, inferDevice, inferOs } from '../../../lib/journey/userAgent';
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -87,9 +88,7 @@ function normalizeMeta(meta: unknown): JourneyMeta | undefined {
 
   if (value.handoff && typeof value.handoff === 'object') {
     const h = value.handoff as Record<string, unknown>;
-    const reasonRaw = h.reason;
-    const reason =
-      reasonRaw === 'pricing' || reasonRaw === 'purchase' || reasonRaw === 'contact' ? reasonRaw : undefined;
+    const reason = normalizeHandoffReason(h.reason) || undefined;
     const objectId = typeof h.objectId === 'string' ? h.objectId : undefined;
     const objectName = typeof h.objectName === 'string' ? h.objectName.slice(0, 200) : undefined;
     const actions = Array.isArray(h.actions)

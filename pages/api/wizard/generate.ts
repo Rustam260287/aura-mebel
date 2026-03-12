@@ -24,6 +24,8 @@ export default async function handler(
         return res.status(200).json(result);
     } catch (error) {
         console.error('Wizard API error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        const message = error instanceof Error ? error.message : 'Internal server error';
+        const status = message === 'No objects available for wizard selection' ? 404 : 500;
+        return res.status(status).json({ error: message });
     }
 }

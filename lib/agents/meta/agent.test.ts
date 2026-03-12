@@ -56,14 +56,13 @@ describe('MetaAgent', () => {
         expect(plan.assistant?.mode).toBe('hidden');
     });
 
-    test('AR_ENDED transitions state to POST_AR_REFLECTION and suggests sharing', () => {
-        // Must mark that AR was opened first to trigger share suggestion
+    test('AR_ENDED transitions state to POST_AR_REFLECTION and keeps assistant hidden', () => {
         agent.processEvent({ type: 'AR_STARTED' });
 
         const plan = agent.processEvent({ type: 'AR_ENDED' });
 
         expect(plan.session.state).toBe(AssistantState.POST_AR_REFLECTION);
-        expect(plan.assistant?.mode).toBe('chat');
-        expect(plan.assistant?.content?.notificationType).toBe('SHARE_SUGGESTION');
+        expect(plan.assistant?.mode).toBe('hidden');
+        expect(plan.assistant?.content).toBeUndefined();
     });
 });

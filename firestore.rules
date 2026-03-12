@@ -17,6 +17,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /scenePresets/{sceneId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Journal entries (editorial content)
     match /blog/{postId} {
       allow read: if true;

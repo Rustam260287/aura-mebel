@@ -5,6 +5,7 @@ import { COLLECTIONS } from '../../lib/db/collections';
 import type { ObjectPublic, ScenePresetPublic } from '../../types';
 import { toPublicObject } from '../../lib/publicObject';
 import { toScenePresetPublic } from '../../lib/scenePreset';
+import { isProductionReadyObject, isProductionReadyScene } from '../../lib/catalog/publicReadiness';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import { Meta } from '../../components/Meta';
@@ -61,7 +62,7 @@ export default function ScenePage({ scene, objects, error }: ScenePageProps) {
     ? scene.description.length > 160
       ? scene.description.substring(0, 157) + '...'
       : scene.description
-    : `Примерьте сцену «${scene.title}» в вашем интерьере.`;
+    : `Посмотрите сцену «${scene.title}» в вашем интерьере и откройте предметы по отдельности.`;
 
   return (
     <>
@@ -78,6 +79,7 @@ export default function ScenePage({ scene, objects, error }: ScenePageProps) {
 export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return { props: { error: 'Scene ID not found.' } };
+  const isDev = process.env.NODE_ENV === 'development';
 
   const adminDb = getAdminDb();
   const adminStorage = getAdminStorage();
@@ -97,6 +99,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     const objects: ObjectPublic[] = docs
       .filter((d) => d.exists)
       .map((d) => toPublicObject(d.data(), d.id));
+
+    if (!isDev) {
+      const productionObjects = objects.filter((object) => isProductionReadyObject(object));
+      const objectMap = new Map(productionObjects.map((object) => [object.id, object] as const));
+      if (!isProductionReadyScene(scene, objectMap)) {
+        return { notFound: true };
+      }
+    }
 
     // Best-effort image URL signing for gs:// links (same as object detail page).
     const bucket = adminStorage.bucket();

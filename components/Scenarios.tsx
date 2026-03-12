@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import type { View } from '../types';
-import { ChevronRightIcon, CubeTransparentIcon } from './icons';
+import { ChevronRightIcon, CubeTransparentIcon, PencilSquareIcon, SparklesIcon } from './icons';
 
 interface ScenariosProps {
   onNavigate: (view: View) => void;
@@ -10,10 +10,26 @@ const ScenariosComponent: React.FC<ScenariosProps> = ({ onNavigate }) => {
   const allCards = [
     {
       id: 'ready',
-      title: "Галерея объектов",
-      desc: "Выберите объект и примерьте его в комнате через AR",
+      title: "Готовая мебель",
+      desc: "Выберите объект из коллекции и сразу посмотрите его в своём интерьере",
       icon: CubeTransparentIcon,
       action: () => onNavigate({ page: 'objects' }),
+      enabled: true,
+    },
+    {
+      id: 'wizard',
+      title: "Создать свою мебель",
+      desc: "Спокойно выберите ощущение, характер и формат просмотра без технической перегрузки",
+      icon: PencilSquareIcon,
+      action: () => onNavigate({ page: 'wizard' }),
+      enabled: true,
+    },
+    {
+      id: 'redesign',
+      title: "AI-редизайн комнаты",
+      desc: "Загрузите фото комнаты, получите визуальный сценарий и перейдите к подходящей мебели",
+      icon: SparklesIcon,
+      action: () => onNavigate({ page: 'redesign' }),
       enabled: true,
     },
   ];

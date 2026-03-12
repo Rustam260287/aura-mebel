@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { getBrowserEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
-import { trackJourneyEvent } from '../lib/journey/client';
+import React from 'react';
 
 interface Props {
     children: React.ReactNode;
-    onClose?: () => void;
 }
 
 // This component is deprecated. Browser checks are now performed on click events before mounting logic.

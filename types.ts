@@ -20,6 +20,8 @@ export type View =
   | { page: 'home' }
   | { page: 'objects'; objectType?: string }
   | { page: 'object'; objectId: string }
+  | { page: 'wizard' }
+  | { page: 'redesign' }
   | { page: 'scenes' }
   | { page: 'scene'; sceneId: string }
   | { page: 'saved' }
@@ -97,7 +99,6 @@ export interface ObjectPublic {
   presence?: 'compact' | 'balanced' | 'dominant';
 
   status?: ObjectStatus;
-  price?: number;
 }
 
 export interface ObjectAdmin extends ObjectPublic {

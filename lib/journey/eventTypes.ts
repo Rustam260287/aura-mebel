@@ -1,3 +1,5 @@
+import type { HandoffReason } from './handoff';
+
 export const JOURNEY_EVENT_TYPES = [
   'VIEW_OBJECT',
   'OPEN_3D',
@@ -50,7 +52,7 @@ export type JourneyMeta = {
     url?: string;
   };
   handoff?: {
-    reason: 'pricing' | 'purchase' | 'contact';
+    reason: HandoffReason;
     objectId?: string;
     objectName?: string;
     actions?: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;

@@ -1,6 +1,7 @@
 import type { RedesignInput, RedesignResult, RedesignVariant } from './types';
 import { db } from '../firebaseAdmin';
 import Replicate from 'replicate';
+import { COLLECTIONS } from '../db/collections';
 
 // Параметры для разных вариантов
 // Параметры для разных вариантов
@@ -14,6 +15,20 @@ const PRESETS = {
     // 3. Subtle: High preservation.
     subtle: { image_guidance: 1.8, guidance: 3.5, label: 'Минимум' },
 } as const;
+
+const STYLE_KEYWORDS: Record<RedesignInput['style'], string[]> = {
+    minimal: ['minimal', 'миним', 'clean', 'scandi', 'scandinav'],
+    cozy: ['cozy', 'уют', 'soft', 'warm', 'homey'],
+    modern: ['modern', 'соврем', 'contemporary', 'clean'],
+    classic: ['classic', 'класс', 'timeless', 'traditional'],
+};
+
+const MOOD_MAP: Record<RedesignInput['mood'], string[]> = {
+    calm: ['calm', 'soft', 'strict'],
+    warm: ['soft', 'calm'],
+    fresh: ['expressive', 'calm'],
+    dramatic: ['expressive', 'strict'],
+};
 
 /**
  * AI Room Redesign Orchestrator
@@ -49,6 +64,9 @@ export async function runRedesign(
             name: furniture.name,
             imageUrl: furniture.imageUrl,
             modelGlbUrl: furniture.modelGlbUrl,
+            modelUsdzUrl: furniture.modelUsdzUrl,
+            has3D: furniture.has3D,
+            description: furniture.description,
         },
         processingTime: Date.now() - startTime,
     };
@@ -59,65 +77,98 @@ export async function runRedesign(
 
 async function selectFurnitureFromCollection(input: RedesignInput) {
     try {
-        // Query products with 3D models only
-        const snapshot = await db.collection('products')
+        const objectsCollection = db.collection(COLLECTIONS.objects);
+        const snapshot = await objectsCollection
             .where('objectType', '==', input.object_type)
-            .limit(20) // Get more to filter
+            .limit(20)
             .get();
 
-        // Filter to only those with 3D models
-        let candidates = snapshot.docs
-            .filter((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
-                const data = doc.data();
-                return data.modelGlbUrl && data.modelGlbUrl.length > 0;
-            })
+        const scoreCandidate = (data: FirebaseFirestore.DocumentData) => {
+            let score = 0;
+            const rawTokens = [
+                data.name,
+                data.description,
+                ...(Array.isArray(data.tags) ? data.tags : []),
+                ...(Array.isArray(data.styleTags) ? data.styleTags : []),
+                ...(Array.isArray(data.materialTags) ? data.materialTags : []),
+            ]
+                .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0)
+                .join(' ')
+                .toLowerCase();
+
+            const compatibleMoods = MOOD_MAP[input.mood] || [];
+            if (compatibleMoods.includes(String(data.mood || '').toLowerCase())) {
+                score += 10;
+            }
+
+            const styleKeywords = STYLE_KEYWORDS[input.style] || [];
+            if (styleKeywords.some((keyword) => rawTokens.includes(keyword))) {
+                score += 8;
+            }
+
+            if (data.has3D || data.modelGlbUrl || data.modelUsdzUrl) {
+                score += 6;
+            }
+
+            if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+                score += 3;
+            }
+
+            if (String(data.status || '').toLowerCase() === 'ready') {
+                score += 2;
+            }
+
+            return score;
+        };
+
+        const candidates = snapshot.docs
             .map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
                 const data = doc.data();
-                let score = 0;
-                if (data.mood === input.mood) score += 10;
-                if (data.presence === input.style) score += 5;
-                return { id: doc.id, data, score };
+                const has3D = Boolean(data.has3D || data.modelGlbUrl || data.modelUsdzUrl);
+                return { id: doc.id, data, score: scoreCandidate(data), has3D };
             });
 
-        // If no results with matching type, do NOT search all products (it returns wrong type)
-        // Instead, try to find products of correct type even without 3D (as fallback for image generation)
-        if (candidates.length === 0) {
-            console.log(`[Redesign] No 3D models found for ${input.object_type}. searching for image-only fallback...`);
-            const fallbackSnapshot = await db.collection('products')
-                .where('objectType', '==', input.object_type)
-                .limit(5)
-                .get();
+        const with3D = candidates.filter((candidate) => candidate.has3D);
+        const rankedCandidates = with3D.length > 0 ? with3D : candidates;
 
-            if (!fallbackSnapshot.empty) {
-                // Return random item of correct type (even if no 3D)
-                const doc = fallbackSnapshot.docs[0];
-                return {
-                    id: doc.id,
-                    ...doc.data(),
-                    modelGlbUrl: null // Explicitly no 3D
-                };
-            }
+        if (rankedCandidates.length === 0) {
+            console.log(`[Redesign] No objects found for ${input.object_type}`);
+            return {
+                id: 'demo',
+                name: 'Подходящий объект из коллекции',
+                imageUrl: null,
+                modelGlbUrl: null,
+                modelUsdzUrl: null,
+                has3D: false,
+                description: 'Откройте коллекцию, чтобы выбрать объект для дальнейшей примерки.',
+            };
         }
 
-        if (candidates.length === 0) {
-            console.log('[Redesign] No products with 3D found');
-            return { id: 'demo', name: 'Демо мебель', imageUrl: null, modelGlbUrl: null };
-        }
+        rankedCandidates.sort((a, b) => b.score - a.score);
+        const best = rankedCandidates[0];
 
-        candidates.sort((a, b) => b.score - a.score);
-        const best = candidates[0];
-
-        console.log('[Redesign] Selected:', best.data.name, '(has 3D:', !!best.data.modelGlbUrl, ')');
+        console.log('[Redesign] Selected:', best.data.name, '(has 3D:', best.has3D, ')');
 
         return {
             id: best.id,
             name: best.data.name || 'Мебель',
-            imageUrl: best.data.imageUrls?.[0],
-            modelGlbUrl: best.data.modelGlbUrl,
+            imageUrl: best.data.imageUrls?.[0] || null,
+            modelGlbUrl: best.data.modelGlbUrl || null,
+            modelUsdzUrl: best.data.modelUsdzUrl || null,
+            has3D: best.has3D,
+            description: best.data.description || null,
         };
     } catch (error) {
         console.error('Error selecting furniture:', error);
-        return { id: 'demo', name: 'Демо мебель', imageUrl: null, modelGlbUrl: null };
+        return {
+            id: 'demo',
+            name: 'Подходящий объект из коллекции',
+            imageUrl: null,
+            modelGlbUrl: null,
+            modelUsdzUrl: null,
+            has3D: false,
+            description: 'Откройте коллекцию, чтобы выбрать объект для дальнейшей примерки.',
+        };
     }
 }
 
@@ -128,9 +179,6 @@ async function generateWithAI(
     guidanceScale: number = 4.5
 ): Promise<string> {
     const token = process.env.REPLICATE_API_TOKEN;
-
-    console.log('[Redesign] ENV keys:', Object.keys(process.env).filter(k => k.includes('REPLICATE')));
-    console.log('[Redesign] Token status:', token ? `✓ Found (${token.substring(0, 8)}...)` : '❌ Missing');
 
     if (!token) {
         console.error('[Redesign] REPLICATE_API_TOKEN not found in environment!');

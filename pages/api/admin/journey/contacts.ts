@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAdminDb } from '../../../../lib/firebaseAdmin';
 import { requireAdminSession } from '../../../../lib/auth/admin-session';
 import { Timestamp } from 'firebase-admin/firestore';
+import { parseStoredHandoffReason, type StoredHandoffReason } from '../../../../lib/journey/handoff';
 
 const clampDays = (value: unknown, fallback: number) => {
   const n = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN;
@@ -19,7 +20,7 @@ const toIso = (value: unknown): string | null => {
 type ContactRow = {
   id: string;
   lastHandoffAt: string | null;
-  lastHandoffReason: 'pricing' | 'purchase' | 'contact' | null;
+  lastHandoffReason: StoredHandoffReason | null;
   lastObjectId: string | null;
   lastObjectName: string | null;
   lastActions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
@@ -71,9 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? data.savedObjectIds.filter((v) => typeof v === 'string')
         : [];
 
-      const rawReason = data.lastHandoffReason;
-      const lastHandoffReason: ContactRow['lastHandoffReason'] =
-        rawReason === 'pricing' || rawReason === 'purchase' || rawReason === 'contact' ? rawReason : null;
+      const lastHandoffReason: ContactRow['lastHandoffReason'] = parseStoredHandoffReason(data.lastHandoffReason);
 
       const rawActions = Array.isArray(data.lastHandoffActions) ? data.lastHandoffActions : [];
       const lastActions = rawActions

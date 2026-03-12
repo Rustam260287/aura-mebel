@@ -10,7 +10,7 @@ const WizardPage: React.FC = () => {
                 title="Мастер подбора — AURA"
                 description="Спокойное исследование мебели для вашего пространства"
             />
-            <WizardProvider objectType="sofa">
+            <WizardProvider>
                 <WizardLayout />
             </WizardProvider>
         </>

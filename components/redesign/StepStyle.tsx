@@ -24,7 +24,7 @@ const MOOD_OPTIONS = [
 ];
 
 export const StepStyle: React.FC = () => {
-    const { input, setInput, prevStep, submitRedesign, isProcessing } = useRedesign();
+    const { input, setInput, prevStep, submitRedesign, isProcessing, error } = useRedesign();
 
     const handleSubmit = async () => {
         await submitRedesign();
@@ -34,8 +34,8 @@ export const StepStyle: React.FC = () => {
         <div className="h-full flex flex-col items-center justify-center p-6 overflow-y-auto">
             <div className="max-w-md w-full space-y-8">
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-medium text-soft-black">Параметры визуализации</h2>
-                    <p className="text-sm text-muted-gray">Выберите характеристики</p>
+                    <h2 className="text-2xl font-medium text-soft-black">Какой ориентир собрать</h2>
+                    <p className="text-sm text-muted-gray">Выберите мебель, стиль и настроение будущего варианта</p>
                 </div>
 
                 {/* Furniture type */}
@@ -116,9 +116,15 @@ export const StepStyle: React.FC = () => {
                         disabled={isProcessing}
                         className="flex-1 py-3 rounded-xl bg-soft-black text-white hover:bg-black transition-colors disabled:opacity-50"
                     >
-                        {isProcessing ? 'Генерация...' : 'Визуализировать'}
+                        {isProcessing ? 'Собираю...' : 'Создать визуализацию'}
                     </button>
                 </div>
+
+                {error && (
+                    <p className="text-sm text-red-500 text-center max-w-sm mx-auto">
+                        {error}
+                    </p>
+                )}
             </div>
         </div>
     );

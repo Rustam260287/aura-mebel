@@ -47,6 +47,10 @@ export default function HomePage({ featuredObjects, error }: HomePageProps) {
     // 2. Обычная навигация (вызывается из Scenarios)
     if (view.page === 'objects') {
       router.push('/objects');
+    } else if (view.page === 'wizard') {
+      router.push('/wizard');
+    } else if (view.page === 'redesign') {
+      router.push('/redesign');
     } else if (view.page === 'about') {
       router.push('/about');
     }

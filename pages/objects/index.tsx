@@ -17,6 +17,7 @@ import { useExperience } from '../../contexts/ExperienceContext';
 import { SceneCard } from '../../components/SceneCard';
 import { toScenePresetPublic } from '../../lib/scenePreset';
 import { ObjectSheet } from '../../components/ObjectSheet';
+import { isProductionReadyObject, isProductionReadyScene } from '../../lib/catalog/publicReadiness';
 
 const ImageZoomModal = dynamic(() => import('../../components/ImageZoomModal').then(mod => mod.ImageZoomModal), { ssr: false });
 
@@ -183,10 +184,10 @@ export default function CatalogPage({ objects, scenes, currentPage, totalPages, 
               <div className="flex items-end justify-between gap-6 mb-8">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-medium text-soft-black dark:text-aura-dark-text-main tracking-tight">
-                    Комплекты
+                    Сцены для вдохновения
                   </h2>
                   <p className="text-sm text-muted-gray dark:text-aura-dark-text-muted mt-2">
-                    Набор отдельных предметов. В AR каждый можно двигать и масштабировать отдельно.
+                    Готовые композиции, которые можно посмотреть как сцену или открыть по предметам.
                   </p>
                 </div>
               </div>
@@ -277,7 +278,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         const found = await SearchService.search({ query: queryParam, limit: 30 });
         objects = found.map((p) => toPublicObject(p, p.id));
         if (!isDev) {
-          objects = objects.filter(o => o.status !== 'draft' && o.status !== 'archived');
+          objects = objects.filter((o) => isProductionReadyObject(o));
         }
         totalItems = objects.length;
         totalPages = 1;
@@ -314,19 +315,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let allPublicObjects = snapshot.docs
       .map(doc => toPublicObject(doc.data(), doc.id))
       .filter(o => {
-        // Dev: Show everything
         if (isDev) return true;
-
-        // Prod: Show only READY objects.
-        const isVisible = o.status === 'ready';
-
+        const isVisible = isProductionReadyObject(o);
         if (!isVisible) {
-          // Log strictly hidden objects to help admin debug "Why is X missing?"
-          // Use a safe check to avoid spamming logs for obvious drafts?
-          // The user requested this specifically.
-          console.warn(`[Catalog Filter] Hiding object: ${o.id} (${o.name}) | Status: ${o.status || 'undefined'} | Cat: ${o.category}`);
+          console.warn(`[Catalog Filter] Hiding object: ${o.id} (${o.name}) | Status: ${o.status || 'undefined'} | has3D: ${o.has3D ? 'yes' : 'no'}`);
         }
-
         return isVisible;
       });
 
@@ -371,8 +364,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         .get();
 
       const rawScenes = scenesSnap.docs.map((doc) => toScenePresetPublic(doc.data(), doc.id));
+      const objectMap = new Map(allPublicObjects.map((object) => [object.id, object] as const));
+      const filteredScenes = isDev
+        ? rawScenes
+        : rawScenes.filter((scene) => isProductionReadyScene(scene, objectMap));
       const neededCoverObjectIds = new Set<string>();
-      for (const s of rawScenes) {
+      for (const s of filteredScenes) {
         if (s.coverImageUrl) continue;
         const first = s.objects?.[0]?.objectId;
         if (first) neededCoverObjectIds.add(first);
@@ -392,7 +389,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         }
       });
 
-      scenes = rawScenes.map((s) => {
+      scenes = filteredScenes.map((s) => {
         if (s.coverImageUrl) return s;
         const first = s.objects?.[0]?.objectId;
         const derived = first ? coverByObjectId.get(first) : undefined;

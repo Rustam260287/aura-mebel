@@ -69,17 +69,21 @@ const MobileMenuChrome: React.FC = () => {
       <MobileMenuOverlay
         open={open}
         onClose={() => setOpen(false)}
-        onCatalog={() => {
+        onObjects={() => {
           setOpen(false);
           router.push('/objects');
+        }}
+        onWizard={() => {
+          setOpen(false);
+          router.push('/wizard');
+        }}
+        onRedesign={() => {
+          setOpen(false);
+          router.push('/redesign');
         }}
         onSaved={() => {
           setOpen(false);
           router.push('/saved');
-        }}
-        onAbout={() => {
-          setOpen(false);
-          router.push('/about');
         }}
       />
     </>

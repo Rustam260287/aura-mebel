@@ -24,6 +24,9 @@ export interface RedesignResult {
         name: string;
         imageUrl?: string;
         modelGlbUrl?: string;
+        modelUsdzUrl?: string;
+        has3D?: boolean;
+        description?: string;
     };
     processingTime: number;
 }

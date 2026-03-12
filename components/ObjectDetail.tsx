@@ -14,7 +14,8 @@ import { autofitModelViewer } from '../lib/3d/model-viewer-autofit';
 import { useExperience } from '../contexts/ExperienceContext';
 import { useAssistant } from '../contexts/AssistantContext';
 import { optimizeScene } from '../lib/3d/optimizer';
-import { getBrowserEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
+import { getArEnvironment, openInChromeAndroid, openInSafari } from '../lib/browserUtils';
+import { formatModelViewerScale, parseObjectRuntimeScale } from '../lib/objects/runtimeScale';
 
 interface ObjectDetailProps {
   object: ObjectPublic;
@@ -43,14 +44,11 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   const [inline3dError, setInline3dError] = useState<string | null>(null);
   const [postArHintVisible, setPostArHintVisible] = useState(false);
   const [showExternalBrowserModal, setShowExternalBrowserModal] = useState(false);
-  const [isIOSDevice] = useState(() => {
-    if (typeof navigator === 'undefined') return false;
-    return (
-      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      (navigator.userAgent.includes('Macintosh') && (navigator as any).maxTouchPoints > 1)
-    );
-  });
-  const [webXrArSupported, setWebXrArSupported] = useState<boolean | null>(null);
+
+  const arEnv = useMemo(() => getArEnvironment(), []);
+  const isIOSDevice = arEnv.platform === 'ios';
+  const wizardScale = useMemo(() => parseObjectRuntimeScale(router.query.wizardScale), [router.query.wizardScale]);
+  const modelViewerScale = useMemo(() => formatModelViewerScale(wizardScale), [wizardScale]);
 
   // Architecture Switch: Strict V1/V2 separation
   const shouldUseV2 = useMemo(() => {
@@ -89,33 +87,9 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       objectId: object.id,
       name: object.name,
       modelGlbUrl: threeDSrcUrl,
+      scale: wizardScale ?? 1,
     }];
-  }, [object.id, object.name, threeDSrcUrl]);
-
-  useEffect(() => {
-    if (isIOSDevice) {
-      setWebXrArSupported(null);
-      return;
-    }
-    if (typeof navigator === 'undefined') return;
-    const xr = (navigator as any).xr as { isSessionSupported?: (mode: string) => Promise<boolean> } | undefined;
-    if (!xr || typeof xr.isSessionSupported !== 'function') {
-      setWebXrArSupported(false);
-      return;
-    }
-    let cancelled = false;
-    void xr
-      .isSessionSupported('immersive-ar')
-      .then((supported) => {
-        if (!cancelled) setWebXrArSupported(Boolean(supported));
-      })
-      .catch(() => {
-        if (!cancelled) setWebXrArSupported(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isIOSDevice]);
+  }, [object.id, object.name, threeDSrcUrl, wizardScale]);
 
   useEffect(() => {
     trackJourneyEvent({ type: 'VIEW_OBJECT', objectId: object.id });
@@ -378,7 +352,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       }
 
       try {
-        autofitModelViewer(el);
+        autofitModelViewer(el, wizardScale != null ? { targetSize: wizardScale } : undefined);
       } catch { }
       if (typeof (el as any).zoomTo === 'function') {
         try {
@@ -408,7 +382,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       setInline3dState('loaded');
       setInline3dProgress(1);
       try {
-        autofitModelViewer(el);
+        autofitModelViewer(el, wizardScale != null ? { targetSize: wizardScale } : undefined);
       } catch { }
       if (typeof el.zoomTo === 'function') {
         try {
@@ -462,7 +436,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       el.removeEventListener('touchcancel', exit3d as any);
       exit3d();
     };
-  }, [emitEvent, mediaMode, object.id, hasGlb, threeDSrcUrl]);
+  }, [emitEvent, mediaMode, object.id, hasGlb, threeDSrcUrl, wizardScale]);
 
   useEffect(() => {
     const el = inlineModelViewerRef.current as any;
@@ -473,7 +447,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         try {
-          autofitModelViewer(el);
+          autofitModelViewer(el, wizardScale != null ? { targetSize: wizardScale } : undefined);
         } catch { }
       });
     };
@@ -499,7 +473,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
         window.removeEventListener('orientationchange', schedule);
       }
     };
-  }, [inline3dState, threeDSrcUrl]);
+  }, [inline3dState, threeDSrcUrl, wizardScale]);
 
   const validImages = useMemo(() => {
     const urls = object.imageUrls || [];
@@ -536,67 +510,42 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [onBack]);
 
   const arUnavailableTrackedRef = useRef(false);
-  const supportsWebXrAr = !isIOSDevice && webXrArSupported === true;
   const handleOpenAr = useCallback(() => {
     // 1. Detection on Click (New Architecture)
-    if (typeof window !== 'undefined') {
-      const env = getBrowserEnvironment();
+    const env = getArEnvironment();
 
-      if (env.platform === 'android' && env.requiresExternalBrowser) {
-        trackJourneyEvent({
-          type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
-          meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: 'webview' } }
-        });
-        const res = openInChromeAndroid();
-        if (res === 'manual_needed') {
-          addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
-        }
-        return; // CRITICAL: Stop execution here
+    if (env.requiresExternalBrowser) {
+      setShowExternalBrowserModal(true);
+      if (env.platform === 'android') {
+        openInChromeAndroid(); // Трим попытку автоматического редиректа
       }
-
-      if (env.requiresExternalBrowser) {
-        setShowExternalBrowserModal(true);
-        trackJourneyEvent({
-          type: 'BROWSER_LIMITATION_DETECTED',
-          meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
-        });
-        return; // CRITICAL: Stop execution here
-      }
+      trackJourneyEvent({
+        type: 'BROWSER_LIMITATION_DETECTED',
+        meta: { limitations: { reason: 'in_app_browser', browser: 'webview', platform: env.platform, timestamp: new Date().toISOString() } }
+      });
+      return; // ЖЁСТКИЙ СТОП
     }
 
-    // 2. Logic Selection
-    if (isIOSDevice) {
-      if (!hasUsdz) {
-        addToast('AR недоступен для этого объекта', 'info');
+    // 2. Logic Selection (Android WebXR)
+    if (env.platform === 'android') {
+      if (!env.canUseWebXR) {
+        addToast('AR недоступен на этом устройстве', 'info');
         return;
       }
 
-      emitEvent({ type: 'ENTER_AR' });
-      emitMetaEvent({ type: 'OPENED_AR' });
-      setPostArHintVisible(false);
-      setUiState('IN_AR');
-      setIsAROpen(true);
-      setTimeout(() => arViewerRef.current?.activateAR(), 100);
-      return;
-    }
-
-    // Android: SceneARViewer v2
-    if (shouldUseV2) {
       if (!hasGlb) {
         addToast('AR недоступен для этого объекта', 'info');
         return;
       }
-      // V2 is autonomous. No activateAR call, no isAROpen state.
+
       emitEvent({ type: 'ENTER_AR' });
       emitMetaEvent({ type: 'OPENED_AR' });
       setPostArHintVisible(false);
       setUiState('IN_AR');
 
       // CRITICAL: Pause model-viewer BEFORE opening AR
-      // Two WebGL contexts on Android = crash/corruption
       const mv = inlineModelViewerRef.current as any;
       if (mv) {
-        console.log('[3D] Pausing model-viewer for AR');
         mv.pause?.();
         mv.style.visibility = 'hidden';
       }
@@ -605,29 +554,26 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       return;
     }
 
-    // Android: Fallback (v1 model-viewer)
-    if (!supportsWebXrAr) {
-      // Log unavailability
-      if (!arUnavailableTrackedRef.current) {
-        arUnavailableTrackedRef.current = true;
-        trackJourneyEvent({
-          type: 'AR_UNAVAILABLE_WEBXR',
-          objectId: object.id,
-          meta: { platform: 'android', reason: 'webxr_not_supported' },
-        });
+    // 3. Logic Selection (iOS Quick Look)
+    if (env.platform === 'ios') {
+      if (!env.canUseQuickLook) {
+        setShowExternalBrowserModal(true);
+        return; // ЖЁСТКИЙ СТОП
       }
-      addToast('AR недоступен на этом устройстве', 'info');
+
+      if (!hasUsdz) {
+        addToast('AR недоступен для этого объекта', 'info');
+        return;
+      }
+
+      emitEvent({ type: 'ENTER_AR' });
+      emitMetaEvent({ type: 'OPENED_AR' });
+      setPostArHintVisible(false);
+      setIsAROpen(true);
+      setTimeout(() => arViewerRef.current?.activateAR(), 100);
       return;
     }
-
-    // V1 Activation
-    emitEvent({ type: 'ENTER_AR' });
-    emitMetaEvent({ type: 'OPENED_AR' });
-    setPostArHintVisible(false);
-    setUiState('IN_AR');
-    setIsAROpen(true);
-    arViewerRef.current?.activateAR();
-  }, [addToast, emitEvent, hasGlb, hasUsdz, isIOSDevice, supportsWebXrAr, object.id, emitMetaEvent, shouldUseV2]);
+  }, [emitEvent, emitMetaEvent, hasGlb, hasUsdz, addToast, setShowExternalBrowserModal]);
 
   const handleOpenArTap = useCallback(
     (event?: React.MouseEvent | React.TouchEvent) => {
@@ -701,14 +647,17 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
   }, [addToast, isShareCapturing, object.id]);
 
   const arAvailability = useMemo(() => {
-    if (isIOSDevice) {
+    if (arEnv.platform === 'ios') {
       return hasUsdz ? { available: true, message: null } : { available: false, message: 'AR недоступен для этой модели' };
     }
-    if (!hasGlb) return { available: false, message: 'AR недоступен для этой модели' };
-    if (webXrArSupported === true) return { available: true, message: null };
-    if (webXrArSupported === false) return { available: false, message: 'AR недоступен на этом устройстве' };
-    return { available: false, message: null as string | null };
-  }, [hasGlb, hasUsdz, isIOSDevice, webXrArSupported]);
+    if (arEnv.platform === 'android') {
+      if (!hasGlb) return { available: false, message: 'AR недоступен для этой модели' };
+      if (arEnv.requiresExternalBrowser) return { available: true, message: null }; // Will trigger redirect
+      if (arEnv.canUseWebXR) return { available: true, message: null };
+      return { available: false, message: 'AR недоступен на этом устройстве' };
+    }
+    return { available: false, message: 'AR доступен только на смартфонах' };
+  }, [hasGlb, hasUsdz, arEnv]);
 
   return (
     <div className="fixed inset-0 bg-soft-black overflow-hidden">
@@ -733,7 +682,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 field-of-view="30deg"
                 exposure="1"
                 shadow-intensity="0.3"
-                scale="1 1 1"
+                scale={modelViewerScale}
                 style={{ touchAction: 'pan-y', background: 'transparent' }}
                 className="w-full h-full bg-transparent"
               />
@@ -937,6 +886,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 alt={object.name}
                 poster={object.imageUrls?.[0]}
                 objectId={object.id}
+                initialScale={wizardScale ?? undefined}
                 onClose={closeAR}
               />
             )}
@@ -971,7 +921,8 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
                 type: 'EXTERNAL_BROWSER_REDIRECT_TRIGGERED',
                 meta: { action: { type: 'redirect', timestamp: new Date().toISOString(), browser: 'webview' } }
               });
-              if (getBrowserEnvironment().platform === 'android') {
+              const env = getArEnvironment();
+              if (env.platform === 'android') {
                 const res = openInChromeAndroid();
                 if (res === 'manual_needed') {
                   addToast('Ссылка скопирована! Откройте браузер и вставьте её.', 'info', 6000);
@@ -985,7 +936,7 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
             }}
             className="w-full max-w-[280px] bg-brand-brown hover:bg-brand-brown/90 text-white font-medium py-[15px] px-6 rounded-full transition-transform active:scale-95 shadow-soft"
           >
-            {getBrowserEnvironment().platform === 'ios' ? '👉 Открыть в Safari' : '👉 Открыть в Chrome'}
+            {getArEnvironment().platform === 'ios' ? '👉 Открыть в Safari' : '👉 Открыть в Chrome'}
           </button>
 
           <button

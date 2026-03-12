@@ -103,9 +103,10 @@ export async function runWizardWithContext(
         // Use simplified fit if better
         if (judgement.score >= 0.8) {
             return {
-                model_key: selection.model_key,
+                object_id: selection.object_id,
                 scale: simplifiedFit.scale_factor,
                 intent: profile.intent_profile,
+                asset_key: selection.asset_key,
                 room_analysis: roomAnalysis,
             };
         }
@@ -113,9 +114,10 @@ export async function runWizardWithContext(
 
     // Return final result
     return {
-        model_key: selection.model_key,
+        object_id: selection.object_id,
         scale: fit.scale_factor,
         intent: profile.intent_profile,
+        asset_key: selection.asset_key,
         room_analysis: roomAnalysis,
     };
 }
@@ -150,18 +152,20 @@ export async function runWizardIntent(input: WizardIntent): Promise<FittingResul
         // Use simplified fit if better
         if (judgement.score >= 0.8) {
             return {
-                model_key: selection.model_key,
+                object_id: selection.object_id,
                 scale: simplifiedFit.scale_factor,
                 intent: profile.intent_profile,
+                asset_key: selection.asset_key,
             };
         }
     }
 
     // Return final result
     return {
-        model_key: selection.model_key,
+        object_id: selection.object_id,
         scale: fit.scale_factor,
         intent: profile.intent_profile,
+        asset_key: selection.asset_key,
     };
 }
 

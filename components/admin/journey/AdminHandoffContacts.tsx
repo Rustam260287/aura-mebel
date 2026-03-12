@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { PeriodSelect } from './PeriodSelect';
+import { getHandoffReasonLabel, type StoredHandoffReason } from '../../../lib/journey/handoff';
 
 type ContactsResponse = {
   period: { from: string; to: string; days: number };
   contacts: Array<{
     id: string;
     lastHandoffAt: string | null;
-    lastHandoffReason: 'pricing' | 'purchase' | 'contact' | null;
+    lastHandoffReason: StoredHandoffReason | null;
     lastObjectId: string | null;
     lastObjectName: string | null;
     lastActions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
@@ -30,13 +31,6 @@ const formatDuration = (value: number | null) => {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
-};
-
-const reasonLabel = (reason: 'pricing' | 'purchase' | 'contact' | null) => {
-  if (!reason) return '—';
-  if (reason === 'pricing') return 'Стоимость';
-  if (reason === 'purchase') return 'Как заказать';
-  return 'Связь';
 };
 
 export const AdminHandoffContacts: React.FC<{ onOpenVisitor?: (visitorId: string) => void }> = ({ onOpenVisitor }) => {
@@ -142,7 +136,7 @@ export const AdminHandoffContacts: React.FC<{ onOpenVisitor?: (visitorId: string
                         {row.lastActions.length === 0 && <span className="text-gray-400">—</span>}
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-gray-700">{reasonLabel(row.lastHandoffReason)}</td>
+                    <td className="px-6 py-3 text-gray-700">{getHandoffReasonLabel(row.lastHandoffReason)}</td>
                     <td className="px-6 py-3 text-gray-700 max-w-[420px] truncate">
                       {row.lastQuestions?.slice(-1)[0] || '—'}
                     </td>

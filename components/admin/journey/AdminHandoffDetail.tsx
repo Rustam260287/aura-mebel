@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getAuth } from 'firebase/auth';
+import { getHandoffReasonLabel, type StoredHandoffReason } from '../../../lib/journey/handoff';
 
 type HandoffDetailResponse = {
   visitorId: string;
   handoff: {
     at: string | null;
-    reason: 'pricing' | 'purchase' | 'contact' | null;
+    reason: StoredHandoffReason | null;
     objectId: string | null;
     objectName: string | null;
     actions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
@@ -36,13 +37,6 @@ const formatDuration = (value: number | null) => {
   return `${m}:${String(s).padStart(2, '0')}`;
 };
 
-const reasonLabel = (reason: 'pricing' | 'purchase' | 'contact' | null) => {
-  if (!reason) return '—';
-  if (reason === 'pricing') return 'Стоимость';
-  if (reason === 'purchase') return 'Как заказать';
-  return 'Связь';
-};
-
 const describeEvent = (event: HandoffDetailResponse['path'][number]) => {
   const name = event.objectName || (event.objectId ? event.objectId.slice(0, 8) + '…' : '');
   const withName = (base: string) => (name ? `${base} ${name}` : base);
@@ -56,7 +50,7 @@ const describeEvent = (event: HandoffDetailResponse['path'][number]) => {
   }
   if (event.type === 'SAVE_OBJECT') return withName('Сохранил');
   if (event.type === 'REMOVE_OBJECT') return withName('Убрал из сохранённого');
-  if (event.type === 'HANDOFF_REQUESTED') return `Запросил hand-off (${reasonLabel((event as any)?.meta?.handoff?.reason ?? null)})`;
+  if (event.type === 'HANDOFF_REQUESTED') return `Запросил hand-off (${getHandoffReasonLabel((event as any)?.meta?.handoff?.reason ?? null)})`;
   return event.type;
 };
 
@@ -126,7 +120,7 @@ export const AdminHandoffDetail: React.FC<{ visitorId: string; onBack: () => voi
           </div>
           <div>
             <div className="text-xs text-gray-500">Причина</div>
-            <div className="text-sm text-brand-charcoal mt-1">{loading ? '…' : reasonLabel(data?.handoff.reason ?? null)}</div>
+            <div className="text-sm text-brand-charcoal mt-1">{loading ? '…' : getHandoffReasonLabel(data?.handoff.reason ?? null)}</div>
           </div>
           <div>
             <div className="text-xs text-gray-500">AR длительность</div>

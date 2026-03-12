@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getAuth } from 'firebase/auth';
+import { getHandoffReasonLabel } from '../../../lib/journey/handoff';
 
 type VisitorJourneyResponse = {
   visitor: {
@@ -45,9 +46,8 @@ const describeEvent = (event: VisitorJourneyResponse['events'][number]) => {
   if (event.type === 'OPEN_SAVED') return 'Открыл сохранённое';
   if (event.type === 'CONTACT_MANAGER') return 'Открыл связь с менеджером';
   if (event.type === 'HANDOFF_REQUESTED') {
-    const reason = (event.meta as any)?.handoff?.reason;
-    const label = reason === 'pricing' ? 'стоимость' : reason === 'purchase' ? 'как заказать' : reason === 'contact' ? 'связь' : null;
-    return label ? `Запросил hand-off (${label})` : 'Запросил hand-off';
+    const label = getHandoffReasonLabel((event.meta as any)?.handoff?.reason ?? null);
+    return label !== '—' ? `Запросил hand-off (${label})` : 'Запросил hand-off';
   }
   return event.type;
 };

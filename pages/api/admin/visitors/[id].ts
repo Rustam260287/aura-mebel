@@ -3,6 +3,7 @@ import { getAdminDb, getAdminStorage } from '../../../../lib/firebaseAdmin';
 import { requireAdminSession } from '../../../../lib/auth/admin-session';
 import { COLLECTIONS } from '../../../../lib/db/collections';
 import { inferVisitorStage } from '../../../../lib/crm/stages';
+import { parseStoredHandoffReason, type StoredHandoffReason } from '../../../../lib/journey/handoff';
 import type { VisitorStage } from '../../../../types';
 
 const toIso = (value: unknown): string | null => {
@@ -38,7 +39,7 @@ type VisitorDetails = {
   lastIntentAt: string | null;
   lastArDurationSec: number | null;
   lastHandoffAt: string | null;
-  lastHandoffReason: 'pricing' | 'purchase' | 'contact' | null;
+  lastHandoffReason: StoredHandoffReason | null;
   lastHandoffActions: Array<'VIEW_3D' | 'AR_TRY' | 'SAVE'>;
   lastHandoffQuestions: string[];
 };
@@ -90,8 +91,7 @@ const getSnapshotPath = (meta: Record<string, unknown> | null): string | null =>
 };
 
 const normalizeHandoffReason = (value: unknown): VisitorDetails['lastHandoffReason'] => {
-  if (value === 'pricing' || value === 'purchase' || value === 'contact') return value;
-  return null;
+  return parseStoredHandoffReason(value);
 };
 
 const normalizeHandoffActions = (value: unknown): VisitorDetails['lastHandoffActions'] => {

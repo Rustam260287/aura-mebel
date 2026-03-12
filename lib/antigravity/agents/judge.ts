@@ -15,9 +15,9 @@ export class VisualJudge {
             return { score: 0.5, issues };
         }
 
-        // Check if model_key exists (basic validation)
-        if (!selection.model_key || selection.model_key === 'default') {
-            issues.push('fallback_model_used');
+        // Ensure the selector returned a real catalog object.
+        if (!selection.object_id) {
+            issues.push('fallback_object_used');
             return { score: 0.75, issues };
         }
 

@@ -23,6 +23,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    match /scenePresets/{sceneId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     
     // Blog Posts: Everyone can read, only Admin can write
     match /blog/{postId} {

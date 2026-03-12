@@ -8,6 +8,7 @@ interface RedesignContextValue {
     progress: RedesignProgress | null;
     result: RedesignResult | null;
     isProcessing: boolean;
+    error: string | null;
 
     // Context Analysis
     roomAnalysis: RoomAnalysis | null;
@@ -18,6 +19,7 @@ interface RedesignContextValue {
     nextStep: () => void;
     prevStep: () => void;
     submitRedesign: () => Promise<void>;
+    editRedesign: () => void;
     resetRedesign: () => void;
 }
 
@@ -39,6 +41,7 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [progress, setProgress] = useState<RedesignProgress | null>(null);
     const [result, setResult] = useState<RedesignResult | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Analysis State
     const [roomAnalysis, setRoomAnalysis] = useState<RoomAnalysis | null>(null);
@@ -75,6 +78,7 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, []);
 
     const setRoomImage = useCallback((url: string) => {
+        setError(null);
         setInputState(prev => ({ ...prev, roomImageUrl: url }));
         // Trigger analysis if it looks like a base64 string
         if (url.startsWith('data:image')) {
@@ -83,6 +87,7 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, [analyzeRoom]);
 
     const setInput = useCallback((key: keyof RedesignInput, value: any) => {
+        setError(null);
         setInputState(prev => ({ ...prev, [key]: value }));
     }, []);
 
@@ -96,10 +101,11 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const submitRedesign = useCallback(async () => {
         setIsProcessing(true);
-        setProgress({ stage: 'analyzing', percent: 10, message: 'Анализирую композицию...' });
+        setError(null);
+        setProgress({ stage: 'analyzing', percent: 12, message: 'Смотрю на пространство...' });
 
         try {
-            setProgress({ stage: 'selecting', percent: 30, message: 'Подбираю мебель...' });
+            setProgress({ stage: 'selecting', percent: 34, message: 'Подбираю объект для этого интерьера...' });
 
             const response = await fetch('/api/redesign/generate', {
                 method: 'POST',
@@ -107,9 +113,12 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
                 body: JSON.stringify(input),
             });
 
-            setProgress({ stage: 'generating', percent: 60, message: 'Генерирую визуализацию...' });
+            setProgress({ stage: 'generating', percent: 72, message: 'Собираю визуальный ориентир...' });
 
-            if (!response.ok) throw new Error('Failed to generate redesign');
+            if (!response.ok) {
+                const payload = await response.json().catch(() => ({ error: 'Failed to generate redesign' }));
+                throw new Error(payload.error || 'Failed to generate redesign');
+            }
 
             const redesignResult: RedesignResult = await response.json();
 
@@ -118,11 +127,21 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
             nextStep();
         } catch (error) {
             console.error('Redesign error:', error);
-            setProgress({ stage: 'error', percent: 0, message: 'Ошибка генерации' });
+            setResult(null);
+            setProgress({ stage: 'error', percent: 0, message: 'Не удалось собрать визуализацию' });
+            setError('Не получилось подготовить визуализацию. Попробуйте изменить параметры или повторить позже.');
         } finally {
             setIsProcessing(false);
         }
     }, [input, nextStep]);
+
+    const editRedesign = useCallback(() => {
+        setResult(null);
+        setProgress(null);
+        setIsProcessing(false);
+        setError(null);
+        setCurrentStep(1);
+    }, []);
 
     const resetRedesign = useCallback(() => {
         setCurrentStep(0);
@@ -130,6 +149,9 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
         setResult(null);
         setProgress(null);
         setIsProcessing(false);
+        setError(null);
+        setRoomAnalysis(null);
+        setIsAnalyzing(false);
     }, []);
 
     const value: RedesignContextValue = {
@@ -138,11 +160,13 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
         progress,
         result,
         isProcessing,
+        error,
         setRoomImage,
         setInput,
         nextStep,
         prevStep,
         submitRedesign,
+        editRedesign,
         resetRedesign,
 
         roomAnalysis,
