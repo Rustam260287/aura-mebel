@@ -28,6 +28,7 @@ import type { ARStage, SceneARViewerV2Props } from './types';
 import { ARCoachingOverlay } from './components/ARCoachingOverlay';
 import { ARBottomControls } from './components/ARBottomControls';
 import { PostARUI } from './components/PostARUI';
+import { ColorPicker } from '../../../components/ColorPicker';
 
 export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     sceneId,
@@ -86,6 +87,7 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
     const [arDurationSec, setArDurationSec] = useState<number>(0);
     const [isSaved, setIsSaved] = useState(false);
     const [isCapturing, setIsCapturing] = useState(false);
+    const [activeHex, setActiveHex] = useState<string>('#FFFFFF');
 
     // Hooks
     const xrSession = useWebXRSession();
@@ -950,11 +952,31 @@ export const SceneARViewerV2: React.FC<SceneARViewerV2Props> = ({
                 {/* UI Layer (Buttons always on top of gestures) */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
 
-                    {/* Selected Item Label (Bottom Center, above controls) */}
+                    {/* Selected Item Label + Color Picker (Bottom Center, above controls) */}
                     {stage === 'active' && selectedLabel && (
-                        <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+100px)] left-1/2 -translate-x-1/2 pointer-events-none">
+                        <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+100px)] left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none">
+                            {/* Item name */}
                             <div className="bg-white/70 backdrop-blur-md px-4 py-2 rounded-full text-xs text-soft-black/80 shadow-soft max-w-[60vw] truncate">
                                 {selectedLabel}
+                            </div>
+                            {/* Color picker — pointer-events-auto чтобы работали тапы */}
+                            <div className="pointer-events-auto bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3">
+                                <ColorPicker
+                                    variants={
+                                        objects.find(
+                                            o => sceneGraph.itemsRef.current.find(
+                                                i => i.key === sceneGraph.selectedKey
+                                            )?.objectId === o.objectId
+                                        )?.colorVariants
+                                    }
+                                    activeHex={activeHex}
+                                    onChange={(hex) => {
+                                        setActiveHex(hex);
+                                        if (sceneGraph.selectedKey) {
+                                            sceneGraph.setItemColor(sceneGraph.selectedKey, hex);
+                                        }
+                                    }}
+                                />
                             </div>
                         </div>
                     )}

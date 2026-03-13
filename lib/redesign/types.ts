@@ -6,6 +6,7 @@ export interface RedesignInput {
     style: 'minimal' | 'cozy' | 'modern' | 'classic';
     mood: 'calm' | 'warm' | 'fresh' | 'dramatic';
     room_type?: string;
+    roomAnalysis?: import('../antigravity/types').RoomAnalysis;
 }
 
 export interface RedesignVariant {

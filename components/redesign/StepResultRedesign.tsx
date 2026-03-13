@@ -34,6 +34,9 @@ export const StepResultRedesign: React.FC = () => {
     const { saveRedesign, isRedesignSaved } = useSaved();
     const { addToast } = useToast();
     const [showBefore, setShowBefore] = useState(false);
+    const [activeVariantIndex, setActiveVariantIndex] = useState(0);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+
     const selectedFurniture = result?.selectedFurniture;
     const targetObjectId = selectedFurniture?.id ?? null;
     const canOpenObject = Boolean(targetObjectId && targetObjectId !== 'demo');
@@ -51,6 +54,13 @@ export const StepResultRedesign: React.FC = () => {
     const styleLabel = STYLE_LABELS[input.style || 'minimal'] || 'спокойным';
     const moodLabel = MOOD_LABELS[input.mood || 'calm'] || 'спокойным';
     const summaryText = `Мы собрали ориентир для комнаты с ${objectLabel}, который делает пространство ${styleLabel} и ${moodLabel}.`;
+
+    const variants = result?.variants ?? [];
+    const hasVariants = variants.length > 1;
+    const activeVariant = hasVariants ? variants[activeVariantIndex] : null;
+    const activeAfterUrl = activeVariant ? activeVariant.imageUrl : result?.after;
+    const activeLabel = activeVariant ? activeVariant.label : null;
+
     const savedSignature = result ? buildSavedRedesignSignature({
         objectId: canOpenObject ? targetObjectId || undefined : undefined,
         objectName: selectedFurniture?.name || 'Мебель из интерьера',
@@ -77,6 +87,35 @@ export const StepResultRedesign: React.FC = () => {
         : 'Откройте объект отдельно, чтобы перейти к деталям и продолжить исследование.';
     const visualChanged = result.after !== result.before;
     const isFallbackResult = result.generationStatus === 'fallback' || !visualChanged;
+
+    const currentImageUrl = isFallbackResult
+        ? result.before
+        : showBefore
+            ? result.before
+            : (activeAfterUrl ?? result.after);
+
+    const handleShare = async () => {
+        const url = activeAfterUrl ?? result.after;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'AI-редизайн интерьера',
+                    text: summaryText,
+                    url,
+                });
+            } catch {
+                // user cancelled — ignore
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(url);
+                addToast('Ссылка скопирована', 'success', 2200);
+            } catch {
+                addToast('Не удалось скопировать ссылку', 'error', 2200);
+            }
+        }
+    };
+
     const handleSave = () => {
         if (!result || !selectedFurniture) return;
 
@@ -89,13 +128,34 @@ export const StepResultRedesign: React.FC = () => {
             mood: input.mood || 'calm',
             summary: summaryText,
             beforeImageUrl: result.before,
-            afterImageUrl: result.after,
+            afterImageUrl: activeAfterUrl ?? result.after,
         });
 
         addToast(response.isNew ? 'AI-редизайн сохранён' : 'AI-редизайн уже сохранён', 'success', 2200);
     };
 
     return (
+        <>
+        {lightboxOpen && (
+            <div
+                className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+                onClick={() => setLightboxOpen(false)}
+            >
+                <button
+                    className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl leading-none"
+                    onClick={() => setLightboxOpen(false)}
+                    aria-label="Закрыть"
+                >
+                    ✕
+                </button>
+                <img
+                    src={currentImageUrl}
+                    alt="Визуализация"
+                    className="max-w-full max-h-full object-contain rounded-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                />
+            </div>
+        )}
         <div className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto">
             <div className="max-w-2xl w-full space-y-5">
                 <div className="text-center space-y-2">
@@ -112,33 +172,66 @@ export const StepResultRedesign: React.FC = () => {
                 )}
 
                 {!isFallbackResult && (
-                    <div className="flex justify-center">
-                        <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
-                            <button
-                                onClick={() => setShowBefore(false)}
-                                className={[
-                                    'px-4 py-2 rounded-full text-sm transition-colors',
-                                    !showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
-                                ].join(' ')}
-                            >
-                                После
-                            </button>
-                            <button
-                                onClick={() => setShowBefore(true)}
-                                className={[
-                                    'px-4 py-2 rounded-full text-sm transition-colors',
-                                    showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
-                                ].join(' ')}
-                            >
-                                До
-                            </button>
-                        </div>
+                    <div className="flex justify-center gap-2 flex-wrap">
+                        {hasVariants ? (
+                            // 3-variant tab selector
+                            <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
+                                {variants.map((variant, idx) => (
+                                    <button
+                                        key={variant.preset}
+                                        onClick={() => { setActiveVariantIndex(idx); setShowBefore(false); }}
+                                        className={[
+                                            'px-4 py-2 rounded-full text-sm transition-colors',
+                                            activeVariantIndex === idx && !showBefore
+                                                ? 'bg-soft-black text-white'
+                                                : 'text-muted-gray hover:text-soft-black',
+                                        ].join(' ')}
+                                    >
+                                        {variant.label}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setShowBefore(true)}
+                                    className={[
+                                        'px-4 py-2 rounded-full text-sm transition-colors',
+                                        showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
+                                    ].join(' ')}
+                                >
+                                    До
+                                </button>
+                            </div>
+                        ) : (
+                            // Fallback: single after/before toggle
+                            <div className="inline-flex rounded-full bg-white border border-stone-beige/40 p-1 shadow-sm">
+                                <button
+                                    onClick={() => setShowBefore(false)}
+                                    className={[
+                                        'px-4 py-2 rounded-full text-sm transition-colors',
+                                        !showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
+                                    ].join(' ')}
+                                >
+                                    После
+                                </button>
+                                <button
+                                    onClick={() => setShowBefore(true)}
+                                    className={[
+                                        'px-4 py-2 rounded-full text-sm transition-colors',
+                                        showBefore ? 'bg-soft-black text-white' : 'text-muted-gray hover:text-soft-black',
+                                    ].join(' ')}
+                                >
+                                    До
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                <div className="relative aspect-video rounded-[28px] overflow-hidden bg-stone-100 shadow-[0_24px_80px_rgba(0,0,0,0.10)]">
+                <div
+                    className="relative aspect-video rounded-[28px] overflow-hidden bg-stone-100 shadow-[0_24px_80px_rgba(0,0,0,0.10)] cursor-zoom-in"
+                    onClick={() => setLightboxOpen(true)}
+                >
                     <img
-                        src={isFallbackResult ? result.before : showBefore ? result.before : result.after}
+                        src={currentImageUrl}
                         alt={isFallbackResult ? 'Фото комнаты' : showBefore ? 'Исходная комната' : 'Визуализированная комната'}
                         className="w-full h-full object-cover"
                     />
@@ -147,13 +240,9 @@ export const StepResultRedesign: React.FC = () => {
                         <div className="px-3 py-1.5 bg-white/92 backdrop-blur-sm rounded-full text-xs font-medium text-soft-black">
                             {isFallbackResult ? 'Ваше фото' : showBefore ? 'До' : 'После'}
                         </div>
-                        {!isFallbackResult && !showBefore && result.currentPreset && (
+                        {!isFallbackResult && !showBefore && activeLabel && (
                             <div className="px-3 py-1.5 bg-white/92 backdrop-blur-sm rounded-full text-xs font-medium text-muted-gray">
-                                {result.currentPreset === 'creative'
-                                    ? 'Более смелый вариант'
-                                    : result.currentPreset === 'balanced'
-                                        ? 'Сбалансированный вариант'
-                                        : 'Мягкий вариант'}
+                                {activeLabel}
                             </div>
                         )}
                     </div>
@@ -219,14 +308,26 @@ export const StepResultRedesign: React.FC = () => {
                     </Button>
                 </div>
 
-                <Button
-                    onClick={handleSave}
-                    size="md"
-                    variant="secondary"
-                    className="w-full rounded-xl"
-                >
-                    {isSavedResult ? 'AI-редизайн сохранён' : 'Сохранить AI-редизайн'}
-                </Button>
+                <div className="flex gap-3">
+                    <Button
+                        onClick={handleSave}
+                        size="md"
+                        variant="secondary"
+                        className="flex-1 rounded-xl"
+                    >
+                        {isSavedResult ? 'Сохранён' : 'Сохранить'}
+                    </Button>
+                    {!isFallbackResult && (
+                        <Button
+                            onClick={handleShare}
+                            size="md"
+                            variant="secondary"
+                            className="flex-1 rounded-xl"
+                        >
+                            Поделиться
+                        </Button>
+                    )}
+                </div>
 
                 <button
                     onClick={resetRedesign}
@@ -236,5 +337,6 @@ export const StepResultRedesign: React.FC = () => {
                 </button>
             </div>
         </div>
+        </>
     );
 };

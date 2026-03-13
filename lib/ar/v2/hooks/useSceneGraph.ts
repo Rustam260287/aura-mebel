@@ -33,6 +33,7 @@ interface UseSceneGraphResult {
     ) => void;
     selectItem: (key: string | null) => void;
     deleteSelected: () => void;
+    setItemColor: (key: string, hex: string) => void;
 }
 
 export function useSceneGraph(): UseSceneGraphResult {
@@ -261,6 +262,26 @@ export function useSceneGraph(): UseSceneGraphResult {
         });
     }, []);
 
+    const setItemColor = useCallback((key: string, hex: string) => {
+        const item = itemsRef.current.find(i => i.key === key);
+        if (!item) return;
+
+        const color = new THREE.Color(hex);
+        item.group.traverse((child) => {
+            if (!(child as any).isMesh) return;
+            const mesh = child as THREE.Mesh;
+            // Skip non-model meshes (hitBox, shadows)
+            if (mesh.name === 'hitBox' || mesh.name === 'contactShadow') return;
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            mats.forEach((mat) => {
+                if ((mat as any).isMeshStandardMaterial) {
+                    (mat as THREE.MeshStandardMaterial).color.set(color);
+                    mat.needsUpdate = true;
+                }
+            });
+        });
+    }, []);
+
     const deleteSelected = useCallback(() => {
         const key = selectedKeyRef.current;
         if (!key) return;
@@ -298,5 +319,6 @@ export function useSceneGraph(): UseSceneGraphResult {
         spawnObjects,
         selectItem,
         deleteSelected,
+        setItemColor,
     };
 }

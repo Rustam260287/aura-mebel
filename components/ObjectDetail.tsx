@@ -570,7 +570,8 @@ const ObjectDetailComponent: React.FC<ObjectDetailProps> = ({
       emitMetaEvent({ type: 'OPENED_AR' });
       setPostArHintVisible(false);
       setIsAROpen(true);
-      setTimeout(() => arViewerRef.current?.activateAR(), 100);
+      // Quick Look must open directly from the user's tap gesture on iPhone.
+      arViewerRef.current?.activateAR();
       return;
     }
   }, [emitEvent, emitMetaEvent, hasGlb, hasUsdz, addToast, setShowExternalBrowserModal]);

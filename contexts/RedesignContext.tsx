@@ -110,10 +110,10 @@ export const RedesignProvider: React.FC<{ children: ReactNode }> = ({ children }
             const response = await fetch('/api/redesign/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(input),
+                body: JSON.stringify({ ...input, roomAnalysis }),
             });
 
-            setProgress({ stage: 'generating', percent: 72, message: 'Собираю визуальный ориентир...' });
+            setProgress({ stage: 'generating', percent: 72, message: 'Генерирую 3 варианта...' });
 
             if (!response.ok) {
                 const payload = await response.json().catch(() => ({ error: 'Failed to generate redesign' }));

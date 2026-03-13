@@ -81,6 +81,11 @@ export type ModelProcessingInfo = {
   maxTextureSize?: number;
 };
 
+export interface ColorVariant {
+  name: string;
+  hex: string;
+}
+
 export interface ObjectPublic {
   id: string;
   name: string;
@@ -93,6 +98,7 @@ export interface ObjectPublic {
   modelUsdzUrl?: string;
 
   has3D?: boolean;
+  colorVariants?: ColorVariant[];
 
   // Wizard fields for intent-based selection
   mood?: 'calm' | 'soft' | 'expressive' | 'strict';

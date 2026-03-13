@@ -71,6 +71,7 @@ export interface SceneARViewerV2Props {
         position?: [number, number, number];
         rotation?: [number, number, number];
         scale?: number;
+        colorVariants?: Array<{ name: string; hex: string }>;
     }>;
 
     /** Callback when AR session closes */

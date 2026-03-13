@@ -2,7 +2,7 @@ import { COLLECTIONS } from '../db/collections';
 import { listPublicCollectionDocuments } from '../firestore/publicFetch';
 import { toPublicObject } from '../publicObject';
 import { isProductionReadyObject } from './publicReadiness';
-import type { Mood as WizardMood, ObjectType, Presence } from '../antigravity/types';
+import type { Mood as WizardMood, ObjectType, Presence, RoomAnalysis } from '../antigravity/types';
 import type { RedesignInput } from '../redesign/types';
 
 type MatchableDoc = Record<string, unknown> & { id: string };
@@ -31,6 +31,7 @@ type MatchRequest = {
   mood?: WizardMood | RedesignInput['mood'];
   style?: RedesignInput['style'];
   presence?: Presence;
+  roomAnalysis?: RoomAnalysis;
 };
 
 const TYPE_KEYWORDS: Record<MatchRequest['objectType'], string[]> = {
@@ -144,6 +145,13 @@ const scoreObject = (object: MatchableObject, request: MatchRequest): ScoredObje
     else if (includesAny(object.tokens, presenceKeywords)) score += 3;
   }
 
+  if (request.roomAnalysis) {
+    const { furniture_zones } = request.roomAnalysis;
+    const objectType = request.objectType as ObjectType;
+    const hasZone = furniture_zones.some((z) => z.suitableFor.includes(objectType));
+    if (hasZone) score += 5;
+  }
+
   return { object, score, typeMatched };
 };
 
@@ -151,8 +159,22 @@ export const selectCatalogObject = async (request: MatchRequest) => {
   const objects = await buildMatchableObjects();
   if (objects.length === 0) return null;
 
+  // Derive presence from room estimated_area if not explicitly set
+  let effectiveRequest = request;
+  if (!request.presence && request.roomAnalysis?.estimated_area) {
+    const areaMap: Record<string, Presence> = {
+      small: 'compact',
+      medium: 'balanced',
+      large: 'dominant',
+    };
+    const derivedPresence = areaMap[request.roomAnalysis.estimated_area];
+    if (derivedPresence) {
+      effectiveRequest = { ...request, presence: derivedPresence };
+    }
+  }
+
   const scored = objects
-    .map((object) => scoreObject(object, request))
+    .map((object) => scoreObject(object, effectiveRequest))
     .sort((a, b) => b.score - a.score);
 
   const typedCandidates = scored.filter((entry) => entry.typeMatched);

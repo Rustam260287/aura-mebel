@@ -13,20 +13,32 @@ const logInitSource = (message: string, level: 'log' | 'warn' = 'log') => {
   console[level](message);
 };
 
-const tryParseServiceAccount = (raw: string): admin.ServiceAccount | undefined => {
-  const normalized = raw.replace(/\\n/g, '\n').trim();
+type ServiceAccountJson = admin.ServiceAccount & {
+  private_key?: string;
+  client_email?: string;
+  project_id?: string;
+};
 
+const normalizeServiceAccount = (parsed: ServiceAccountJson): admin.ServiceAccount => ({
+  projectId: parsed.projectId ?? parsed.project_id,
+  clientEmail: parsed.clientEmail ?? parsed.client_email,
+  privateKey: (parsed.privateKey ?? parsed.private_key ?? '').replace(/\\n/g, '\n'),
+});
+
+const tryParseServiceAccount = (raw: string): admin.ServiceAccount | undefined => {
   try {
-    return JSON.parse(normalized) as admin.ServiceAccount;
+    const parsed = JSON.parse(raw.trim()) as ServiceAccountJson;
+    return normalizeServiceAccount(parsed);
   } catch {
-    const repaired = normalized.replace(
-      /"private_key":"([\s\S]*?)","client_email":/,
+    const repaired = raw.trim().replace(
+      /"private_key"\s*:\s*"([\s\S]*?)"\s*,\s*"client_email"\s*:/,
       (_match, privateKey: string) =>
         `"private_key":"${privateKey.replace(/\r?\n/g, '\\n')}","client_email":`,
     );
 
     try {
-      return JSON.parse(repaired) as admin.ServiceAccount;
+      const parsed = JSON.parse(repaired) as ServiceAccountJson;
+      return normalizeServiceAccount(parsed);
     } catch {
       return undefined;
     }
@@ -42,9 +54,10 @@ export const initializeFirebaseAdmin = () => {
 
   // 1. Сначала пробуем получить ключ из переменной окружения
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    logInitSource("Firebase Admin SDK: initialization via FIREBASE_SERVICE_ACCOUNT");
     serviceAccount = tryParseServiceAccount(process.env.FIREBASE_SERVICE_ACCOUNT);
-    if (!serviceAccount) {
+    if (serviceAccount) {
+      logInitSource("Firebase Admin SDK: initialization via FIREBASE_SERVICE_ACCOUNT");
+    } else {
       console.error("Критическая ошибка: не удалось распарсить FIREBASE_SERVICE_ACCOUNT.");
     }
   }

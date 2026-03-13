@@ -1,4 +1,4 @@
-import type { RedesignInput, RedesignResult } from './types';
+import type { RedesignInput, RedesignResult, RedesignVariant } from './types';
 import Replicate from 'replicate';
 import { selectCatalogObject } from '../catalog/objectMatching';
 
@@ -16,44 +16,53 @@ const PRESETS = {
 
 /**
  * AI Room Redesign Orchestrator
- * Generates 1 variant (balanced) to avoid rate limits.
- * User can regenerate with different preset if needed.
+ * Generates 3 variants in parallel (Максимум / Баланс / Минимум).
  */
-export async function runRedesign(
-    input: RedesignInput,
-    preset: 'creative' | 'balanced' | 'subtle' = 'balanced'
-): Promise<RedesignResult> {
+export async function runRedesign(input: RedesignInput): Promise<RedesignResult> {
     const startTime = Date.now();
 
-    // Step 1: Select furniture from collection
-    const furniture = await selectFurnitureFromCollection(input);
+    // Step 1: Select furniture from collection (with optional roomAnalysis)
+    const furniture = await selectFurnitureFromCollection(input, input.roomAnalysis);
 
-    // Step 2: Generate single variant (avoid rate limits)
-    const params = PRESETS[preset];
-    console.log(`[Redesign] Generating 1 variant (${preset})...`);
+    // Step 2: Generate 3 variants in parallel
+    console.log('[Redesign] Generating 3 variants in parallel...');
 
-    let afterUrl = input.roomImageUrl;
-    let generationStatus: RedesignResult['generationStatus'] = 'fallback';
-    let generationNote: string | undefined = 'Показываем исходное фото, потому что визуализация пока недоступна.';
+    const presetEntries = Object.entries(PRESETS) as [keyof typeof PRESETS, (typeof PRESETS)[keyof typeof PRESETS]][];
 
-    try {
-        afterUrl = await generateWithAI(input, furniture, params.prompt_strength, params.guidance);
-        if (afterUrl && afterUrl !== input.roomImageUrl) {
-            generationStatus = 'generated';
-            generationNote = undefined;
-        } else if (furniture.id !== 'demo') {
-            generationNote = 'AI-визуализация временно недоступна. Мы уже подобрали подходящий объект, и его можно открыть в интерьере.';
+    const variantResults = await Promise.allSettled(
+        presetEntries.map(([key, params]) =>
+            generateWithAI(input, furniture, params.prompt_strength, params.guidance)
+                .then((url) => ({ preset: key, url, label: params.label }))
+        )
+    );
+
+    const variants: RedesignVariant[] = variantResults
+        .flatMap((r) => {
+            if (r.status === 'fulfilled' && r.value.url !== input.roomImageUrl) {
+                return [{ imageUrl: r.value.url, label: r.value.label, preset: r.value.preset } as RedesignVariant];
+            }
+            return [];
+        });
+
+    const balancedVariant = variants.find((v) => v.preset === 'balanced') ?? variants[0];
+    const afterUrl = balancedVariant?.imageUrl ?? input.roomImageUrl;
+    const generationStatus: RedesignResult['generationStatus'] = variants.length > 0 ? 'generated' : 'fallback';
+
+    let generationNote: string | undefined;
+    if (generationStatus === 'fallback') {
+        if (furniture.id !== 'demo') {
+            generationNote =
+                'AI-визуализация временно недоступна. Мы уже подобрали подходящий объект, и его можно открыть в интерьере.';
         } else {
-            generationNote = 'AI-визуализация временно недоступна. Попробуйте другой стиль или откройте коллекцию вручную.';
+            generationNote =
+                'AI-визуализация временно недоступна. Попробуйте другой стиль или откройте коллекцию вручную.';
         }
-    } catch (err) {
-        console.error('[Redesign] Generation failed:', err);
     }
 
     const result: RedesignResult = {
         before: input.roomImageUrl,
         after: afterUrl,
-        currentPreset: preset,
+        variants,
         generationStatus,
         generationNote,
         selectedFurniture: {
@@ -68,16 +77,20 @@ export async function runRedesign(
         processingTime: Date.now() - startTime,
     };
 
-    console.log(`[Redesign] ✓ Generated in ${result.processingTime}ms`);
+    console.log(`[Redesign] ✓ Generated ${variants.length}/3 variants in ${result.processingTime}ms`);
     return result;
 }
 
-async function selectFurnitureFromCollection(input: RedesignInput) {
+async function selectFurnitureFromCollection(
+    input: RedesignInput,
+    roomAnalysis?: import('../antigravity/types').RoomAnalysis
+) {
     try {
         const matchedObject = await selectCatalogObject({
             objectType: input.object_type,
             mood: input.mood,
             style: input.style,
+            roomAnalysis,
         });
 
         if (!matchedObject) {
@@ -200,6 +213,7 @@ async function runReplicatePrediction(
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {
+            // Model: adirik/interior-design (SDXL-based interior design)
             return await replicate.run(
                 'adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38',
                 { input }

@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 0.0.0.0 --webpack",
     "build": "next build --webpack && node scripts/copy-draco-wasm.js",
     "start": "next start",
-    "eslint": "next lint",
+    "eslint": "eslint .",
     "test": "jest --config=jest.config.cjs",
     "verify:release": "node scripts/verify-release.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",

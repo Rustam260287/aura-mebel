@@ -22,15 +22,34 @@ export default async function handler(
         input.style = input.style || 'minimal';
         input.mood = input.mood || 'calm';
 
-        // Get preset from request (default: balanced)
-        const preset = req.body.preset || 'balanced';
+        // Run AI redesign (3 parallel variants)
+        const result = await runRedesign(input);
 
-        // Run AI redesign
-        const result = await runRedesign(input, preset);
+        // Save to Firestore history (fire-and-forget, non-blocking)
+        saveRedesignToFirestore(input, result).catch(console.error);
 
         return res.status(200).json(result);
     } catch (error) {
         console.error('Redesign API error:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
+}
+
+async function saveRedesignToFirestore(input: RedesignInput, result: RedesignResult) {
+    const { getAdminDb } = await import('../../../lib/firebaseAdmin');
+    const db = getAdminDb();
+    await db.collection('redesignHistory').add({
+        objectId: result.selectedFurniture.id,
+        objectName: result.selectedFurniture.name,
+        objectType: input.object_type,
+        style: input.style,
+        mood: input.mood,
+        beforeImageUrl: result.before,
+        afterImageUrl: result.after,
+        variants: result.variants ?? [],
+        generationStatus: result.generationStatus,
+        processingTime: result.processingTime,
+        savedAt: new Date().toISOString(),
+        room_type: input.room_type ?? null,
+    });
 }

@@ -121,8 +121,29 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
 
     const canPreview3d = Boolean(proxiedSrc);
     const canStartAr = isIOS ? Boolean(effectiveIosSrc) : Boolean(proxiedSrc);
+    const quickLookHref = effectiveIosSrc || iosSrc;
 
     const handleModelLoad = () => setIsLoaded(true);
+
+    const openQuickLookFallback = useCallback(() => {
+      const anchor = quickLookRef.current;
+      if (!anchor || !quickLookHref) return false;
+
+      // Safari Quick Look expects a rel="ar" anchor with an image child.
+      const img = document.createElement('img');
+      img.alt = '';
+      img.setAttribute('aria-hidden', 'true');
+
+      anchor.setAttribute('href', quickLookHref);
+      anchor.appendChild(img);
+
+      try {
+        anchor.click();
+        return true;
+      } finally {
+        anchor.removeChild(img);
+      }
+    }, [quickLookHref]);
 
     useEffect(() => {
       const modelViewer = modelViewerRef.current;
@@ -276,7 +297,12 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         }
       }
       const modelViewer = modelViewerRef.current as any;
-      if (!modelViewer) return;
+      if (!modelViewer) {
+        if (isIOS) {
+          openQuickLookFallback();
+        }
+        return;
+      }
 
       const trySync = () => {
         // Maintain user-gesture context by calling activateAR synchronously whenever possible.
@@ -300,8 +326,8 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       if (trySync()) return;
 
       if (isIOS) {
-        // Fallback for iOS: direct Quick Look link (proxied) with content scaling.
-        quickLookRef.current?.click();
+        // Fallback for iOS: direct Quick Look link must stay inside the same user gesture.
+        openQuickLookFallback();
         pendingActivateRef.current = false;
         return;
       }
@@ -339,7 +365,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
               return;
             } catch { }
           }
-          quickLookRef.current?.click();
+          openQuickLookFallback();
           pendingActivateRef.current = false;
           return;
         }
@@ -360,7 +386,7 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
       return () => {
         cancelled = true;
       };
-    }, [ensureModelViewerReady, isIOS, open, proxiedSrc]);
+    }, [ensureModelViewerReady, isIOS, open, openQuickLookFallback, proxiedSrc]);
 
 
 
@@ -411,10 +437,10 @@ const ARViewerComponent = forwardRef<ARViewerHandle, ARViewerProps>(
         )}
 
         {/* Hidden Quick Look anchor for iOS-only (USDZ) models */}
-        {iosSrc && (
+        {quickLookHref && (
           <a
             ref={quickLookRef}
-            href={`${(effectiveIosSrc || iosSrc).split('#')[0]}#allowsContentScaling=1`}
+            href={quickLookHref}
             rel="ar"
             className="sr-only"
             aria-hidden="true"

@@ -45,6 +45,8 @@ ui-debug.log*
 label-com-download/
 tmp/
 scripts/legacy/
+logs/
+.claude/
 
 # next-pwa build artifacts
 public/sw.js
